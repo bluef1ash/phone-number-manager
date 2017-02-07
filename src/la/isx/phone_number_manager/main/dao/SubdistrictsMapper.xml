@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="la.isx.phone_number_manager.main.dao.SubdistrictsDao">
+	<resultMap type="Subdistrict" id="subdistrictResultMap">
+		<id property="subdistrictId" column="subdistrict_id" />
+		<result property="subdistrictName" column="subdistrict_name" />
+		<result property="subdistrictTelephone" column="subdistrict_telephone" />
+	</resultMap>
+	<resultMap type="Subdistrict" id="subdistrictCorrelationCommunitiesResultMap">
+		<collection property="communities" ofType="la.isx.phone_number_manager.main.entity.Community" column="subdistrict_id" />
+	</resultMap>
+	<insert id="insertObject" parameterType="Subdistrict">
+		INSERT INTO `pm_subdistricts`(`subdistrict_name`, `subdistrict_telephone`) VALUES(#{subdistrictName}, #{subdistrictTelephone})
+	</insert>
+	<delete id="deleteObjectById" parameterType="integer">
+		DELETE FROM `pm_subdistricts` WHERE `subdistrict_id` = #{subdistrictId}
+	</delete>
+    <delete id="deleteObjectsByName" parameterType="string">
+        DELETE FROM `pm_subdistricts` WHERE `subdistrict_name` = #{subdistrictName}
+    </delete>
+    <update id="updateObject" parameterType="Subdistrict">
+        UPDATE `pm_subdistricts`
+        <set>
+			<if test="subdistrictId != null">
+				`subdistrict_id` = #{subdistrictId}
+			</if>
+			<if test="subdistrictName != null">
+				, `subdistrict_name` = #{subdistrictName}
+			</if>
+			<if test="subdistrictTelephone != null">
+				, `subdistrict_telephone` = #{subdistrictTelephone}
+			</if>
+		</set>
+		WHERE `subdistrict_id` = #{subdistrictId}
+    </update>
+	<select id="selectObjectsAll" resultMap="subdistrictResultMap">
+		SELECT `subdistrict_id`, `subdistrict_name`, `subdistrict_telephone` FROM `pm_subdistricts` ORDER BY `subdistrict_id`
+	</select>
+	<select id="selectObjectById" parameterType="integer" resultMap="subdistrictResultMap">
+		SELECT `subdistrict_id`, `subdistrict_name`, `subdistrict_telephone` FROM `pm_subdistricts` WHERE `subdistrict_id` = #{subdistrictId}
+	</select>
+	<select id="selectObjectsByName" parameterType="string" resultMap="subdistrictResultMap">
+		SELECT `subdistrict_id`, `subdistrict_name`, `subdistrict_telephone` FROM `pm_subdistricts` WHERE `subdistrict_name` = #{subdistrictName} ORDER BY `subdistrict_id`
+	</select>
+</mapper>

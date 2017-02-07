@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="la.isx.phone_number_manager.main.dao.SystemUsersDao">
+	<resultMap type="SystemUser" id="systemUserResultMap">
+		<id property="systemUserId" column="system_user_id" />
+		<result property="username" column="username" />
+		<result property="password" column="password" />
+		<result property="loginTime" column="login_time" />
+		<result property="loginIp" column="login_ip" />
+		<result property="isLocked" column="is_locked" />
+		<result property="roleLocationId" column="role_location_id" />
+	</resultMap>
+	<resultMap type="SystemUser" id="systemUserCorrelationResultMap" extends="systemUserResultMap">
+		<association property="userRole" column="role_id" resultMap="la.isx.phone_number_manager.main.dao.UserRolesDao.userRoleResultMap" />
+	</resultMap>
+	<resultMap type="SystemUser" id="systemUserCorrelationRoleAndPrivilegeResultMap" extends="systemUserResultMap">
+		<association property="userRole" column="role_id" resultMap="la.isx.phone_number_manager.main.dao.UserRolesDao.userRolesCorrelationUserPrivilegesResultMap" />
+	</resultMap>
+	<insert id="insertObject" parameterType="SystemUser">
+		INSERT INTO `pm_system_users`(`username`, `password`, `login_time`, `login_ip`, `is_locked`, `role_location_id`, `role_id`) VALUES(#{username}, #{password}, #{loginTime}, #{loginIp}, #{isLocked}, #{roleLocationId}, #{roleId})
+	</insert>	
+	<delete id="deleteObjectById" parameterType="integer">
+		DELETE FROM `pm_system_users` WHERE `system_user_id` = #{systemUserId}
+	</delete>
+    <delete id="deleteObjectByName" parameterType="string">
+        DELETE FROM `pm_system_users` WHERE `username` = #{username}
+    </delete>
+    <update id="updateObject" parameterType="SystemUser">
+        UPDATE `pm_system_users`
+        <set>
+			<if test="systemUserId != null">
+				`system_user_id` = #{systemUserId}
+			</if>
+			<if test="username != null">
+				, `username` = #{username}
+			</if>
+			<if test="password != null">
+				, `password` = #{password}
+			</if>
+			<if test="loginTime != null">
+				, `login_time` = #{loginTime}
+			</if>
+			<if test="loginIp != null">
+				, `login_ip` = #{loginIp}
+			</if>
+			<if test="isLocked != null">
+			 	, `is_locked` = #{isLocked}
+			</if>
+			<if test="roleLocationId != null">
+				, `role_location_id` = #{roleLocationId}
+			</if>
+			<if test="roleId != null">
+				, `role_id` = #{roleId}
+			</if>
+		</set>
+		WHERE `system_user_id` = #{systemUserId}
+    </update>
+	<select id="selectObjectsAll" resultMap="systemUserResultMap">
+		SELECT `system_user_id`, `username`, `password`, `login_time`, `login_ip`, `is_locked`, `role_location_id`, `role_id` FROM `pm_system_users` ORDER BY `system_user_id`
+	</select>
+	<select id="selectObjectById" parameterType="integer" resultMap="systemUserResultMap">
+		SELECT `system_user_id`, `username`, `password`, `login_time`, `login_ip`, `is_locked`, `role_location_id`, `role_id` FROM `pm_system_users` WHERE `system_user_id` = #{systemUserId}
+	</select>
+	<select id="selectObjectsByName" parameterType="string" resultMap="systemUserResultMap">
+		SELECT `system_user_id`, `username`, `password`, `login_time`, `login_ip`, `is_locked` FROM `pm_system_users` WHERE `username` = #{username} ORDER BY `system_user_id`
+	</select>
+	<select id="selectSystemUsersAndRolesAll" resultMap="systemUserCorrelationResultMap">
+		SELECT `pm_system_users`.`system_user_id`, `pm_system_users`.`username`, `pm_system_users`.`password`, `pm_system_users`.`login_time`, `pm_system_users`.`login_ip`, `pm_system_users`.`is_locked`, `pm_system_users`.`role_location_id`, `pm_roles`.`role_id`, `pm_roles`.`role_name`, `pm_roles`.`role_description`, `pm_roles`.`higher_role` FROM `pm_system_users` LEFT JOIN `pm_roles` ON `pm_system_users`.`role_id` = `pm_roles`.`role_id` ORDER BY `pm_system_users`.`system_user_id`
+	</select>
+	<select id="selectSystemUserAndRoleById" resultMap="systemUserCorrelationResultMap">
+		SELECT `pm_system_users`.`system_user_id`, `pm_system_users`.`username`, `pm_system_users`.`password`, `pm_system_users`.`login_time`, `pm_system_users`.`login_ip`, `pm_system_users`.`is_locked`, `pm_system_users`.`role_location_id`, `pm_roles`.`role_id`, `pm_roles`.`role_name`, `pm_roles`.`role_description`, `pm_roles`.`higher_role` FROM `pm_system_users` LEFT JOIN `pm_roles` ON `pm_system_users`.`role_id` = `pm_roles`.`role_id` WHERE `pm_system_users`.`system_user_id` = #{systemUserId}
+	</select>
+	<select id="selectSystemUserAndRoleAndPrivilegesByName" parameterType="string" resultMap="systemUserCorrelationRoleAndPrivilegeResultMap">
+		SELECT `pm_system_users`.`system_user_id`, `pm_system_users`.`username`, `pm_system_users`.`password`, `pm_system_users`.`login_time`, `pm_system_users`.`login_ip`, `pm_system_users`.`is_locked`, `pm_system_users`.`role_location_id`, `pm_roles`.`role_id`, `pm_roles`.`role_name`, `pm_roles`.`role_description`, `pm_roles`.`higher_role`, `pm_privileges`.`privilege_id`, `pm_privileges`.`privilege_name`, `pm_privileges`.`privilege_description`, `pm_privileges`.`constraint_auth`, `pm_privileges`.`uri`, `pm_privileges`.`higher_privilege`, `pm_privileges`.`icon_name`, `pm_privileges`.`orders`, `pm_privileges`.`is_display` FROM `pm_system_users` LEFT JOIN `pm_roles` ON `pm_system_users`.`role_id` = `pm_roles`.`role_id` LEFT JOIN `pm_roles_privileges` ON `pm_roles`.`role_id` = `pm_roles_privileges`.`role_id` LEFT JOIN `pm_privileges` ON `pm_roles_privileges`.`privilege_id` = `pm_privileges`.`privilege_id` WHERE `pm_system_users`.`username` = #{username}
+	</select>
+</mapper>

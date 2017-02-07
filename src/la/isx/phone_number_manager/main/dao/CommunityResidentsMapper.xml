@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="la.isx.phone_number_manager.main.dao.CommunityResidentsDao">
+	<resultMap type="CommunityResident" id="communityResidentResultMap">
+		<id property="communityResidentId" column="community_resident_id" />
+		<result property="communityResidentName" column="community_resident_name" />
+		<result property="communityResidentAddress" column="community_resident_address" />
+		<result property="communityResidentPhones" column="community_resident_phones" />
+		<result property="communityResidentSubcontractor" column="community_resident_subcontractor" />
+		<result property="communityResidentEditTime" column="community_resident_edit_time" />
+	</resultMap>
+	<resultMap type="CommunityResident" id="communityResidentsCorrelationCommunityResultMap" extends="communityResidentResultMap">
+		<association property="community" resultMap="la.isx.phone_number_manager.main.dao.CommunitiesDao.communityResultMap" />
+	</resultMap>
+	<insert id="insertObject" parameterType="CommunityResident">
+		INSERT INTO `pm_community_residents`(`community_resident_name`, `community_resident_address`, `community_resident_phones`, `community_resident_subcontractor`, `community_resident_edit_time`, `community_id`) VALUES(#{communityResidentName}, #{communityResidentAddress}, #{communityResidentPhones}, #{communityResidentSubcontractor}, #{communityResidentEditTime}, #{communityId})
+	</insert>
+	<delete id="deleteObjectById" parameterType="integer">
+		DELETE FROM `pm_community_residents` WHERE `community_resident_id` = #{communityResidentId}
+	</delete>
+    <delete id="deleteObjectsByName" parameterType="string">
+        DELETE FROM `pm_community_residents` WHERE `name` = #{name}
+    </delete>
+    <update id="updateObject" parameterType="CommunityResident">
+        UPDATE `pm_community_residents`
+        <set>
+			<if test="communityResidentId != null">
+				`community_resident_id` = #{communityResidentId}
+			</if>
+			<if test="communityResidentName != null">
+				, `community_resident_name` = #{communityResidentName}
+			</if>
+			<if test="communityResidentAddress != null">
+				, `community_resident_address` = #{communityResidentAddress}
+			</if>
+			<if test="communityResidentPhones != null">
+				, `community_resident_phones` = #{communityResidentPhones}
+			</if>
+			<if test="communityResidentSubcontractor != null">
+				, `community_resident_subcontractor` = #{communityResidentSubcontractor}
+			</if>
+			<if test="communityResidentEditTime != null">
+			 	, `community_resident_edit_time` = #{communityResidentEditTime}
+			</if>
+			<if test="communityId != null">
+			 	, `community_id` = #{communityId}
+			</if>
+		</set>
+		WHERE `community_resident_id` = #{communityResidentId}
+    </update>
+	<select id="selectObjectsAll" resultMap="communityResidentResultMap">
+		SELECT `community_resident_id`, `community_resident_name`, `community_resident_address`, `community_resident_phones`, `community_resident_subcontractor`, `community_resident_edit_time` FROM `pm_community_residents` ORDER BY `community_resident_id`
+	</select>
+	<select id="selectObjectById" parameterType="integer" resultMap="communityResidentResultMap">
+		SELECT `community_resident_id`, `community_resident_name`, `community_resident_address`, `community_resident_phones`, `community_resident_subcontractor`, `community_resident_edit_time` FROM `pm_community_residents` WHERE `community_resident_id` = #{communityResidentId}
+	</select>
+	<select id="selectObjectsByName" parameterType="string" resultMap="communityResidentResultMap">
+		SELECT `community_resident_id`, `community_resident_name`, `community_resident_address`, `community_resident_phones`, `community_resident_subcontractor`, `community_resident_edit_time` FROM `pm_community_residents` WHERE `name` = #{communityResidentName} ORDER BY `community_resident_id`
+	</select>
+	<select id="selectObjectsByObject" parameterType="CommunityResident" resultMap="communityResidentResultMap">
+		SELECT `community_resident_id`, `community_resident_name`, `community_resident_address`, `community_resident_phones`, `community_resident_subcontractor`, `community_resident_edit_time` FROM `pm_community_residents`
+		<where>
+			1 = 1
+			<if test="communityResidentId != null and communityResidentId != ''">
+				and `community_resident_id` = #{communityResidentId}
+			</if>
+			<if test="communityResidentName != null and communityResidentName != ''">
+				and `community_resident_name` LIKE CONCAT('%', #{communityResidentName}, '%')
+			</if>
+			<if test="communityResidentAddress != null and communityResidentAddress != ''">
+				and `community_resident_address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+			</if>
+			<if test="communityResidentPhones != null and communityResidentPhones != ''">
+				and `community_resident_phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+			</if>
+			<if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
+				and `community_resident_subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+			</if>
+			<if test="communityResidentEditTime != null and communityResidentEditTime != ''">
+			 	and `community_resident_edit_time` = #{communityResidentEditTime}
+			</if>
+			<if test="communityId != null and communityId != ''">
+			 	and `community_id` = #{communityId}
+			</if>
+		</where>
+		ORDER BY `community_resident_id`
+	</select>
+	<select id="selectCommunityResidentAndCommunityById" parameterType="integer" resultMap="communityResidentsCorrelationCommunityResultMap">
+		SELECT `pm_community_residents`.`community_resident_id`, `pm_community_residents`.`community_resident_name`, `pm_community_residents`.`community_resident_address`, `pm_community_residents`.`community_resident_phones`, `pm_community_residents`.`community_resident_subcontractor`, `pm_community_residents`.`community_resident_edit_time`, `pm_communities`.`community_id`, `pm_communities`.`community_name`, `pm_communities`.`community_telephone`, `pm_communities`.`actual_number` FROM `pm_community_residents` LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id` WHERE `pm_community_residents`.`community_resident_id` = #{communityResidentId}
+	</select>
+</mapper>

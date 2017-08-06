@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.dao.CommunitiesDao">
+	<resultMap type="Community" id="communityResultMap">
+		<id property="communityId" column="community_id" />
+		<result property="communityName" column="name" />
+		<result property="communityTelephone" column="telephone" />
+		<result property="actualNumber" column="actual_number" />
+	</resultMap>
+	<resultMap type="Community" id="communitiesCorrelationSubdistrictResultMap" extends="communityResultMap">
+		<association property="subdistrict" column="subdistrict_id" resultMap="main.dao.SubdistrictsDao.subdistrictResultMap" />
+	</resultMap>
+	<insert id="insertObject">
+		INSERT INTO `pm_communities`(`name`, `telephone`, `actual_number`, `subdistrict_id`) VALUES(#{communityName}, #{communityTelephone}, #{actualNumber}, #{subdistrictId})
+	</insert>
+	<delete id="deleteObjectById">
+		DELETE FROM `pm_communities` WHERE `community_id` = #{communityId}
+	</delete>
+    <delete id="deleteObjectsByName">
+        DELETE FROM `pm_communities` WHERE `name` = #{communityName}
+    </delete>
+    <update id="updateObject">
+        UPDATE `pm_communities`
+        <set>
+			<if test="communityId != null">
+				`community_id` = #{communityId}
+			</if>
+			<if test="communityName != null">
+				, `name` = #{communityName}
+			</if>
+			<if test="communityTelephone != null">
+				, `telephone` = #{communityTelephone}
+			</if>
+			<if test="subdistrictId != null">
+				,`subdistrict_id` = #{subdistrictId}
+			</if>
+		</set>
+		WHERE `community_id` = #{communityId}
+    </update>
+	<select id="selectObjectsAll" resultMap="communityResultMap">
+		SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_communities`.`telephone`, `pm_subdistricts`.`name` as 'subdistrict_name' FROM `pm_communities` LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+	</select>
+	<select id="selectObjectById" resultMap="communityResultMap">
+		SELECT `community_id`, `name`, `telephone` FROM `pm_communities` WHERE `community_id` = #{communityId}
+	</select>
+	<select id="selectObjectsByName" resultMap="communityResultMap">
+		SELECT `community_id`, `name`, `telephone` WHERE FROM `pm_communities` `name` = #{communityName}
+	</select>
+	<select id="selectCommunityAndSubdistrictById" parameterType="integer" resultMap="communitiesCorrelationSubdistrictResultMap">
+		SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_communities`.`telephone`, `pm_communities`.`actual_number`, `pm_subdistricts`.`subdistrict_id`, `pm_subdistricts`.`name` as 'subdistrict_name', `pm_subdistricts`.`subdistrict_telephone` FROM `pm_communities` LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id` WHERE `pm_communities`.`community_id` = #{communityId}
+	</select>
+</mapper>

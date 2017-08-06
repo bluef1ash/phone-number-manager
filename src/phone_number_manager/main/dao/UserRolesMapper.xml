@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.dao.UserRolesDao">
+	<resultMap type="UserRole" id="userRoleResultMap">
+		<id property="roleId" column="role_id" />
+		<result property="roleName" column="name" />
+		<result property="roleDescription" column="description" />
+		<result property="higherRole" column="higher_role" />
+	</resultMap>
+	<resultMap type="UserRole" id="userRoleCorrelationSystemUsersResultMap" extends="userRoleResultMap">
+		<collection property="systemUsers" ofType="main.entity.SystemUser" resultMap="main.dao.SystemUsersDao.systemUserResultMap" />
+	</resultMap>
+	<resultMap type="UserRole" id="userRolesCorrelationUserPrivilegesResultMap" extends="userRoleResultMap">
+		<collection property="userPrivileges" ofType="main.entity.UserPrivilege" resultMap="main.dao.UserPrivilegesDao.userPrivilegeResultMap" />
+	</resultMap>
+	<insert id="insertObject" parameterType="UserRole" useGeneratedKeys="true" keyProperty="roleId">
+		INSERT INTO `pm_roles`(`name`, `description`, `higher_role`) VALUES(#{roleName}, #{roleDescription}, #{higherRole})
+	</insert>
+	<delete id="deleteObjectById" parameterType="integer">
+		DELETE FROM `pm_roles` WHERE `role_id` =  #{roleId}
+	</delete>
+    <delete id="deleteObjectsByName" parameterType="string">
+        DELETE FROM `pm_roles` WHERE `name` =  #{roleName};
+    </delete>
+    <update id="updateObject" parameterType="UserRole">
+        UPDATE `pm_roles`
+        <set>
+			<if test="roleId != null">
+				`role_id` = #{roleId,jdbcType=INTEGER}
+			</if>
+			<if test="roleName != null">
+				, `name` = #{roleName}
+			</if>
+			<if test="roleDescription != null">
+				, `description` = #{roleDescription}
+			</if>
+			<if test="higherRole != null">
+				, `higher_role` = #{higherRole}
+			</if>
+		</set>
+		WHERE `role_id` = #{roleId}
+    </update>
+	<select id="selectObjectsAll" resultMap="userRoleResultMap">
+		SELECT `role_id`, `name`, `description`, `higher_role` FROM `pm_roles` ORDER BY `role_id`
+	</select>
+	<select id="selectObjectById" parameterType="integer" resultMap="userRoleResultMap">
+		SELECT `role_id`, `name`, `description`, `higher_role` FROM `pm_roles` WHERE `role_id` = #{roleId}
+	</select>
+	<select id="selectObjectsByName" parameterType="string" resultMap="userRoleResultMap">
+		SELECT `role_id`, `name`, `description`, `higher_role` FROM `pm_roles` WHERE `name` = #{roleName} ORDER BY `role_id`
+	</select>
+	<select id="selectRolesAndSystemUsersAll" resultMap="userRoleCorrelationSystemUsersResultMap">
+		SELECT `pm_roles`.`role_id`, `pm_roles`.`name`, `pm_roles`.`description`, `pm_roles`.`higher_role`, `pm_system_users`.`system_user_id`, `pm_system_users`.`username`, `pm_system_users`.`password`, `pm_system_users`.`login_time`, `pm_system_users`.`login_ip`, `pm_system_users`.`is_locked`, `pm_system_users`.`role_location_id` FROM `pm_system_users` LEFT JOIN `pm_roles` ON `pm_system_users`.`system_user_id` = `pm_roles`.`role_id` ORDER BY `pm_roles`.`role_id`
+	</select>
+	<select id="selectRolesAndPrivilegesAll" resultMap="userRolesCorrelationUserPrivilegesResultMap">
+		SELECT `pm_roles`.`role_id`, `pm_roles`.`name` AS 'role_name', `pm_roles`.`description` AS 'role_description', `pm_roles`.`higher_role`, `pm_privileges`.`privilege_id`, `pm_privileges`.`name` AS 'privilege_name', `pm_privileges`.`description` AS 'privilege_description', `pm_privileges`.`constraint_auth`, `pm_privileges`.`uri`, `pm_privileges`.`higher_privilege`, `pm_privileges`.`icon_name`, `pm_privileges`.`orders`, `pm_privileges`.`is_display` FROM `pm_roles` LEFT JOIN `pm_roles_privileges` ON `pm_roles`.`role_id` = `pm_roles_privileges`.`role_id` LEFT JOIN `pm_privileges` ON `pm_roles_privileges`.`privilege_id` = `pm_privileges`.`privilege_id` ORDER BY `pm_roles`.`role_id`
+	</select>
+	<select id="selectRolesAndPrivilegesById" parameterType="integer" resultMap="userRolesCorrelationUserPrivilegesResultMap">
+		SELECT `pm_roles`.`role_id`, `pm_roles`.`name`, `pm_roles`.`description`, `pm_roles`.`higher_role`, `pm_privileges`.`privilege_id`, `pm_privileges`.`name` AS 'privilege_name', `pm_privileges`.`description` AS 'privilege_description', `pm_privileges`.`constraint_auth`, `pm_privileges`.`uri`, `pm_privileges`.`higher_privilege`, `pm_privileges`.`icon_name`, `pm_privileges`.`orders`, `pm_privileges`.`is_display` FROM `pm_roles` LEFT JOIN `pm_roles_privileges` ON `pm_roles`.`role_id` = `pm_roles_privileges`.`role_id` LEFT JOIN `pm_privileges` ON `pm_roles_privileges`.`privilege_id` = `pm_privileges`.`privilege_id` WHERE  `pm_roles`.`role_id` = #{roleId}
+	</select>
+</mapper>

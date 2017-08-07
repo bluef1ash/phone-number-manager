@@ -6,217 +6,8 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1d81d939-26ab-4d33-baf0-6383765003b4" name="Default" comment="增加CSRF验证，以及继续完成居民模块功能">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/laydate/icon.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/layer/default/icon-ext.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/layer/default/icon.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/layer/default/loading-0.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/layer/default/loading-1.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/layer/default/loading-2.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/font/iconfont.eot" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/font/iconfont.ttf" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/font/iconfont.woff" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/0.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/1.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/10.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/11.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/12.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/13.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/14.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/15.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/16.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/17.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/18.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/19.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/2.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/20.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/21.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/22.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/23.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/24.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/25.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/26.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/27.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/28.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/29.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/3.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/30.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/31.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/32.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/33.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/34.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/35.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/36.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/37.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/38.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/39.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/4.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/40.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/41.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/42.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/43.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/44.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/45.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/46.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/47.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/48.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/49.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/5.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/50.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/51.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/52.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/53.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/54.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/55.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/56.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/57.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/58.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/59.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/6.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/60.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/61.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/62.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/63.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/64.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/65.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/66.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/67.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/68.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/69.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/7.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/70.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/71.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/8.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/images/face/9.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_alibaba_fastjson_1_2_35.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/phone_number_manager/annotation/RefreshCsrfToken.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/phone_number_manager/annotation/VerifyCSRFToken.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/phone_number_manager/constant/CodeConstant.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/entity/ResultCode.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/interceptor/CsrfInterceptor.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/phone_number_manager/utils/CsrfTokenUtil.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/layui.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/layui.mobile.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/code.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/laydate/laydate.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/css/modules/layer/default/layer.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/font/iconfont.svg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/dest/layui.all.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/code.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/element.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/flow.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/form.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/jquery.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/laydate.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/layedit.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/layer.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/laypage.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/laytpl.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/mobile.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/tree.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/upload.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/lay/modules/util.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/layui/layui.js" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/layer.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/mobile/layer.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/mobile/need/layer.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/skin/default/icon-ext.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/skin/default/icon.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/skin/default/layer.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/skin/default/loading-0.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/skin/default/loading-1.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/skin/default/loading-2.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/layer/skin/layer.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/layer.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/mobile/layer.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/mobile/need/layer.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/skin/default/icon-ext.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/skin/default/icon.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/skin/default/layer.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/skin/default/loading-0.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/skin/default/loading-1.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/skin/default/loading-2.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/layer/skin/layer.css" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/action/CommunityAction.class" afterPath="$PROJECT_DIR$/target/classes/main/action/CommunityAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/action/CommunityResidentAction.class" afterPath="$PROJECT_DIR$/target/classes/main/action/CommunityResidentAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/action/SubdistrictAction.class" afterPath="$PROJECT_DIR$/target/classes/main/action/SubdistrictAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/action/UserAndRoleAction.class" afterPath="$PROJECT_DIR$/target/classes/main/action/UserAndRoleAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/dao/CommunitiesDao.class" afterPath="$PROJECT_DIR$/target/classes/main/dao/CommunitiesDao.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/service/CommunityService.class" afterPath="$PROJECT_DIR$/target/classes/main/service/CommunityService.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/service/impl/CommunityServiceImpl.class" afterPath="$PROJECT_DIR$/target/classes/main/service/impl/CommunityServiceImpl.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/CommunityAction.class" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/CommunityAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/CommunityResidentAction.class" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/CommunityResidentAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/SubdistrictAction.class" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/SubdistrictAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/UserAndRoleAction.class" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/action/UserAndRoleAction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/CommunitiesDao.class" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/CommunitiesDao.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/service/CommunityService.class" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/service/CommunityService.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/service/impl/CommunityServiceImpl.class" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/service/impl/CommunityServiceImpl.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/artifacts/phone_number_manager_war_exploded.xml" afterPath="$PROJECT_DIR$/.idea/artifacts/phone_number_manager_war_exploded.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/lessc/lessc.xml" afterPath="$PROJECT_DIR$/.idea/lessc/lessc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+    <list default="true" id="1d81d939-26ab-4d33-baf0-6383765003b4" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/phone_number_manager.iml" afterPath="$PROJECT_DIR$/phone_number_manager.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/config/spring-mvc.xml" afterPath="$PROJECT_DIR$/src/phone_number_manager/config/spring-mvc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/action/CommunityAction.java" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/action/CommunityAction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/action/CommunityResidentAction.java" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/action/CommunityResidentAction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/action/SubdistrictAction.java" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/action/SubdistrictAction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/action/UserAndRoleAction.java" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/action/UserAndRoleAction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/dao/CommunitiesDao.java" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/dao/CommunitiesDao.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/dao/CommunitiesMapper.xml" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/dao/CommunitiesMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/dao/CommunityResidentsMapper.xml" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/dao/CommunityResidentsMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/dao/SubdistrictsMapper.xml" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/dao/SubdistrictsMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/service/CommunityService.java" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/service/CommunityService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/phone_number_manager/main/service/impl/CommunityServiceImpl.java" afterPath="$PROJECT_DIR$/src/phone_number_manager/main/service/impl/CommunityServiceImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/config/spring-mvc.xml" afterPath="$PROJECT_DIR$/target/classes/config/spring-mvc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/dao/CommunitiesMapper.xml" afterPath="$PROJECT_DIR$/target/classes/main/dao/CommunitiesMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/dao/CommunityResidentsMapper.xml" afterPath="$PROJECT_DIR$/target/classes/main/dao/CommunityResidentsMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/main/dao/SubdistrictsMapper.xml" afterPath="$PROJECT_DIR$/target/classes/main/dao/SubdistrictsMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/config/spring-mvc.xml" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/config/spring-mvc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/CommunitiesMapper.xml" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/CommunitiesMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/CommunityResidentsMapper.xml" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/CommunityResidentsMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/SubdistrictsMapper.xml" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/classes/main/dao/SubdistrictsMapper.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/web.xml" afterPath="$PROJECT_DIR$/target/phone_number_manager/WEB-INF/web.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/css/content-search.css" afterPath="$PROJECT_DIR$/target/phone_number_manager/css/content-search.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/applications/login.js" afterPath="$PROJECT_DIR$/target/phone_number_manager/javascript/applications/login.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/requirejs/config.js" afterPath="$PROJECT_DIR$/target/phone_number_manager/javascript/libraries/requirejs/config.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/community/create.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/community/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/community/edit.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/community/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/login/login.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/login/login.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/privilege/create.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/privilege/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/privilege/edit.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/privilege/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/resident/create.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/resident/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/resident/edit.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/resident/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/resident/list.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/resident/list.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/role/create.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/role/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/role/edit.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/role/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/subdistrict/create.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/subdistrict/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/subdistrict/edit.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/subdistrict/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/user/create.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/user/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/jsp/user/edit.jsp" afterPath="$PROJECT_DIR$/target/phone_number_manager/jsp/user/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/phone_number_manager/less/content-search.less" afterPath="$PROJECT_DIR$/target/phone_number_manager/less/content-search.less" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/WEB-INF/web.xml" afterPath="$PROJECT_DIR$/webapp/WEB-INF/web.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/css/content-search.css" afterPath="$PROJECT_DIR$/webapp/css/content-search.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/javascript/applications/login.js" afterPath="$PROJECT_DIR$/webapp/javascript/applications/login.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/javascript/libraries/requirejs/config.js" afterPath="$PROJECT_DIR$/webapp/javascript/libraries/requirejs/config.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/community/create.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/community/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/community/edit.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/community/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/login/login.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/login/login.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/privilege/create.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/privilege/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/privilege/edit.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/privilege/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/resident/create.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/resident/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/resident/edit.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/resident/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/resident/list.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/resident/list.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/role/create.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/role/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/role/edit.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/role/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/subdistrict/create.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/subdistrict/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/subdistrict/edit.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/subdistrict/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/user/create.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/user/create.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jsp/user/edit.jsp" afterPath="$PROJECT_DIR$/webapp/jsp/user/edit.jsp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/less/content-search.less" afterPath="$PROJECT_DIR$/webapp/less/content-search.less" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -253,8 +44,8 @@
       <file leaf-file-name="list.jsp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/webapp/jsp/resident/list.jsp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="26">
-              <caret line="134" column="26" lean-forward="true" selection-start-line="134" selection-start-column="26" selection-end-line="134" selection-end-column="26" />
+            <state relative-caret-position="-676">
+              <caret line="134" column="26" lean-forward="false" selection-start-line="134" selection-start-column="26" selection-end-line="134" selection-end-column="26" />
               <folding />
             </state>
           </provider>
@@ -283,7 +74,7 @@
       <file leaf-file-name="config.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/webapp/javascript/libraries/requirejs/config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="640">
+            <state relative-caret-position="588">
               <caret line="25" column="106" lean-forward="false" selection-start-line="25" selection-start-column="106" selection-end-line="25" selection-end-column="106" />
               <folding />
             </state>
@@ -904,8 +695,23 @@
       <updated>1501995771615</updated>
       <workItem from="1501995774614" duration="13796000" />
       <workItem from="1502092965305" duration="13050000" />
-      <workItem from="1502107317810" duration="8202000" />
+      <workItem from="1502107317810" duration="8436000" />
     </task>
+    <task id="LOCAL-00001" summary="增加CSRF验证，以及继续完成居民模块功能">
+      <created>1502116221765</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1502116221765</updated>
+    </task>
+    <task id="LOCAL-00002" summary="增加CSRF验证，以及继续完成居民模块功能">
+      <created>1502116397108</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1502116397108</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -914,13 +720,13 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="35048000" />
+    <option name="totallyTimeSpent" value="35282000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1938" height="1048" extended-state="6" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.6690059" sideWeight="0.5032189" order="6" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32982457" sideWeight="0.5037554" order="6" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="CDI" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -934,12 +740,12 @@
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2888889" sideWeight="0.4967811" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3299356" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32982457" sideWeight="0.49785408" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32982457" sideWeight="0.49785408" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32982457" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32982457" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32982457" sideWeight="0.49624464" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29122806" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Spring" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32982457" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32982457" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -960,6 +766,32 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -1411,7 +1243,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/javascript/libraries/requirejs/config.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="640">
+        <state relative-caret-position="588">
           <caret line="25" column="106" lean-forward="false" selection-start-line="25" selection-start-column="106" selection-end-line="25" selection-end-column="106" />
           <folding />
         </state>
@@ -1419,8 +1251,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/jsp/resident/list.jsp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="26">
-          <caret line="134" column="26" lean-forward="true" selection-start-line="134" selection-start-column="26" selection-end-line="134" selection-end-column="26" />
+        <state relative-caret-position="-676">
+          <caret line="134" column="26" lean-forward="false" selection-start-line="134" selection-start-column="26" selection-end-line="134" selection-end-column="26" />
           <folding />
         </state>
       </provider>

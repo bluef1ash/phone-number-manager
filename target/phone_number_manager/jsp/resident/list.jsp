@@ -143,7 +143,7 @@
             </div>
         </div>
 		<script type="text/javascript">
-			require(["layui", "jquery", "bootstrap"], function (layui) {
+			require(["jquery", "bootstrap", "layui"], function () {
 				$(function (){
 					// 分页
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");

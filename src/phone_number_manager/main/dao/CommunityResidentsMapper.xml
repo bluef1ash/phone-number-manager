@@ -9,6 +9,9 @@
 		<result property="communityResidentSubcontractor" column="subcontractor" />
 		<result property="communityResidentEditTime" column="edit_time" />
 	</resultMap>
+	<resultMap type="CommunityResident" id="AliasResultMap" extends="communityResidentResultMap">
+		<result property="communityResidentName" column="community_resident_name" />
+	</resultMap>
 	<resultMap type="CommunityResident" id="communityResidentsCorrelationCommunityResultMap" extends="communityResidentResultMap">
 		<association property="community" resultMap="main.dao.CommunitiesDao.communityResultMap" />
 	</resultMap>

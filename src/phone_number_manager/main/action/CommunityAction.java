@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import annotation.RefreshCsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -43,7 +44,7 @@ public class CommunityAction {
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public String communityList(Model model, Integer page) {
 		try {
-			Map<String, Object> communityMap = communityService.findObjects(page, null);
+			Map<String, Object> communityMap = communityService.findCommunitiesAndSubdistrict(page, null);
 			model.addAttribute("communities", communityMap.get("data"));
 			System.out.println(communityMap.get("data"));
 			model.addAttribute("pageInfo", communityMap.get("pageInfo"));
@@ -57,6 +58,7 @@ public class CommunityAction {
 	 * @param model
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@RequestMapping(value = "/create", method = RequestMethod.GET)
 	public String createCommunity(Model model) {
 		try {
@@ -73,6 +75,7 @@ public class CommunityAction {
 	 * @param id
 	 * @return
 	 */
+    @RefreshCsrfToken
 	@RequestMapping(value = "/edit", method = RequestMethod.GET)
 	public String editCommunity(Model model, Integer id) {
 		try {

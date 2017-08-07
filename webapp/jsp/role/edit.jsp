@@ -66,6 +66,8 @@
 						<td colspan="2" class="text-center">
 							<input type="hidden" name="roleId" value="${userRole.roleId}">
 							<input type="hidden" name="submissionToken" value="${submissionToken}">
+							<input type="hidden" name="_token" value="${CSRFToken}">
+							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" name="submit" value="保存" class="btn btn-primary">
 						</td>
 					</tr>

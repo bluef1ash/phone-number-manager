@@ -18,8 +18,8 @@
 				<div class="form-group">
 					<label class="col-md-4 control-label">单位</label>
 					<span class="col-md-8 search-company">
-						<input type="text" class="form-control" disabled="disabled">
-						<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+						<input type="text" name="search_company" class="form-control" disabled="disabled" data-toggle="modal" data-target="#search_company_modal">
+						<button type="button" class="btn btn-default" data-toggle="modal" data-target="#search_company_modal"><span class="glyphicon glyphicon-search"></span></button>
 						<input type="hidden" name="unit">
 					</span>
 				</div>
@@ -125,8 +125,25 @@
 				</li>
 			</ul>
 		</div>
+        <!-- 单位模态框 -->
+        <div class="modal fade" id="search_company_modal" tabindex="-1" role="dialog" aria-labelledby="search_company_modal_label">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="search_company_modal_label">选择所在区域</h4>
+                    </div>
+                    <div class="modal-body">
+                        <ul id="company_tree"></ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 		<script type="text/javascript">
-			require(["jquery"], function () {
+			require(["layui", "jquery", "bootstrap"], function (layui) {
 				$(function (){
 					// 分页
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");
@@ -134,10 +151,29 @@
 					$("#pagination_parent").css("width", pagination_ul);
 					// 查询
 					$("form[name='query_input']").submit(function(){
-						if ($("input[name='communityResidentName']").val() == "" && $("input[name='communityResidentAddress']").val() == "" && $("input[name='communityResidentPhones'']").val() == "") {
+						if ($("input[name='communityResidentName']").val() == "" && $("input[name='communityResidentAddress']").val() == "" && $("input[name='communityResidentPhones']").val() == "") {
 							return false;
 						}
 					});
+                    layui.tree({
+                        elem: '#company_tree' //传入元素选择器
+                        ,nodes: [{ //节点
+                            name: '父节点1'
+                            ,children: [{
+                                name: '子节点11'
+                            },{
+                                name: '子节点12'
+                            }]
+                        },{
+                            name: '父节点2（可以点左侧箭头，也可以双击标题）'
+                            ,children: [{
+                                name: '子节点21'
+                                ,children: [{
+                                    name: '子节点211'
+                                }]
+                            }]
+                        }]
+                    });
 				});
 			});
 		</script>

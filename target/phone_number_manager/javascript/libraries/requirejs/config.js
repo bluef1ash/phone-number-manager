@@ -7,7 +7,7 @@ require.config({
         bootstrap: jsPath + "libraries/bootstrap.min",
         angular: jsPath + "libraries/angular.min",
         lodash: jsPath + "libraries/lodash/lodash.min",
-        layer: jsPath + "libraries/layer/layer",
+        layui: jsPath + "libraries/layui/layui",
         chart: jsPath + "libraries/charts/Chart",
         zeroClipboard: jsPath + "libraries/zeroclipboard/ZeroClipboard.min",
         common: jsPath + "libraries/common"
@@ -22,9 +22,9 @@ require.config({
         bootstrap: {
             deps: ["jquery"]
         },
-        layer: {
-            deps: ["jquery", "css!" + jsPath + "libraries/layer/skin/layer.css"],
-            exports: "layer"
+        layui: {
+            deps: ["jquery", "css!" + jsPath + "libraries/layui/css/layui.css", "css!" + jsPath + "libraries/layui/css/layui.mobile.css"],
+            exports: "layui"
         }
     }
 });

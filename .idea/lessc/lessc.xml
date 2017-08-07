@@ -10,12 +10,12 @@
               <option name="cssDirectories">
                 <list>
                   <CssDirectory>
-                    <option name="path" value="E:\Desktop\phone_number_manager\webapp\css" />
+                    <option name="path" value="E:\Documents\Programming\Web\phone_number_manager\webapp\css" />
                   </CssDirectory>
                 </list>
               </option>
               <option name="id" value="0" />
-              <option name="lessDirPath" value="E:\Desktop\phone_number_manager\webapp\less" />
+              <option name="lessDirPath" value="E:\Documents\Programming\Web\phone_number_manager\webapp\less" />
               <option name="name" value="phone_number_manager" />
             </LessProfile>
           </value>

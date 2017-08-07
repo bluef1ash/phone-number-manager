@@ -56,6 +56,8 @@
 						<td colspan="2" class="text-center">
 							<input type="hidden" name="systemUserId" value="${systemUser.systemUserId}">
 							<input type="hidden" name="submissionToken" value="${submissionToken}">
+							<input type="hidden" name="_token" value="${CSRFToken}">
+							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="保存" class="btn btn-primary">
 						</td>
 					</tr>

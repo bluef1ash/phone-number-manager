@@ -34,7 +34,7 @@ require(["jquery", "layer"], function () {
 			if (username_value != "" && password_value != "") {
 				$.ajax({
 					"async" : false,
-					"data" : {"username":username_value, "password":password_value},
+					"data" : {"username":username_value, "password":password_value, "_token":$("input[name='_token']").val()},
 					"success" : function(data){
 						layer.close(index);
 						if (data.state != 0) {

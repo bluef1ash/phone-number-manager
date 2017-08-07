@@ -39,6 +39,18 @@
 	</bean>
 	<!-- 拦截器 -->
 	<mvc:interceptors>
+		<!-- csrf攻击防御 -->
+		<mvc:interceptor>
+			<!-- 需拦截的地址 -->
+			<mvc:mapping path="/**" />
+			<!-- 需排除拦截的地址 -->
+			<mvc:exclude-mapping path="/css/**" />
+			<mvc:exclude-mapping path="/javascript/**" />
+			<mvc:exclude-mapping path="/uploads/**" />
+			<mvc:exclude-mapping path="/images/**" />
+			<mvc:exclude-mapping path="/fonts/**" />
+			<bean class="main.interceptor.CsrfInterceptor" />
+		</mvc:interceptor>
 		<mvc:interceptor>
 			<mvc:mapping path="/**" />
 			<mvc:exclude-mapping path="/jsp/login/login.jsp" />

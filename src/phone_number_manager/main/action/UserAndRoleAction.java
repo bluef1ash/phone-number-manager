@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
+import annotation.RefreshCsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -94,6 +95,7 @@ public class UserAndRoleAction {
 	 * @param map
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@AvoidDuplicateSubmission(needSaveToken = true)
 	@RequestMapping(value = "/user/create", method = RequestMethod.GET)
 	public String createSystemUser(Map<String, Object> map) {
@@ -112,6 +114,7 @@ public class UserAndRoleAction {
 	 * @param id
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@AvoidDuplicateSubmission(needSaveToken = true)
 	@RequestMapping(value = "/user/edit", method = RequestMethod.GET)
 	public String editSystemUser(Map<String, Object> map, Integer id) {
@@ -204,6 +207,7 @@ public class UserAndRoleAction {
 	 * @param map
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@AvoidDuplicateSubmission(needSaveToken = true)
 	@RequestMapping(value = "/role/create", method = RequestMethod.GET)
 	public String createSystemUserRole(Map<String, Object> map) {
@@ -224,6 +228,7 @@ public class UserAndRoleAction {
 	 * @param id
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@AvoidDuplicateSubmission(needSaveToken = true)
 	@RequestMapping(value = "/role/edit", method = RequestMethod.GET)
 	public String editSystemUserRole(Map<String, Object> map, Integer id) {
@@ -325,6 +330,7 @@ public class UserAndRoleAction {
 	 * 
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@AvoidDuplicateSubmission(needSaveToken = true)
 	@RequestMapping(value = "/privilege/create", method = RequestMethod.GET)
 	public String createSystemUserPrivilege(Map<String, List<UserPrivilege>> map) {
@@ -344,6 +350,7 @@ public class UserAndRoleAction {
 	 * @param id
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@AvoidDuplicateSubmission(needSaveToken = true)
 	@RequestMapping(value = "/privilege/edit", method = RequestMethod.GET)
 	public String editSystemUserPrivilege(Map<String, Object> map, Integer id) {

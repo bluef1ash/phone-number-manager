@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
+import annotation.RefreshCsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -64,6 +65,7 @@ public class CommunityResidentAction {
 	 * @param model
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@RequestMapping(value = "/create", method = RequestMethod.GET)
 	public String createCommunityResident(Model model) {
 		try {
@@ -80,6 +82,7 @@ public class CommunityResidentAction {
 	 * @param id
 	 * @return
 	 */
+    @RefreshCsrfToken
 	@RequestMapping(value = "/edit", method = RequestMethod.GET)
 	public String editCommunityResident(Model model, Integer id) {
 		try {

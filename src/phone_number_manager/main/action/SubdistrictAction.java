@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import annotation.RefreshCsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -51,6 +52,7 @@ public class SubdistrictAction {
 	 * 添加街道
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@RequestMapping(value = "/create", method = RequestMethod.GET)
 	public String createSubdistrict() {
 		return "subdistrict/create";
@@ -61,6 +63,7 @@ public class SubdistrictAction {
 	 * @param id
 	 * @return
 	 */
+	@RefreshCsrfToken
 	@RequestMapping(value = "/edit", method = RequestMethod.GET)
 	public String editSubdistrict(Model model, Integer id) {
 		try {

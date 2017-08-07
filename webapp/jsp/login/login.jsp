@@ -19,22 +19,24 @@
 					<li style="width:100%; height:60px;" class="form-group">
 						<label for="username" class="col-md-3 control-label">用户名：</label>
 						<span class="col-md-8">
-							<input type="text" class="form-control" id="username" placeholder="请输入用户名">
+							<input type="text" class="form-control" id="username" placeholder="请输入用户名" value="admin">
 						</span>
 					</li>
 					<li style="width:100%; height:60px;" class="form-group">
 						<label for="password" class="col-md-3 control-label">密码：</label>
 						<span class="col-md-8">
-							<input type="password" class="form-control" id="password" placeholder="请输入密码">
+							<input type="password" class="form-control" id="password" placeholder="请输入密码" value="123456">
 						</span>
 					</li>
-					<!-- <li style="width:100%; height:60px;" class="form-group">
+					<li style="width:100%; height:60px;" class="form-group">
 						<label for="verification" class="col-md-3 control-label">验证码：</label>
 						<span class="col-md-9">
 							<input type="text" class="form-control" id="verification" placeholder="请输入验证码">
 						</span>
-					</li> -->
+					</li>
 					<li style="width:100%; height:60px;">
+                        <input type="hidden" name="_token" value="${CSRFToken}">
+                        <spring:htmlEscape defaultHtmlEscape="true" />
 						<button type="button" class="btn btn-primary" id="logging">登录</button>
 					</li>
 				</ul>

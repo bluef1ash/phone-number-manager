@@ -6,6 +6,10 @@
 		<result property="subdistrictName" column="name" />
 		<result property="subdistrictTelephone" column="telephone" />
 	</resultMap>
+	<resultMap type="Subdistrict" id="subdistrictAliasResultMap" extends="subdistrictResultMap">
+		<result property="subdistrictName" column="subdistrict_name" />
+		<result property="subdistrictTelephone" column="subdistrict_telephone" />
+	</resultMap>
 	<resultMap type="Subdistrict" id="subdistrictCorrelationCommunitiesResultMap">
 		<collection property="communities" ofType="main.entity.Community" column="subdistrict_id" />
 	</resultMap>

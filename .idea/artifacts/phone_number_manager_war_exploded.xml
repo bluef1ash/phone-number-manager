@@ -43,6 +43,7 @@
           <element id="library" level="project" name="Maven: javax.validation:validation-api:1.1.0.Final" />
           <element id="library" level="project" name="Maven: com.github.pagehelper:pagehelper:4.1.6" />
           <element id="library" level="project" name="Maven: com.github.jsqlparser:jsqlparser:0.9.5" />
+          <element id="library" level="project" name="Maven: com.alibaba:fastjson:1.2.35" />
         </element>
       </element>
       <element id="directory" name="META-INF">

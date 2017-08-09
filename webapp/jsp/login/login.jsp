@@ -29,10 +29,11 @@
 						</span>
 					</li>
 					<li style="width:100%; height:60px;" class="form-group">
-						<label for="verification" class="col-md-3 control-label">验证码：</label>
-						<span class="col-md-9">
-							<input type="text" class="form-control" id="verification" placeholder="请输入验证码">
+						<label for="captcha" class="col-md-3 control-label">验证码：</label>
+						<span class="col-md-6">
+							<input type="text" class="form-control" id="captcha" placeholder="请输入验证码">
 						</span>
+						<img src="${pageContext.request.contextPath}/login/captcha.action" alt="" class="col-md-3" id="captcha_img">
 					</li>
 					<li style="width:100%; height:60px;">
                         <input type="hidden" name="_token" value="${CSRFToken}">

@@ -14,6 +14,7 @@ import main.entity.Community;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import exception.BusinessException;
@@ -29,7 +30,7 @@ public class LoginAction {
     @Resource
     private SystemUserService systemUserService;
     @Resource
-    private Captcha captcha;
+    private Captcha captchaEntity;
     private static String sRand;
 
     /**
@@ -40,23 +41,11 @@ public class LoginAction {
      */
     @RequestMapping(value = "/ajax", method = RequestMethod.POST)
     public @ResponseBody
-    Map<String, Object> ajaxLogin(HttpServletRequest request, HttpSession session, SystemUser systemUser) {
+    Map<String, Object> ajaxLogin(HttpServletRequest request, HttpSession session, SystemUser systemUser, @RequestParam("captcha") String captcha) {
         Map<String, Object> map = null;
         if (systemUser != null) {
             try {
-                if(msg==null&& msg.isEmpty()){
-                    //得到用户读入框信息，如果没有输入或者为空，直接跳转到验证失败页面
-                    return "error";
-                }else{
-                    if(sRand.equalsIgnoreCase((msg))){
-                        //得到用户输入的验证码匹配成功，跳转到验证通过页面
-                        return "ok";
-                    }else{
-                        //得到用户输入的验证码匹配失败，跳转到验证失败页面
-                        return "error";
-                    }
-                }
-                map = systemUserService.loginCheck(request, systemUser);
+                map = systemUserService.loginCheck(request, systemUser, captcha, sRand);
                 if (map.containsKey("systemUser")) {
                     session.setAttribute("systemUser", map.get("systemUser"));
                     session.setAttribute("privilegeMap", map.get("privilegeMap"));
@@ -96,7 +85,7 @@ public class LoginAction {
             // 将图像输出到servlet输出流中
             ServletOutputStream sos = null;
             sos = response.getOutputStream();
-            ImageIO.write(captcha.getImage(request), "jpeg", sos);
+            ImageIO.write(captchaEntity.getImage(request), "jpeg", sos);
             sos.close();
             sRand = (String) request.getAttribute("sRand");
             String result = "ok";

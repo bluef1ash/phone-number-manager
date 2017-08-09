@@ -17,7 +17,7 @@ public interface SystemUserService extends BaseService<SystemUser> {
 	 * @return systemUser对象
 	 * @throws Exception
 	 */
-	public Map<String, Object> loginCheck(HttpServletRequest request, SystemUser systemUser) throws Exception;
+	public Map<String, Object> loginCheck(HttpServletRequest request, SystemUser systemUser, String captcha, String sRand) throws Exception;
 	/**
 	 * 添加系统用户
 	 * @param systemUser

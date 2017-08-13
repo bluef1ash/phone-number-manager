@@ -2,6 +2,7 @@ package main.entity;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 import javax.validation.constraints.NotNull;
 /**
@@ -21,11 +22,12 @@ public class CommunityResident implements Serializable {
 	private String communityResidentSubcontractor;
 	private Timestamp communityResidentEditTime;
 	private Integer communityId;
+	private Integer[] communityIds;
 	private Community community;
 	public CommunityResident() {}
 	public CommunityResident(Integer communityResidentId, String communityResidentName, String communityResidentAddress,
 			String communityResidentPhones, String communityResidentSubcontractor, Timestamp communityResidentEditTime,
-			Integer communityId, Community community) {
+			Integer communityId, Integer[] communityIds, Community community) {
 		this.communityResidentId = communityResidentId;
 		this.communityResidentName = communityResidentName;
 		this.communityResidentAddress = communityResidentAddress;
@@ -33,6 +35,7 @@ public class CommunityResident implements Serializable {
 		this.communityResidentSubcontractor = communityResidentSubcontractor;
 		this.communityResidentEditTime = communityResidentEditTime;
 		this.communityId = communityId;
+		this.communityIds = communityIds;
 		this.community = community;
 	}
 	public Integer getCommunityResidentId() {
@@ -74,8 +77,14 @@ public class CommunityResident implements Serializable {
 	public Integer getCommunityId() {
 		return communityId;
 	}
+	public Integer[] getCommunityIds() {
+		return communityIds;
+	}
 	public void setCommunityId(Integer communityId) {
 		this.communityId = communityId;
+	}
+	public void setCommunityIds(Integer[] communityIds) {
+		this.communityIds = communityIds;
 	}
 	public Community getCommunity() {
 		return community;
@@ -83,12 +92,19 @@ public class CommunityResident implements Serializable {
 	public void setCommunity(Community community) {
 		this.community = community;
 	}
+
 	@Override
 	public String toString() {
-		return "CommunityResident [communityResidentId=" + communityResidentId + ", communityResidentName="
-				+ communityResidentName + ", communityResidentAddress=" + communityResidentAddress
-				+ ", communityResidentPhones=" + communityResidentPhones + ", communityResidentSubcontractor="
-				+ communityResidentSubcontractor + ", communityResidentEditTime=" + communityResidentEditTime
-				+ ", communityId=" + communityId + ", community=" + community + "]";
+		return "CommunityResident{" +
+				"communityResidentId=" + communityResidentId +
+				", communityResidentName='" + communityResidentName + '\'' +
+				", communityResidentAddress='" + communityResidentAddress + '\'' +
+				", communityResidentPhones='" + communityResidentPhones + '\'' +
+				", communityResidentSubcontractor='" + communityResidentSubcontractor + '\'' +
+				", communityResidentEditTime=" + communityResidentEditTime +
+				", communityId=" + communityId +
+				", communityIds=" + Arrays.toString(communityIds) +
+				", community=" + community +
+				'}';
 	}
 }

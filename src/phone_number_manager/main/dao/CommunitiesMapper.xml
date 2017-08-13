@@ -56,4 +56,7 @@
 	<select id="selectCommunityAndSubdistrictById" parameterType="integer" resultMap="communitiesCorrelationSubdistrictResultMap">
 		SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_communities`.`telephone`, `pm_communities`.`actual_number`, `pm_communities`.`subdistrict_id`, `pm_subdistricts`.`name` as 'subdistrict_name', `pm_subdistricts`.`telephone` as 'subdistrict_telephone' FROM `pm_communities` LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id` WHERE `pm_communities`.`community_id` = #{communityId}
 	</select>
+	<select id="selectCommunitiesBySubdistrictId" resultMap="communityResultMap">
+		SELECT `community_id` FROM `pm_communities` WHERE `subdistrict_id` = #{subdistrict_id}
+	</select>
 </mapper>

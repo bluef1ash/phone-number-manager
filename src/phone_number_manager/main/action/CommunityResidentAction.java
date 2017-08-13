@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import annotation.RefreshCsrfToken;
@@ -45,14 +46,16 @@ public class CommunityResidentAction {
 	 * @return
 	 */
 	@RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
-	public String communityResidentList(Model model, Integer page, CommunityResident communityResident) {
+	public String communityResidentList(HttpServletRequest request, Model model, Integer page, CommunityResident communityResident, String unit) {
 		try {
 			Map<String, Object> communityResidentMap = null;
-			if (communityResident == null) {
+			if ("GET".equals(request.getMethod())) {
 				communityResidentMap = communityResidentService.findObjects(page, null);
 			} else {
-				communityResidentMap = communityResidentService.findObjects(communityResident, page, null);
-			}
+				communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(communityResident, page, unit, null);
+                model.addAttribute("communityResident", communityResident);
+                model.addAttribute("unit", unit);
+            }
 			model.addAttribute("communityResidents", communityResidentMap.get("data"));
 			model.addAttribute("pageInfo", communityResidentMap.get("pageInfo"));
 		} catch (Exception e) {

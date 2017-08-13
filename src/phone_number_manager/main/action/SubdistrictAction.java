@@ -1,12 +1,14 @@
 package main.action;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 
 import annotation.RefreshCsrfToken;
+import main.entity.Community;
+import main.entity.SystemUser;
+import main.entity.TreeMenu;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -119,6 +121,41 @@ public class SubdistrictAction {
 			return map;
 		} catch (Exception e) {
 			throw new BusinessException("删除街道失败！", e);
+		}
+	}
+
+	/**
+	 * 使用AJAX技术列出所有社区居委会
+	 * @return
+	 */
+	@RequestMapping(value = "/ajax_select", method = RequestMethod.GET)
+	public @ResponseBody Set<TreeMenu> findCommunityForAjax(HttpSession session) {
+		try {
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            Integer roleId = systemUser.getUserRole().getRoleId();
+            Integer roleLocationId = systemUser.getRoleLocationId();
+			Set<Subdistrict> subdistricts = subdistrictService.findCommunitiesAndSubdistrictsByRole(roleId, roleLocationId);
+			Set<TreeMenu> treeMenus = new HashSet<TreeMenu>();
+			for (Subdistrict subdistrict : subdistricts) {
+                TreeMenu treeMenu = new TreeMenu();
+                treeMenu.setId(subdistrict.getSubdistrictId());
+                treeMenu.setName(subdistrict.getSubdistrictName());
+                if (treeMenus.size() == 0) {
+                     treeMenu.setSpread(true);
+                }
+                List<TreeMenu> children = new ArrayList<TreeMenu>();
+                for (Community community : subdistrict.getCommunities()) {
+                    TreeMenu childrenTree = new TreeMenu();
+                    childrenTree.setId(community.getCommunityId());
+                    childrenTree.setName(community.getCommunityName());
+                    children.add(childrenTree);
+                }
+                treeMenu.setChildren(children);
+                treeMenus.add(treeMenu);
+            }
+			return treeMenus;
+		} catch (Exception e) {
+			throw new BusinessException("查找社区失败！", e);
 		}
 	}
 }

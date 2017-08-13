@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import constant.SystemConstant;
 import org.springframework.stereotype.Service;
 
 import main.entity.SystemUser;
@@ -53,7 +54,12 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
 								Set<String> privilegeAuth = new HashSet<String>();
 								Set<String> privilegeParents = new HashSet<String>();
 								Map<String, Set<String>> privilegeMap = new HashMap<String, Set<String>>();
-								Set<UserPrivilege> userPrivileges = user.getUserRole().getUserPrivileges();
+                                Set<UserPrivilege> userPrivileges = null;
+                                if (user.getSystemUserId() == SystemConstant.SYSTEM_ADMINISTRATOR_ID) {
+                                    userPrivileges = new HashSet<UserPrivilege>(userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(0, 1));
+                                } else {
+                                    userPrivileges = user.getUserRole().getUserPrivileges();
+                                }
 								for (UserPrivilege userPrivilege : userPrivileges) {
 									Integer higherPrivilegeId = userPrivilege.getHigherPrivilege();
 									privilegeAuth.add(userPrivilege.getConstraintAuth());

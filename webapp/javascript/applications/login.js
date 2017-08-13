@@ -1,33 +1,52 @@
 require(["jquery", "layui"], function () {
-	$(function (){
-		/**
-		 * 用户名输入框键盘事件
-		 */
-		$("#username").keyup(function(event){
-			if ($(this).val() != "" && event.keyCode == 13) {
-				$("#password").focus();
-			}
-		}).focus(function () {
-			$(this).parent("span").parent("li").removeClass("has-error has-success");
-		}).focus();
-		/**
-		 * 密码输入框键盘事件
-		 */
-		$("#password").keyup(function(event){
-			if ($(this).val() != "" && event.keyCode == 13) {
-				$("#logging").trigger("click");
-			}
-		}).focus(function () {
-			$(this).parent("span").parent("li").removeClass("has-error has-success");
-		});
-		/**
-		 * 登录按钮点击事件
-		 */
-		$("#logging").click(function() {
+    $(function (){
+        /**
+         * 用户名输入框键盘事件
+         */
+        $("#username").keyup(function(event){
+            if (event.keyCode == 13) {
+                $("#password").focus();
+            }
+        }).focus(function () {
+            $(this).parent("span").parent("li").removeClass("has-error has-success");
+        }).focus();
+        /**
+         * 密码输入框键盘事件
+         */
+        $("#password").keyup(function(event){
+            if (event.keyCode == 13) {
+                $("#captcha").focus();
+            }
+        }).focus(function () {
+            $(this).parent("span").parent("li").removeClass("has-error has-success");
+        });
+        /**
+         * 点击验证码图片更换
+         */
+        $("#captcha_img").click(function () {
+            var src = $(this).prop("src");
+            if (src.indexOf("?") > -1) {
+                src = src.substring(0, src.indexOf("?"));
+            }
+            $(this).attr("src", src + "?timestamp=" + new Date().getTime())
+        });
+        /**
+         * 验证码输入框键盘事件
+         */
+        $("#captcha").keyup(function(event){
+            if (event.keyCode == 13) {
+                $("#logging").trigger("click");
+            }
+        }).focus(function () {
+            $(this).parent("span").parent("li").removeClass("has-error has-success");
+        });
+        /**
+         * 登录按钮点击事件
+         */
+        $("#logging").click(function() {
             layui.use('layer', function () {
                 var layer = layui.layer;
                 layer.ready(function () {
-                    var index = layer.load(1, {shade: [0.8, '#000']});
                     var username = $("#username");
                     var password = $("#password");
                     var captcha = $("#captcha");
@@ -37,7 +56,8 @@ require(["jquery", "layui"], function () {
                     var username_li = username.parent("span").parent("li");
                     var password_li = password.parent("span").parent("li");
                     var captcha_li = captcha.parent("span").parent("li");
-                    if (username_value != "" && password_value != "") {
+                    if (username_value != "" && password_value != "" &&  captcha_value != "") {
+                        var index = layer.load(1, {shade: [0.8, '#000']});
                         $.ajax({
                             "async": false,
                             "data": {
@@ -66,19 +86,21 @@ require(["jquery", "layui"], function () {
                             "type": "post",
                             "url": basePath + "login/ajax.action"
                         });
+                    } else if (username_value == "") {
+                        username_li.removeClass("has-success").addClass("has-error");
+                        layer.msg("用户名不能为空！", {icon: 5});
+                        username.focus();
+                    } else if (password_value == "") {
+                        password_li.removeClass("has-success").addClass("has-error");
+                        layer.msg("密码不能为空！", {icon: 5});
+                        password.focus();
+                    } else {
+                        captcha_li.removeClass("has-success").addClass("has-error");
+                        layer.msg("验证码不能为空！", {icon: 5});
+                        captcha.focus();
                     }
                 });
             });
         });
-        /**
-         * 点击验证码图片更换
-         */
-		$("#captcha_img").click(function () {
-		    var src = $(this).prop("src");
-		    if (src.indexOf("?") > -1) {
-                src = src.substring(0, src.indexOf("?"));
-            }
-            $(this).attr("src", src + "?timestamp=" + new Date().getTime())
-        });
-	});
+    });
 });

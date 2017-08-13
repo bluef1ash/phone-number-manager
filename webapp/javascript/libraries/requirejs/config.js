@@ -24,7 +24,12 @@ require.config({
         },
         layui: {
             deps: ["jquery", "css!" + jsPath + "libraries/layui/css/layui.css", "css!" + jsPath + "libraries/layui/css/layui.mobile.css"],
-            exports: "layui"
+            exports: "layui",
+            init: function () {
+                return this.layui.config({
+                    dir: jsPath + "libraries/layui/"
+                });
+            }
         }
     }
 });

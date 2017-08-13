@@ -31,4 +31,15 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
 	 * @throws Exception
 	 */
 	public int updateCommuntyResident(CommunityResident communityResident, String[] residentPhones) throws Exception;
+
+	/**
+	 * 通过社区居民查找匹配的社区居民
+	 * @param communityResident
+	 * @param pageNum
+	 * @param unit
+     * @param pageSize
+	 * @return
+	 * @throws Exception
+	 */
+    public Map<String,Object> findCommunityResidentByCommunityResident(CommunityResident communityResident, Integer pageNum, String unit, Integer pageSize) throws Exception;
 }

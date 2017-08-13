@@ -6,12 +6,13 @@
 		<result property="subdistrictName" column="name" />
 		<result property="subdistrictTelephone" column="telephone" />
 	</resultMap>
-	<resultMap type="Subdistrict" id="subdistrictAliasResultMap" extends="subdistrictResultMap">
+	<resultMap type="Subdistrict" id="subdistrictAliasResultMap">
+		<id property="subdistrictId" column="subdistrict_id" />
 		<result property="subdistrictName" column="subdistrict_name" />
 		<result property="subdistrictTelephone" column="subdistrict_telephone" />
 	</resultMap>
-	<resultMap type="Subdistrict" id="subdistrictCorrelationCommunitiesResultMap">
-		<collection property="communities" ofType="main.entity.Community" column="subdistrict_id" />
+	<resultMap type="Subdistrict" id="subdistrictCorrelationCommunitiesResultMap" extends="subdistrictResultMap">
+		<collection property="communities" column="subdistrict_id" resultMap="main.dao.CommunitiesDao.communityAliasResultMap" />
 	</resultMap>
 	<insert id="insertObject" parameterType="Subdistrict">
 		INSERT INTO `pm_subdistricts`(`name`, `telephone`) VALUES(#{subdistrictName}, #{subdistrictTelephone})
@@ -45,5 +46,14 @@
 	</select>
 	<select id="selectObjectsByName" parameterType="string" resultMap="subdistrictResultMap">
 		SELECT `subdistrict_id`, `name`, `telephone` FROM `pm_subdistricts` WHERE `name` = #{subdistrictName} ORDER BY `subdistrict_id`
+	</select>
+    <select id="selectSubdistrictAndCommunityByCommunityId" resultMap="subdistrictCorrelationCommunitiesResultMap">
+		SELECT `pm_subdistricts`.`subdistrict_id`, `pm_subdistricts`.`name`, `pm_communities`.`community_id`, `pm_communities`.`name` AS 'community_name' FROM `pm_subdistricts` LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id` WHERE `pm_communities`.`community_id` = #{roleLocationId}
+	</select>
+	<select id="selectSubdistrictAndCommunityBySubdistrictId" resultMap="subdistrictCorrelationCommunitiesResultMap">
+		SELECT `pm_subdistricts`.`subdistrict_id`, `pm_subdistricts`.`name`, `pm_communities`.`community_id`, `pm_communities`.`name` AS 'community_name' FROM `pm_subdistricts` LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id` WHERE `pm_subdistricts`.`subdistrict_id` = #{roleLocationId}
+	</select>
+	<select id="selectSubdistrictsAndCommunitiesAll" resultMap="subdistrictCorrelationCommunitiesResultMap">
+		SELECT `pm_subdistricts`.`subdistrict_id`, `pm_subdistricts`.`name`, `pm_communities`.`community_id`, `pm_communities`.`name` AS 'community_name' FROM `pm_subdistricts` LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
 	</select>
 </mapper>

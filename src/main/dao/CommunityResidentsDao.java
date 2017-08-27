@@ -3,7 +3,6 @@ package main.dao;
 import main.entity.CommunityResident;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 社区居民DAO接口

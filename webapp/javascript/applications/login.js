@@ -50,7 +50,7 @@ require(["jquery", "layui"], function () {
                     var username = $("#username");
                     var password = $("#password");
                     var captcha = $("#captcha");
-                    var username_value = username.val().trim();
+                    var username_value = $.trim(username.val());
                     var password_value = password.val();
                     var captcha_value = captcha.val();
                     var username_li = username.parent("span").parent("li");

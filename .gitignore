@@ -124,8 +124,10 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-.gitignore
+
 .idea/
-resources/
 target/
 webapp/uploads/**
+webapp/uploads/
+src/resources/
+*.iml

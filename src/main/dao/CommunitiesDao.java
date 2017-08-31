@@ -31,4 +31,12 @@ public interface CommunitiesDao extends BaseDao<Community> {
 	 * @throws Exception
 	 */
 	public List<Community> selectCommunitiesBySubdistrictId(Integer subdistrictId) throws Exception;
+
+    /**
+     * 通过社区名称查询社区编号
+     * @param communityAliasName
+     * @return
+     * @throws Exception
+     */
+    public Integer selectCommunityIdByCommunityName(String communityAliasName) throws Exception;
 }

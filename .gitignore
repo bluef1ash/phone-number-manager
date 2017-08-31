@@ -127,7 +127,7 @@ fabric.properties
 
 .idea/
 target/
-webapp/uploads/**
 webapp/uploads/
 src/resources/
 *.iml
+src/test/resources/

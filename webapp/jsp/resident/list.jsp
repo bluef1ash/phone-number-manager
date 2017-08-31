@@ -11,7 +11,8 @@
 	<div class="resident-excel">
 		<a href="${pageContext.request.contextPath}/resident/create.action" class="btn btn-default float-right margin-br-10" role="button">添加社区居民</a>
 		<a href="${pageContext.request.contextPath}/resident/save_as_excel.action" class="btn btn-default float-right margin-br-10" role="button">导出到Excel</a>
-		<a href="${pageContext.request.contextPath}/resident/import_as_system.action" class="btn btn-default float-right margin-br-10" role="button">从Excel文件导入系统</a>
+        <a href="javascript:;" class="btn btn-default float-right margin-br-10" id="import_as_system" role="button">从Excel文件导入系统</a>
+        <button id="confirm_upload" class="hidden"></button>
 	</div>
 	<form class="form-horizontal" role="form" action="${pageContext.request.contextPath}/resident/list.action" method="post">
 		<div class="query-input">
@@ -166,6 +167,36 @@
                         $("input[name='unit']").val(company);
                         $("#search_company_modal").modal("hide");
                     }
+                });
+                layui.use(["layer", "upload"], function(){
+                    var layer = layui.layer;
+                    var upload = layui.upload;
+                    var index = null;
+                    //执行实例
+                    var uploadInst = upload.render({
+                        elem: "#import_as_system", //绑定元素
+                        url: "${pageContext.request.contextPath}/resident/import_as_system.action", //上传接口
+                        accept: "file",
+                        exts: "xls|xlsx",
+                        data: {
+                            _token: "${CSRFToken}",
+                            submissionToken: "${submissionToken}"
+                        },
+                        choose: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+                            index = layer.load();
+                        },
+                        done: function(res){
+                            //上传完毕回调
+                            layer.close(index);
+                            layer.msg("上传成功！", {icon: 6});
+                            location.reload();
+                        },
+                        error: function(){
+                            //请求异常回调
+                            layer.close(index);
+                            layer.msg("上传失败！", {icon: 5});
+                        }
+                    });
                 });
             });
         });

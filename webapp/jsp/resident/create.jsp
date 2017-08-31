@@ -2,9 +2,12 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <jsp:include page="/jsp/layouts/header.jsp" />
 		<title>添加社区居民 - 社区居民管理 - 社区居民联系电话管理系统</title>
+        <script type="text/javascript">
+            require(["check_resident_input"]);
+        </script>
 	</head>
 	<body>
-		<form action="${pageContext.request.contextPath}/resident/handle.action" method="post">
+		<form action="${pageContext.request.contextPath}/resident/handle.action" method="post" name="community_resident">
 			<table class="table table-bordered font-size-14">
 				<thead></thead>
 				<tbody>
@@ -23,19 +26,19 @@
 					<tr>
 						<td class="text-right">社区居民联系方式一</td>
 						<td>
-							<input type="text" name="residentPhones[]" class="form-control" placeholder="请输入社区居民联系方式一">
+							<input type="text" name="communityResidentPhone1" class="form-control" placeholder="请输入社区居民联系方式一">
 						</td>
 					</tr>
 					<tr>
 						<td class="text-right">社区居民联系方式二</td>
 						<td>
-							<input type="text" name="residentPhones[]" class="form-control" placeholder="请输入社区居民联系方式二">
+							<input type="text" name="communityResidentPhone2" class="form-control" placeholder="请输入社区居民联系方式二">
 						</td>
 					</tr>
 					<tr>
 						<td class="text-right">社区居民联系方式三</td>
 						<td>
-							<input type="text" name="residentPhones[]" class="form-control" placeholder="请输入社区居民联系方式三">
+							<input type="text" name="communityResidentPhone3" class="form-control" placeholder="请输入社区居民联系方式三">
 						</td>
 					</tr>
 					<tr>

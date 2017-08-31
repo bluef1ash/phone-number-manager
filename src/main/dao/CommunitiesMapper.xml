@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?> 
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="main.dao.CommunitiesDao">
 	<resultMap type="Community" id="communityResultMap">
@@ -59,4 +59,7 @@
 	<select id="selectCommunitiesBySubdistrictId" resultMap="communityResultMap">
 		SELECT `community_id` FROM `pm_communities` WHERE `subdistrict_id` = #{subdistrict_id}
 	</select>
+    <select id="selectCommunityIdByCommunityName" resultType="java.lang.Integer">
+        SELECT `community_id` FROM `pm_communities` WHERE `name` LIKE CONCAT('%', #{communityName}, '%')
+    </select>
 </mapper>

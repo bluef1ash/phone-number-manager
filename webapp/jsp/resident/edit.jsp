@@ -2,14 +2,17 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <jsp:include page="/jsp/layouts/header.jsp" />
 		<title>修改社区居民 - 社区居民管理 - 社区居民联系电话管理系统</title>
+        <script type="text/javascript">
+            require(["check_resident_input"]);
+        </script>
 	</head>
 	<body>
 		<form action="${pageContext.request.contextPath}/resident/handle.action" method="post">
 			<table class="table table-bordered font-size-14">
 				<thead>
-					<c:if test="${messageErrors != null}">  
-					    <c:forEach items="${messageErrors}" var="error">  
-					        <span style="color:red">${error.defaultMessage}</span><br/>  
+					<c:if test="${messageErrors != null}">
+					    <c:forEach items="${messageErrors}" var="error">
+					        <span style="color:red">${error.defaultMessage}</span><br/>
 					    </c:forEach>
 					</c:if>
 				</thead>
@@ -29,19 +32,19 @@
 					<tr>
 						<td class="text-right">社区居民联系方式一</td>
 						<td>
-							<input type="text" name="residentPhones[]" class="form-control" placeholder="请输入社区居民联系方式一" value="${residentPhones[0]}">
+							<input type="text" name="communityResidentPhone1" class="form-control" placeholder="请输入社区居民联系方式一" value="${communityResident.communityResidentPhone1}">
 						</td>
 					</tr>
 					<tr>
 						<td class="text-right">社区居民联系方式二</td>
 						<td>
-							<input type="text" name="residentPhones[]" class="form-control" placeholder="请输入社区居民联系方式二" value="${residentPhones[1]}">
+							<input type="text" name="communityResidentPhone2" class="form-control" placeholder="请输入社区居民联系方式二" value="${communityResident.communityResidentPhone2}">
 						</td>
 					</tr>
 					<tr>
 						<td class="text-right">社区居民联系方式三</td>
 						<td>
-							<input type="text" name="residentPhones[]" class="form-control" placeholder="请输入社区居民联系方式三" value="${residentPhones[2]}">
+							<input type="text" name="communityResidentPhone3" class="form-control" placeholder="请输入社区居民联系方式三" value="${communityResident.communityResidentPhone3}">
 						</td>
 					</tr>
 					<tr>

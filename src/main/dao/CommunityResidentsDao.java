@@ -3,7 +3,6 @@ package main.dao;
 import main.entity.CommunityResident;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 社区居民DAO接口
@@ -57,5 +56,5 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return
      * @throws Exception
      */
-    public List<CommunityResident> selectCommunityResidentByPhones(Set<String> residentPhones) throws Exception;
+    public List<CommunityResident> selectCommunityResidentByPhones(List<String> residentPhones) throws Exception;
 }

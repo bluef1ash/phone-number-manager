@@ -2,7 +2,6 @@ package main.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import main.entity.CommunityResident;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -82,5 +81,5 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @throws Exception
      * @return
      */
-    public List<CommunityResident> findCommunityResidentByPhones(Set<String> phones) throws Exception;
+    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones) throws Exception;
 }

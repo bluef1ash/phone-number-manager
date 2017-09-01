@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import exception.BusinessException;
 import main.entity.Community;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
@@ -27,9 +28,24 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     public Map<String, Object> findCommunityResidentAndCommunityById(Integer id) throws Exception {
         CommunityResident communityResident = communityResidentsDao.selectCommunityResidentAndCommunityById(id);
         String[] residentPhones = communityResident.getCommunityResidentPhones().split(",");
+        switch (residentPhones.length) {
+            case 1:
+                communityResident.setCommunityResidentPhone1(residentPhones[0]);
+                break;
+            case 2:
+                communityResident.setCommunityResidentPhone1(residentPhones[0]);
+                communityResident.setCommunityResidentPhone2(residentPhones[1]);
+                break;
+            case 3:
+                communityResident.setCommunityResidentPhone1(residentPhones[0]);
+                communityResident.setCommunityResidentPhone2(residentPhones[1]);
+                communityResident.setCommunityResidentPhone3(residentPhones[2]);
+                break;
+            default:
+                throw new BusinessException("联系方式处理错误！");
+        }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("communityResident", communityResident);
-        map.put("residentPhones", residentPhones);
         return map;
     }
 
@@ -98,7 +114,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByPhones(Set<String> phones) throws Exception {
+    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones) throws Exception {
         return communityResidentsDao.selectCommunityResidentByPhones(phones);
     }
 

@@ -1,6 +1,7 @@
 package main.action;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class CommunityResidentAction {
     public void initBinder(DataBinder binder) {
         String validFunction = (String) request.getSession().getAttribute("validFunction");
         if ("communityResidentCreateOrEditHandle".equals(validFunction)) {
-            binder.replaceValidators(new CommunityResidentInputValidator());
+            binder.replaceValidators(new CommunityResidentInputValidator(communityResidentService));
         }
     }
 
@@ -80,7 +81,7 @@ public class CommunityResidentAction {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
         return "resident/list";
-}
+    }
 
     /**
      * 添加社区居民
@@ -115,7 +116,6 @@ public class CommunityResidentAction {
             List<Community> communities = communityService.findObjects();
             model.addAttribute("communities", communities);
             model.addAttribute("communityResident", communityResidentMap.get("communityResident"));
-            model.addAttribute("residentPhones", communityResidentMap.get("residentPhones"));
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
@@ -132,14 +132,21 @@ public class CommunityResidentAction {
      */
     @RequestMapping(value = "/handle", method = RequestMethod.POST)
     public String communityResidentCreateOrEditHandle(Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
-        if (communityResident.getCommunityResidentId() == null) {
+        try {
             if (bindingResult.hasErrors()) {
+                List<Community> communities = communityService.findObjects();
+                model.addAttribute("communities", communities);
                 // 输出错误信息
                 List<ObjectError> allErrors = bindingResult.getAllErrors();
                 model.addAttribute("messageErrors", allErrors);
                 return "resident/edit";
             }
+        } catch (Exception e) {
+            throw new BusinessException("系统出现错误，请联系管理员！");
+        }
+        if (communityResident.getCommunityResidentId() == null) {
             try {
+
                 communityResidentService.createCommunityResident(communityResident);
             } catch (Exception e) {
                 throw new BusinessException("添加社区居民失败！", e);

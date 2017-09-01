@@ -207,17 +207,19 @@
     <select id="selectCommunityResidentByNameAndAddress" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
             `pm_community_residents`.`name` AS 'community_resident_name',
-            `pm_communities`.`community_id`
+            `pm_community_residents`.`community_id`,
+            `pm_communities`.`name`
         FROM `pm_community_residents`
             LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
-        WHERE CONCAT(`pm_community_residents`.`name`, `address`) = #{nameAddress}
+        WHERE CONCAT(`pm_community_residents`.`name`, `pm_community_residents`.`address`) = #{nameAddress}
     </select>
     <select id="selectCommunityResidentByPhones" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
-            `pm_community_residents`.`name` AS 'community_resident_name',
-            `pm_communities`.`community_id`
+        `pm_community_residents`.`name` AS 'community_resident_name',
+        `pm_community_residents`.`community_id`,
+        `pm_communities`.`name`
         FROM `pm_community_residents`
-            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
             <foreach collection="list" item="phone" separator="OR">
                 `phones` LIKE CONCAT('%', #{phone}, '%')

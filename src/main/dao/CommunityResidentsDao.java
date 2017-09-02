@@ -57,4 +57,12 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @throws Exception
      */
     public List<CommunityResident> selectCommunityResidentByPhones(List<String> residentPhones) throws Exception;
+
+    /**
+     * 通过社区编号查询所属社区居民
+     * @param roleLocationId
+     * @return
+     * @throws Exception
+     */
+    public List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityId(Integer roleLocationId) throws Exception;
 }

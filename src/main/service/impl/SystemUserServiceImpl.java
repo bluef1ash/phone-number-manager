@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.github.pagehelper.PageHelper;
 import constant.SystemConstant;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
 	public Map<String, Object> loginCheck(HttpServletRequest request, SystemUser systemUser, String captcha, String sRand) throws Exception {
 		Map<String, Object> map = new HashMap<String, Object>();
         map.put("state", -1);
-		if (captcha == null && captcha.isEmpty()) {
+		if (captcha == null || captcha.isEmpty()) {
 			//得到用户读入框信息，如果没有输入或者为空，直接跳转到验证失败页面
 			map.put("message", "验证码不能为空！");
 		} else {
@@ -43,7 +44,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
 					SystemUser user = systemUsersDao.selectSystemUserAndRoleAndPrivilegesByName(systemUser.getUsername());
 					map.put("message", "登录失败！请检查用户名或密码！");
 					if (user != null) {
-						if (passwordMd5.equals(user.getPassword())) {
+						if (passwordMd5 != null && passwordMd5.equals(user.getPassword())) {
 							if (user.getIsLocked() == 1) {
 								map.put("message", "登录失败！" + user.getUsername() + "已被锁定，请联系管理员！");
 							} else {
@@ -106,6 +107,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
 	}
 	@Override
 	public Map<String, Object> findSystemUsersAndRoles(Integer pageNum, Integer pageSize) throws Exception {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 10 : pageSize;
+        PageHelper.startPage(pageNum, pageSize);
 		List<SystemUser> data = systemUsersDao.selectSystemUsersAndRolesAll();
 		return findObjectsMethod(data, pageNum, pageSize);
 	}

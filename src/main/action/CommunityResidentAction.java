@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import annotation.RefreshCsrfToken;
+import com.alibaba.fastjson.JSONArray;
+import main.entity.SystemUser;
 import main.validator.CommunityResidentInputValidator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,10 +115,10 @@ public class CommunityResidentAction {
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public String editCommunityResident(Model model, Integer id) {
         try {
-            Map<String, Object> communityResidentMap = communityResidentService.findCommunityResidentAndCommunityById(id);
+            CommunityResident communityResident = communityResidentService.findCommunityResidentAndCommunityById(id);
             List<Community> communities = communityService.findObjects();
             model.addAttribute("communities", communities);
-            model.addAttribute("communityResident", communityResidentMap.get("communityResident"));
+            model.addAttribute("communityResident", communityResident);
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
@@ -130,7 +133,7 @@ public class CommunityResidentAction {
      * @param bindingResult
      * @return
      */
-    @RequestMapping(value = "/handle", method = RequestMethod.POST)
+    @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     public String communityResidentCreateOrEditHandle(Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
@@ -144,7 +147,7 @@ public class CommunityResidentAction {
         } catch (Exception e) {
             throw new BusinessException("系统出现错误，请联系管理员！");
         }
-        if (communityResident.getCommunityResidentId() == null) {
+        if ("POST".equals(request.getMethod())) {
             try {
 
                 communityResidentService.createCommunityResident(communityResident);
@@ -207,6 +210,7 @@ public class CommunityResidentAction {
             map.put("state", state);
             return map;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessException("上传文件失败！", e);
         }
     }
@@ -217,7 +221,15 @@ public class CommunityResidentAction {
      * @param session
      */
     @RequestMapping(value = "/save_as_excel", method = RequestMethod.GET)
-    public void communityResidentSaveAsExcel(HttpSession session) {
-
+    public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response) {
+        try {
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            JSONArray ja = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(systemUser.getRoleId(), systemUser.getRoleLocationId());//获取业务数据集
+            Map<String, String> headMap = communityResidentService.getPartStatHead();//获取属性-列头
+            String title = "“评社区”活动电话库登记表";
+            ExcelUtil.downloadExcelFile(title, headMap, ja, response);
+        } catch (Exception e) {
+            throw new BusinessException("导出Excel文件失败！");
+        }
     }
 }

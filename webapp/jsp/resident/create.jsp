@@ -1,7 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>添加社区居民 - 社区居民管理 - 社区居民联系电话管理系统</title>
         <script type="text/javascript">
             require(["check_resident_input"], function (check_resident_input) {check_resident_input();});

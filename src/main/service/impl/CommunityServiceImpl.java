@@ -1,5 +1,6 @@
 package main.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 
 import main.entity.Community;
@@ -21,6 +22,9 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
 
 	@Override
 	public Map<String, Object> findCommunitiesAndSubdistrict(Integer pageNum, Integer pageSize) throws Exception {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 10 : pageSize;
+        PageHelper.startPage(pageNum, pageSize);
 		List<Community> data = communitiesDao.selectCommunitiesAndSubdistrictAll();
 		return findObjectsMethod(data, pageNum, pageSize);
 	}

@@ -3,6 +3,7 @@ package main.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 
 import main.entity.UserRole;
@@ -16,11 +17,17 @@ import main.service.UserRoleService;
 public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements UserRoleService {
 	@Override
 	public Map<String, Object> findRolesAndSystemUsersAll(Integer pageNum, Integer pageSize) throws Exception {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 10 : pageSize;
+        PageHelper.startPage(pageNum, pageSize);
 		List<UserRole> data = userRolesDao.selectRolesAndSystemUsersAll();
 		return findObjectsMethod(data, pageNum, pageSize);
 	}
 	@Override
 	public Map<String, Object> findRolesAndPrivileges(Integer pageNum, Integer pageSize) throws Exception {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 10 : pageSize;
+        PageHelper.startPage(pageNum, pageSize);
 		List<UserRole> data = userRolesDao.selectRolesAndPrivilegesAll();
 		return findObjectsMethod(data, pageNum, pageSize);
 	}

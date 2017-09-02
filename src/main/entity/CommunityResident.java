@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 public class CommunityResident implements Serializable {
     private static final long serialVersionUID = -5117708878202596711L;
     private Serializable communityResidentId;
+    private Integer indexId;
     private String communityResidentName;
     private String communityResidentAddress;
     private String communityResidentPhones;
@@ -27,8 +28,9 @@ public class CommunityResident implements Serializable {
     public CommunityResident() {
     }
 
-    public CommunityResident(Integer communityResidentId, String communityResidentName, String communityResidentAddress, String communityResidentPhones, String communityResidentSubcontractor, Timestamp communityResidentEditTime, Integer communityId, Integer[] communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
+    public CommunityResident(Integer communityResidentId, Integer indexId, String communityResidentName, String communityResidentAddress, String communityResidentPhones, String communityResidentSubcontractor, Timestamp communityResidentEditTime, Integer communityId, Integer[] communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
         this.communityResidentId = communityResidentId;
+        this.indexId = indexId;
         this.communityResidentName = communityResidentName;
         this.communityResidentAddress = communityResidentAddress;
         this.communityResidentPhones = communityResidentPhones;
@@ -48,6 +50,14 @@ public class CommunityResident implements Serializable {
 
     public void setCommunityResidentId(Integer communityResidentId) {
         this.communityResidentId = communityResidentId;
+    }
+
+    public Integer getIndexId() {
+        return indexId;
+    }
+
+    public void setIndexId(Integer indexId) {
+        this.indexId = indexId;
     }
 
     public String getCommunityResidentName() {
@@ -142,6 +152,7 @@ public class CommunityResident implements Serializable {
     public String toString() {
         return "CommunityResident{" +
             "communityResidentId=" + communityResidentId +
+            ", indexId=" + indexId +
             ", communityResidentName='" + communityResidentName + '\'' +
             ", communityResidentAddress='" + communityResidentAddress + '\'' +
             ", communityResidentPhones='" + communityResidentPhones + '\'' +

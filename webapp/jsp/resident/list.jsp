@@ -1,6 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 <title>社区居民列表 - 社区居民管理 - 社区居民联系电话管理系统</title>
 <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/content-search.css">
 </head>
@@ -111,11 +111,6 @@
 					</c:forEach>
 				</c:otherwise>
 			</c:choose>
-            <c:if test="${pageInfo.isIsLastPage() eq false}">
-                <li>
-                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${pageInfo.getPages()}">&raquo;</a>
-                </li>
-            </c:if>
 			<li<c:if test="${pageInfo.isIsLastPage() eq true}"> class="disabled"</c:if>>
 				<a href="${pageContext.request.contextPath}/resident/list.action?page=${pageInfo.getPages()}">&raquo;</a>
 			</li>

@@ -86,6 +86,9 @@ public class BaseServiceImpl<T> implements BaseService<T> {
 	}
 	@Override
 	public Map<String, Object> findObjects(Integer pageNum, Integer pageSize) throws Exception {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 10 : pageSize;
+        PageHelper.startPage(pageNum, pageSize);
 		List<T> data = baseDao.selectObjectsAll();
 		return findObjectsMethod(data, pageNum, pageSize);
 	}
@@ -95,29 +98,32 @@ public class BaseServiceImpl<T> implements BaseService<T> {
 	}
 	@Override
 	public Map<String, Object> findObjects(String name, Integer pageNum, Integer pageSize) throws Exception {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 10 : pageSize;
+        PageHelper.startPage(pageNum, pageSize);
 		List<T> data = baseDao.selectObjectsByName(name);
 		return findObjectsMethod(data, pageNum, pageSize);
 	}
 	@Override
 	public Map<String, Object> findObjects(T object, Integer pageNum, Integer pageSize) throws Exception {
-		List<T> data = baseDao.selectObjectsByObject(object);
-		return findObjectsMethod(data, pageNum, pageSize);
-	}
-	/**
-	 * 查找对象的方法
-	 * @param data
-	 * @param pageNum
-	 * @param pageSize
-	 * @return
-	 * @throws Exception
-	 */
-	protected Map<String, Object> findObjectsMethod(List<T> data, Integer pageNum, Integer pageSize) throws Exception {
         pageNum = pageNum == null ? 1 : pageNum;
         pageSize = pageSize == null ? 10 : pageSize;
         PageHelper.startPage(pageNum, pageSize);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("data", data);
-		map.put("pageInfo", new PageInfo<T>(data));
-		return map;
+		List<T> data = baseDao.selectObjectsByObject(object);
+		return findObjectsMethod(data, pageNum, pageSize);
 	}
+    /**
+     * 查找对象的方法
+     * @param data
+     * @param pageNum
+     * @param pageSize
+     * @return
+     * @throws Exception
+     */
+    protected Map<String, Object> findObjectsMethod(List<T> data, Integer pageNum, Integer pageSize) throws Exception {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("data", data);
+        map.put("pageInfo", new PageInfo<T>(data));
+        return map;
+    }
 }

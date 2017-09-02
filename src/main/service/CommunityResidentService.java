@@ -3,6 +3,7 @@ package main.service;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONArray;
 import main.entity.CommunityResident;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -17,7 +18,7 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @return
      * @throws Exception
      */
-    public Map<String, Object> findCommunityResidentAndCommunityById(Integer id) throws Exception;
+    public CommunityResident findCommunityResidentAndCommunityById(Integer id) throws Exception;
 
     /**
      * 添加社区居民
@@ -82,4 +83,20 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @return
      */
     public List<CommunityResident> findCommunityResidentByPhones(List<String> phones) throws Exception;
+
+    /**
+     * 通过系统用户角色编号与定位角色编号查找社区居民及所属社区
+     * @param roleId
+     * @param roleLocationId
+     * @return
+     * @throws Exception
+     */
+    public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Integer roleId, Integer roleLocationId) throws Exception;
+
+    /**
+     * 查找Excel表头
+     * @return
+     * @throws Exception
+     */
+    public Map<String,String> getPartStatHead() throws Exception;
 }

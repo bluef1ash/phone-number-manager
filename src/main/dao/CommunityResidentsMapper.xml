@@ -8,6 +8,7 @@
         <result property="communityResidentPhones" column="phones"/>
         <result property="communityResidentSubcontractor" column="subcontractor"/>
         <result property="communityResidentEditTime" column="edit_time"/>
+        <result property="communityId" column="community_id"/>
     </resultMap>
     <resultMap type="CommunityResident" id="AliasResultMap">
         <id property="communityResidentId" column="community_resident_id"/>
@@ -16,6 +17,7 @@
         <result property="communityResidentPhones" column="phones"/>
         <result property="communityResidentSubcontractor" column="subcontractor"/>
         <result property="communityResidentEditTime" column="edit_time"/>
+        <result property="communityId" column="community_id"/>
     </resultMap>
     <resultMap type="CommunityResident" id="communityResidentsCorrelationCommunityResultMap" extends="AliasResultMap">
         <association property="community" resultMap="main.dao.CommunitiesDao.communityResultMap"/>
@@ -147,8 +149,8 @@
             `pm_community_residents`.`phones`,
             `pm_community_residents`.`subcontractor`,
             `pm_community_residents`.`edit_time`,
-            `pm_communities`.`community_id`,
-            `pm_communities`.`name`         AS 'community_name',
+            `pm_community_residents`.`community_id`,
+            `pm_communities`.`name`,
             `pm_communities`.`telephone`,
             `pm_communities`.`actual_number`
         FROM
@@ -198,7 +200,8 @@
             `pm_community_residents`.`name` AS 'community_resident_name',
             `pm_community_residents`.`address`,
             `pm_community_residents`.`phones`,
-            `pm_communities`.`community_id`,
+            `pm_community_residents`.`subcontractor`,
+            `pm_community_residents`.`community_id`,
             `pm_communities`.`name`
         FROM
             `pm_community_residents`
@@ -225,5 +228,19 @@
                 `phones` LIKE CONCAT('%', #{phone}, '%')
             </foreach>
         </where>
+    </select>
+    <select id="selectCommunityResidentsAndCommunityByCommunityId"
+            resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT
+            `pm_community_residents`.`community_resident_id`,
+            `pm_community_residents`.`name` AS 'community_resident_name',
+            `pm_community_residents`.`address`,
+            `pm_community_residents`.`phones`,
+            `pm_community_residents`.`subcontractor`,
+            `pm_community_residents`.`community_id`,
+            `pm_communities`.`name`
+        FROM `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_community_residents`.`community_id` = #{roleLocationId}
     </select>
 </mapper>

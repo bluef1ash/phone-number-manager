@@ -1,7 +1,7 @@
-<%@ page language="java" pageEncoding="utf-8"%>
+<%@ page language="java" pageEncoding="utf-8" isErrorPage="true"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>修改社区居民 - 社区居民管理 - 社区居民联系电话管理系统</title>
         <script type="text/javascript">
             require(["check_resident_input", "bootstrap"], function (check_resident_input) {
@@ -63,7 +63,7 @@
 					<tr>
 						<td class="text-right">所属社区</td>
 						<td>
-							<select name="communityId" class="form-control">
+							<select name="communityId" class="form-control" autocomplete="off">
 								<option value="0">请选择</option>
 								<c:forEach items="${communities}" var="community">
 									<option value="${community.communityId}"<c:if test="${community.communityId == communityResident.communityId}"> selected</c:if>>${community.communityName}</option>
@@ -76,6 +76,7 @@
 							<input type="hidden" name="communityResidentId" value="${communityResident.communityResidentId}">
 							<input type="hidden" name="submissionToken" value="${submissionToken}">
 							<input type="hidden" name="_token" value="${CSRFToken}">
+							<input type="hidden" name="_method" value="PUT">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="保存" class="btn btn-primary">
 						</td>

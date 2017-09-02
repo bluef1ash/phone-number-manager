@@ -36,11 +36,11 @@
             #{item.communityResidentSubcontractor}, #{item.communityId})
         </foreach>
     </insert>
-    <delete id="deleteObjectById" parameterType="integer">
+    <delete id="deleteObjectById">
         DELETE FROM `pm_community_residents`
         WHERE `community_resident_id` = #{communityResidentId}
     </delete>
-    <delete id="deleteObjectsByName" parameterType="string">
+    <delete id="deleteObjectsByName">
         DELETE FROM `pm_community_residents`
         WHERE `name` = #{name}
     </delete>

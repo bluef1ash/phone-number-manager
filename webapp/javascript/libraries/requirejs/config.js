@@ -10,7 +10,7 @@ require.config({
         layui: jsPath + "libraries/layui/layui",
         chart: jsPath + "libraries/charts/Chart",
         zeroClipboard: jsPath + "libraries/zeroclipboard/ZeroClipboard.min",
-        common: jsPath + "libraries/common"
+        commonFunction: jsPath + "libraries/common"
     },
     shim: {
         jquery: {

@@ -167,18 +167,19 @@ public class CommunityResidentAction {
      * @param id
      * @return
      */
-    @RequestMapping(value = "/ajax_delete", method = RequestMethod.GET)
-    public @ResponseBody
-    Map<String, Object> deleteCommunityResidentForAjax(Integer id) {
-        Map<String, Object> map = null;
+    @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
+    public @ResponseBody Map<String, Object> deleteCommunityResidentForAjax(String id) {
+        Map<String, Object> map = new HashMap<String, Object>();
         try {
-            communityResidentService.deleteObjectById(id);
-            map = new HashMap<String, Object>();
-            map.put("message", 1);
-            return map;
+            communityResidentService.deleteObjectById(Integer.parseInt(id));
+            map.put("state", 1);
+            map.put("message", "删除社区居民成功！");
         } catch (Exception e) {
-            throw new BusinessException("删除社区居民失败！", e);
+            e.printStackTrace();
+            map.put("state", 0);
+            map.put("message", "删除社区居民失败！");
         }
+        return map;
     }
 
     /**

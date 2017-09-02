@@ -1,5 +1,5 @@
-define("commonFunction", ["jquery"], function ($) {
-	return {
+define("commonFunction", ["jquery", "layui"], function () {
+    return {
         /**
          * 验证URL链接
          * @param  {string} str_url 需要验证的URL
@@ -25,15 +25,28 @@ define("commonFunction", ["jquery"], function ($) {
             }
         },
         deleteObject: function (url, id, token) {
-            if (id != null) {
-                $.post(url, {"id" : id, "_token" : token, "_method" : "DELETE"}, function (state) {
-                    if (state != null && state) {
-                        layer.msg('删除成功！', {icon: 4});
-                    } else {
-                        layer.msg('删除失败！', {icon: 5});
+            if (id !== null || id !== "") {
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {"id": id, "_token": token, _method: "DELETE"},
+                    success: function (data) {
+                        layui.use("layer", function () {
+                            var layer = layui.layer;
+                            layer.ready(function () {
+                                if (data !== null && data.state) {
+                                    layer.msg(data.message, {icon: 6});
+                                    setTimeout(function () {
+                                        location.reload();
+                                    }, 1000);
+                                } else {
+                                    layer.msg(data.message, {icon: 5});
+                                }
+                            });
+                        });
                     }
                 });
             }
         }
-	}
+    }
 });

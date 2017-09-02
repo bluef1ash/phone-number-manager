@@ -62,7 +62,7 @@
 					<td>${communityResident.community.communityName}</td>
 					<td>
 						<a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default operation" role="button">修改</a>
-						<a href="javascript:;" class="btn btn-default operation" role="button" onclick="delete_object(this, ${communityResident.communityResidentId}, 'resident/ajax_delete.action', '社区居民');">删除</a>
+						<a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${CSRFToken}')" role="button">删除</a>
 					</td>
 				</tr>
 			</c:forEach>
@@ -140,7 +140,8 @@
 	</div>
 	<script type="text/javascript">
         var clickedCompany = null;
-        require(["jquery", "bootstrap", "layui"], function () {
+        require(["commonFunction", "jquery", "bootstrap", "layui"], function (commonFunction) {
+            window.commonFunction = commonFunction;
             $(function () {
                 // 分页
                 var pagination_ul = $("#pagination_parent").children("ul").css("width");

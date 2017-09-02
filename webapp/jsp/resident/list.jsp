@@ -180,8 +180,7 @@
                         accept: "file",
                         exts: "xls|xlsx",
                         data: {
-                            _token: "${CSRFToken}",
-                            submissionToken: "${submissionToken}"
+                            _token: "${CSRFToken}"
                         },
                         choose: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
                             index = layer.load();
@@ -190,7 +189,9 @@
                             //上传完毕回调
                             layer.close(index);
                             layer.msg("上传成功！", {icon: 6});
-                            location.reload();
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1000);
                         },
                         error: function(){
                             //请求异常回调

@@ -190,9 +190,9 @@ public class CommunityResidentAction {
     @SystemUserAuth(enforce = true)
     @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
     public @ResponseBody
-    Map<String, Object> communityResidentImportAsSystem() {
+    Map<String, Object> communityResidentImportAsSystem(HttpServletRequest httpServletRequest) {
         try {
-            MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+            MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) httpServletRequest;
             MultipartFile file = multipartRequest.getFile("file");
             if (file.isEmpty()) {
                 throw new BusinessException("文件不存在！");

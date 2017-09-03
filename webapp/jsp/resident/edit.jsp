@@ -3,12 +3,6 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ include file="/jsp/layouts/header.jsp" %>
 		<title>修改社区居民 - 社区居民管理 - 社区居民联系电话管理系统</title>
-        <script type="text/javascript">
-            require(["check_resident_input", "bootstrap"], function (check_resident_input) {
-                check_resident_input();
-
-            });
-        </script>
 	</head>
 	<body>
         <c:if test="${messageErrors != null}">
@@ -84,5 +78,11 @@
 				</tbody>
 			</table>
 		</form>
+        <script type="text/javascript">
+            require(["check_resident_input", "bootstrap"], function (check_resident_input) {
+                check_resident_input();
+
+            });
+        </script>
 	</body>
 </html>

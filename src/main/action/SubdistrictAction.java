@@ -83,15 +83,15 @@ public class SubdistrictAction {
 	 * @param bindingResult
 	 * @return
 	 */
-	@RequestMapping(value = "/handle", method = RequestMethod.POST)
+	@RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
 	public String subdistrictCreateOrEditHandle(Model model, @Validated Subdistrict subdistrict, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            // 输出错误信息
+            List<ObjectError> allErrors = bindingResult.getAllErrors();
+            model.addAttribute("messageErrors", allErrors);
+            return "subdistrict/edit";
+        }
 		if (subdistrict.getSubdistrictId() == null) {
-			if (bindingResult.hasErrors()) {
-				// 输出错误信息
-				List<ObjectError> allErrors = bindingResult.getAllErrors();
-				model.addAttribute("messageErrors", allErrors);
-				return "subdistrict/edit";
-			}
 			try {
 				subdistrictService.createObject(subdistrict);
 			} catch (Exception e) {
@@ -111,17 +111,19 @@ public class SubdistrictAction {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "/ajax_delete", method = RequestMethod.GET)
+	@RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
 	public @ResponseBody Map<String, Object> deleteSubdistrictForAjax(Integer id) {
-		Map<String, Object> map = null;
+		Map<String, Object> map = new HashMap<String, Object>();
 		try {
 			subdistrictService.deleteObjectById(id);
-			map = new HashMap<String, Object>();
-			map.put("message", 1);
-			return map;
+            map.put("state", 1);
+            map.put("message", "删除街道成功！");
 		} catch (Exception e) {
-			throw new BusinessException("删除街道失败！", e);
+            e.printStackTrace();
+            map.put("state", 0);
+            map.put("message", "删除街道失败！");
 		}
+        return map;
 	}
 
 	/**

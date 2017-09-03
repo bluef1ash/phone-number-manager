@@ -54,7 +54,7 @@ public class CommunityResidentAction {
     public void initBinder(DataBinder binder) {
         String validFunction = (String) request.getSession().getAttribute("validFunction");
         if ("communityResidentCreateOrEditHandle".equals(validFunction)) {
-            binder.replaceValidators(new CommunityResidentInputValidator(communityResidentService));
+            binder.replaceValidators(new CommunityResidentInputValidator(communityResidentService, request));
         }
     }
 

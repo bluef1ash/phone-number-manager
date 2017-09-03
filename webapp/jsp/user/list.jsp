@@ -1,6 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>用户列表 - 用户管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
@@ -58,7 +58,7 @@
 						</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/system/user_role/user/edit.action?id=${systemUser.systemUserId}" class="btn btn-default operation" role="button">修改</a>
-							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="delete_object(this, ${systemUser.systemUserId}, 'system/user_role/user/ajax_delete.action', '系统用户');">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/user/ajax_delete.action', ${systemUser.systemUserId}, '${CSRFToken}')" role="button">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -109,7 +109,7 @@
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
-					<c:when test="${pageInfo.isIsLastPage() eq true}"> 
+					<c:when test="${pageInfo.isIsLastPage() eq true}">
 						<li class="disabled">
 							<a href="javascript:;">&raquo;</a>
 						</li>
@@ -123,7 +123,8 @@
 			</ul>
 		</div>
 		<script type="text/javascript">
-			require(["jquery"], function () {
+			require(["commonFunction", "jquery"], function (commonFunction) {
+                window.commonFunction = commonFunction;
 				$(function (){
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");
 					pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";

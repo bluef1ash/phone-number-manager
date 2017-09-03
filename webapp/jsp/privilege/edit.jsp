@@ -1,18 +1,24 @@
-<%@ page language="java" pageEncoding="utf-8"%>
+<%@ page language="java" pageEncoding="utf-8" isErrorPage="true" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>修改权限 - 权限管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
+        <c:if test="${messageErrors != null}">
+            <c:forEach items="${messageErrors}" var="error">
+                <div class="alert alert-danger alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <span>${error.defaultMessage}</span>
+                </div>
+            </c:forEach>
+            <script type="text/javascript">
+                require(["bootstrap"]);
+            </script>
+        </c:if>
 		<form action="${pageContext.request.contextPath}/system/user_role/privilege/handle.action" method="post">
 			<table class="table table-bordered font-size-14">
-				<thead>
-					<c:if test="${messageErrors != null}">  
-					    <c:forEach items="${messageErrors}" var="error">  
-					        <span style="color:red">${error.defaultMessage}</span><br/>  
-					    </c:forEach>
-					</c:if>
-				</thead>
+				<thead></thead>
 				<tbody>
 					<tr>
 						<td class="text-right">权限名称</td>
@@ -71,7 +77,7 @@
 						<td class="text-right">上级权限</td>
 						<td>
 							<select name="higherPrivilege" class="form-control">
-								<option value="0"<c:if test="${privilege.privilegeId == 0}"> selected</c:if>>无</option>
+								<option value="0"<c:if test="${userPrivilege.privilegeId == 0}"> selected</c:if>>无</option>
 								<c:forEach items="${userPrivileges}" var="uPrivilege">
 									<c:if test="${uPrivilege.privilegeId != userPrivilege.privilegeId}">
 										<option value="${uPrivilege.privilegeId}"<c:if test="${userPrivilege.higherPrivilege == uPrivilege.privilegeId}"> selected</c:if>>${uPrivilege.privilegeName}</option>
@@ -85,6 +91,7 @@
 							<input type="hidden" name="privilegeId" value="${userPrivilege.privilegeId}">
 							<input type="hidden" name="submissionToken" value="${submissionToken}">
 							<input type="hidden" name="_token" value="${CSRFToken}">
+                            <input type="hidden" name="_method" value="PUT">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="保存" class="btn btn-primary">
 						</td>

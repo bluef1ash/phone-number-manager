@@ -1,6 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>街道列表 - 街道管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
@@ -24,7 +24,7 @@
 						<td>${subdistrict.subdistrictTelephone}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/subdistrict/edit.action?id=${subdistrict.subdistrictId}" class="btn btn-default operation" role="button">修改</a>
-							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="delete_object(this, ${subdistrict.subdistrictId}, 'subdistrict/ajax_delete.action', '街道');">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/subdistrict/ajax_delete.action', ${subdistrict.subdistrictId}, '${CSRFToken}')" role="button">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -74,7 +74,7 @@
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
-					<c:when test="${pageInfo.isIsLastPage() eq true}"> 
+					<c:when test="${pageInfo.isIsLastPage() eq true}">
 						<li class="disabled">
 							<a href="javascript:;">&raquo;</a>
 						</li>

@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class TreeMenu implements Serializable {
     private static final long serialVersionUID = 8852726242252640057L;
-    private Serializable id;
+    private Integer id;
     private String name;
     private String href;
     private Boolean spread;
@@ -19,7 +19,7 @@ public class TreeMenu implements Serializable {
         super();
     }
 
-    public TreeMenu(Serializable id, String name, String href, Boolean spread, String alias, List<TreeMenu> children) {
+    public TreeMenu(Integer id, String name, String href, Boolean spread, String alias, List<TreeMenu> children) {
         this.id = id;
         this.name = name;
         this.href = href;
@@ -28,11 +28,11 @@ public class TreeMenu implements Serializable {
         this.children = children;
     }
 
-    public Serializable getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Serializable id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

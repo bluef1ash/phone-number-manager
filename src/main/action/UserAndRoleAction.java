@@ -48,17 +48,15 @@ public class UserAndRoleAction {
 	private UserRolePrivilegeService userRolePrivilegeService;
 	/**
 	 * 系统用户列表
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = "/user/list", method = RequestMethod.GET)
 	public String systemUserList(Map<String, Object> map, Integer page) {
 		try {
 			Map<String, Object> systemUsers = systemUserService.findSystemUsersAndRoles(page, null);
-			@SuppressWarnings("unchecked")
-			PageInfo<SystemUser> pageInfo = (PageInfo<SystemUser>) systemUsers.get("pageInfo");
 			map.put("systemUsers", systemUsers.get("data"));
-			map.put("pageInfo", pageInfo);
+			map.put("pageInfo", systemUsers.get("pageInfo"));
 		} catch (Exception e) {
 			throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
 		}
@@ -66,7 +64,7 @@ public class UserAndRoleAction {
 	}
 	/**
 	 * 通过AJAX进行系统用户锁定与解锁
-	 * 
+	 *
 	 * @param locked
 	 * @param session
 	 * @return
@@ -91,7 +89,7 @@ public class UserAndRoleAction {
 	}
 	/**
 	 * 添加系统用户
-	 * 
+	 *
 	 * @param map
 	 * @return
 	 */
@@ -109,7 +107,7 @@ public class UserAndRoleAction {
 	}
 	/**
 	 * 修改系统用户
-	 * 
+	 *
 	 * @param map
 	 * @param id
 	 * @return
@@ -203,7 +201,7 @@ public class UserAndRoleAction {
 	}
 	/**
 	 * 添加系统角色
-	 * 
+	 *
 	 * @param map
 	 * @return
 	 */
@@ -223,7 +221,7 @@ public class UserAndRoleAction {
 	}
 	/**
 	 * 编辑系统角色
-	 * 
+	 *
 	 * @param map
 	 * @param id
 	 * @return
@@ -327,7 +325,7 @@ public class UserAndRoleAction {
 	}
 	/**
 	 * 添加系统权限
-	 * 
+	 *
 	 * @return
 	 */
 	@RefreshCsrfToken
@@ -345,7 +343,7 @@ public class UserAndRoleAction {
 	}
 	/**
 	 * 编辑系统权限
-	 * 
+	 *
 	 * @param map
 	 * @param id
 	 * @return

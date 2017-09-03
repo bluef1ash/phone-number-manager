@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  */
 public class CommunityResident implements Serializable {
     private static final long serialVersionUID = -5117708878202596711L;
-    private Serializable communityResidentId;
+    private Integer communityResidentId;
     private Integer indexId;
     private String communityResidentName;
     private String communityResidentAddress;
@@ -44,7 +44,7 @@ public class CommunityResident implements Serializable {
         this.communityResidentPhone3 = communityResidentPhone3;
     }
 
-    public Serializable getCommunityResidentId() {
+    public Integer getCommunityResidentId() {
         return communityResidentId;
     }
 

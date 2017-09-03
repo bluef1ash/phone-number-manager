@@ -1,6 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>权限列表 - 权限管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
@@ -24,7 +24,7 @@
 						<td>${userPrivilege.privilegeDescription}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/system/user_role/privilege/edit.action?id=${userPrivilege.privilegeId}" class="btn btn-default operation" role="button">修改</a>
-							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="delete_object(this, ${userPrivilege.privilegeId}, 'system/user_role/privilege/ajax_delete.action', '系统用户权限');">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete.action', ${userPrivilege.privilegeId}, '${CSRFToken}');">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -74,7 +74,7 @@
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
-					<c:when test="${pageInfo.isIsLastPage() eq true}"> 
+					<c:when test="${pageInfo.isIsLastPage() eq true}">
 						<li class="disabled">
 							<a href="javascript:;">&raquo;</a>
 						</li>

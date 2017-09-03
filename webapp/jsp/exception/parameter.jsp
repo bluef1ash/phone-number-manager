@@ -1,6 +1,6 @@
-<%@ page language="java" pageEncoding="utf-8"%>
-<jsp:include page="/jsp/layouts/header.jsp" />
-		<title>发生业务异常 - 异常处理 - 社区居民联系电话管理系统</title>
+<%@ page language="java" pageEncoding="utf-8" isErrorPage="true" %>
+<%@ include file="/jsp/layouts/header.jsp" %>
+		<title>发生参数异常 - 异常处理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
 		异常信息：<h1>${exception.message}</h1>

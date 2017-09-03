@@ -1,5 +1,5 @@
 <%@ page language="java" pageEncoding="utf-8"%>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 <title>登录 - 社区居民联系电话管理系统</title>
 <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css">
 <script type="text/javascript" src="${pageContext.request.contextPath}/javascript/applications/login.js"></script>

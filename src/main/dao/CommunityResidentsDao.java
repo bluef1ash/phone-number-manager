@@ -1,6 +1,7 @@
 package main.dao;
 
 import main.entity.CommunityResident;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -45,18 +46,20 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
     /**
      * 通过姓名+地址查询姓名与社区编号
      * @param nameAddress
+     * @param communityResidentId
      * @return
      * @throws Exception
      */
-    public List<CommunityResident> selectCommunityResidentByNameAndAddress(String nameAddress) throws Exception;
+    public List<CommunityResident> selectCommunityResidentByNameAndAddress(@Param("nameAddress") String nameAddress, @Param("communityResidentId") Integer communityResidentId) throws Exception;
 
     /**
      * 通过电话数组查询姓名与社区编号
+     * @param communityResidentId
      * @param residentPhones
      * @return
      * @throws Exception
      */
-    public List<CommunityResident> selectCommunityResidentByPhones(List<String> residentPhones) throws Exception;
+    public List<CommunityResident> selectCommunityResidentByPhones(@Param("communityResidentId") Integer communityResidentId, @Param("residentPhones") List<String> residentPhones) throws Exception;
 
     /**
      * 通过社区编号查询所属社区居民

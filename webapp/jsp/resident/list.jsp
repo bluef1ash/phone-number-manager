@@ -36,9 +36,7 @@
 				<label class="col-md-4 control-label">联系方式</label>
 				<span class="col-md-8"><input type="text" name="communityResidentPhones" class="form-control" placeholder="请输入社区居民联系方式" value="${communityResident.communityResidentPhones}"></span>
 			</div>
-			<div>
-				<input type="submit" value="查询" class="btn btn-primary">
-			</div>
+            <input type="submit" value="查询" class="btn btn-primary search-company-submit">
 		</div>
 	</form>
 	<table class="table table-bordered font-size-14">

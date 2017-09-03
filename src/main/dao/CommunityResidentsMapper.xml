@@ -214,7 +214,8 @@
             `pm_communities`.`name`
         FROM `pm_community_residents`
             LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
-        WHERE CONCAT(`pm_community_residents`.`name`, `pm_community_residents`.`address`) = #{nameAddress}
+        WHERE `pm_community_residents`.`community_resident_id` != #{communityResidentId} AND
+              CONCAT(`pm_community_residents`.`name`, `pm_community_residents`.`address`) = #{nameAddress}
     </select>
     <select id="selectCommunityResidentByPhones" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
@@ -224,7 +225,8 @@
         FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
-            <foreach collection="list" item="phone" separator="OR">
+            `pm_community_residents`.`community_resident_id` != #{communityResidentId} AND
+            <foreach collection="residentPhones" item="phone" separator="OR">
                 `phones` LIKE CONCAT('%', #{phone}, '%')
             </foreach>
         </where>

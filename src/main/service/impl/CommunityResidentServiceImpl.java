@@ -122,13 +122,13 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress) throws Exception {
-        return communityResidentsDao.selectCommunityResidentByNameAndAddress(nameAddress);
+    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Integer communityResidentId) throws Exception {
+        return communityResidentsDao.selectCommunityResidentByNameAndAddress(nameAddress, communityResidentId);
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones) throws Exception {
-        return communityResidentsDao.selectCommunityResidentByPhones(phones);
+    public List<CommunityResident> findCommunityResidentByPhones(Integer communityResidentId, List<String> phones) throws Exception {
+        return communityResidentsDao.selectCommunityResidentByPhones(communityResidentId, phones);
     }
 
     @Override

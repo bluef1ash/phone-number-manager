@@ -7,6 +7,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,11 +19,15 @@ public class CommunityResidentInputValidator implements Validator {
     private String message;
     private String field;
     private CommunityResidentService communityResidentService;
+    private HttpServletRequest request;
+    private String referer;
 
-    public CommunityResidentInputValidator() {}
+    public CommunityResidentInputValidator() {
+    }
 
-    public CommunityResidentInputValidator(CommunityResidentService communityResidentService) {
+    public CommunityResidentInputValidator(CommunityResidentService communityResidentService, HttpServletRequest request) {
         this.communityResidentService = communityResidentService;
+        this.request = request;
     }
 
     @Override
@@ -37,6 +42,7 @@ public class CommunityResidentInputValidator implements Validator {
             ValidationUtils.rejectIfEmpty(errors, "communityResidentAddress", "communityResident.communityResidentAddress.required", "社区居民地址不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "communityResidentSubcontractor", "communityResident.communityResidentSubcontractor.required", "社区分包人不能为空！");
             CommunityResident communityResident = (CommunityResident) target;
+            referer = request.getHeader("Referer");
             if (!checkInput(communityResident)) {
                 errors.rejectValue(field, null, message);
             }
@@ -54,7 +60,8 @@ public class CommunityResidentInputValidator implements Validator {
     private Boolean checkInput(CommunityResident communityResident) throws Exception {
         // 验证姓名+地址重复
         String nameAddress = communityResident.getCommunityResidentName() + communityResident.getCommunityResidentAddress();
-        List<CommunityResident> isNameAndAddressRepeat = communityResidentService.findCommunityResidentByNameAndAddress(nameAddress);
+        Integer communityResidentId = communityResident.getCommunityResidentId();
+        List<CommunityResident> isNameAndAddressRepeat = communityResidentService.findCommunityResidentByNameAndAddress(nameAddress, communityResidentId);
         if (!checkedListData(isNameAndAddressRepeat, false)) {
             return false;
         }
@@ -74,7 +81,7 @@ public class CommunityResidentInputValidator implements Validator {
             return false;
         }
         // 联系方式重复
-        List<CommunityResident> isPhonesRepeat = communityResidentService.findCommunityResidentByPhones(phones);
+        List<CommunityResident> isPhonesRepeat = communityResidentService.findCommunityResidentByPhones(communityResidentId, phones);
         if (!checkedListData(isPhonesRepeat, true)) {
             return false;
         }

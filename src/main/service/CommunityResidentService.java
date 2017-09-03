@@ -71,18 +71,20 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     /**
      * 通过居民姓名与地址查找所属社区
      * @param nameAddress
+     * @param communityResidentId
      * @return
      * @throws Exception
      */
-    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress) throws Exception;
+    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Integer communityResidentId) throws Exception;
 
     /**
      * 通过居民联系方式与地址查找所属社区
+     * @param communityResidentId
      * @param phones
      * @throws Exception
      * @return
      */
-    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones) throws Exception;
+    public List<CommunityResident> findCommunityResidentByPhones(Integer communityResidentId, List<String> phones) throws Exception;
 
     /**
      * 通过系统用户角色编号与定位角色编号查找社区居民及所属社区

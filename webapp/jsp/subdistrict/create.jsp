@@ -1,6 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>添加街道 - 街道管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>

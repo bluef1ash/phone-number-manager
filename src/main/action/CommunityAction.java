@@ -95,15 +95,15 @@ public class CommunityAction {
 	 * @param bindingResult
 	 * @return
 	 */
-	@RequestMapping(value = "/handle", method = RequestMethod.POST)
+	@RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
 	public String communityCreateOrEditHandle(Model model, @Validated Community community, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            // 输出错误信息
+            List<ObjectError> allErrors = bindingResult.getAllErrors();
+            model.addAttribute("messageErrors", allErrors);
+            return "community/edit";
+        }
 		if (community.getCommunityId() == null) {
-			if (bindingResult.hasErrors()) {
-				// 输出错误信息
-				List<ObjectError> allErrors = bindingResult.getAllErrors();
-				model.addAttribute("messageErrors", allErrors);
-				return "community/edit";
-			}
 			try {
 				communityService.createObject(community);
 			} catch (Exception e) {
@@ -123,16 +123,18 @@ public class CommunityAction {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "/ajax_delete", method = RequestMethod.GET)
+	@RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
 	public @ResponseBody Map<String, Object> deleteCommunityForAjax(Integer id) {
-		Map<String, Object> map = null;
+		Map<String, Object> map = new HashMap<String, Object>();
 		try {
 			communityService.deleteObjectById(id);
-			map = new HashMap<String, Object>();
-			map.put("message", 1);
-			return map;
+            map.put("state", 1);
+            map.put("message", "删除社区成功！");
 		} catch (Exception e) {
-			throw new BusinessException("删除社区失败！", e);
+            e.printStackTrace();
+            map.put("state", 0);
+            map.put("message", "删除社区失败！");
 		}
+        return map;
 	}
 }

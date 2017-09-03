@@ -7,7 +7,7 @@
 		<div class="content-title">
 			您的位置：<a href="${pageContext.request.contextPath}/index.action">主页</a> > <a href="javascript:;">用户管理</a> > <a href="${pageContext.request.contextPath}/system/user_role/role/list.action">角色列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/system/user_role/privilege/create.action" class="btn btn-default float-right margin-br-10" role="button">添加权限</a>
+		<a href="${pageContext.request.contextPath}/system/user_role/privilege/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button">添加权限</a>
 		<table class="table table-bordered font-size-14">
 			<thead></thead>
 			<tbody>

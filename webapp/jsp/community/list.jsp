@@ -7,7 +7,7 @@
 		<div class="content-title">
 			您的位置：<a href="${pageContext.request.contextPath}/index.action">主页</a> > <a href="javascript:;">社区管理</a> > <a href="${pageContext.request.contextPath}/community/list.action">社区列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/community/create.action" class="btn btn-default float-right margin-br-10" role="button">添加社区</a>
+		<a href="${pageContext.request.contextPath}/community/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button">添加社区</a>
 		<table class="table table-bordered font-size-14">
 			<thead></thead>
 			<tbody>

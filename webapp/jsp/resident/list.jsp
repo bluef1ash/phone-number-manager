@@ -9,7 +9,7 @@
 		您的位置：<a href="${pageContext.request.contextPath}/index.action">主页</a> > <a href="javascript:;">社区居民管理</a> > <a href="${pageContext.request.contextPath}/resident/list.action">社区居民列表</a>
 	</div>
 	<div class="resident-excel">
-		<a href="${pageContext.request.contextPath}/resident/create.action" class="btn btn-default float-right margin-br-10" role="button">添加社区居民</a>
+		<a href="${pageContext.request.contextPath}/resident/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button">添加社区居民</a>
 		<a href="${pageContext.request.contextPath}/resident/save_as_excel.action" class="btn btn-default float-right margin-br-10" role="button">导出到Excel</a>
         <a href="javascript:;" class="btn btn-default float-right margin-br-10" id="import_as_system" role="button">从Excel文件导入系统</a>
         <button id="confirm_upload" class="hidden"></button>

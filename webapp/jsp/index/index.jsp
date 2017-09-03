@@ -136,6 +136,7 @@
 			        learun.loadMenu();
 			        learun.init();
                     learun.load();
+                    $(".LRADMS_iframe").contents().on("click", "a", learun.addTab);
 			        $(".menuItem").click(function () {
 						$(".LRADMS_iframe").each(function () {
 							var login_url = "${pageContext.request.contextPath}/jsp/login/login.jsp";

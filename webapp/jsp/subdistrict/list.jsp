@@ -7,7 +7,7 @@
 		<div class="content-title">
 			您的位置：<a href="${pageContext.request.contextPath}/index.action">主页</a> > <a href="javascript:;">街道管理</a> > <a href="${pageContext.request.contextPath}/subdistrict/list.action">街道列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/subdistrict/create.action" class="btn btn-default float-right margin-br-10" role="button">添加街道</a>
+		<a href="${pageContext.request.contextPath}/subdistrict/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button">添加街道</a>
 		<table class="table table-bordered font-size-14">
 			<thead></thead>
 			<tbody>

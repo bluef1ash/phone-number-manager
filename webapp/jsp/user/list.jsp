@@ -49,16 +49,16 @@
 						<td>
 							<c:choose>
 								<c:when test="${systemUser.isLocked == 0}">
-									<a href="javascript:;" class="btn btn-success" data-state="${systemUser.isLocked}" role="botton" onclick="is_locked(this);">正常</a>
+									<a href="javascript:;" class="btn btn-success" data-state="${systemUser.isLocked}" role="button" onclick="is_locked(this);">正常</a>
 								</c:when>
 								<c:otherwise>
-									<a href="javascript:;" class="btn btn-danger" data-state="${systemUser.isLocked}" role="botton" onclick="is_locked(this);">已锁定</a>
+									<a href="javascript:;" class="btn btn-danger" data-state="${systemUser.isLocked}" role="button" onclick="is_locked(this);">已锁定</a>
 								</c:otherwise>
 							</c:choose>
 						</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/system/user_role/user/edit.action?id=${systemUser.systemUserId}" class="btn btn-default operation" role="button">修改</a>
-                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/user/ajax_delete.action', ${systemUser.systemUserId}, '${CSRFToken}')" role="button">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/user/ajax_delete.action', ${systemUser.systemUserId}, '${_token}')" role="button">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -138,7 +138,7 @@
 				 	if (obj != null) {
 				 		var this_obj = $(obj);
 				 		var locked = this_obj.data("state");
-				 		$.get("${pageContext.request.contextPath}/system/user_role/user/ajax_user_lock.action", {"locked" : locked}, function(state) {
+				 		$.get("${pageContext.request.contextPath}/system/user_role/user/ajax_user_lock.action", {"locked" : locked, "_token": "${_token}"}, function(state) {
 				 			if(state) {
 				 				if (locked == 1) {
 					 				this_obj.removeClass("btn-danger").addClass("btn-success").data("state", "0").html("正常");

@@ -38,6 +38,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
 
     /**
      * 查询所有社区居民与所属社区
+     *
      * @return
      * @throws Exception
      */
@@ -45,6 +46,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
 
     /**
      * 通过姓名+地址查询姓名与社区编号
+     *
      * @param nameAddress
      * @param communityResidentId
      * @return
@@ -54,6 +56,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
 
     /**
      * 通过电话数组查询姓名与社区编号
+     *
      * @param communityResidentId
      * @param residentPhones
      * @return
@@ -63,9 +66,36 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
 
     /**
      * 通过社区编号查询所属社区居民
+     *
      * @param roleLocationId
      * @return
      * @throws Exception
      */
     public List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityId(Integer roleLocationId) throws Exception;
+
+    /**
+     * 通过社区居民查询社区居民与所属社区的数量
+     *
+     * @param communityResident
+     * @return
+     * @throws Exception
+     */
+    public Integer countCommunityResidentsByCommunityResident(CommunityResident communityResident) throws Exception;
+
+    /**
+     * 通过社区居民查询社区居民与所属社区的数量
+     *
+     * @param communityResident
+     * @return
+     * @throws Exception
+     */
+    public Integer countCommunityResidentsByCommunityResidentAndCommunityIds(CommunityResident communityResident) throws Exception;
+
+    /**
+     * 查询所有社区居民与所属社区的数量
+     *
+     * @return
+     * @throws Exception
+     */
+    public Integer countCommunityResidentsAndCommunity() throws Exception;
 }

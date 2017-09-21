@@ -1,3 +1,4 @@
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ include file="/jsp/layouts/header.jsp" %>
 <title>登录 - 社区居民联系电话管理系统</title>
@@ -35,7 +36,7 @@
 						<img src="${pageContext.request.contextPath}/login/captcha.action" alt="" class="col-md-3" id="captcha_img">
 					</li>
 					<li style="width:100%; height:60px;">
-						<input type="hidden" name="_token" value="${CSRFToken}">
+						<input type="hidden" name="_token" value="${_token}">
 						<spring:htmlEscape defaultHtmlEscape="true" />
 						<button type="button" class="btn btn-primary" id="logging">登录</button>
 					</li>

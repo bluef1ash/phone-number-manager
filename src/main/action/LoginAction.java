@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import annotation.RefreshCsrfToken;
+import annotation.VerifyCSRFToken;
 import main.entity.Captcha;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,12 +35,24 @@ public class LoginAction {
     private static String sRand;
 
     /**
+     * 登录页面
+     *
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET)
+    @RefreshCsrfToken
+    public String login() {
+        return "login/login";
+    }
+
+    /**
      * 通过AJAX验证用户能否登录
      *
      * @param systemUser 异步传输的用户实体对象
      * @return JSON格式信息
      */
     @RequestMapping(value = "/ajax", method = RequestMethod.POST)
+    @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> ajaxLogin(HttpServletRequest request, HttpSession session, SystemUser systemUser, @RequestParam("captcha") String captcha) {
         Map<String, Object> map = null;
@@ -72,6 +86,12 @@ public class LoginAction {
         return "redirect:/index.action";
     }
 
+    /**
+     * 图片验证码
+     *
+     * @param request
+     * @param response
+     */
     @RequestMapping(value = "/captcha", method = RequestMethod.GET)
     public void captcha(HttpServletRequest request, HttpServletResponse response
     ) {
@@ -82,12 +102,10 @@ public class LoginAction {
             response.setDateHeader("Expires", 0);
             response.setContentType("image/jpeg");
             // 将图像输出到servlet输出流中
-            ServletOutputStream sos = null;
-            sos = response.getOutputStream();
+            ServletOutputStream sos = response.getOutputStream();
             ImageIO.write(captchaEntity.getImage(request), "jpeg", sos);
             sos.close();
             sRand = (String) request.getAttribute("sRand");
-            String result = "ok";
         } catch (IOException e) {
             e.printStackTrace();
         }

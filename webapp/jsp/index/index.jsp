@@ -1,6 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ include file="/jsp/layouts/header.jsp" %>
 		<title>社区居民联系电话管理系统</title>
+        <meta name="_token" content="${_token}">
 	</head>
 	<body class="hold-transition skin-blue sidebar-mini" style="overflow:hidden;">
 		<div id="ajax-loader" style="cursor: progress; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: #fff; z-index: 10000; overflow: hidden;">

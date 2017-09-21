@@ -24,7 +24,7 @@
 						<td>${subdistrict.subdistrictTelephone}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/subdistrict/edit.action?id=${subdistrict.subdistrictId}" class="btn btn-default operation" role="button">修改</a>
-                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/subdistrict/ajax_delete.action', ${subdistrict.subdistrictId}, '${CSRFToken}')" role="button">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/subdistrict/ajax_delete.action', ${subdistrict.subdistrictId}, '${_token}')" role="button">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -88,7 +88,8 @@
 			</ul>
 		</div>
 		<script type="text/javascript">
-			require(["jquery"], function () {
+			require(["commonFunction", "jquery"], function (commonFunction) {
+                window.commonFunction = commonFunction;
 				$(function (){
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");
 					pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";

@@ -24,7 +24,7 @@
 						<td>${userPrivilege.privilegeDescription}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/system/user_role/privilege/edit.action?id=${userPrivilege.privilegeId}" class="btn btn-default operation" role="button">修改</a>
-                            <a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete.action', ${userPrivilege.privilegeId}, '${CSRFToken}');">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete.action', ${userPrivilege.privilegeId}, '${_token}');">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -88,7 +88,8 @@
 			</ul>
 		</div>
 		<script type="text/javascript">
-			require(["jquery"], function () {
+            require(["commonFunction", "jquery"], function (commonFunction) {
+                window.commonFunction = commonFunction;
 				$(function (){
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");
 					pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";

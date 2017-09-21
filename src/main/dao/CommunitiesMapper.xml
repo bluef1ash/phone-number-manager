@@ -62,4 +62,7 @@
     <select id="selectCommunityIdByCommunityName" resultType="java.lang.Integer">
         SELECT `community_id` FROM `pm_communities` WHERE `name` LIKE CONCAT('%', #{communityName}, '%')
     </select>
+    <select id="selectCommunitiesBySubdistrictName" resultMap="communitiesCorrelationSubdistrictResultMap">
+        SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_communities`.`subdistrict_id`, `pm_subdistricts`.`name` as 'subdistrict_name' FROM `pm_communities` LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id` WHERE `pm_subdistricts`.`name` = #{subdistrictName}
+    </select>
 </mapper>

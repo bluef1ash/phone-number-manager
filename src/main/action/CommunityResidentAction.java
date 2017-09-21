@@ -1,18 +1,16 @@
 package main.action;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 
 import annotation.RefreshCsrfToken;
+import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSONArray;
+import exception.CsrfException;
 import main.entity.SystemUser;
 import main.validator.CommunityResidentInputValidator;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -27,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 
 import annotation.SystemUserAuth;
 import exception.BusinessException;
-import exception.ParameterException;
 import main.entity.Community;
 import main.entity.CommunityResident;
 import main.service.CommunityResidentService;
@@ -64,24 +61,32 @@ public class CommunityResidentAction {
      * @param model
      * @param page
      * @param communityResident
-     * @param unit
+     * @param company
      * @return
      */
-    @RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
-    public String communityResidentList(Model model, Integer page, CommunityResident communityResident, String unit) {
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @RefreshCsrfToken
+    public String communityResidentList(HttpServletRequest httpServletRequest, Model model, Integer page, CommunityResident communityResident, String company) {
         try {
-            Map<String, Object> communityResidentMap = null;
-            if ("GET".equals(request.getMethod())) {
+            Map<String, Object> communityResidentMap;
+            String queryString = httpServletRequest.getQueryString();
+            if (queryString == null || !queryString.contains("communityResidentName")) {
                 communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(page, null);
             } else {
-                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(communityResident, page, unit, null);
+                queryString = queryString.replaceAll("page=\\d+&", "");
+                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(communityResident, company, page, null);
                 model.addAttribute("communityResident", communityResident);
-                model.addAttribute("unit", unit);
             }
-            model.addAttribute("communityResidents", communityResidentMap.get("data"));
-            model.addAttribute("pageInfo", communityResidentMap.get("pageInfo"));
-        } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
+            Map<String, Object> dataAndPagination = (Map<String, Object>) communityResidentMap.get("dataAndPagination");
+            model.addAttribute("communityResidents", dataAndPagination.get("data"));
+            model.addAttribute("pageInfo", dataAndPagination.get("pageInfo"));
+            model.addAttribute("count", communityResidentMap.get("count"));
+            model.addAttribute("queryString", queryString);
+            model.addAttribute("company", company);
+        } catch (CsrfException e1) {
+            throw new CsrfException(e1.getMessage(), e1);
+        } catch (Exception e2) {
+            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e2);
         }
         return "resident/list";
     }
@@ -128,13 +133,15 @@ public class CommunityResidentAction {
     /**
      * 添加、修改社区居民处理
      *
+     * @param httpServletRequest
      * @param model
      * @param communityResident
      * @param bindingResult
      * @return
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    public String communityResidentCreateOrEditHandle(Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
+    @VerifyCSRFToken
+    public String communityResidentCreateOrEditHandle(HttpServletRequest httpServletRequest, Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
                 List<Community> communities = communityService.findObjects();
@@ -147,7 +154,7 @@ public class CommunityResidentAction {
         } catch (Exception e) {
             throw new BusinessException("系统出现错误，请联系管理员！");
         }
-        if ("POST".equals(request.getMethod())) {
+        if ("POST".equals(httpServletRequest.getMethod())) {
             try {
 
                 communityResidentService.createCommunityResident(communityResident);
@@ -171,7 +178,9 @@ public class CommunityResidentAction {
      * @return
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
-    public @ResponseBody Map<String, Object> deleteCommunityResidentForAjax(String id) {
+    @VerifyCSRFToken
+    public @ResponseBody
+    Map<String, Object> deleteCommunityResidentForAjax(String id) {
         Map<String, Object> map = new HashMap<String, Object>();
         try {
             communityResidentService.deleteObjectById(Integer.parseInt(id));
@@ -192,6 +201,7 @@ public class CommunityResidentAction {
      */
     @SystemUserAuth(enforce = true)
     @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
+    @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> communityResidentImportAsSystem(HttpServletRequest httpServletRequest) {
         try {

@@ -47,20 +47,18 @@
             <mvc:exclude-mapping path="/fonts/**"/>
             <bean class="main.interceptor.CsrfInterceptor"/>
         </mvc:interceptor>
+        <!--登录验证拦截器-->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
-            <mvc:exclude-mapping path="/jsp/login/login.jsp"/>
+            <mvc:exclude-mapping path="/login.action"/>
             <mvc:exclude-mapping path="/login/ajax.action"/>
             <mvc:exclude-mapping path="/login/captcha.action"/>
             <bean class="main.interceptor.LoginInterceptor"/>
         </mvc:interceptor>
+        <!--系统用户权限拦截器-->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
-            <bean class="main.interceptor.AvoidDuplicateSubmissionInterceptor"/>
-        </mvc:interceptor>
-        <mvc:interceptor>
-            <mvc:mapping path="/**"/>
-            <mvc:exclude-mapping path="/jsp/login/login.jsp"/>
+            <mvc:exclude-mapping path="/login.action"/>
             <mvc:exclude-mapping path="/login/ajax.action"/>
             <mvc:exclude-mapping path="/login/captcha.action"/>
             <bean class="main.interceptor.SystemUserPrivilegeAuthInterceptor"/>
@@ -72,7 +70,7 @@
             <mvc:exclude-mapping path="/uploads/**"/>
             <mvc:exclude-mapping path="/images/**"/>
             <mvc:exclude-mapping path="/fonts/**"/>
-            <mvc:exclude-mapping path="/jsp/login/login.jsp"/>
+            <mvc:exclude-mapping path="/login.action"/>
             <mvc:exclude-mapping path="/login/ajax.action"/>
             <mvc:exclude-mapping path="/login/captcha.action"/>
             <bean class="main.interceptor.ValidFunctionsInterceptor"/>
@@ -100,7 +98,7 @@
         <!-- 资源文件名 -->
         <property name="basenames">
             <list>
-                <value>classpath*:resources/config/customValidationMessages.properties</value>
+                <value>classpath:config/customValidationMessages.properties</value>
             </list>
         </property>
         <!-- 资源文件编码格式 -->

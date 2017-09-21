@@ -26,7 +26,7 @@
 						<td>${community.subdistrict.subdistrictName}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/community/edit.action?id=${community.communityId}" class="btn btn-default operation" role="button">修改</a>
-							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/community/ajax_delete.action', ${community.communityId}, '${CSRFToken}');">删除</a>
+							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/community/ajax_delete.action', ${community.communityId}, '${_token}');">删除</a>
 						</td>
 					</tr>
 				</c:forEach>

@@ -362,8 +362,9 @@
                 "type": "get",
                 "async": false,
                 "cache": false,
-                "data": {"isDisplay": 1},
+                "data": {"isDisplay": 1, "_token": $("meta[name='_token']").prop("content")},
                 "success": function (data, status) {
+                    console.log(status+'1111111')
                     if (status == "success" && data != null) {
                         var userPrivileges = data.userPrivileges;
                         for (var i = 0; i < userPrivileges.length; i++) {

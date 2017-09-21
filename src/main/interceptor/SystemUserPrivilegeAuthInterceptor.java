@@ -18,7 +18,7 @@ import exception.PrivilegeException;
  *
  */
 public class SystemUserPrivilegeAuthInterceptor extends HandlerInterceptorAdapter {
-    @Override  
+    @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (handler instanceof HandlerMethod) {
             SystemUser systemUser = (SystemUser) request.getSession().getAttribute("systemUser");
@@ -33,7 +33,7 @@ public class SystemUserPrivilegeAuthInterceptor extends HandlerInterceptorAdapte
                 if (authMethod != null) {// 有权限控制的就要检查
                     if (!authMethod.unAuth()) {
                         String constraintAuth = ((HandlerMethod) handler).getMethod().getName();
-                        if (authMethod.value() != null && !"".equals(authMethod.value())) {
+                        if (!"".equals(authMethod.value())) {
                             constraintAuth = authMethod.value();
                         }
                         boolean flag = false;
@@ -49,7 +49,7 @@ public class SystemUserPrivilegeAuthInterceptor extends HandlerInterceptorAdapte
                     }
                 } else if (authClass != null) {
                     Set<String> privilegeParents = privilegeMap.get("privilegeParents");
-                    if (authClass.value() != null && !"".equals(authClass.value())) {
+                    if (!"".equals(authClass.value())) {
                         className = authClass.value();
                     }
                     if (!privilegeAuth.contains(className) && !privilegeParents.contains(className)) {// 提示用户没权限

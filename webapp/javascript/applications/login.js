@@ -50,6 +50,7 @@ require(["jquery", "layui"], function () {
                     var username = $("#username");
                     var password = $("#password");
                     var captcha = $("#captcha");
+                    var captchaImg = $("#captcha_img");
                     var username_value = $.trim(username.val());
                     var password_value = password.val();
                     var captcha_value = captcha.val();
@@ -59,6 +60,8 @@ require(["jquery", "layui"], function () {
                     if (username_value != "" && password_value != "" &&  captcha_value != "") {
                         var index = layer.load(1, {shade: [0.8, '#000']});
                         $.ajax({
+                            "type": "post",
+                            "url": basePath + "login/ajax.action",
                             "async": false,
                             "data": {
                                 "username": username_value,
@@ -71,6 +74,7 @@ require(["jquery", "layui"], function () {
                                 if (data.state > 0) {
                                     username_li.removeClass("has-error").addClass("has-success");
                                     password_li.removeClass("has-error").addClass("has-success");
+                                    captcha_li.removeClass("has-error").addClass("has-success");
                                     layer.msg(data.message, {icon: 6, shade: [0.8, '#000']}, function () {
                                         location.href = basePath + "index.action";
                                     });
@@ -79,12 +83,13 @@ require(["jquery", "layui"], function () {
                                     password_li.removeClass("has-success").addClass("has-error");
                                     layer.msg(data.message, {icon: 5});
                                 } else if (data.state == -1) {
+                                    username_li.removeClass("has-error").addClass("has-success");
+                                    password_li.removeClass("has-error").addClass("has-success");
                                     captcha_li.removeClass("has-success").addClass("has-error");
                                     layer.msg(data.message, {icon: 5});
+                                    captchaImg.trigger("click");
                                 }
-                            },
-                            "type": "post",
-                            "url": basePath + "login/ajax.action"
+                            }
                         });
                     } else if (username_value == "") {
                         username_li.removeClass("has-success").addClass("has-error");
@@ -97,6 +102,7 @@ require(["jquery", "layui"], function () {
                     } else {
                         captcha_li.removeClass("has-success").addClass("has-error");
                         layer.msg("验证码不能为空！", {icon: 5});
+                        captchaImg.trigger("click");
                         captcha.focus();
                     }
                 });

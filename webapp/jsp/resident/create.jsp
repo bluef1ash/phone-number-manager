@@ -53,16 +53,15 @@
 						<td>
 							<select name="communityId" class="form-control">
 								<option value="0">请选择</option>
-								<c:forEach items="${communities}" var="communitiy">
-									<option value="${communitiy.communityId}">${communitiy.communityName}</option>
+								<c:forEach items="${communities}" var="community">
+									<option value="${community.communityId}">${community.communityName}</option>
 								</c:forEach>
 							</select>
 						</td>
 					</tr>
 					<tr>
 						<td colspan="2" class="text-center">
-							<input type="hidden" name="submissionToken" value="${submissionToken}">
-							<input type="hidden" name="_token" value="${CSRFToken}">
+							<input type="hidden" name="_token" value="${_token}">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="添加" class="btn btn-primary">
 						</td>

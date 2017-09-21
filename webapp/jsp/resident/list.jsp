@@ -14,15 +14,14 @@
         <a href="javascript:;" class="btn btn-default float-right margin-br-10" id="import_as_system" role="button">从Excel文件导入系统</a>
         <button id="confirm_upload" class="hidden"></button>
 	</div>
-	<form class="form-horizontal" role="form" action="${pageContext.request.contextPath}/resident/list.action" method="post">
+	<form class="form-horizontal" role="form" action="${pageContext.request.contextPath}/resident/list.action" method="get">
 		<div class="query-input">
 			<div class="form-group">
 				<label class="col-md-4 control-label">单位</label>
 				<span class="col-md-8 search-company">
-						<input type="text" name="community.communityName" class="form-control" value="${communityResident.community.communityName}" readonly="readonly" onclick="selectCompany();" style="background-color: #eee;cursor: pointer;">
-						<button type="button" class="btn btn-default" onclick="selectCompany();"><span class="glyphicon glyphicon-search"></span></button>
-						<input type="hidden" name="unit" value="${unit}">
-					</span>
+                    <input type="text" name="company" class="form-control" value="${company}" readonly="readonly" onclick="selectCompany();" style="background-color: #eee;cursor: pointer;">
+					<button type="button" class="btn btn-default" onclick="selectCompany();"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
 			</div>
 			<div class="form-group">
 				<label class="col-md-5 control-label">社区居民姓名</label>
@@ -36,6 +35,7 @@
 				<label class="col-md-4 control-label">联系方式</label>
 				<span class="col-md-8"><input type="text" name="communityResidentPhones" class="form-control" placeholder="请输入社区居民联系方式" value="${communityResident.communityResidentPhones}"></span>
 			</div>
+            <input type="hidden" name="_token" value="${_token}">
             <input type="submit" value="查询" class="btn btn-primary search-company-submit">
 		</div>
 	</form>
@@ -60,7 +60,7 @@
 					<td>${communityResident.community.communityName}</td>
 					<td>
 						<a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default operation" role="button">修改</a>
-						<a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${CSRFToken}')" role="button">删除</a>
+						<a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button">删除</a>
 					</td>
 				</tr>
 			</c:forEach>
@@ -69,7 +69,7 @@
 	<div id="pagination_parent">
 		<ul class="pagination">
 			<li<c:if test="${pageInfo.isIsFirstPage() eq true}"> class="disabled"</c:if>>
-				<a href="${pageContext.request.contextPath}/resident/list.action">&laquo;</a>
+				<a href="${pageContext.request.contextPath}/resident/list.action?${queryString}">&laquo;</a>
 			</li>
 			<c:choose>
 				<c:when test="${pageInfo.getPages() gt 5}">
@@ -78,7 +78,7 @@
 							<c:set var="i" value="${pageInfo.getPages() - 4}" />
 							<c:forEach begin="1" end="5" varStatus="status">
 								<li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-									<a href="${pageContext.request.contextPath}/resident/list.action?page=${i}">${i}</a>
+									<a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}">${i}</a>
 								</li>
 								<c:set var="i" value="${i + 1}" />
 							</c:forEach>
@@ -87,7 +87,7 @@
 							<c:set var="i" value="${pageInfo.getPageNum() - 2}" />
 							<c:forEach begin="1" end="5" varStatus="status">
 								<li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-									<a href="${pageContext.request.contextPath}/resident/list.action?page=${i}">${i}</a>
+									<a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}">${i}</a>
 								</li>
 								<c:set var="i" value="${i + 1}" />
 							</c:forEach>
@@ -95,7 +95,7 @@
 						<c:otherwise>
 							<c:forEach begin="1" end="5" varStatus="status">
 								<li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-									<a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}">${status.count}</a>
+									<a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}">${status.count}</a>
 								</li>
 							</c:forEach>
 						</c:otherwise>
@@ -104,14 +104,15 @@
 				<c:otherwise>
 					<c:forEach begin="1" end="${pageInfo.getPages()}" varStatus="status">
 						<li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-							<a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}">${status.count}</a>
+							<a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}">${status.count}</a>
 						</li>
 					</c:forEach>
 				</c:otherwise>
 			</c:choose>
 			<li<c:if test="${pageInfo.isIsLastPage() eq true}"> class="disabled"</c:if>>
-				<a href="${pageContext.request.contextPath}/resident/list.action?page=${pageInfo.getPages()}">&raquo;</a>
+				<a href="${pageContext.request.contextPath}/resident/list.action?page=${pageInfo.getPages()}&${queryString}">&raquo;</a>
 			</li>
+            <li class="pagination-count">共有${count}条</li>
 		</ul>
 	</div>
 	<!-- 单位模态框 -->
@@ -151,17 +152,13 @@
                  */
                 $("#search_closed_modal").click(function () {
                     if (clickedCompany != null) {
-                        $("input[name='community.communityName']").val(clickedCompany.name);
-                        var company = clickedCompany.id + "|";
-                        if (clickedCompany.name.indexOf("社区") > -1) {
-                            company += "0";
-                        } else {
-                            company += "1";
-                        }
-                        $("input[name='unit']").val(company);
+                        $("input[name='company']").val(clickedCompany.name);
                         $("#search_company_modal").modal("hide");
                     }
                 });
+                /**
+                 * 上传Excel
+                 */
                 layui.use(["layer", "upload"], function(){
                     var layer = layui.layer;
                     var upload = layui.upload;
@@ -173,7 +170,7 @@
                         accept: "file",
                         exts: "xls|xlsx",
                         data: {
-                            _token: "${CSRFToken}"
+                            _token: "${_token}"
                         },
                         choose: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
                             index = layer.load();
@@ -200,7 +197,7 @@
          */
         function selectCompany() {
             $("#company_tree").html("");
-            $.get("${pageContext.request.contextPath}/subdistrict/ajax_select.action", function (data) {
+            $.get("${pageContext.request.contextPath}/subdistrict/ajax_select.action", {"_token": "${_token}"}, function (data) {
 				if (data) {
                     layui.use("tree", function () {
                         layui.tree({
@@ -208,7 +205,6 @@
                             nodes: data,
                             click: function (node) {
                                 clickedCompany = node;
-                                console.log(node)
                             }
                         });
                     });

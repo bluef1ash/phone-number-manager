@@ -62,30 +62,38 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> findCommunityResidentByCommunityResident(CommunityResident communityResident, Integer pageNum, String unit, Integer pageSize) throws Exception {
+    public Map<String, Object> findCommunityResidentByCommunityResident(CommunityResident communityResident, String company, Integer pageNum, Integer pageSize) throws Exception {
         pageNum = pageNum == null ? 1 : pageNum;
         pageSize = pageSize == null ? 10 : pageSize;
-        PageHelper.startPage(pageNum, pageSize);
         List<CommunityResident> communityResidents = null;
-        if (StringUtils.isNotEmpty(unit)) {
-            String[] communities = unit.split("\\|");
-            if (Integer.parseInt(communities[1]) == 1) {
-                communityResident.setCommunityId(Integer.parseInt(communities[0]));
+        Integer count = null;
+        if (StringUtils.isNotEmpty(company)) {
+            if (company.contains("社区") || company.contains("居委会")) {
+                Community community = new Community();
+                community.setCommunityName(company);
+                communityResident.setCommunity(community);
+                count = communityResidentsDao.countCommunityResidentsByCommunityResident(communityResident);
+                PageHelper.startPage(pageNum, pageSize);
                 communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
-            } else {
-                List<Community> newCommunities = communitiesDao.selectCommunitiesBySubdistrictId(Integer.parseInt(communities[0]));
+            } else if (company.contains("街道") || company.contains("办事处")) {
+                List<Community> newCommunities = communitiesDao.selectCommunitiesBySubdistrictName(company);
                 int communitiesLength = newCommunities.size();
                 Integer[] communityIds = new Integer[communitiesLength];
                 for (int i = 0; i < communitiesLength; i++) {
                     communityIds[i] = newCommunities.get(i).getCommunityId();
                 }
                 communityResident.setCommunityIds(communityIds);
+                count = communityResidentsDao.countCommunityResidentsByCommunityResidentAndCommunityIds(communityResident);
+                PageHelper.startPage(pageNum, pageSize);
                 communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResidentAndCommunityIds(communityResident);
             }
         } else {
             communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
         }
-        return findObjectsMethod(communityResidents, pageNum, pageSize);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("dataAndPagination", findObjectsMethod(communityResidents, pageNum, pageSize));
+        map.put("count", count);
+        return map;
     }
 
     @Override
@@ -116,9 +124,13 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     public Map<String, Object> findCommunityResidentsAndCommunity(Integer pageNum, Integer pageSize) throws Exception {
         pageNum = pageNum == null ? 1 : pageNum;
         pageSize = pageSize == null ? 10 : pageSize;
+        Integer count = communityResidentsDao.countCommunityResidentsAndCommunity();
         PageHelper.startPage(pageNum, pageSize);
         List<CommunityResident> data = communityResidentsDao.selectCommunityResidentsAndCommunity();
-        return findObjectsMethod(data, pageNum, pageSize);
+        Map<String,Object> map = new HashMap<String, Object>();
+        map.put("dataAndPagination", findObjectsMethod(data, pageNum, pageSize));
+        map.put("count", count);
+        return map;
     }
 
     @Override

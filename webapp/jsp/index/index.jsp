@@ -4,9 +4,7 @@
         <meta name="_token" content="${_token}">
 	</head>
 	<body class="hold-transition skin-blue sidebar-mini" style="overflow:hidden;">
-		<div id="ajax-loader" style="cursor: progress; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: #fff; z-index: 10000; overflow: hidden;">
-			<img src="${pageContext.request.contextPath}/images/ajax-loader.gif" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin: auto;" />
-		</div>
+		<div id="ajax_loader"><i></i></div>
 		<div class="wrapper">
 			<!--头部信息-->
 			<div class="main-header">

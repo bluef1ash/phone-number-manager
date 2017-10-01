@@ -98,4 +98,28 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @throws Exception
      */
     public Integer countCommunityResidentsAndCommunity() throws Exception;
+
+    /**
+     * 通过社区编号查询社区居民与所属社区的数量
+     *
+     * @param communityId
+     * @return
+     * @throws Exception
+     */
+    public Integer countCommunityResidentsByCommunityId(Integer communityId) throws Exception;
+
+    /**
+     * 通过街道编号查询社区居民与所属社区的数量
+     * @param subdistrictId
+     * @return
+     * @throws Exception
+     */
+    public Integer countCommunityResidentsBySubdistrictId(Integer subdistrictId) throws Exception;
+
+    /**
+     * 统计所有社区居民数量
+     * @return
+     * @throws Exception
+     */
+    public Integer countCommunityResidents() throws Exception;
 }

@@ -312,6 +312,24 @@
         ORDER BY `pm_community_residents`.`community_resident_id`
     </select>
     <select id="countCommunityResidentsAndCommunity" resultType="integer">
-        SELECT COUNT(`community_resident_id`) FROM `pm_community_residents`
+        SELECT COUNT(`community_resident_id`)
+        FROM `pm_community_residents`
+    </select>
+    <select id="countCommunityResidentsByCommunityId" resultType="java.lang.Integer">
+        SELECT COUNT(`community_resident_id`)
+        FROM `pm_community_residents`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countCommunityResidentsBySubdistrictId" resultType="java.lang.Integer">
+        SELECT COUNT(`pm_community_residents`.`community_resident_id`)
+        FROM
+            `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE
+            `pm_communities`.`subdistrict_id` = #{subdistrictId}
+    </select>
+    <select id="countCommunityResidents" resultType="java.lang.Integer">
+        SELECT count(`community_resident_id`)
+        FROM `pm_community_residents`
     </select>
 </mapper>

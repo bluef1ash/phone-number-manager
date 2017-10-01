@@ -11,6 +11,8 @@ import com.github.pagehelper.PageHelper;
 import constant.SystemConstant;
 import exception.BusinessException;
 import main.entity.Community;
+import main.entity.Subdistrict;
+import main.entity.SystemUser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -21,6 +23,8 @@ import main.entity.CommunityResident;
 import main.service.CommunityResidentService;
 import utils.CommonUtil;
 import utils.ExcelUtil;
+
+import javax.servlet.http.HttpSession;
 
 /**
  * 社区居民业务实现
@@ -127,7 +131,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         Integer count = communityResidentsDao.countCommunityResidentsAndCommunity();
         PageHelper.startPage(pageNum, pageSize);
         List<CommunityResident> data = communityResidentsDao.selectCommunityResidentsAndCommunity();
-        Map<String,Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("dataAndPagination", findObjectsMethod(data, pageNum, pageSize));
         map.put("count", count);
         return map;
@@ -168,7 +172,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                     if (phones.length == 2) {
                         communityResident.setCommunityResidentPhone1(phones[0]);
                         communityResident.setCommunityResidentPhone2(phones[1]);
-                    } else if (phones.length == 3){
+                    } else if (phones.length == 3) {
                         communityResident.setCommunityResidentPhone1(phones[0]);
                         communityResident.setCommunityResidentPhone2(phones[1]);
                         communityResident.setCommunityResidentPhone3(phones[2]);
@@ -197,6 +201,82 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         tableHead.put("communityResidentPhone3", "电话3");
         tableHead.put("communityResidentSubcontractor", "分包人");
         return tableHead;
+    }
+
+    @Override
+    public Map<String, Object> computedCount(HttpSession session) throws Exception {
+        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+        String roleName = userRolesDao.selectRoleNameById(systemUser.getRoleId());
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        // 饼图
+        Map<String, Object> pieBaseData = new HashMap<String, Object>();
+        Integer countCommunityResidents = null;
+        Integer actualNumber = null;
+        List<Integer> pieData = new ArrayList<Integer>();
+        List<String> pieBackgroundColor = new ArrayList<String>();
+        Map<String, List<?>> pieDataMap = new HashMap<String, List<?>>();
+        List<Map<String, List<?>>> pieDataSets = new ArrayList<Map<String, List<?>>>();
+        List<String> pieLabels = new ArrayList<String>();
+        Map<String, Object> barChartMap = new HashMap<String, Object>();
+        Map<String, Object> barData = new HashMap<String, Object>();
+        List<String> barChartLabels = new ArrayList<String>();
+        List<Map<String, Object>> barDataSets = new ArrayList<Map<String, Object>>();
+        List<Integer> barChartData = new ArrayList<Integer>();
+        List<String> barBackgroundColor = new ArrayList<String>();
+        if ("社区".contains(roleName) || "居委会".contains(roleName)) {
+            countCommunityResidents = communityResidentsDao.countCommunityResidentsByCommunityId(systemUser.getRoleLocationId());
+            actualNumber = communitiesDao.selectActualNumberByCommunityId(systemUser.getRoleLocationId());
+            Community community = communitiesDao.selectObjectById(systemUser.getRoleLocationId());
+            barChartLabels.add(community.getCommunityName());
+            barChartData.add(countCommunityResidents);
+            barData.put("label", "社区");
+        } else if ("街道".contains(roleName) || "办事处".contains(roleName)) {
+            countCommunityResidents = communityResidentsDao.countCommunityResidentsBySubdistrictId(systemUser.getRoleLocationId());
+            actualNumber = communitiesDao.sumActualNumberBySubdistrictId(systemUser.getRoleLocationId());
+            List<Community> communities = communitiesDao.countCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
+            for (Community community:communities) {
+                barChartLabels.add(community.getCommunityName());
+                barChartData.add(community.getActualNumber()); // 临时借用此变量
+            }
+            barData.put("label", "社区");
+        } else {
+            countCommunityResidents = communityResidentsDao.countCommunityResidents();
+            actualNumber = communitiesDao.sumActualNumber();
+            List<Subdistrict> subdistricts = subdistrictsDao.countCommunityResidents();
+            for (Subdistrict subdistrict:subdistricts) {
+                barChartLabels.add(subdistrict.getSubdistrictName());
+                barChartData.add(subdistrict.getSubdistrictId()); // 临时借用此变量
+            }
+            barData.put("label", "街道");
+        }
+        pieData.add(countCommunityResidents);
+        pieData.add(actualNumber - countCommunityResidents);
+        pieBackgroundColor.add("#" + CommonUtil.randomHexString(6));
+        pieBackgroundColor.add("#" + CommonUtil.randomHexString(6));
+        pieLabels.add("数据库中现存数字");
+        pieLabels.add("还应添加数");
+        pieDataMap.put("data", pieData);
+        pieDataMap.put("backgroundColor", pieBackgroundColor);
+        pieDataSets.add(pieDataMap);
+        pieBaseData.put("datasets", pieDataSets);
+        pieBaseData.put("labels", pieLabels);
+        jsonMap.put("pieChart", pieBaseData);
+        // 柱状图
+        for (int i = 0; i < barChartData.size(); i++) {
+            barBackgroundColor.add("#" + CommonUtil.randomHexString(6));
+        }
+        barData.put("data", barChartData);
+        barData.put("backgroundColor", barBackgroundColor);
+        barDataSets.add(barData);
+        barChartMap.put("labels", barChartLabels);
+        barChartMap.put("datasets", barDataSets);
+        jsonMap.put("barChart", barChartMap);
+        // 提示数据
+        Map<String, Integer> tipMap = new HashMap<String, Integer>();
+        tipMap.put("databaseNumber", countCommunityResidents);
+        tipMap.put("actualNumber", actualNumber);
+        jsonMap.put("tipData", tipMap);
+        return jsonMap;
     }
 
     /**

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?> 
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="main.dao.UserRolesDao">
 	<resultMap type="UserRole" id="userRoleResultMap">
@@ -58,4 +58,7 @@
 	<select id="selectRolesAndPrivilegesById" parameterType="integer" resultMap="userRolesCorrelationUserPrivilegesResultMap">
 		SELECT `pm_roles`.`role_id`, `pm_roles`.`name`, `pm_roles`.`description`, `pm_roles`.`higher_role`, `pm_privileges`.`privilege_id`, `pm_privileges`.`name` AS 'privilege_name', `pm_privileges`.`description` AS 'privilege_description', `pm_privileges`.`constraint_auth`, `pm_privileges`.`uri`, `pm_privileges`.`higher_privilege`, `pm_privileges`.`icon_name`, `pm_privileges`.`orders`, `pm_privileges`.`is_display` FROM `pm_roles` LEFT JOIN `pm_roles_privileges` ON `pm_roles`.`role_id` = `pm_roles_privileges`.`role_id` LEFT JOIN `pm_privileges` ON `pm_roles_privileges`.`privilege_id` = `pm_privileges`.`privilege_id` WHERE  `pm_roles`.`role_id` = #{roleId}
 	</select>
+    <select id="selectRoleNameById" resultType="java.lang.String">
+        SELECT `name` FROM `pm_roles` WHERE `role_id` = #{roleId}
+    </select>
 </mapper>

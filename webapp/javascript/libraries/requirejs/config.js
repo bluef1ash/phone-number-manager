@@ -8,7 +8,7 @@ require.config({
         angular: jsPath + "libraries/angular.min",
         lodash: jsPath + "libraries/lodash/lodash.min",
         layui: jsPath + "libraries/layui/layui",
-        chart: jsPath + "libraries/charts/Chart",
+        chart: jsPath + "libraries/chart.min",
         zeroClipboard: jsPath + "libraries/zeroclipboard/ZeroClipboard.min",
         commonFunction: jsPath + "libraries/common"
     },

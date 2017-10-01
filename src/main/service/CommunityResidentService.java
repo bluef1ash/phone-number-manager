@@ -7,6 +7,8 @@ import com.alibaba.fastjson.JSONArray;
 import main.entity.CommunityResident;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import javax.servlet.http.HttpSession;
+
 /**
  * 社区居民业务接口
  */
@@ -101,4 +103,12 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @throws Exception
      */
     public Map<String,String> getPartStatHead() throws Exception;
+
+    /**
+     * 计算并生成图表数据
+     * @param session
+     * @return
+     * @throws Exception
+     */
+    public Map<String, Object> computedCount(HttpSession session) throws Exception;
 }

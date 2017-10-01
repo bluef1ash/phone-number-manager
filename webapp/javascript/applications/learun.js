@@ -331,7 +331,7 @@
                 $(this).contents().on("click", ".menu-tab", mObject.addTab);
             });
             window.setTimeout(function () {
-                $('#ajax-loader').fadeOut();
+                $('#ajax_loader').fadeOut();
             }, 300);
         },
         /**
@@ -362,9 +362,8 @@
                 "type": "get",
                 "async": false,
                 "cache": false,
-                "data": {"isDisplay": 1, "_token": $("meta[name='_token']").prop("content")},
+                "data": {"isDisplay": 1},
                 "success": function (data, status) {
-                    console.log(status+'1111111')
                     if (status == "success" && data != null) {
                         var userPrivileges = data.userPrivileges;
                         for (var i = 0; i < userPrivileges.length; i++) {

@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.util.Date;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -611,6 +612,7 @@ public class CommonUtil {
 
     /**
      * 去除字符串中的空格、回车、换行符、制表符
+     *
      * @param str
      * @return
      */
@@ -623,6 +625,7 @@ public class CommonUtil {
         }
         return dest;
     }
+
     /**
      * ASCII表中可见字符从!开始，偏移位值为33(Decimal)
      */
@@ -704,5 +707,36 @@ public class CommonUtil {
             }
         }
         return buf.toString();
+    }
+
+    /**
+     * 获取16进制随机数
+     *
+     * @param len
+     * @return
+     * @throws Exception
+     */
+    public static String randomHexString(int len) {
+        try {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < len; i++) {
+                result.append(Integer.toHexString(new Random().nextInt(16)));
+            }
+            return result.toString().toUpperCase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取随机整数
+     *
+     * @param num
+     * @return
+     */
+    public static Integer randomInt(int num) {
+        Random random = new Random();
+        return random.nextInt(num);
     }
 }

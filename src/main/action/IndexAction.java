@@ -1,22 +1,21 @@
 package main.action;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
-
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
+import exception.BusinessException;
+import main.entity.UserPrivilege;
+import main.service.CommunityResidentService;
+import main.service.UserPrivilegeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import exception.BusinessException;
-import main.entity.UserPrivilege;
-import main.service.UserPrivilegeService;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 首页控制器
@@ -24,6 +23,8 @@ import main.service.UserPrivilegeService;
 @Controller
 @RequestMapping("/index")
 public class IndexAction {
+    @Resource
+    private CommunityResidentService communityResidentService;
     @Resource
     private UserPrivilegeService userPrivilegeService;
 
@@ -33,7 +34,6 @@ public class IndexAction {
      * @return
      */
     @RequestMapping(method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String index() {
         return "index/index";
     }
@@ -44,6 +44,7 @@ public class IndexAction {
      * @return
      */
     @RequestMapping(value = "/welcome", method = RequestMethod.GET)
+    @RefreshCsrfToken
     public String welcome() {
         return "index/welcome";
     }
@@ -65,7 +66,6 @@ public class IndexAction {
      * @return
      */
     @RequestMapping(value = "/getmenu", method = RequestMethod.GET)
-    @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> getMenu(Integer isDisplay, HttpSession session) {
         Map<String, Object> map = null;
@@ -77,5 +77,21 @@ public class IndexAction {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
         return map;
+    }
+
+    /**
+     * 使用AJAX技术获取图表数据
+     * @param session
+     * @return
+     */
+    @RequestMapping(value = "/getcomputedcount", method = RequestMethod.GET)
+    @VerifyCSRFToken
+    public @ResponseBody
+    Map<String, Object> getComputedCount(HttpSession session) {
+        try {
+            return communityResidentService.computedCount(session);
+        } catch (Exception e) {
+            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
+        }
     }
 }

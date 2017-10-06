@@ -1,6 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
-<<<<<<< HEAD
-=======
 ### Java template
 # Compiled class file
 *.class
@@ -133,4 +131,3 @@ webapp/uploads/
 src/resources/
 *.iml
 src/test/resources/
->>>>>>> develop

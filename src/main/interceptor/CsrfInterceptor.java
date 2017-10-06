@@ -27,12 +27,12 @@ public class CsrfInterceptor extends HandlerInterceptorAdapter {
         // 提交表单token校验
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         Method method = handlerMethod.getMethod();
-            VerifyCSRFToken verifyCSRFToken = method.getAnnotation(VerifyCSRFToken.class);
-            // 如果配置了校验csrf token校验，则校验
-            if (verifyCSRFToken != null) {
-                // 是否为Ajax标志
-                String xrq = request.getHeader("X-Requested-With");
-                // 非法的跨站请求校验
+        VerifyCSRFToken verifyCSRFToken = method.getAnnotation(VerifyCSRFToken.class);
+        // 如果配置了校验csrf token校验，则校验
+        if (verifyCSRFToken != null) {
+            // 是否为Ajax标志
+            String xrq = request.getHeader("X-Requested-With");
+            // 非法的跨站请求校验
             if (verifyCSRFToken.verify() && !CsrfTokenUtil.verifyCSRFToken(request, null)) {
                 HttpSession session = request.getSession();
                 if (StringUtils.isEmpty(xrq)) {
@@ -60,11 +60,9 @@ public class CsrfInterceptor extends HandlerInterceptorAdapter {
         throws Exception {
         HttpSession session = request.getSession();
         // 第一次生成token
-        if (modelAndView != null) {
-            if (request.getSession(false) == null || StringUtils.isEmpty(CsrfTokenUtil.getTokenForSession(session, null))) {
-                CsrfTokenUtil.setTokenForSessionAndModel(session, modelAndView);
-                return;
-            }
+        if (modelAndView != null && (request.getSession(false) == null || StringUtils.isEmpty(CsrfTokenUtil.getTokenForSession(session, null)))) {
+            CsrfTokenUtil.setTokenForSessionAndModel(session, modelAndView);
+            return;
         }
         // 刷新token
         HandlerMethod handlerMethod = (HandlerMethod) handler;
@@ -82,7 +80,8 @@ public class CsrfInterceptor extends HandlerInterceptorAdapter {
             if (verifyAnnotation.verify()) {
                 if (StringUtils.isEmpty(xrq)) {
                     CsrfTokenUtil.setTokenForSessionAndModel(session, modelAndView);
-                } else {;
+                } else {
+                    ;
                     response.setContentType("application/json;charset=UTF-8");
                 }
             }

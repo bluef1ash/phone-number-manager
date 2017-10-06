@@ -27,12 +27,6 @@
 						</td>
 					</tr>
 					<tr>
-						<td class="text-right">权限描述</td>
-						<td>
-							<input type="text" name="privilegeDescription" class="form-control" value="${userPrivilege.privilegeDescription}" placeholder="请输入描述">
-						</td>
-					</tr>
-					<tr>
 						<td class="text-right">权限约束名称</td>
 						<td>
 							<input type="text" name="constraintAuth" class="form-control" value="${userPrivilege.constraintAuth}" placeholder="请输入权限约束名称">

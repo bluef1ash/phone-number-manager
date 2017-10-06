@@ -1,15 +1,12 @@
 package main.action;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import annotation.RefreshCsrfToken;
+import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
+import com.github.pagehelper.PageInfo;
+import exception.BusinessException;
+import main.entity.*;
+import main.service.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -17,19 +14,16 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import utils.CsrfTokenUtil;
 
-import com.github.pagehelper.PageInfo;
-
-import annotation.SystemUserAuth;
-import exception.BusinessException;
-import main.entity.SystemUser;
-import main.entity.UserRole;
-import main.entity.UserRolePrivilege;
-import main.entity.UserPrivilege;
-import main.service.UserRoleService;
-import main.service.UserPrivilegeService;
-import main.service.UserRolePrivilegeService;
-import main.service.SystemUserService;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 系统用户与用户角色控制器
@@ -46,6 +40,10 @@ public class UserAndRoleAction {
     private UserPrivilegeService userPrivilegeService;
     @Resource
     private UserRolePrivilegeService userRolePrivilegeService;
+    @Resource
+    private CommunityService communityService;
+    @Resource
+    private SubdistrictService subdistrictService;
 
     /**
      * 系统用户列表
@@ -68,29 +66,25 @@ public class UserAndRoleAction {
     /**
      * 通过AJAX进行系统用户锁定与解锁
      *
+     * @param systemUserId
      * @param locked
-     * @param session
      * @return
      */
     @RequestMapping(value = "/user/ajax_user_lock", method = RequestMethod.GET)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> systemUserLockedForAjax(Integer locked, HttpSession session) {
-        Map<String, Object> map = null;
+    Map<String, Object> systemUserLockedForAjax(Integer systemUserId, Integer locked) {
         try {
-            map = new HashMap<String, Object>();
-            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            Map<String, Object> map = new HashMap<String, Object>();
+            SystemUser systemUser = new SystemUser();
+            systemUser.setSystemUserId(systemUserId);
             systemUser.setIsLocked(locked);
-            int success = systemUserService.updateObject(systemUser);
-            if (success > 0) {
-                map.put("state", 1);
-            } else {
-                map.put("state", 0);
-            }
+            systemUserService.updateObject(systemUser);
+            map.put("state", 1);
+            return map;
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return map;
     }
 
     /**
@@ -187,6 +181,43 @@ public class UserAndRoleAction {
             return map;
         } catch (Exception e) {
             throw new BusinessException("删除用户失败！", e);
+        }
+    }
+
+    /**
+     * 通过Ajax技术获取单位
+     * @param roleId
+     * @return
+     */
+    @RequestMapping(value = "/user/ajax_get_company", method = RequestMethod.GET)
+    @VerifyCSRFToken
+    public @ResponseBody
+    List<?> getCompanyIdForAjax(String roleId) {
+        try {
+            List<?> companies = null;
+            String[] role = URLDecoder.decode(roleId, "utf-8").split("-");
+            if ("社区管理员".equals(role[1])) {
+                companies = communityService.findObjectsForIdAndName();
+            } else if ("街道管理员".equals(role[1])) {
+                companies = subdistrictService.findObjectsForIdAndName();
+            }
+            List<Map<String, Object>> newCompanies = new ArrayList<Map<String, Object>>();
+            if (companies != null) {
+                for (Object object : companies) {
+                    Map<String, Object> company = new HashMap<String, Object>();
+                    if (object instanceof Subdistrict) {
+                        company.put("value", ((Subdistrict) object).getSubdistrictId());
+                        company.put("name", ((Subdistrict) object).getSubdistrictName());
+                    } else {
+                        company.put("value", ((Community) object).getCommunityId());
+                        company.put("name", ((Community) object).getCommunityName());
+                    }
+                    newCompanies.add(company);
+                }
+            }
+            return newCompanies;
+        } catch (Exception e) {
+            throw new BusinessException("获取单位失败！", e);
         }
     }
 
@@ -447,11 +478,12 @@ public class UserAndRoleAction {
     @RequestMapping(value = "/privilege/ajax_get_privileges", method = RequestMethod.GET)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> ajaxGetPrivilegesByRoleId(Integer roleId) {
+    Map<String, Object> getPrivilegesByRoleIdForAjax(HttpSession session, Integer roleId) {
         try {
             List<UserPrivilege> privileges = userPrivilegeService.findPrivilegesByRoleId(roleId);
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("privileges", privileges);
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);

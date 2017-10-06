@@ -1,17 +1,11 @@
 package main.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpSession;
-
-import org.springframework.stereotype.Service;
-
 import main.entity.UserPrivilege;
 import main.service.UserPrivilegeService;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpSession;
+import java.util.*;
 
 /**
  * 系统用户权限业务实现
@@ -34,6 +28,12 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
         return findPrivilegesAndSubPrivileges(userPrivileges, isDisplay); //userPrivileges;
     }
 
+    @Override
+    public List<UserPrivilege> findPrivilegesAndsubPrivilegesAll() throws Exception {
+        List<UserPrivilege> userPrivileges = baseDao.selectObjectsAll();
+        return findPrivilegesAndSubPrivileges(userPrivileges, null);// userPrivileges;
+    }
+
     /**
      * 有序排列用户权限
      * 注意：需要改成递归算法！！！！！！！！
@@ -48,7 +48,11 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
         UserPrivilege tempPrivilege = null;
         for (UserPrivilege userPrivilege : userPrivileges) {
             if (userPrivilege.getHigherPrivilege() == 0) { // 顶级分类
-                subUserPrivileges = userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(userPrivilege.getPrivilegeId(), isDisplay);
+                if (isDisplay == null) {
+                    subUserPrivileges = userPrivilegesDao.selectPrivilegesByHigherPrivilege(userPrivilege.getPrivilegeId());
+                } else {
+                    subUserPrivileges = userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(userPrivilege.getPrivilegeId(), isDisplay);
+                }
                 userPrivilege.setSubUserPrivileges(subUserPrivileges);
                 newUserPrivilegesMap.put(userPrivilege.getPrivilegeId(), userPrivilege);
             } else {
@@ -70,12 +74,5 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
             newUserPrivilegesMap.get(subUserPrivileges.get(0).getHigherPrivilege()).setSubUserPrivileges(subUserPrivileges);
         }
         return new ArrayList<UserPrivilege>(newUserPrivilegesMap.values());
-    }
-
-    @Override
-    public List<UserPrivilege> findPrivilegesAndsubPrivilegesAll() throws Exception {
-        List<UserPrivilege> userPrivileges = baseDao.selectObjectsAll();
-//		findPrivilegesAndsubPrivileges(userPrivileges);
-        return findPrivilegesAndSubPrivileges(userPrivileges, null);// userPrivileges;
     }
 }

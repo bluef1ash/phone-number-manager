@@ -87,4 +87,12 @@ public interface BaseService<T> {
      * @throws Exception DAO异常
      */
     public Map<String, Object> findObjects(T object, Integer pageNum, Integer pageSize) throws Exception;
+
+    /**
+     * 查找所有编号和名称
+     *
+     * @return 从DAO层返回
+     * @throws Exception DAO异常
+     */
+    public List<T> findObjectsForIdAndName() throws Exception;
 }

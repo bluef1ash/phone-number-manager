@@ -38,6 +38,14 @@
 							</select>
 						</td>
 					</tr>
+                    <tr>
+                        <td class="text-right">用户角色对应单位</td>
+                        <td>
+                            <select name="roleLocationId" class="form-control">
+                                <option value="0">请选择</option>
+                            </select>
+                        </td>
+                    </tr>
 					<tr>
 						<td class="text-right">是否锁定用户</td>
 						<td>
@@ -57,5 +65,31 @@
 				</tbody>
 			</table>
 		</form>
+        <script type="text/javascript">
+            require(["jquery"], function () {
+                $("select[name='roleId']").change(function () {
+                    var roleLocationId = $("select[name='roleLocationId']");
+                    roleLocationId.val(0).attr("disabled", false);
+                    $("select[name='roleLocationId'] option:not(:first)").remove();
+                    var role = $(this).val().split("-");
+                    if (role[0] > 1) {
+                        $.ajax({
+                            "url": "${pageContext.request.contextPath}/system/user_role/user/ajax_get_company.action",
+                            "method": "get",
+                            "data": {"roleId": encodeURI($(this).val() + "-" + $(this).find("option:selected").text()), "_token": "${_token}"},
+                            "success": function (data) {
+                                if (data) {
+                                    for (var i = 0; i < data.length; i++) {
+                                        roleLocationId.append('<option value="' + data[i].value + '">' + data[i].name + "</option>");
+                                    }
+                                }
+                            }
+                        });
+                    } else if (role[0] == 1) {
+                        roleLocationId.val(0).attr("disabled", "disabled");
+                    }
+                });
+            });
+        </script>
 	</body>
 </html>

@@ -17,7 +17,6 @@
 			<table class="table table-bordered font-size-14">
 				<thead></thead>
 				<tbody>
-					<tbody>
 					<tr>
 						<td class="text-right" style="width: 35%;">角色名称</td>
 						<td>
@@ -81,34 +80,35 @@
             require(["jquery", "bootstrap"], function () {
                 $(function () {
                     var arr = [11];
+                    var privilegeIds = $("input[name='privilegeIds']");
                     // 获取系统用户角色拥有的权限
-                    $.get("${pageContext.request.contextPath}/system/user_role/privilege/ajax_get_privileges.action", {"roleId" : ${userRole.roleId}}, function (data) {
+                    $.get("${pageContext.request.contextPath}/system/user_role/privilege/ajax_get_privileges.action", {"roleId" : ${userRole.roleId}, "_token": "${_token}"}, function (data) {
                         if (data !== null) {
                             for (i = 0; i < data.privileges.length; i++) {
-                                $("input[name='privilegeIds'][value='" + data.privileges[i].privilegeId + "']").prop("checked", true);
+                                $("input[name='privilegeIds'][value='" + data.privileges[i].privilegeId + "']").attr("checked", true);
                             }
-                        }
-                    });
-                    // 打开页面时，选中已选中项
-                    var pid = [];
-                    $("input[name='privilegeIds']").each(function (index, element) {
-                        pid[index] = $(element).val();
-                        if (pid.toString().indexOf($(element).data("pid")) != -1 && arr.toString().indexOf($(element).val()) == -1) {
-                            $(element).attr({"checked": false, "disabled": true});
+                            $("input[name='_token']").val(data._token);
+                            // 打开页面时，选中已选中项
+                            privilegeIds.each(function (index, element) {
+                                var pid = $(element).data("pid");
+                                if ($("input[name='privilegeIds'][value='" + pid + "']").prop("checked")) {
+                                    $(element).attr({"checked": false, "disabled": true});
+                                }
+                            })
                         }
                     });
                     // 子权限启用与禁用
-                    $("input[name='privilegeIds']").change(function () {
+                    privilegeIds.change(function () {
                         var privilege_id = $(this).val();
                         if ($(this).prop("checked") == true) {
-                            $("input[name='privilegeIds']").each(function (index, element) {
-                                if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
+                            privilegeIds.each(function (index, element) {
+                                if ($(element).data("pid") == privilege_id) {
                                     $(element).attr({"checked": false, "disabled": true});
                                 }
                             });
                         } else {
                             $("input[name='privilegeIds']").each(function (index, element) {
-                                if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
+                                if ($(element).data("pid") == privilege_id) {
                                     $(element).attr("disabled", false);
                                 }
                             });

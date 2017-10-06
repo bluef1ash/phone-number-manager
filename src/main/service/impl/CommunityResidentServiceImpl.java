@@ -1,30 +1,28 @@
 package main.service.impl;
 
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import constant.SystemConstant;
 import exception.BusinessException;
 import main.entity.Community;
+import main.entity.CommunityResident;
 import main.entity.Subdistrict;
 import main.entity.SystemUser;
+import main.service.CommunityResidentService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Service;
-
-import main.entity.CommunityResident;
-import main.service.CommunityResidentService;
 import utils.CommonUtil;
 import utils.ExcelUtil;
 
 import javax.servlet.http.HttpSession;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 社区居民业务实现
@@ -223,14 +221,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         List<Map<String, Object>> barDataSets = new ArrayList<Map<String, Object>>();
         List<Integer> barChartData = new ArrayList<Integer>();
         List<String> barBackgroundColor = new ArrayList<String>();
-        if ("社区".contains(roleName) || "居委会".contains(roleName)) {
+        if (roleName.contains("社区") || roleName.contains("居委会")) {
             countCommunityResidents = communityResidentsDao.countCommunityResidentsByCommunityId(systemUser.getRoleLocationId());
             actualNumber = communitiesDao.selectActualNumberByCommunityId(systemUser.getRoleLocationId());
             Community community = communitiesDao.selectObjectById(systemUser.getRoleLocationId());
             barChartLabels.add(community.getCommunityName());
             barChartData.add(countCommunityResidents);
             barData.put("label", "社区");
-        } else if ("街道".contains(roleName) || "办事处".contains(roleName)) {
+        } else if (roleName.contains("街道") || roleName.contains("办事处")) {
             countCommunityResidents = communityResidentsDao.countCommunityResidentsBySubdistrictId(systemUser.getRoleLocationId());
             actualNumber = communitiesDao.sumActualNumberBySubdistrictId(systemUser.getRoleLocationId());
             List<Community> communities = communitiesDao.countCommunitiesBySubdistrictId(systemUser.getRoleLocationId());

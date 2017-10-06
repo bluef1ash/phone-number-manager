@@ -82,8 +82,16 @@ public interface BaseDao<T> {
     /**
      * 截断表
      *
-     * @return
-     * @throws Exception
+     * @return 实体对象集合
+     * @throws Exception 操作异常
      */
     public int truncateTable() throws Exception;
+
+    /**
+     * 查询对象的编号和名称
+     *
+     * @return 实体对象集合
+     * @throws Exception 操作异常
+     */
+    public List<T> selectObjectsForIdAndName() throws Exception;
 }

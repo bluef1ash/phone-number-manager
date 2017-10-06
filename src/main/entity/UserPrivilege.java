@@ -1,9 +1,8 @@
 package main.entity;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
-
-import javax.validation.constraints.NotNull;
 /**
  * 用户权限实体
  *
@@ -13,7 +12,6 @@ public class UserPrivilege implements Serializable {
 	private Integer privilegeId;
 	@NotNull(message="{userPrivilege.privilegeName.isNull}")
 	private String privilegeName;
-	private String privilegeDescription;
 	@NotNull(message="{userPrivilege.constraintAuth.isNull}")
 	private String constraintAuth;
 	@NotNull(message="{userPrivilege.uri.isNull}")
@@ -27,11 +25,10 @@ public class UserPrivilege implements Serializable {
 	private List<UserRole> userRoles;
 	private List<UserPrivilege> subUserPrivileges;
 	public UserPrivilege() {}
-	public UserPrivilege(Integer privilegeId, String privilegeName, String privilegeDescription, String constraintAuth,
+	public UserPrivilege(Integer privilegeId, String privilegeName, String constraintAuth,
 			String uri, Integer higherPrivilege, String iconName, Integer orders, Integer isDisplay, List<UserRole> userRoles, List<UserPrivilege> subUserPrivileges) {
 		this.privilegeId = privilegeId;
 		this.privilegeName = privilegeName;
-		this.privilegeDescription = privilegeDescription;
 		this.constraintAuth = constraintAuth;
 		this.uri = uri;
 		this.higherPrivilege = higherPrivilege;
@@ -52,12 +49,6 @@ public class UserPrivilege implements Serializable {
 	}
 	public void setPrivilegeName(String privilegeName) {
 		this.privilegeName = privilegeName;
-	}
-	public String getPrivilegeDescription() {
-		return privilegeDescription;
-	}
-	public void setPrivilegeDescription(String privilegeDescription) {
-		this.privilegeDescription = privilegeDescription;
 	}
 	public String getConstraintAuth() {
 		return constraintAuth;
@@ -110,7 +101,7 @@ public class UserPrivilege implements Serializable {
 	@Override
 	public String toString() {
 		return "UserPrivilege [privilegeId=" + privilegeId + ", privilegeName=" + privilegeName
-				+ ", privilegeDescription=" + privilegeDescription + ", constraintAuth=" + constraintAuth + ", uri="
+				+ ", constraintAuth=" + constraintAuth + ", uri="
 				+ uri + ", higherPrivilege=" + higherPrivilege + ", iconName=" + iconName + ", orders=" + orders
 				+ ", isDisplay=" + isDisplay + ", userRoles=" + userRoles + ", subUserPrivileges=" + subUserPrivileges
 				+ "]";

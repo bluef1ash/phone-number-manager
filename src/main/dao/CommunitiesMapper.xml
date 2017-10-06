@@ -143,4 +143,10 @@
         GROUP BY
             `pm_communities`.`name`;
     </select>
+    <select id="selectObjectsForIdAndName" resultMap="communityResultMap">
+        SELECT
+            `community_id`,
+            `name`
+        FROM `pm_communities`
+    </select>
 </mapper>

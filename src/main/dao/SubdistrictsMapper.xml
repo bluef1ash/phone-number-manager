@@ -107,4 +107,10 @@
         GROUP BY
             `pm_subdistricts`.`name`
     </select>
+    <select id="selectObjectsForIdAndName" resultMap="subdistrictResultMap">
+        SELECT
+        `subdistrict_id`,
+        `name`
+        FROM `pm_subdistricts`
+    </select>
 </mapper>

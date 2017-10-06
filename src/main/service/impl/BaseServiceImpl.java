@@ -1,27 +1,17 @@
 package main.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import main.dao.*;
+import main.service.BaseService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-
-import main.dao.BaseDao;
-import main.dao.CommunitiesDao;
-import main.dao.CommunityResidentsDao;
-import main.dao.SubdistrictsDao;
-import main.dao.UserRolesDao;
-import main.dao.UserRolePrivilegesDao;
-import main.dao.UserPrivilegesDao;
-import main.dao.SystemUsersDao;
-import main.service.BaseService;
 
 /**
  * 基础Service实现
@@ -123,6 +113,11 @@ public class BaseServiceImpl<T> implements BaseService<T> {
         PageHelper.startPage(pageNum, pageSize);
         List<T> data = baseDao.selectObjectsByObject(object);
         return findObjectsMethod(data, pageNum, pageSize);
+    }
+
+    @Override
+    public List<T> findObjectsForIdAndName() throws Exception {
+        return baseDao.selectObjectsForIdAndName();
     }
 
     /**

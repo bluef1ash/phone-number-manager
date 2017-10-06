@@ -148,7 +148,6 @@
             `pm_roles`.`higher_role`,
             `pm_privileges`.`privilege_id`,
             `pm_privileges`.`name`        AS 'privilege_name',
-            `pm_privileges`.`description` AS 'privilege_description',
             `pm_privileges`.`constraint_auth`,
             `pm_privileges`.`uri`,
             `pm_privileges`.`higher_privilege`,

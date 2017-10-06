@@ -19,13 +19,13 @@
 					<li style="width:100%; height:60px;" class="form-group">
 						<label for="username" class="col-md-3 control-label">用户名：</label>
 						<span class="col-md-8">
-							<input type="text" class="form-control" id="username" placeholder="请输入用户名" value="admin">
+							<input type="text" class="form-control" id="username" placeholder="请输入用户名">
 						</span>
 					</li>
 					<li style="width:100%; height:60px;" class="form-group">
 						<label for="password" class="col-md-3 control-label">密码：</label>
 						<span class="col-md-8">
-							<input type="password" class="form-control" id="password" placeholder="请输入密码" value="123456">
+							<input type="password" class="form-control" id="password" placeholder="请输入密码">
 						</span>
 					</li>
 					<li style="width:100%; height:60px;" class="form-group">

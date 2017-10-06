@@ -1,13 +1,13 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>用户列表 - 用户管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
 		<div class="content-title">
 			您的位置：<a href="${pageContext.request.contextPath}/index.action">主页</a> > <a href="javascript:;">用户管理</a> > <a href="${pageContext.request.contextPath}/system/user_role/user/list.action">用户列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/system/user_role/user/create.action" class="btn btn-default float-right margin-br-10" role="button">添加用户</a>
+		<a href="${pageContext.request.contextPath}/system/user_role/user/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button">添加用户</a>
 		<table class="table table-bordered font-size-14">
 			<thead>
 			</thead>
@@ -49,16 +49,16 @@
 						<td>
 							<c:choose>
 								<c:when test="${systemUser.isLocked == 0}">
-									<a href="javascript:;" class="btn btn-success" data-state="${systemUser.isLocked}" role="botton" onclick="is_locked(this);">正常</a>
+									<a href="javascript:;" class="btn btn-success" data-state="${systemUser.isLocked}" role="button" onclick="is_locked(this, ${systemUser.systemUserId});">正常</a>
 								</c:when>
 								<c:otherwise>
-									<a href="javascript:;" class="btn btn-danger" data-state="${systemUser.isLocked}" role="botton" onclick="is_locked(this);">已锁定</a>
+									<a href="javascript:;" class="btn btn-danger" data-state="${systemUser.isLocked}" role="button" onclick="is_locked(this);">已锁定</a>
 								</c:otherwise>
 							</c:choose>
 						</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/system/user_role/user/edit.action?id=${systemUser.systemUserId}" class="btn btn-default operation" role="button">修改</a>
-							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="delete_object(this, ${systemUser.systemUserId}, 'system/user_role/user/ajax_delete.action', '系统用户');">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/user/ajax_delete.action', ${systemUser.systemUserId}, '${_token}')" role="button">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -109,7 +109,7 @@
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
-					<c:when test="${pageInfo.isIsLastPage() eq true}"> 
+					<c:when test="${pageInfo.isIsLastPage() eq true}">
 						<li class="disabled">
 							<a href="javascript:;">&raquo;</a>
 						</li>
@@ -123,32 +123,34 @@
 			</ul>
 		</div>
 		<script type="text/javascript">
-			require(["jquery"], function () {
+			require(["commonFunction", "jquery"], function (commonFunction) {
+                window.commonFunction = commonFunction;
 				$(function (){
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");
 					pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";
 					$("#pagination_parent").css("width", pagination_ul);
 				});
-				/**
-				 * 锁定与解锁系统用户
-				 * @param obj
-				 */
-				 function is_locked(obj) {
-				 	if (obj != null) {
-				 		var this_obj = $(obj);
-				 		var locked = this_obj.data("state");
-				 		$.get("${pageContext.request.contextPath}/system/user_role/user/ajax_user_lock.action", {"locked" : locked}, function(state) {
-				 			if(state) {
-				 				if (locked == 1) {
-					 				this_obj.removeClass("btn-danger").addClass("btn-success").data("state", "0").html("正常");
-					 			} else {
-					 				this_obj.removeClass("btn-success").addClass("btn-danger").data("state", "1").html("已锁定");
-					 			}
-				 			}
-				 		});
-				 	}
-				 }
 			});
+            /**
+             * 锁定与解锁系统用户
+             * @param obj
+             * @param systemUserId
+             */
+            function is_locked(obj, systemUserId) {
+                if (obj != null) {
+                    var this_obj = $(obj);
+                    var locked = this_obj.data("state");
+                    $.get("${pageContext.request.contextPath}/system/user_role/user/ajax_user_lock.action", {"systemUserId": systemUserId, "locked" : locked, "_token": "${_token}"}, function(state) {
+                        if(state) {
+                            if (locked == 1) {
+                                this_obj.removeClass("btn-danger").addClass("btn-success").data("state", "0").html("正常");
+                            } else {
+                                this_obj.removeClass("btn-success").addClass("btn-danger").data("state", "1").html("已锁定");
+                            }
+                        }
+                    });
+                }
+            }
 		</script>
 	</body>
 </html>

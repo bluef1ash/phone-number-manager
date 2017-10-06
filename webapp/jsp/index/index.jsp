@@ -1,29 +1,27 @@
 <%@ page language="java" pageEncoding="utf-8"%>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>社区居民联系电话管理系统</title>
+        <meta name="_token" content="${_token}">
 	</head>
 	<body class="hold-transition skin-blue sidebar-mini" style="overflow:hidden;">
-		<div id="ajax-loader" style="cursor: progress; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: #fff; z-index: 10000; overflow: hidden;">
-			<img src="${basePath}images/ajax-loader.gif"
-				style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin: auto;" />
-		</div>
+		<div id="ajax_loader"><i></i></div>
 		<div class="wrapper">
 			<!--头部信息-->
 			<div class="main-header">
-				<a href="${pageContext.request.contextPath}" target="_blank"
-					class="logo"> <span class="logo-mini">PM</span> <span
-					class="logo-lg">电话管理系统</span>
+				<a href="${pageContext.request.contextPath}" target="_blank" class="logo">
+                    <span class="logo-mini">PM</span><span class="logo-lg">电话管理系统</span>
 				</a>
 				<div class="navbar navbar-static-top">
-					<a class="sidebar-toggle"> <span class="sr-only">Toggle
-							navigation</span>
+					<a class="sidebar-toggle">
+                        <span class="sr-only">Toggle navigation</span>
 					</a>
 					<div class="navbar-custom-menu">
 						<ul class="nav navbar-nav">
-							<li class="dropdown messages-menu"><a href="javascript:;"
-								class="dropdown-toggle" data-toggle="dropdown"> <i
-									class="fa fa-envelope-o "></i> <span class="label label-success"></span>
-							</a></li>
+							<li class="dropdown messages-menu">
+                                <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa fa-envelope-o "></i><span class="label label-success"></span>
+							    </a>
+                            </li>
 							<li class="dropdown notifications-menu"><a href="javascript:;"
 								class="dropdown-toggle" data-toggle="dropdown"> <i
 									class="fa fa-bell-o"></i> <span class="label label-warning"></span>
@@ -39,18 +37,29 @@
 									class="hidden-xs">${sessionScope.systemUser.username}</span>
 							</a>
 								<ul class="dropdown-menu pull-right">
-									<li><a class="menuItem" data-id="userInfo"
-										href="${pageContext.request.contextPath}/SystemManage/User/Info"><i
-											class="fa fa-user"></i>个人信息</a></li>
-									<li><a href="javascript:;"><i
-											class="fa fa-trash-o"></i>清空缓存</a></li>
-									<li><a href="javascript:;"><i
-											class="fa fa-paint-brush"></i>皮肤设置</a></li>
+									<li>
+                                        <a class="menuItem" data-id="userInfo" href="${pageContext.request.contextPath}/SystemManage/User/Info">
+                                            <i class="fa fa-user"></i>个人信息
+                                        </a>
+                                    </li>
+									<li>
+                                        <a href="javascript:;">
+                                            <i class="fa fa-trash-o"></i>清空缓存
+                                        </a>
+                                    </li>
+									<li>
+                                        <a href="javascript:;">
+                                            <i	class="fa fa-paint-brush"></i>皮肤设置
+                                        </a>
+                                    </li>
 									<li class="divider"></li>
-									<li><a
-										href="${pageContext.request.contextPath}/login/loginout.action"><i
-											class="ace-icon fa fa-power-off"></i>安全退出</a></li>
-								</ul></li>
+									<li>
+                                        <a href="${pageContext.request.contextPath}/login/loginout.action">
+                                            <i class="ace-icon fa fa-power-off"></i>安全退出
+                                        </a>
+                                    </li>
+								</ul>
+                            </li>
 						</ul>
 					</div>
 				</div>
@@ -60,9 +69,7 @@
 				<div class="sidebar">
 					<div class="user-panel">
 						<div class="pull-left image">
-							<img
-								src="${pageContext.request.contextPath}/images/user2-160x160.jpg"
-								class="img-circle" alt="User Image">
+							<img src="${pageContext.request.contextPath}/images/user2-160x160.jpg" class="img-circle" alt="User Image">
 						</div>
 						<div class="pull-left info">
 							<p>${sessionScope.systemUser.username}</p>
@@ -115,12 +122,9 @@
 					</button>
 				</div>
 				<div class="content-iframe" style="overflow: hidden;">
-					<div class="mainContent" id="content-main"
-						style="margin: 10px; margin-bottom: 0px; padding: 0;">
+					<div class="mainContent" id="content-main" style="margin: 10px; margin-bottom: 0px; padding: 0;">
 						<iframe class="LRADMS_iframe" width="100%" height="100%" src="${pageContext.request.contextPath}/index/welcome.action" data-id="${pageContext.request.contextPath}/index/welcome.action"></iframe>
-						<iframe class="LRADMS_iframe" width="100%" height="100%"
-							src="${pageContext.request.contextPath}/index/about.action"
-							data-id="${pageContext.request.contextPath}/index/about.action" style="display: none"></iframe>
+						<iframe class="LRADMS_iframe" width="100%" height="100%" src="${pageContext.request.contextPath}/index/about.action" data-id="${pageContext.request.contextPath}/index/about.action" style="display: none"></iframe>
 					</div>
 				</div>
 			</div>
@@ -131,10 +135,11 @@
 			        learun.loadMenu();
 			        learun.init();
                     learun.load();
+                    $(".LRADMS_iframe").contents().on("click", "a", learun.addTab);
 			        $(".menuItem").click(function () {
 						$(".LRADMS_iframe").each(function () {
 							var login_url = "${pageContext.request.contextPath}/jsp/login/login.jsp";
-							if ($(this).prop("src") == login_url) {
+							if ($(this).prop("src") === login_url) {
 								location.href = login_url;
 							}
 						});

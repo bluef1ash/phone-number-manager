@@ -1,6 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>添加社区 - 社区管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
@@ -39,8 +40,7 @@
 					</tr>
 					<tr>
 						<td colspan="2" class="text-center">
-							<input type="hidden" name="submissionToken" value="${submissionToken}">
-							<input type="hidden" name="_token" value="${CSRFToken}">
+							<input type="hidden" name="_token" value="${_token}">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="添加" class="btn btn-primary">
 						</td>

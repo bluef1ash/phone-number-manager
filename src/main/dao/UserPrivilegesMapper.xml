@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.dao.UserPrivilegesDao">
+	<resultMap type="UserPrivilege" id="userPrivilegeResultMap">
+		<id property="privilegeId" column="privilege_id" />
+		<result property="privilegeName" column="name" />
+		<result property="constraintAuth" column="constraint_auth" />
+		<result property="uri" column="uri" />
+		<result property="higherPrivilege" column="higher_privilege" />
+		<result property="iconName" column="icon_name" />
+		<result property="orders" column="orders" />
+		<result property="isDisplay" column="is_display" />
+	</resultMap>
+	<resultMap type="UserPrivilege" id="UserPrivilegesCorrelationUserRolesResultMap" extends="userPrivilegeResultMap">
+		<collection property="userRoles" ofType="main.entity.UserRole" resultMap="main.dao.UserRolesDao.userRoleResultMap" />
+	</resultMap>
+	<insert id="insertObject" parameterType="UserPrivilege">
+		INSERT INTO `pm_privileges`(`name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display`) VALUES(#{privilegeName}, #{constraintAuth}, #{uri}, #{higherPrivilege}, #{iconName}, #{orders}, #{isDisplay})
+	</insert>
+	<delete id="deleteObjectById" parameterType="integer">
+		DELETE FROM `pm_privileges` WHERE `privilege_id` =  #{privilegeId}
+	</delete>
+    <delete id="deleteObjectsByName" parameterType="string">
+        DELETE FROM `pm_privileges` WHERE `name` =  #{privilegeName}
+    </delete>
+    <update id="updateObject" parameterType="UserPrivilege">
+        UPDATE `pm_privileges`
+        <set>
+			<if test="privilegeId != null">
+				`privilege_id` = #{privilegeId}
+			</if>
+			<if test="privilegeName != null">
+				, `name` = #{privilegeName}
+			</if>
+			<if test="constraintAuth != null">
+				, `constraint_auth` = #{constraintAuth}
+			</if>
+			<if test="uri != null">
+				, `uri` = #{uri}
+			</if>
+			<if test="higherPrivilege != null">
+				, `higher_privilege` = #{higherPrivilege}
+			</if>
+			<if test="iconName != null">
+				, `icon_name` = #{iconName}
+			</if>
+			<if test="orders != null">
+				, `orders` = #{orders}
+			</if>
+			<if test="isDisplay != null">
+				, `is_display` = #{isDisplay}
+			</if>
+		</set>
+		WHERE `privilege_id` = #{privilegeId}
+    </update>
+	<select id="selectObjectsAll" resultMap="userPrivilegeResultMap">
+		SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display` FROM `pm_privileges` ORDER BY `privilege_id`
+	</select>
+	<select id="selectObjectById" parameterType="integer" resultMap="userPrivilegeResultMap">
+		SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display` FROM `pm_privileges` WHERE `privilege_id` = #{privilegeId}
+	</select>
+	<select id="selectObjectsByName" parameterType="string" resultMap="userPrivilegeResultMap">
+		SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display` FROM `pm_privileges` WHERE `name` = #{privilegeName} ORDER BY `privilege_id`
+	</select>
+	<select id="selectPrivilegesByIsDisplay" parameterType="integer" resultMap="userPrivilegeResultMap">
+		SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display` FROM `pm_privileges` WHERE `is_display` = #{isDisplay} ORDER BY `privilege_id`
+	</select>
+	<select id="selectPrivilegesByIsDisplayAndConstraintAuth" parameterType="map" resultMap="userPrivilegeResultMap">
+		SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display` FROM `pm_privileges` WHERE (`is_display` = #{isDisplay}) AND (`constraint_auth` IN
+		<foreach collection="constraintAuthes" item="constraintAuth" open="(" separator="," close=")">
+			#{constraintAuth}
+		</foreach>
+		) ORDER BY `privilege_id`
+	</select>
+	<select id="selectPrivilegesByRoleId" parameterType="integer" resultMap="UserPrivilegesCorrelationUserRolesResultMap">
+		SELECT `pm_privileges`.`privilege_id`, `pm_privileges`.`name`, `pm_privileges`.`constraint_auth`, `pm_privileges`.`uri`, `pm_privileges`.`higher_privilege`, `pm_privileges`.`icon_name`, `pm_privileges`.`orders`, `pm_privileges`.`is_display` FROM `pm_privileges` LEFT JOIN `pm_roles_privileges` ON `pm_privileges`.`privilege_id` = `pm_roles_privileges`.`privilege_id` LEFT JOIN `pm_roles` ON `pm_roles_privileges`.`role_id` = `pm_roles`.`role_id` WHERE `pm_roles`.`role_id` = #{roleId}
+	</select>
+	<select id="selectPrivilegesByHigherPrivilegeAndIsDisplay" resultMap="userPrivilegeResultMap">
+		SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display` FROM `pm_privileges` WHERE `higher_privilege` = #{higherPrivilege} AND `is_display` = #{isDisplay} ORDER BY `privilege_id`
+	</select>
+    <select id="selectPrivilegesByHigherPrivilege" resultMap="userPrivilegeResultMap">
+        SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display` FROM `pm_privileges` WHERE `higher_privilege` = #{higherPrivilege} ORDER BY `privilege_id`
+    </select>
+</mapper>

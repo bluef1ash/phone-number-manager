@@ -1,13 +1,13 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>街道列表 - 街道管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
 		<div class="content-title">
 			您的位置：<a href="${pageContext.request.contextPath}/index.action">主页</a> > <a href="javascript:;">街道管理</a> > <a href="${pageContext.request.contextPath}/subdistrict/list.action">街道列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/subdistrict/create.action" class="btn btn-default float-right margin-br-10" role="button">添加街道</a>
+		<a href="${pageContext.request.contextPath}/subdistrict/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button">添加街道</a>
 		<table class="table table-bordered font-size-14">
 			<thead></thead>
 			<tbody>
@@ -24,7 +24,7 @@
 						<td>${subdistrict.subdistrictTelephone}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/subdistrict/edit.action?id=${subdistrict.subdistrictId}" class="btn btn-default operation" role="button">修改</a>
-							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="delete_object(this, ${subdistrict.subdistrictId}, 'subdistrict/ajax_delete.action', '街道');">删除</a>
+                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/subdistrict/ajax_delete.action', ${subdistrict.subdistrictId}, '${_token}')" role="button">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -74,7 +74,7 @@
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
-					<c:when test="${pageInfo.isIsLastPage() eq true}"> 
+					<c:when test="${pageInfo.isIsLastPage() eq true}">
 						<li class="disabled">
 							<a href="javascript:;">&raquo;</a>
 						</li>
@@ -88,7 +88,8 @@
 			</ul>
 		</div>
 		<script type="text/javascript">
-			require(["jquery"], function () {
+			require(["commonFunction", "jquery"], function (commonFunction) {
+                window.commonFunction = commonFunction;
 				$(function (){
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");
 					pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";

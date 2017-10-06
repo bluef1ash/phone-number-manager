@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.dao.CommunityResidentsDao">
+    <resultMap type="CommunityResident" id="communityResidentResultMap">
+        <id property="communityResidentId" column="community_resident_id"/>
+        <result property="communityResidentName" column="name"/>
+        <result property="communityResidentAddress" column="address"/>
+        <result property="communityResidentPhones" column="phones"/>
+        <result property="communityResidentSubcontractor" column="subcontractor"/>
+        <result property="communityResidentEditTime" column="edit_time"/>
+        <result property="communityId" column="community_id"/>
+    </resultMap>
+    <resultMap type="CommunityResident" id="AliasResultMap">
+        <id property="communityResidentId" column="community_resident_id"/>
+        <result property="communityResidentName" column="community_resident_name"/>
+        <result property="communityResidentAddress" column="address"/>
+        <result property="communityResidentPhones" column="phones"/>
+        <result property="communityResidentSubcontractor" column="subcontractor"/>
+        <result property="communityResidentEditTime" column="edit_time"/>
+        <result property="communityId" column="community_id"/>
+    </resultMap>
+    <resultMap type="CommunityResident" id="communityResidentsCorrelationCommunityResultMap" extends="AliasResultMap">
+        <association property="community" resultMap="main.dao.CommunitiesDao.communityResultMap"/>
+    </resultMap>
+    <update id="truncateTable">
+        TRUNCATE TABLE `pm_community_residents`
+    </update>
+    <insert id="insertObject" parameterType="CommunityResident">
+        INSERT INTO `pm_community_residents` (`name`, `address`, `phones`, `subcontractor`, `edit_time`, `community_id`)
+        VALUES (#{communityResidentName}, #{communityResidentAddress}, #{communityResidentPhones},
+                #{communityResidentSubcontractor}, #{communityResidentEditTime}, #{communityId})
+    </insert>
+    <insert id="insertBatchCommunityResidents" parameterType="list" useGeneratedKeys="true"
+            keyProperty="community_resident_id">
+        INSERT INTO `pm_community_residents`(`name`, `address`, `phones`, `subcontractor`, `community_id`) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.communityResidentName}, #{item.communityResidentAddress}, #{item.communityResidentPhones},
+            #{item.communityResidentSubcontractor}, #{item.communityId})
+        </foreach>
+    </insert>
+    <delete id="deleteObjectById">
+        DELETE FROM `pm_community_residents`
+        WHERE `community_resident_id` = #{communityResidentId}
+    </delete>
+    <delete id="deleteObjectsByName">
+        DELETE FROM `pm_community_residents`
+        WHERE `name` = #{name}
+    </delete>
+    <update id="updateObject" parameterType="CommunityResident">
+        UPDATE `pm_community_residents`
+        <set>
+            <if test="communityResidentId != null">
+                `community_resident_id` = #{communityResidentId}
+            </if>
+            <if test="communityResidentName != null">
+                , `name` = #{communityResidentName}
+            </if>
+            <if test="communityResidentAddress != null">
+                , `address` = #{communityResidentAddress}
+            </if>
+            <if test="communityResidentPhones != null">
+                , `phones` = #{communityResidentPhones}
+            </if>
+            <if test="communityResidentSubcontractor != null">
+                , `subcontractor` = #{communityResidentSubcontractor}
+            </if>
+            <if test="communityResidentEditTime != null">
+                , `edit_time` = #{communityResidentEditTime}
+            </if>
+            <if test="communityId != null">
+                , `community_id` = #{communityId}
+            </if>
+        </set>
+        WHERE `community_resident_id` = #{communityResidentId}
+    </update>
+    <select id="selectObjectsAll" resultMap="communityResidentResultMap">
+        SELECT
+            `community_resident_id`,
+            `name`,
+            `address`,
+            `phones`,
+            `subcontractor`,
+            `edit_time`
+        FROM `pm_community_residents`
+        ORDER BY `community_resident_id`
+    </select>
+    <select id="selectObjectById" parameterType="integer" resultMap="communityResidentResultMap">
+        SELECT
+            `community_resident_id`,
+            `name`,
+            `address`,
+            `phones`,
+            `subcontractor`,
+            `edit_time`
+        FROM `pm_community_residents`
+        WHERE `community_resident_id` = #{communityResidentId}
+    </select>
+    <select id="selectObjectsByName" parameterType="string" resultMap="communityResidentResultMap">
+        SELECT
+            `community_resident_id`,
+            `name`,
+            `address`,
+            `phones`,
+            `subcontractor`,
+            `edit_time`
+        FROM `pm_community_residents`
+        WHERE `name` = #{communityResidentName}
+        ORDER BY `community_resident_id`
+    </select>
+    <select id="selectObjectsByObject" resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT `pm_community_residents`.`community_resident_id`, `pm_community_residents`.`name` AS
+        'community_resident_name', `pm_community_residents`.`address`, `pm_community_residents`.`phones`,
+        `pm_community_residents`.`subcontractor`, `pm_community_residents`.`edit_time`, `pm_communities`.`community_id`,
+        `pm_communities`.`name` FROM `pm_community_residents`
+        LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            1 = 1
+            <if test="communityResidentId != null and communityResidentId != ''">
+                and `pm_community_residents`.`community_resident_id` = #{communityResidentId}
+            </if>
+            <if test="communityResidentName != null and communityResidentName != ''">
+                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
+            </if>
+            <if test="communityResidentAddress != null and communityResidentAddress != ''">
+                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+            </if>
+            <if test="communityResidentPhones != null and communityResidentPhones != ''">
+                and `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+            </if>
+            <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
+                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+            </if>
+            <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
+                and `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+            </if>
+            <if test="communityId != null and communityId != ''">
+                and `pm_community_residents`.`community_id` = #{communityId}
+            </if>
+            <if test="community.communityName != null and community.communityName != ''">
+                and `pm_communities`.`name` = #{community.communityName}
+            </if>
+        </where>
+        ORDER BY `community_resident_id`
+    </select>
+    <select id="selectCommunityResidentAndCommunityById" parameterType="integer"
+            resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT
+            `pm_community_residents`.`community_resident_id`,
+            `pm_community_residents`.`name` AS 'community_resident_name',
+            `pm_community_residents`.`address`,
+            `pm_community_residents`.`phones`,
+            `pm_community_residents`.`subcontractor`,
+            `pm_community_residents`.`edit_time`,
+            `pm_community_residents`.`community_id`,
+            `pm_communities`.`name`,
+            `pm_communities`.`telephone`,
+            `pm_communities`.`actual_number`
+        FROM
+            `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_community_residents`.`community_resident_id` = #{communityResidentId}
+    </select>
+    <select id="selectCommunityResidentsByCommunityResidentAndCommunityIds"
+            resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT `pm_community_residents`.`community_resident_id`, `pm_community_residents`.`name` AS
+        'community_resident_name', `pm_community_residents`.`address`, `pm_community_residents`.`phones`,
+        `pm_community_residents`.`subcontractor`, `pm_community_residents`.`edit_time`, `pm_communities`.`community_id`,
+        `pm_communities`.`name` FROM `pm_community_residents`
+        LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            1 = 1
+            <if test="communityResidentId != null and communityResidentId != ''">
+                and `pm_community_residents`.`community_resident_id` = #{communityResidentId}
+            </if>
+            <if test="communityResidentName != null and communityResidentName != ''">
+                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
+            </if>
+            <if test="communityResidentAddress != null and communityResidentAddress != ''">
+                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+            </if>
+            <if test="communityResidentPhones != null and communityResidentPhones != ''">
+                and `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+            </if>
+            <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
+                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+            </if>
+            <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
+                and `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+            </if>
+            <if test="communityId != null and communityId != ''">
+                and `pm_community_residents`.`community_id` IN
+                <foreach collection="communityIds" separator="," open="(" close=")" item="cId">
+                    #{cId}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY `pm_community_residents`.`community_resident_id`
+    </select>
+    <select id="selectCommunityResidentsAndCommunity" resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT
+            `pm_community_residents`.`community_resident_id`,
+            `pm_community_residents`.`name` AS 'community_resident_name',
+            `pm_community_residents`.`address`,
+            `pm_community_residents`.`phones`,
+            `pm_community_residents`.`subcontractor`,
+            `pm_community_residents`.`community_id`,
+            `pm_communities`.`name`
+        FROM
+            `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+    </select>
+    <select id="selectCommunityResidentByNameAndAddress" resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT
+            `pm_community_residents`.`name` AS 'community_resident_name',
+            `pm_community_residents`.`community_id`,
+            `pm_communities`.`name`
+        FROM `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_community_residents`.`community_resident_id` != #{communityResidentId} AND
+              CONCAT(`pm_community_residents`.`name`, `pm_community_residents`.`address`) = #{nameAddress}
+    </select>
+    <select id="selectCommunityResidentByPhones" resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT
+        `pm_community_residents`.`name` AS 'community_resident_name',
+        `pm_community_residents`.`community_id`,
+        `pm_communities`.`name`
+        FROM `pm_community_residents`
+        LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            `pm_community_residents`.`community_resident_id` != #{communityResidentId} AND
+            <foreach collection="residentPhones" item="phone" separator="OR">
+                `phones` LIKE CONCAT('%', #{phone}, '%')
+            </foreach>
+        </where>
+    </select>
+    <select id="selectCommunityResidentsAndCommunityByCommunityId"
+            resultMap="communityResidentsCorrelationCommunityResultMap">
+        SELECT
+            `pm_community_residents`.`community_resident_id`,
+            `pm_community_residents`.`name` AS 'community_resident_name',
+            `pm_community_residents`.`address`,
+            `pm_community_residents`.`phones`,
+            `pm_community_residents`.`subcontractor`,
+            `pm_community_residents`.`community_id`,
+            `pm_communities`.`name`
+        FROM `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_community_residents`.`community_id` = #{roleLocationId}
+    </select>
+    <select id="countCommunityResidentsByCommunityResident" resultType="integer">
+        SELECT COUNT(`pm_community_residents`.`community_resident_id`) FROM `pm_community_residents`
+        LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            1 = 1
+            <if test="communityResidentId != null and communityResidentId != ''">
+                and `pm_community_residents`.`community_resident_id` = #{communityResidentId}
+            </if>
+            <if test="communityResidentName != null and communityResidentName != ''">
+                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
+            </if>
+            <if test="communityResidentAddress != null and communityResidentAddress != ''">
+                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+            </if>
+            <if test="communityResidentPhones != null and communityResidentPhones != ''">
+                and `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+            </if>
+            <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
+                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+            </if>
+            <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
+                and `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+            </if>
+            <if test="communityId != null and communityId != ''">
+                and `pm_community_residents`.`community_id` = #{communityId}
+            </if>
+            <if test="community.communityName != null and community.communityName != ''">
+                and `pm_communities`.`name` = #{community.communityName}
+            </if>
+        </where>
+        ORDER BY `community_resident_id`
+    </select>
+    <select id="countCommunityResidentsByCommunityResidentAndCommunityIds" resultType="integer">
+        SELECT COUNT(`pm_community_residents`.`community_resident_id`) FROM `pm_community_residents`
+        LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            1 = 1
+            <if test="communityResidentId != null and communityResidentId != ''">
+                and `pm_community_residents`.`community_resident_id` = #{communityResidentId}
+            </if>
+            <if test="communityResidentName != null and communityResidentName != ''">
+                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
+            </if>
+            <if test="communityResidentAddress != null and communityResidentAddress != ''">
+                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+            </if>
+            <if test="communityResidentPhones != null and communityResidentPhones != ''">
+                and `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+            </if>
+            <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
+                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+            </if>
+            <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
+                and `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+            </if>
+            <if test="communityId != null and communityId != ''">
+                and `pm_community_residents`.`community_id` IN
+                <foreach collection="communityIds" separator="," open="(" close=")" item="cId">
+                    #{cId}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY `pm_community_residents`.`community_resident_id`
+    </select>
+    <select id="countCommunityResidentsAndCommunity" resultType="integer">
+        SELECT COUNT(`community_resident_id`)
+        FROM `pm_community_residents`
+    </select>
+    <select id="countCommunityResidentsByCommunityId" resultType="java.lang.Integer">
+        SELECT COUNT(`community_resident_id`)
+        FROM `pm_community_residents`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countCommunityResidentsBySubdistrictId" resultType="java.lang.Integer">
+        SELECT COUNT(`pm_community_residents`.`community_resident_id`)
+        FROM
+            `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE
+            `pm_communities`.`subdistrict_id` = #{subdistrictId}
+    </select>
+    <select id="countCommunityResidents" resultType="java.lang.Integer">
+        SELECT count(`community_resident_id`)
+        FROM `pm_community_residents`
+    </select>
+</mapper>

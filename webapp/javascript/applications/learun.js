@@ -1,6 +1,6 @@
 ﻿define("learun", ["jquery"], function () {
-    var mObject = this;
-    return {
+    var aEl = null;
+    var mObject = {
         /**
          * 设置全屏
          */
@@ -34,9 +34,9 @@
             var currentId = $('.page-tabs-content').find('.active').attr('data-id');
             var target = $('.LRADMS_iframe[data-id="' + currentId + '"]');
             var url = target.attr('src');
-            //$.loading(true);
+            // $.loading(true);
             target.attr('src', url).on("load", function () {
-                //$.loading(false);
+                // $.loading(false);
             });
         },
         /**
@@ -51,7 +51,7 @@
                     }
                 });
                 $(this).addClass('active').siblings('.menuTab').removeClass('active');
-                this.scrollToTab(this);
+                mObject.scrollToTab(this);
             }
         },
         /**
@@ -120,7 +120,7 @@
                         return false;
                     }
                 });
-                this.scrollToTab($('.menuTab.active'));
+                mObject.scrollToTab($('.menuTab.active'));
             }
             return false;
         },
@@ -130,11 +130,11 @@
          */
         addTab: function () {
             $(".navbar-custom-menu>ul>li.open").removeClass("open");
-            var dataId = $(this).attr('data-id');
+            var dataId = $(this).data('id');
             if (dataId != "") {
                 //top.$.cookie('nfine_currentmoduleid', dataId, { path: "/" });
             }
-            var dataUrl = $(this).attr('href');
+            var dataUrl = $(this).prop('href');
             var menuName = $.trim($(this).text());
             var flag = true;
             if (dataUrl == undefined || $.trim(dataUrl).length == 0) {
@@ -167,8 +167,10 @@
                     //$.loading(false);
                 });
                 $('.menuTabs .page-tabs-content').append(str);
-                return false;
-                this.scrollToTab($('.menuTab.active'));
+                mObject.scrollToTab($('.menuTab.active'));
+                $("iframe#iframe" + dataId).on("load", function () {
+                    $(this).contents().on("click", ".menu-tab", mObject.addTab);
+                });
             }
             return false;
         },
@@ -239,7 +241,8 @@
          * @param element
          */
         scrollToTab: function (element) {
-            var marginLeftVal = this.calSumWidth($(element).prevAll()), marginRightVal = this.calSumWidth($(element).nextAll());
+            var marginLeftVal = this.calSumWidth($(element).prevAll()),
+                marginRightVal = this.calSumWidth($(element).nextAll());
             var tabOuterWidth = this.calSumWidth($(".content-tabs").children().not(".menuTabs"));
             var visibleWidth = $(".content-tabs").outerWidth(true) - tabOuterWidth;
             var scrollVal = 0;
@@ -278,8 +281,7 @@
          */
         init: function () {
             $('.menuItem').on('click', this.addTab);
-            $('.menuTabs').on('click', '.menuTab i', this.closeTab);
-            $('.menuTabs').on('click', '.menuTab', this.activeTab);
+            $('.menuTabs').on('click', '.menuTab i', this.closeTab).on('click', '.menuTab', this.activeTab);
             $('.tabLeft').on('click', this.scrollTabLeft);
             $('.tabRight').on('click', this.scrollTabRight);
             $('.tabReload').on('click', this.refreshTab);
@@ -301,7 +303,7 @@
             $('.fullscreen').on('click', function () {
                 if (!$(this).attr('fullscreen')) {
                     $(this).attr('fullscreen', 'true');
-                    this.requestFullScreen();
+                    mObject.requestFullScreen();
                 } else {
                     $(this).removeAttr('fullscreen');
                     mObject.exitFullscreen();
@@ -312,24 +314,36 @@
          * 加载
          */
         load: function () {
-            $("body").removeClass("hold-transition");
+            var body = $("body");
+            body.removeClass("hold-transition");
             $("#content-wrapper").find('.mainContent').height($(window).height() - 100);
             $(window).resize(function (e) {
                 $("#content-wrapper").find('.mainContent').height($(window).height() - 100);
             });
             $(".sidebar-toggle").click(function () {
-                if (!$("body").hasClass("sidebar-collapse")) {
-                    $("body").addClass("sidebar-collapse");
+                if (!body.hasClass("sidebar-collapse")) {
+                    body.addClass("sidebar-collapse");
                 } else {
-                    $("body").removeClass("sidebar-collapse");
+                    body.removeClass("sidebar-collapse");
                 }
             });
+            $("iframe.LRADMS_iframe").on("load", function () {
+                $(this).contents().on("click", ".menu-tab", mObject.addTab);
+            });
             window.setTimeout(function () {
-                $('#ajax-loader').fadeOut();
+                $('#ajax_loader').fadeOut();
             }, 300);
         },
+        /**
+         * 处理JSON
+         * @param data
+         * @param action
+         * @returns {Array}
+         */
         jsonWhere: function (data, action) {
-            if (action == null) return;
+            if (action === null) {
+                return;
+            }
             var reval = [];
             $(data).each(function (i, v) {
                 if (action(v)) {
@@ -361,7 +375,7 @@
                             if (userPrivileges[i].subUserPrivileges != null) {
                                 _html += '<ul class="treeview-menu">';
                                 for (var j = 0; j < userPrivileges[i].subUserPrivileges.length; j++) {
-                                    _html += '<li><a class="menuItem" href="' + basePath + userPrivileges[i].subUserPrivileges[j].uri.substring(1) + '"><i class="' + userPrivileges[i].subUserPrivileges[j].iconName + '"></i>' + userPrivileges[i].subUserPrivileges[j].privilegeName + '</a></li>';
+                                    _html += '<li><a class="menuItem" href="' + basePath + userPrivileges[i].subUserPrivileges[j].uri.substring(1) + '" data-id="' + userPrivileges[i].subUserPrivileges[j].privilegeId + '"><i class="' + userPrivileges[i].subUserPrivileges[j].iconName + '"></i>' + userPrivileges[i].subUserPrivileges[j].privilegeName + '</a></li>';
                                 }
                                 _html += '</ul>';
                             }
@@ -370,26 +384,24 @@
                     }
                 }
             });
-            $("#sidebar-menu").append(_html);
-            $("#sidebar-menu li a").click(function () {
+            $("#sidebar-menu").append(_html).children("li").children("a").click(function () {
                 var d = $(this), e = d.next();
                 if (e.is(".treeview-menu") && e.is(":visible")) {
                     e.slideUp(500, function () {
                         e.removeClass("menu-open")
-                    }),
-                        e.parent("li").removeClass("active")
+                    });
+                    e.parent("li").removeClass("active")
                 } else if (e.is(".treeview-menu") && !e.is(":visible")) {
-                    var f = d.parents("ul").first(),
-                        g = f.find("ul:visible").slideUp(500);
+                    var f = d.parents("ul").first();
+                    var g = f.find("ul:visible").slideUp(500);
                     g.removeClass("menu-open");
                     var h = d.parent("li");
                     e.slideDown(500, function () {
-                        e.addClass("menu-open"),
-                            f.find("li.active").removeClass("active"),
-                            h.addClass("active");
-
+                        e.addClass("menu-open");
+                        f.find("li.active").removeClass("active");
+                        h.addClass("active");
                         var _height1 = $(window).height() - $("#sidebar-menu >li.active").position().top - 41;
-                        var _height2 = $("#sidebar-menu li > ul.menu-open").height() + 10
+                        var _height2 = $("#sidebar-menu li > ul.menu-open").height() + 10;
                         if (_height2 > _height1) {
                             $("#sidebar-menu >li > ul.menu-open").css({
                                 overflow: "auto",
@@ -401,5 +413,6 @@
                 e.is(".treeview-menu");
             });
         }
-    }
+    };
+    return mObject;
 });

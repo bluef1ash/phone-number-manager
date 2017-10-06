@@ -1,15 +1,27 @@
-<%@ page language="java" pageEncoding="utf-8"%>
+<%@ page language="java" pageEncoding="utf-8" isErrorPage="true" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>修改社区 - 社区管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
+        <c:if test="${messageErrors != null}">
+            <c:forEach items="${messageErrors}" var="error">
+                <div class="alert alert-danger alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <span>${error.defaultMessage}</span>
+                </div>
+            </c:forEach>
+            <script type="text/javascript">
+                require(["bootstrap"]);
+            </script>
+        </c:if>
 		<form action="${pageContext.request.contextPath}/community/handle.action" method="post">
 			<table class="table table-bordered font-size-14">
 				<thead>
-					<c:if test="${messageErrors != null}">  
-					    <c:forEach items="${messageErrors}" var="error">  
-					        <span style="color:red">${error.defaultMessage}</span><br/>  
+					<c:if test="${messageErrors != null}">
+					    <c:forEach items="${messageErrors}" var="error">
+					        <span style="color:red">${error.defaultMessage}</span><br/>
 					    </c:forEach>
 					</c:if>
 				</thead>
@@ -29,7 +41,7 @@
 					<tr>
 						<td class="text-right">社区需报送总人数</td>
 						<td>
-							<input type="text" name="actualNumber" value="${actualNumber}" class="form-control" placeholder="社区需报送总人数">
+							<input type="text" name="actualNumber" value="${community.actualNumber}" class="form-control" placeholder="社区需报送总人数">
 						</td>
 					</tr>
 					<tr>
@@ -46,8 +58,8 @@
 					<tr>
 						<td colspan="2" class="text-center">
 							<input type="hidden" name="communityId" value="${community.communityId}">
-							<input type="hidden" name="submissionToken" value="${submissionToken}">
-							<input type="hidden" name="_token" value="${CSRFToken}">
+							<input type="hidden" name="_token" value="${_token}">
+                            <input type="hidden" name="_method" value="PUT">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="保存" class="btn btn-primary">
 						</td>

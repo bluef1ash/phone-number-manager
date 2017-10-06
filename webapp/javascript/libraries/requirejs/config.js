@@ -8,9 +8,9 @@ require.config({
         angular: jsPath + "libraries/angular.min",
         lodash: jsPath + "libraries/lodash/lodash.min",
         layui: jsPath + "libraries/layui/layui",
-        chart: jsPath + "libraries/charts/Chart",
+        chart: jsPath + "libraries/chart.min",
         zeroClipboard: jsPath + "libraries/zeroclipboard/ZeroClipboard.min",
-        common: jsPath + "libraries/common"
+        commonFunction: jsPath + "libraries/common"
     },
     shim: {
         jquery: {
@@ -24,7 +24,12 @@ require.config({
         },
         layui: {
             deps: ["jquery", "css!" + jsPath + "libraries/layui/css/layui.css", "css!" + jsPath + "libraries/layui/css/layui.mobile.css"],
-            exports: "layui"
+            exports: "layui",
+            init: function () {
+                return this.layui.config({
+                    dir: jsPath + "libraries/layui/"
+                });
+            }
         }
     }
 });

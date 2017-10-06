@@ -1,20 +1,22 @@
-<%@ page language="java" pageEncoding="utf-8"%>
+<%@ page language="java" pageEncoding="utf-8" isErrorPage="true" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>修改角色 - 角色管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
+        <c:if test="${messageErrors != null}">
+            <c:forEach items="${messageErrors}" var="error">
+                <div class="alert alert-danger alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <span>${error.defaultMessage}</span>
+                </div>
+            </c:forEach>
+        </c:if>
 		<form action="${pageContext.request.contextPath}/system/user_role/role/handle.action" method="post">
 			<table class="table table-bordered font-size-14">
-				<thead>
-					<c:if test="${messageErrors != null}">  
-					    <c:forEach items="${messageErrors}" var="error">  
-					        <span style="color:red">${error.defaultMessage}</span><br/>  
-					    </c:forEach>
-					</c:if>
-				</thead>
+				<thead></thead>
 				<tbody>
-					<tbody>
 					<tr>
 						<td class="text-right" style="width: 35%;">角色名称</td>
 						<td>
@@ -65,52 +67,55 @@
 					<tr>
 						<td colspan="2" class="text-center">
 							<input type="hidden" name="roleId" value="${userRole.roleId}">
-							<input type="hidden" name="submissionToken" value="${submissionToken}">
-							<input type="hidden" name="_token" value="${CSRFToken}">
+							<input type="hidden" name="_token" value="${_token}">
+                            <input type="hidden" name="_method" value="PUT">
 							<spring:htmlEscape defaultHtmlEscape="true" />
-							<input type="submit" name="submit" value="保存" class="btn btn-primary">
+							<input type="submit" value="保存" class="btn btn-primary">
 						</td>
 					</tr>
 				</tbody>
 			</table>
 		</form>
 		<script type="text/javascript">
-			$(function () {
-				var arr = [11];
-				// 获取系统用户角色拥有的权限
-				$.get(base_path + "system/user_role/privilege/ajax_get_privileges.action", {"roleId" : ${userRole.roleId}}, function (data) {
-					if (data != null) {
-						for (i = 0; i < data.privileges.length; i++) {
-							$("input[name='privilegeIds'][value='" + data.privileges[i].privilegeId + "']").prop("checked", true);
-						}
-					}
-				});
-				// 打开页面时，选中已选中项
-				var pid = [];
-				$("input[name='privilegeIds']").each(function (index, element) {
-					pid[index] = $(element).val();
-					if (pid.toString().indexOf($(element).data("pid")) != -1 && arr.toString().indexOf($(element).val()) == -1) {
-						$(element).attr({"checked": false, "disabled": true});
-					}
-				});
-				// 子权限启用与禁用
-				$("input[name='privilegeIds']").change(function () {
-					var privilege_id = $(this).val();
-					if ($(this).prop("checked") == true) {
-						$("input[name='privilegeIds']").each(function (index, element) {
-							if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
-								$(element).attr({"checked": false, "disabled": true});
-							}
-						});
-					} else {
-						$("input[name='privilegeIds']").each(function (index, element) {
-							if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
-								$(element).attr("disabled", false);
-							}
-						});
-					}
-				});
-			});
+            require(["jquery", "bootstrap"], function () {
+                $(function () {
+                    var arr = [11];
+                    var privilegeIds = $("input[name='privilegeIds']");
+                    // 获取系统用户角色拥有的权限
+                    $.get("${pageContext.request.contextPath}/system/user_role/privilege/ajax_get_privileges.action", {"roleId" : ${userRole.roleId}, "_token": "${_token}"}, function (data) {
+                        if (data !== null) {
+                            for (i = 0; i < data.privileges.length; i++) {
+                                $("input[name='privilegeIds'][value='" + data.privileges[i].privilegeId + "']").attr("checked", true);
+                            }
+                            $("input[name='_token']").val(data._token);
+                            // 打开页面时，选中已选中项
+                            privilegeIds.each(function (index, element) {
+                                var pid = $(element).data("pid");
+                                if ($("input[name='privilegeIds'][value='" + pid + "']").prop("checked")) {
+                                    $(element).attr({"checked": false, "disabled": true});
+                                }
+                            })
+                        }
+                    });
+                    // 子权限启用与禁用
+                    privilegeIds.change(function () {
+                        var privilege_id = $(this).val();
+                        if ($(this).prop("checked") == true) {
+                            privilegeIds.each(function (index, element) {
+                                if ($(element).data("pid") == privilege_id) {
+                                    $(element).attr({"checked": false, "disabled": true});
+                                }
+                            });
+                        } else {
+                            $("input[name='privilegeIds']").each(function (index, element) {
+                                if ($(element).data("pid") == privilege_id) {
+                                    $(element).attr("disabled", false);
+                                }
+                            });
+                        }
+                    });
+                });
+            });
 		</script>
 	</body>
 </html>

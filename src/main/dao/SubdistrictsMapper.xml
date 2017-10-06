@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.dao.SubdistrictsDao">
+    <resultMap type="Subdistrict" id="subdistrictResultMap">
+        <id property="subdistrictId" column="subdistrict_id"/>
+        <result property="subdistrictName" column="name"/>
+        <result property="subdistrictTelephone" column="telephone"/>
+    </resultMap>
+    <resultMap type="Subdistrict" id="subdistrictAliasResultMap">
+        <id property="subdistrictId" column="subdistrict_id"/>
+        <result property="subdistrictName" column="subdistrict_name"/>
+        <result property="subdistrictTelephone" column="subdistrict_telephone"/>
+    </resultMap>
+    <resultMap type="Subdistrict" id="subdistrictCorrelationCommunitiesResultMap" extends="subdistrictResultMap">
+        <collection property="communities" column="subdistrict_id"
+                    resultMap="main.dao.CommunitiesDao.communityAliasResultMap"/>
+    </resultMap>
+    <insert id="insertObject" parameterType="Subdistrict">
+        INSERT INTO `pm_subdistricts` (`name`, `telephone`) VALUES (#{subdistrictName}, #{subdistrictTelephone})
+    </insert>
+    <delete id="deleteObjectById" parameterType="integer">
+        DELETE FROM `pm_subdistricts`
+        WHERE `subdistrict_id` = #{subdistrictId}
+    </delete>
+    <delete id="deleteObjectsByName" parameterType="string">
+        DELETE FROM `pm_subdistricts`
+        WHERE `name` = #{subdistrictName}
+    </delete>
+    <update id="updateObject" parameterType="Subdistrict">
+        UPDATE `pm_subdistricts`
+        <set>
+            <if test="subdistrictId != null">
+                `subdistrict_id` = #{subdistrictId}
+            </if>
+            <if test="subdistrictName != null">
+                , `name` = #{subdistrictName}
+            </if>
+            <if test="subdistrictTelephone != null">
+                , `telephone` = #{subdistrictTelephone}
+            </if>
+        </set>
+        WHERE `subdistrict_id` = #{subdistrictId}
+    </update>
+    <select id="selectObjectsAll" resultMap="subdistrictResultMap">
+        SELECT
+            `subdistrict_id`,
+            `name`,
+            `telephone`
+        FROM `pm_subdistricts`
+        ORDER BY `subdistrict_id`
+    </select>
+    <select id="selectObjectById" parameterType="integer" resultMap="subdistrictResultMap">
+        SELECT
+            `subdistrict_id`,
+            `name`,
+            `telephone`
+        FROM `pm_subdistricts`
+        WHERE `subdistrict_id` = #{subdistrictId}
+    </select>
+    <select id="selectObjectsByName" parameterType="string" resultMap="subdistrictResultMap">
+        SELECT
+            `subdistrict_id`,
+            `name`,
+            `telephone`
+        FROM `pm_subdistricts`
+        WHERE `name` = #{subdistrictName}
+        ORDER BY `subdistrict_id`
+    </select>
+    <select id="selectSubdistrictAndCommunityByCommunityId" resultMap="subdistrictCorrelationCommunitiesResultMap">
+        SELECT
+            `pm_subdistricts`.`subdistrict_id`,
+            `pm_subdistricts`.`name`,
+            `pm_communities`.`community_id`,
+            `pm_communities`.`name` AS 'community_name'
+        FROM `pm_subdistricts`
+            LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
+        WHERE `pm_communities`.`community_id` = #{roleLocationId}
+    </select>
+    <select id="selectSubdistrictAndCommunityBySubdistrictId" resultMap="subdistrictCorrelationCommunitiesResultMap">
+        SELECT
+            `pm_subdistricts`.`subdistrict_id`,
+            `pm_subdistricts`.`name`,
+            `pm_communities`.`community_id`,
+            `pm_communities`.`name` AS 'community_name'
+        FROM `pm_subdistricts`
+            LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
+        WHERE `pm_subdistricts`.`subdistrict_id` = #{roleLocationId}
+    </select>
+    <select id="selectSubdistrictsAndCommunitiesAll" resultMap="subdistrictCorrelationCommunitiesResultMap">
+        SELECT
+            `pm_subdistricts`.`subdistrict_id`,
+            `pm_subdistricts`.`name`,
+            `pm_communities`.`community_id`,
+            `pm_communities`.`name` AS 'community_name'
+        FROM `pm_subdistricts`
+            LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
+    </select>
+    <select id="countCommunityResidents" resultMap="subdistrictResultMap">
+        SELECT
+            `pm_subdistricts`.`name`,
+            COUNT(`pm_community_residents`.`community_resident_id`) AS `subdistrict_id`
+        FROM
+            `pm_subdistricts`
+            LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
+            LEFT JOIN `pm_community_residents`
+                ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        GROUP BY
+            `pm_subdistricts`.`name`
+    </select>
+    <select id="selectObjectsForIdAndName" resultMap="subdistrictResultMap">
+        SELECT
+        `subdistrict_id`,
+        `name`
+        FROM `pm_subdistricts`
+    </select>
+</mapper>

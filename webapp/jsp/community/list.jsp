@@ -1,13 +1,13 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>社区列表 - 社区管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
 		<div class="content-title">
 			您的位置：<a href="${pageContext.request.contextPath}/index.action">主页</a> > <a href="javascript:;">社区管理</a> > <a href="${pageContext.request.contextPath}/community/list.action">社区列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/community/create.action" class="btn btn-default float-right margin-br-10" role="button">添加社区</a>
+		<a href="${pageContext.request.contextPath}/community/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button">添加社区</a>
 		<table class="table table-bordered font-size-14">
 			<thead></thead>
 			<tbody>
@@ -26,7 +26,7 @@
 						<td>${community.subdistrict.subdistrictName}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/community/edit.action?id=${community.communityId}" class="btn btn-default operation" role="button">修改</a>
-							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="delete_object(this, ${community.communityId}, 'community/ajax_delete.action', '社区');">删除</a>
+							<a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/community/ajax_delete.action', ${community.communityId}, '${_token}');">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -76,7 +76,7 @@
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
-					<c:when test="${pageInfo.isIsLastPage() eq true}"> 
+					<c:when test="${pageInfo.isIsLastPage() eq true}">
 						<li class="disabled">
 							<a href="javascript:;">&raquo;</a>
 						</li>
@@ -90,7 +90,8 @@
 			</ul>
 		</div>
 		<script type="text/javascript">
-			require(["jquery"], function () {
+			require(["commonFunction", "jquery"], function (commonFunction) {
+                window.commonFunction = commonFunction;
 				$(function (){
 					var pagination_ul = $("#pagination_parent").children("ul").css("width");
 					pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";

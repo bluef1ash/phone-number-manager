@@ -1,6 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<jsp:include page="/jsp/layouts/header.jsp" />
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ include file="/jsp/layouts/header.jsp" %>
 		<title>添加角色 - 角色管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
@@ -55,35 +56,36 @@
 					</tr>
 					<tr>
 						<td colspan="2" class="text-center">
-							<input type="hidden" name="submissionToken" value="${submissionToken}">
-							<input type="hidden" name="_token" value="${CSRFToken}">
+							<input type="hidden" name="_token" value="${_token}">
 							<spring:htmlEscape defaultHtmlEscape="true" />
-							<input type="submit" name="submit" value="添加" class="btn btn-primary">
+							<input type="submit" value="添加" class="btn btn-primary">
 						</td>
 					</tr>
 				</tbody>
 			</table>
 		</form>
 		<script type="text/javascript">
-			$(function () {
-				$("input[name='privilegeIds']").change(function () {
-					var privilege_id = $(this).val();
-					var arr = [11];
-					if ($(this).prop("checked") == true) {
-						$("input[name='privilegeIds']").each(function (index, element) {
-							if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
-								$(element).attr({"checked": false, "disabled": true});
-							}
-						});
-					} else {
-						$("input[name='privilegeIds']").each(function (index, element) {
-							if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
-								$(element).attr("disabled", false);
-							}
-						});
-					}
-				});
-			});
+            require(["jquery"], function () {
+                $(function () {
+                    $("input[name='privilegeIds']").change(function () {
+                        var privilege_id = $(this).val();
+                        var arr = [11];
+                        if ($(this).prop("checked") == true) {
+                            $("input[name='privilegeIds']").each(function (index, element) {
+                                if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
+                                    $(element).attr({"checked": false, "disabled": true});
+                                }
+                            });
+                        } else {
+                            $("input[name='privilegeIds']").each(function (index, element) {
+                                if ($(element).data("pid") == privilege_id && arr.toString().indexOf($(element).val()) == -1) {
+                                    $(element).attr("disabled", false);
+                                }
+                            });
+                        }
+                    });
+                });
+            });
 		</script>
 	</body>
 </html>

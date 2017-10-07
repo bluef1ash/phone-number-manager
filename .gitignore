@@ -128,6 +128,6 @@ fabric.properties
 .idea/
 target/
 webapp/uploads/
-src/resources/
+src/main/resources/
 *.iml
 src/test/resources/

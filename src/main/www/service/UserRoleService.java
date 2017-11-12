@@ -1,5 +1,6 @@
 package www.service;
 
+import java.util.List;
 import java.util.Map;
 
 import www.entity.UserRole;
@@ -36,4 +37,12 @@ public interface UserRoleService extends BaseService<UserRole> {
      * @throws Exception
      */
     public UserRole findRolesAndPrivileges(Integer roleId) throws Exception;
+
+    /**
+     * 通过角色名称查找角色
+     * @param roleName
+     * @return
+     * @throws Exception
+     */
+    public List<UserRole> findRolesByRoleName(String roleName) throws Exception;
 }

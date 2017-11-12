@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ include file="/jsp/layouts/header.jsp" %>
-		<title>修改社区居民 - 社区居民管理 - 社区居民联系电话管理系统</title>
+        <title><c:choose><c:when test="${communityResident.communityResidentId == null}">添加</c:when><c:otherwise>修改</c:otherwise></c:choose>社区居民 - 社区居民管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
         <c:if test="${messageErrors != null}">
@@ -13,7 +13,7 @@
                 </div>
             </c:forEach>
         </c:if>
-		<form action="${pageContext.request.contextPath}/resident/handle.action" method="post">
+		<form action="${pageContext.request.contextPath}/resident/handle.action" method="post" name="community_resident">
 			<table class="table table-bordered font-size-14">
 				<thead>
 				</thead>
@@ -51,7 +51,7 @@
 					<tr>
 						<td class="text-right">社区分包人</td>
 						<td>
-							<input type="text" name="communityResidentSubcontractor" class="form-control" placeholder="请输入社区居民联系方式三" value="${communityResident.communityResidentSubcontractor}">
+							<input type="text" name="communityResidentSubcontractor" class="form-control" placeholder="请输入社区分包人" value="${communityResident.communityResidentSubcontractor}">
 						</td>
 					</tr>
 					<tr>
@@ -60,16 +60,18 @@
 							<select name="communityId" class="form-control" autocomplete="off">
 								<option value="0">请选择</option>
 								<c:forEach items="${communities}" var="community">
-									<option value="${community.communityId}"<c:if test="${community.communityId == communityResident.communityId}"> selected</c:if>>${community.communityName}</option>
+									<option value="${community.communityId}"<c:if test="${community.communityId eq communityResident.communityId}"> selected</c:if>>${community.communityName}</option>
 								</c:forEach>
 							</select>
 						</td>
 					</tr>
 					<tr>
 						<td colspan="2" class="text-center">
-							<input type="hidden" name="communityResidentId" value="${communityResident.communityResidentId}">
+                            <c:if test="${communityResident.communityResidentId != null}">
+                                <input type="hidden" name="communityResidentId" value="${communityResident.communityResidentId}">
+                                <input type="hidden" name="_method" value="PUT">
+                            </c:if>
 							<input type="hidden" name="_token" value="${_token}">
-							<input type="hidden" name="_method" value="PUT">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="保存" class="btn btn-primary">
 						</td>
@@ -78,10 +80,7 @@
 			</table>
 		</form>
         <script type="text/javascript">
-            require(["check_resident_input", "bootstrap"], function (check_resident_input) {
-                check_resident_input();
-
-            });
+            require(["check_resident_input", "bootstrap"], function (check_resident_input) {check_resident_input();});
         </script>
 	</body>
 </html>

@@ -11,9 +11,7 @@ import javax.validation.constraints.NotNull;
 public class Subdistrict implements Serializable {
 	private static final long serialVersionUID = -7676924584213521372L;
 	private Integer subdistrictId;
-	@NotNull(message="{subdistrict.subdistrictName.isNull}")
 	private String subdistrictName;
-	@NotNull(message="{subdistrict.telephone.isNull}")
 	private String subdistrictTelephone;
 	private List<Community> communities;
 	public Subdistrict() {}

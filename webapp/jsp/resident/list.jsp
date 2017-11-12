@@ -197,7 +197,7 @@
          */
         function selectCompany() {
             $("#company_tree").html("");
-            $.get("${pageContext.request.contextPath}/subdistrict/ajax_select.action", {"_token": "${_token}"}, function (data) {
+            $.get("${pageContext.request.contextPath}/resident/ajax_select.action", {"_token": "${_token}"}, function (data) {
 				if (data) {
                     layui.use("tree", function () {
                         layui.tree({

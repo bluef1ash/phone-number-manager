@@ -6,6 +6,7 @@ import www.entity.Subdistrict;
 import www.service.SubdistrictService;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,5 +31,10 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> impleme
                 break;
         }
         return subdistricts;
+    }
+
+    @Override
+    public List<Subdistrict> findSubdistrictBySubdistrict(Subdistrict subdistrict) throws Exception {
+        return baseDao.selectObjectsByObject(subdistrict);
     }
 }

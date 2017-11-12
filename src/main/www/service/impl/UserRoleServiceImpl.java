@@ -35,4 +35,9 @@ public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements Us
 	public UserRole findRolesAndPrivileges(Integer roleId) throws Exception {
 		return userRolesDao.selectRolesAndPrivilegesById(roleId);
 	}
+
+    @Override
+    public List<UserRole> findRolesByRoleName(String roleName) throws Exception {
+        return userRolesDao.selectObjectsByName(roleName);
+    }
 }

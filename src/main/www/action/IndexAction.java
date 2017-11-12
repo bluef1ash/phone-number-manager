@@ -68,19 +68,19 @@ public class IndexAction {
     @RequestMapping(value = "/getmenu", method = RequestMethod.GET)
     public @ResponseBody
     Map<String, Object> getMenu(Integer isDisplay, HttpSession session) {
-        Map<String, Object> map = null;
         try {
             List<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesByIsDisplay(isDisplay, session);
-            map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<String, Object>();
             map.put("userPrivileges", userPrivileges);
+            return map;
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return map;
     }
 
     /**
      * 使用AJAX技术获取图表数据
+     *
      * @param session
      * @return
      */

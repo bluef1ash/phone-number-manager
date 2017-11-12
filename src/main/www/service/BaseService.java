@@ -80,7 +80,7 @@ public interface BaseService<T> {
     public Map<String, Object> findObjects(String name, Integer pageNum, Integer pageSize) throws Exception;
 
     /**
-     * 通过对象查找
+     * （含分页）
      *
      * @param object 对象名称
      * @return 从DAO层返回
@@ -95,4 +95,13 @@ public interface BaseService<T> {
      * @throws Exception DAO异常
      */
     public List<T> findObjectsForIdAndName() throws Exception;
+
+    /**
+     * 通过对象查找
+     *
+     * @param object 对象名称
+     * @return 从DAO层返回
+     * @throws Exception DAO异常
+     */
+    public List<T> findObjects(T object) throws Exception;
 }

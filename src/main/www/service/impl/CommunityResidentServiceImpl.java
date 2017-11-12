@@ -65,7 +65,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> findCommunityResidentByCommunityResident(CommunityResident communityResident, String company, Integer pageNum, Integer pageSize) throws Exception {
+    public Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, CommunityResident communityResident, String company, Integer pageNum, Integer pageSize) throws Exception {
         pageNum = pageNum == null ? 1 : pageNum;
         pageSize = pageSize == null ? 10 : pageSize;
         List<CommunityResident> communityResidents = null;
@@ -80,18 +80,32 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
             } else if (company.contains("街道") || company.contains("办事处")) {
                 List<Community> newCommunities = communitiesDao.selectCommunitiesBySubdistrictName(company);
-                int communitiesLength = newCommunities.size();
-                Integer[] communityIds = new Integer[communitiesLength];
-                for (int i = 0; i < communitiesLength; i++) {
-                    communityIds[i] = newCommunities.get(i).getCommunityId();
-                }
-                communityResident.setCommunityIds(communityIds);
-                count = communityResidentsDao.countCommunityResidentsByCommunityResidentAndCommunityIds(communityResident);
+                count = getCompany(communityResident, newCommunities);
                 PageHelper.startPage(pageNum, pageSize);
                 communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResidentAndCommunityIds(communityResident);
             }
         } else {
-            communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
+            switch (systemUser.getRoleId()) {
+                case SystemConstant.SYSTEM_ADMINISTRATOR_ID:
+                    count = communityResidentsDao.countCommunityResidentsByCommunityResident(communityResident);
+                    PageHelper.startPage(pageNum, pageSize);
+                    communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
+                    break;
+                case SystemConstant.SUBDISTRICT_ROLE_ID:
+                    List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
+                    count = getCompany(communityResident, communities);
+                    PageHelper.startPage(pageNum, pageSize);
+                    communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResidentAndCommunityIds(communityResident);
+                    break;
+                case SystemConstant.COMMUNITY_ROLE_ID:
+                    communityResident.setCommunityId(systemUser.getRoleLocationId());
+                    count = communityResidentsDao.countCommunityResidentsByCommunityResident(communityResident);
+                    communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
+                    PageHelper.startPage(pageNum, pageSize);
+                    break;
+                default:
+                    break;
+            }
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("dataAndPagination", findObjectsMethod(communityResidents, pageNum, pageSize));
@@ -115,7 +129,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 if (row == null || row.getFirstCellNum() == j || ExcelUtil.isMergedRegion(sheet, j, 0) || String.valueOf(ExcelUtil.getCellValue(row.getCell(0))).contains("序号")) {
                     continue;
                 }
-                //System.out.println("------------------------第" + j + "行--------------------------------");
                 residents.add(residentHandler(row));
             }
         }
@@ -124,12 +137,29 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> findCommunityResidentsAndCommunity(Integer pageNum, Integer pageSize) throws Exception {
+    public Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Integer pageNum, Integer pageSize) throws Exception {
         pageNum = pageNum == null ? 1 : pageNum;
         pageSize = pageSize == null ? 10 : pageSize;
-        Integer count = communityResidentsDao.countCommunityResidentsAndCommunity();
+        Integer roleId = systemUser.getRoleId();
+        Integer roleLocationId = systemUser.getRoleLocationId();
+        List<Integer> roleLocationIds = new ArrayList<Integer>();
+        switch (roleId) {
+            case SystemConstant.COMMUNITY_ROLE_ID:
+                roleLocationIds.add(roleLocationId);
+                break;
+            case SystemConstant.SUBDISTRICT_ROLE_ID:
+                List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(roleLocationId);
+                for (Community community : communities) {
+                    roleLocationIds.add(community.getCommunityId());
+                }
+                break;
+            default:
+                roleLocationIds = null;
+                break;
+        }
+        Integer count = communityResidentsDao.countCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
         PageHelper.startPage(pageNum, pageSize);
-        List<CommunityResident> data = communityResidentsDao.selectCommunityResidentsAndCommunity();
+        List<CommunityResident> data = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("dataAndPagination", findObjectsMethod(data, pageNum, pageSize));
         map.put("count", count);
@@ -142,8 +172,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByPhones(Integer communityResidentId, List<String> phones) throws Exception {
-        return communityResidentsDao.selectCommunityResidentByPhones(communityResidentId, phones);
+    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Integer communityResidentId) throws Exception {
+        return communityResidentsDao.selectCommunityResidentByPhones(phones, communityResidentId);
     }
 
     @Override
@@ -151,7 +181,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         List<CommunityResident> communityResidents = null;
         switch (roleId) {
             case SystemConstant.SYSTEM_ROLE_ID:
-                communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunity();
+                communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityIds(null);
                 break;
             case SystemConstant.COMMUNITY_ROLE_ID:
                 communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityId(roleLocationId);
@@ -233,7 +263,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             countCommunityResidents = communityResidentsDao.countCommunityResidentsBySubdistrictId(systemUser.getRoleLocationId());
             actualNumber = communitiesDao.sumActualNumberBySubdistrictId(systemUser.getRoleLocationId());
             List<Community> communities = communitiesDao.countCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
-            for (Community community:communities) {
+            for (Community community : communities) {
                 barChartLabels.add(community.getCommunityName());
                 barChartData.add(community.getActualNumber()); // 临时借用此变量
             }
@@ -242,7 +272,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             countCommunityResidents = communityResidentsDao.countCommunityResidents();
             actualNumber = communitiesDao.sumActualNumber();
             List<Subdistrict> subdistricts = subdistrictsDao.countCommunityResidents();
-            for (Subdistrict subdistrict:subdistricts) {
+            for (Subdistrict subdistrict : subdistricts) {
                 barChartLabels.add(subdistrict.getSubdistrictName());
                 barChartData.add(subdistrict.getSubdistrictId()); // 临时借用此变量
             }
@@ -302,9 +332,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         // 居民地址
         resident.setCommunityResidentAddress(realAddress);
         // 居民电话三个合一
-        String phone1 = CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(3))).trim());
-        String phone2 = CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(4))).trim());
-        String phone3 = CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(5))).trim());
+        String phone1 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(3)))));
+        String phone2 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(4)))));
+        String phone3 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(5)))));
         StringBuilder phones = new StringBuilder();
         if (!StringUtils.isEmpty(phone1)) {
             phones.append(phone1);
@@ -323,7 +353,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         resident.setCommunityResidentSubcontractor(String.valueOf(ExcelUtil.getCellValue(row.getCell(6))).replaceAll(communityAliasName, ""));
         // 社区名称
         Integer communityId = communitiesDao.selectCommunityIdByCommunityName(communityAliasName);
-        //System.out.println("--------------------------------社区编号：" + communityId + "---" + communityAliasName + "---------------------------------");
         if (communityId == null) {
             throw new BusinessException("社区编号" + communityAliasName);
         }
@@ -332,30 +361,50 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     /**
-     * 联系方式数组处理
+     * 添加、修改到数据库前处理
      *
      * @param communityResident
      * @return
      */
     private CommunityResident multiplePhoneHandler(CommunityResident communityResident) throws Exception {
-        communityResident.setCommunityResidentName(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentName().trim())));
-        communityResident.setCommunityResidentAddress(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentAddress().trim())));
-        communityResident.setCommunityResidentSubcontractor(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentSubcontractor().trim())));
-        // 联系方式数组处理
+//        社区居民姓名
+        communityResident.setCommunityResidentName(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentName())).replaceAll("—", "-"));
+//        社区居民地址
+        communityResident.setCommunityResidentAddress(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentAddress())).replaceAll("—", "-"));
+//        社区分包人
+        communityResident.setCommunityResidentSubcontractor(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentSubcontractor())).replaceAll("—", "-"));
+//        联系方式数组处理
         StringBuilder tempPhone = new StringBuilder();
         if (!StringUtils.isEmpty(communityResident.getCommunityResidentPhone1())) {
-            tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone1().trim()))).append(",");
+            tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone1())).replaceAll("—", "-")).append(",");
         }
         if (!StringUtils.isEmpty(communityResident.getCommunityResidentPhone2())) {
-            tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone2().trim()))).append(",");
+            tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone2())).replaceAll("—", "-")).append(",");
         }
         if (!StringUtils.isEmpty(communityResident.getCommunityResidentPhone3())) {
-            tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone3().trim()))).append(",");
+            tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone3())).replaceAll("—", "-")).append(",");
         }
         communityResident.setCommunityResidentPhones(tempPhone.toString().substring(0, tempPhone.length() - 1));
+//        编辑时间
         communityResident.setCommunityResidentEditTime(new Timestamp(new Date().getTime()));
         return communityResident;
     }
 
-
+    /**
+     * 获取单位
+     *
+     * @param communityResident
+     * @param communities
+     * @return
+     * @throws Exception
+     */
+    private Integer getCompany(CommunityResident communityResident, List<Community> communities) throws Exception {
+        int communitiesLength = communities.size();
+        Integer[] communityIds = new Integer[communitiesLength];
+        for (int i = 0; i < communitiesLength; i++) {
+            communityIds[i] = communities.get(i).getCommunityId();
+        }
+        communityResident.setCommunityIds(communityIds);
+        return communityResidentsDao.countCommunityResidentsByCommunityResidentAndCommunityIds(communityResident);
+    }
 }

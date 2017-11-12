@@ -14,14 +14,12 @@
 				<tr>
 					<th style="width: 10%">序号</th>
 					<th style="width: 25%">权限名</th>
-					<th style="width: 30%">权限描述</th>
 					<th style="width: 35%">操作</th>
 				</tr>
 				<c:forEach items="${userPrivileges}" var="userPrivilege" varStatus="status">
 					<tr>
 						<td>${status.count}</td>
 						<td>${userPrivilege.privilegeName}</td>
-						<td>${userPrivilege.privilegeDescription}</td>
 						<td>
 							<a href="${pageContext.request.contextPath}/system/user_role/privilege/edit.action?id=${userPrivilege.privilegeId}" class="btn btn-default operation" role="button">修改</a>
                             <a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete.action', ${userPrivilege.privilegeId}, '${_token}');">删除</a>

@@ -3,13 +3,13 @@ package www.action;
 import java.util.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
-import www.entity.Community;
-import www.entity.SystemUser;
-import www.entity.TreeMenu;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.DataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -23,6 +23,7 @@ import annotation.SystemUserAuth;
 import exception.BusinessException;
 import www.entity.Subdistrict;
 import www.service.SubdistrictService;
+import www.validator.SubdistrictInputValidator;
 
 /**
  * 街道控制器
@@ -33,6 +34,16 @@ import www.service.SubdistrictService;
 public class SubdistrictAction {
     @Resource
     private SubdistrictService subdistrictService;
+    @Autowired
+    private HttpServletRequest request;
+
+    @InitBinder
+    public void initBinder(DataBinder binder) {
+        String validFunction = (String) request.getSession().getAttribute("validFunction");
+        if ("subdistrictCreateOrEditHandle".equals(validFunction)) {
+            binder.replaceValidators(new SubdistrictInputValidator(subdistrictService, request));
+        }
+    }
 
     /**
      * 街道列表
@@ -62,7 +73,7 @@ public class SubdistrictAction {
     @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String createSubdistrict() {
-        return "subdistrict/create";
+        return "subdistrict/edit";
     }
 
     /**
@@ -118,7 +129,7 @@ public class SubdistrictAction {
     }
 
     /**
-     * 使用AJAX技术通过街道ID删除街道
+     * 使用AJAX技术通过街道编号删除
      *
      * @param id
      * @return
@@ -138,43 +149,5 @@ public class SubdistrictAction {
             map.put("message", "删除街道失败！");
         }
         return map;
-    }
-
-    /**
-     * 使用AJAX技术列出所有社区居委会
-     *
-     * @return
-     */
-    @RequestMapping(value = "/ajax_select", method = RequestMethod.GET)
-    @VerifyCSRFToken
-    public @ResponseBody
-    Set<TreeMenu> findCommunityForAjax(HttpSession session) {
-        try {
-            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            Integer roleId = systemUser.getUserRole().getRoleId();
-            Integer roleLocationId = systemUser.getRoleLocationId();
-            Set<Subdistrict> subdistricts = subdistrictService.findCommunitiesAndSubdistrictsByRole(roleId, roleLocationId);
-            Set<TreeMenu> treeMenus = new HashSet<TreeMenu>();
-            for (Subdistrict subdistrict : subdistricts) {
-                TreeMenu treeMenu = new TreeMenu();
-                treeMenu.setId(subdistrict.getSubdistrictId());
-                treeMenu.setName(subdistrict.getSubdistrictName());
-                if (treeMenus.size() == 0) {
-                    treeMenu.setSpread(true);
-                }
-                List<TreeMenu> children = new ArrayList<TreeMenu>();
-                for (Community community : subdistrict.getCommunities()) {
-                    TreeMenu childrenTree = new TreeMenu();
-                    childrenTree.setId(community.getCommunityId());
-                    childrenTree.setName(community.getCommunityName());
-                    children.add(childrenTree);
-                }
-                treeMenu.setChildren(children);
-                treeMenus.add(treeMenu);
-            }
-            return treeMenus;
-        } catch (Exception e) {
-            throw new BusinessException("查找社区失败！", e);
-        }
     }
 }

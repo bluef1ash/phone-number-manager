@@ -4,7 +4,12 @@ import annotation.RefreshCsrfToken;
 import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
 import com.github.pagehelper.PageInfo;
+import constant.SystemConstant;
 import exception.BusinessException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
+import org.springframework.validation.DataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import www.entity.*;
 import www.service.*;
 import org.springframework.stereotype.Controller;
@@ -15,6 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import utils.CsrfTokenUtil;
+import www.validator.SubdistrictInputValidator;
+import www.validator.SystemUserInputValidator;
+import www.validator.UserPrivilegeInputValidator;
+import www.validator.UserRoleInputValidator;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -44,23 +53,39 @@ public class UserAndRoleAction {
     private CommunityService communityService;
     @Resource
     private SubdistrictService subdistrictService;
+    @Autowired
+    private HttpServletRequest request;
+
+    @InitBinder
+    public void initBinder(DataBinder binder) {
+        String validFunction = (String) request.getSession().getAttribute("validFunction");
+        if ("systemUserAddOrEditHandle".equals(validFunction)) {
+            binder.replaceValidators(new SystemUserInputValidator(systemUserService, request));
+        } else if ("systemUserRoleCreateOrEditHandle".equals(validFunction)) {
+            binder.replaceValidators(new UserRoleInputValidator(userRoleService, request));
+        } else if ("systemUserPrivilegeCreateOrEditHandle".equals(validFunction)) {
+            binder.replaceValidators(new UserPrivilegeInputValidator(userPrivilegeService, request));
+        }
+    }
 
     /**
      * 系统用户列表
      *
+     * @param model
+     * @param page
      * @return
      */
     @RequestMapping(value = "/user/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String systemUserList(Map<String, Object> map, Integer page) {
+    public String systemUserList(Model model, Integer page) {
         try {
             Map<String, Object> systemUsers = systemUserService.findSystemUsersAndRoles(page, null);
-            map.put("systemUsers", systemUsers.get("data"));
-            map.put("pageInfo", systemUsers.get("pageInfo"));
+            model.addAttribute("systemUsers", systemUsers.get("data"));
+            model.addAttribute("pageInfo", systemUsers.get("pageInfo"));
+            return "user/list";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "user/list";
     }
 
     /**
@@ -90,60 +115,58 @@ public class UserAndRoleAction {
     /**
      * 添加系统用户
      *
-     * @param map
+     * @param model
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/user/create", method = RequestMethod.GET)
-    public String createSystemUser(Map<String, Object> map) {
+    public String createSystemUser(Model model) {
         try {
             List<UserRole> userRoles = userRoleService.findObjects();
-            map.put("userRoles", userRoles);
+            model.addAttribute("userRoles", userRoles);
+            return "user/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "user/create";
     }
 
     /**
      * 修改系统用户
      *
-     * @param map
+     * @param model
      * @param id
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/user/edit", method = RequestMethod.GET)
-    public String editSystemUser(Map<String, Object> map, Integer id) {
-        if (id != null) {
-            try {
-                SystemUser user = systemUserService.findSystemUsersAndRoles(id);
-                List<UserRole> userRoles = userRoleService.findObjects();
-                map.put("systemUser", user);
-                map.put("userRoles", userRoles);
-            } catch (Exception e) {
-                throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-            }
+    public String editSystemUser(Model model, Integer id) {
+        try {
+            SystemUser user = systemUserService.findSystemUsersAndRoles(id);
+            List<UserRole> userRoles = userRoleService.findObjects();
+            model.addAttribute("user", user);
+            model.addAttribute("userRoles", userRoles);
+            return "user/edit";
+        } catch (Exception e) {
+            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "user/edit";
     }
 
     /**
      * 添加与修改处理系统用户
      *
      * @param request
-     * @param map
+     * @param model
      * @param systemUser
      * @param bindingResult
      * @return
      */
     @RequestMapping(value = "/user/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
-    public String systemUserAddOrEditHandle(HttpServletRequest request, Map<String, Object> map, @Validated SystemUser systemUser, BindingResult bindingResult) {
+    public String systemUserAddOrEditHandle(HttpServletRequest request, Model model, @Validated SystemUser systemUser, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
             List<ObjectError> allErrors = bindingResult.getAllErrors();
-            map.put("messageErrors", allErrors);
+            model.addAttribute("messageErrors", allErrors);
             return "user/edit";
         }
         if ("POST".equals(request.getMethod())) {
@@ -165,7 +188,7 @@ public class UserAndRoleAction {
     }
 
     /**
-     * 使用AJAX技术通过系统用户ID删除系统用户
+     * 使用AJAX技术通过系统用户编号删除系统用户
      *
      * @param id
      * @return
@@ -185,7 +208,8 @@ public class UserAndRoleAction {
     }
 
     /**
-     * 通过Ajax技术获取单位
+     * 使用Ajax技术通过系统角色编号获取单位
+     *
      * @param roleId
      * @return
      */
@@ -224,83 +248,84 @@ public class UserAndRoleAction {
     /**
      * 系统角色列表
      *
-     * @param map
+     * @param model
+     * @param page
      * @return
      */
     @RequestMapping(value = "/role/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String systemUserRoleList(Map<String, Object> map, Integer page) {
+    public String systemUserRoleList(Model model, Integer page) {
         try {
             Map<String, Object> userRoles = userRoleService.findObjects(page, null);
             @SuppressWarnings("unchecked")
             PageInfo<UserRole> pageInfo = (PageInfo<UserRole>) userRoles.get("pageInfo");
-            map.put("userRoles", userRoles.get("data"));
-            map.put("pageInfo", pageInfo);
+            model.addAttribute("userRoles", userRoles.get("data"));
+            model.addAttribute("pageInfo", pageInfo);
+            return "role/list";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "role/list";
     }
 
     /**
      * 添加系统角色
      *
-     * @param map
+     * @param model
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/role/create", method = RequestMethod.GET)
-    public String createSystemUserRole(Map<String, Object> map) {
+    public String createSystemUserRole(Model model) {
         try {
             List<UserRole> userRoles = userRoleService.findObjects();
             List<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesAndsubPrivilegesAll();
-            map.put("userRoles", userRoles);
-            map.put("userPrivileges", userPrivileges);
+            model.addAttribute("userRoles", userRoles);
+            model.addAttribute("userPrivileges", userPrivileges);
+            return "role/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "role/create";
     }
 
     /**
      * 编辑系统角色
      *
-     * @param map
+     * @param model
      * @param id
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/role/edit", method = RequestMethod.GET)
-    public String editSystemUserRole(Map<String, Object> map, Integer id) {
+    public String editSystemUserRole(Model model, Integer id) {
         try {
             List<UserRole> userRoles = userRoleService.findObjects();
             UserRole userRole = userRoleService.findObject(id);
             List<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesAndsubPrivilegesAll();
-            map.put("userRoles", userRoles);
-            map.put("userRole", userRole);
-            map.put("userPrivileges", userPrivileges);
+            model.addAttribute("userRoles", userRoles);
+            model.addAttribute("userRole", userRole);
+            model.addAttribute("userPrivileges", userPrivileges);
+            return "role/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "role/edit";
     }
 
     /**
      * 添加与修改处理系统角色
      *
      * @param request
-     * @param map
+     * @param model
      * @param userRole
      * @param bindingResult
      * @return
      */
     @RequestMapping(value = "/role/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
-    public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Map<String, Object> map, @Validated UserRole userRole, Integer[] privilegeIds, BindingResult bindingResult) {
+    public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserRole userRole, Integer[] privilegeIds, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
             List<ObjectError> allErrors = bindingResult.getAllErrors();
-            map.put("messageErrors", allErrors);
+            model.addAttribute("messageErrors", allErrors);
             return "role/edit";
         }
         if ("POST".equals(request.getMethod())) {
@@ -327,7 +352,7 @@ public class UserAndRoleAction {
     }
 
     /**
-     * 使用AJAX技术通过系统用户角色ID删除系统用户角色
+     * 使用AJAX技术通过系统用户角色编号删除系统用户角色
      *
      * @param id
      * @return
@@ -352,82 +377,82 @@ public class UserAndRoleAction {
     /**
      * 系统权限列表
      *
-     * @param map
+     * @param model
+     * @param page
      * @return
      */
     @RequestMapping(value = "/privilege/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String systemUserPrivilegeList(Map<String, Object> map, Integer page) {
+    public String systemUserPrivilegeList(Model model, Integer page) {
         try {
             Map<String, Object> userPrivileges = userPrivilegeService.findObjects(page, null);
             @SuppressWarnings("unchecked")
             PageInfo<UserPrivilege> pageInfo = (PageInfo<UserPrivilege>) userPrivileges.get("pageInfo");
-            map.put("userPrivileges", userPrivileges.get("data"));
-            map.put("pageInfo", pageInfo);
+            model.addAttribute("userPrivileges", userPrivileges.get("data"));
+            model.addAttribute("pageInfo", pageInfo);
+            return "privilege/list";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "privilege/list";
     }
 
     /**
      * 添加系统权限
      *
+     * @param model
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/privilege/create", method = RequestMethod.GET)
-    public String createSystemUserPrivilege(Map<String, List<UserPrivilege>> map) {
+    public String createSystemUserPrivilege(Model model) {
         List<UserPrivilege> userPrivileges;
         try {
             userPrivileges = userPrivilegeService.findObjects();
-            map.put("userPrivileges", userPrivileges);
+            model.addAttribute("userPrivileges", userPrivileges);
+            return "privilege/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "privilege/create";
     }
 
     /**
      * 编辑系统权限
      *
-     * @param map
+     * @param model
      * @param id
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/privilege/edit", method = RequestMethod.GET)
-    public String editSystemUserPrivilege(Map<String, Object> map, Integer id) {
-        if (id != null) {
-            try {
-                List<UserPrivilege> userPrivileges = userPrivilegeService.findObjects();
-                UserPrivilege userPrivilege = userPrivilegeService.findObject(id);
-                System.out.println(userPrivilege);
-                map.put("userPrivileges", userPrivileges);
-                map.put("userPrivilege", userPrivilege);
-            } catch (Exception e) {
-                throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-            }
+    public String editSystemUserPrivilege(Model model, Integer id) {
+        try {
+            List<UserPrivilege> userPrivileges = userPrivilegeService.findObjects();
+            UserPrivilege userPrivilege = userPrivilegeService.findObject(id);
+            System.out.println(userPrivilege);
+            model.addAttribute("userPrivileges", userPrivileges);
+            model.addAttribute("userPrivilege", userPrivilege);
+            return "privilege/edit";
+        } catch (Exception e) {
+            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "privilege/edit";
     }
 
     /**
      * 添加与修改处理系统权限
      *
      * @param request
-     * @param map
+     * @param model
      * @param userPrivilege
      * @param bindingResult
      * @return
      */
     @RequestMapping(value = "/privilege/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
-    public String systemUserPrivilegeCreateOrEditHandle(HttpServletRequest request, Map<String, Object> map, @Validated UserPrivilege userPrivilege, BindingResult bindingResult) {
+    public String systemUserPrivilegeCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserPrivilege userPrivilege, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
             List<ObjectError> allErrors = bindingResult.getAllErrors();
-            map.put("messageErrors", allErrors);
+            model.addAttribute("messageErrors", allErrors);
             return "privilege/edit";
         }
         if ("POST".equals(request.getMethod())) {
@@ -449,7 +474,7 @@ public class UserAndRoleAction {
     }
 
     /**
-     * 使用AJAX技术通过系统用户权限ID删除系统用户权限
+     * 使用AJAX技术通过系统用户权限编号删除系统用户权限
      *
      * @param id
      * @return

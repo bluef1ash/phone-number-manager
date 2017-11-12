@@ -120,6 +120,11 @@ public class BaseServiceImpl<T> implements BaseService<T> {
         return baseDao.selectObjectsForIdAndName();
     }
 
+    @Override
+    public List<T> findObjects(T object) throws Exception {
+        return baseDao.selectObjectsByObject(object);
+    }
+
     /**
      * 查找对象的方法
      *

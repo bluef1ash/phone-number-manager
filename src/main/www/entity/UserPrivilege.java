@@ -10,15 +10,10 @@ import java.util.List;
 public class UserPrivilege implements Serializable {
 	private static final long serialVersionUID = 4308123257401857501L;
 	private Integer privilegeId;
-	@NotNull(message="{userPrivilege.privilegeName.isNull}")
 	private String privilegeName;
-	@NotNull(message="{userPrivilege.constraintAuth.isNull}")
 	private String constraintAuth;
-	@NotNull(message="{userPrivilege.uri.isNull}")
 	private String uri;
-	@NotNull(message="{userPrivilege.higherPrivilege.isNull}")
 	private Integer higherPrivilege;
-	@NotNull(message="{userPrivilege.iconName.isNull}")
 	private String iconName;
 	private Integer orders = 0;
 	private Integer isDisplay;

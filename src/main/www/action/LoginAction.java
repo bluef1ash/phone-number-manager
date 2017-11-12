@@ -55,19 +55,16 @@ public class LoginAction {
     @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> ajaxLogin(HttpServletRequest request, HttpSession session, SystemUser systemUser, @RequestParam("captcha") String captcha) {
-        Map<String, Object> map = null;
-        if (systemUser != null) {
-            try {
-                map = systemUserService.loginCheck(request, systemUser, captcha, sRand);
-                if (map.containsKey("systemUser")) {
-                    session.setAttribute("systemUser", map.get("systemUser"));
-                    session.setAttribute("privilegeMap", map.get("privilegeMap"));
-                }
-            } catch (Exception e) {
-                throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
+        try {
+            Map<String, Object> map = systemUserService.loginCheck(request, systemUser, captcha, sRand);
+            if (map.containsKey("systemUser")) {
+                session.setAttribute("systemUser", map.get("systemUser"));
+                session.setAttribute("privilegeMap", map.get("privilegeMap"));
             }
+            return map;
+        } catch (Exception e) {
+            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return map;
     }
 
     /**

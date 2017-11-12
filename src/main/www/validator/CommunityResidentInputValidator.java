@@ -1,5 +1,7 @@
 package www.validator;
 
+import exception.BusinessException;
+import utils.CommonUtil;
 import www.entity.CommunityResident;
 import www.service.CommunityResidentService;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +49,7 @@ public class CommunityResidentInputValidator implements Validator {
                 errors.rejectValue(field, null, message);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new BusinessException("社区验证失败！", e);
         }
     }
 
@@ -58,22 +60,37 @@ public class CommunityResidentInputValidator implements Validator {
      * @return
      */
     private Boolean checkInput(CommunityResident communityResident) throws Exception {
-        // 验证姓名+地址重复
-        String nameAddress = communityResident.getCommunityResidentName() + communityResident.getCommunityResidentAddress();
+        String communityResidentName = CommonUtil.replaceBlank(communityResident.getCommunityResidentName()).replaceAll("—", "-");
+        if (communityResidentName.length() > 10) {
+            message = "社区居民姓名不能超过10个字符！";
+            return false;
+        }
+        String communityResidentAddress = CommonUtil.replaceBlank(communityResident.getCommunityResidentAddress()).replaceAll("—", "-");
+        if (communityResidentAddress.length() > 255) {
+            message = "社区居民地址不能超过255个字符！";
+            return false;
+        }
+        String subcontractor = CommonUtil.replaceBlank(communityResident.getCommunityResidentSubcontractor());
+        if (subcontractor.length() > 10) {
+            message = "社区分包人不能超过10个字符！";
+            return false;
+        }
         Integer communityResidentId = communityResident.getCommunityResidentId();
+        // 验证姓名+地址重复
+        String nameAddress = communityResidentName + communityResidentAddress;
         List<CommunityResident> isNameAndAddressRepeat = communityResidentService.findCommunityResidentByNameAndAddress(nameAddress, communityResidentId);
         if (!checkedListData(isNameAndAddressRepeat, false)) {
             return false;
         }
         List<String> phones = new ArrayList<String>();
         if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone1())) {
-            phones.add(communityResident.getCommunityResidentPhone1());
+            phones.add(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone1()).replaceAll("—", "-"));
         }
         if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone2())) {
-            phones.add(communityResident.getCommunityResidentPhone2());
+            phones.add(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone2()).replaceAll("—", "-"));
         }
         if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone3())) {
-            phones.add(communityResident.getCommunityResidentPhone3());
+            phones.add(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone3()).replaceAll("—", "-"));
         }
         field = "communityResidentPhones";
         // 联系方式合法
@@ -81,11 +98,8 @@ public class CommunityResidentInputValidator implements Validator {
             return false;
         }
         // 联系方式重复
-        List<CommunityResident> isPhonesRepeat = communityResidentService.findCommunityResidentByPhones(communityResidentId, phones);
-        if (!checkedListData(isPhonesRepeat, true)) {
-            return false;
-        }
-        return true;
+        List<CommunityResident> isPhonesRepeat = communityResidentService.findCommunityResidentByPhones(phones, communityResidentId);
+        return checkedListData(isPhonesRepeat, true);
     }
 
     /**
@@ -94,7 +108,7 @@ public class CommunityResidentInputValidator implements Validator {
      * @return
      */
     private boolean checkedPhone(List<String> residentPhones) {
-        Pattern regex = Pattern.compile("(?iUs)^(?:[\\(（]?(?:[0-9]{3,4})?\\s*[\\)）-]?\\s*[0-9]{7,9}\\s*[-转]?\\s*(?:[0-9]{2,6})?)|(?:[\\(]?[\\+]?[\\(]?(?:86)?[\\)]?0?1[3458]{1}[0-9]{9})$");
+        Pattern regex = Pattern.compile("(?iUs)^(?:(?:[\\(（]?(?:[0-9]{3,4})?\\s*[\\)）-])?\\d{7,9}(?:[-转]\\d{2,6})?)|(?:[\\(\\+]?(?:86)?[\\)]?0?1[34578]{1}\\d{9})$");
         Matcher matcher = null;
         for (String residentPhone : residentPhones) {
             // 验证固定电话
@@ -117,7 +131,7 @@ public class CommunityResidentInputValidator implements Validator {
     private boolean checkedListData(List<CommunityResident> isNameAndAddressRepeat, Boolean isCheckedPhone) {
         StringBuilder communityNames = new StringBuilder();
         if (isNameAndAddressRepeat.size() > 0) {
-            String checkType = null;
+            String checkType;
             if (isCheckedPhone) {
                 checkType = "联系方式";
                 field = "communityResidentPhones";

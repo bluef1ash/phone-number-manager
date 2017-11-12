@@ -11,11 +11,8 @@ import javax.validation.constraints.NotNull;
 public class Community implements Serializable {
 	private static final long serialVersionUID = 632055591097222014L;
 	private Integer communityId;
-	@NotNull(message="{community.communityName.isNull}")
 	private String communityName;
-	@NotNull(message="{community.communityTelephone.isNull}")
 	private String communityTelephone;
-	@NotNull(message="{community.actualNumber.isNull}")
 	private Integer actualNumber;
 	private Integer subdistrictId;
 	private List<CommunityResident> communityResidents;

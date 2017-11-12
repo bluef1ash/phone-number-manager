@@ -9,11 +9,14 @@ import javax.servlet.http.HttpServletRequest;
 
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -24,6 +27,7 @@ import www.entity.Community;
 import www.entity.Subdistrict;
 import www.service.CommunityService;
 import www.service.SubdistrictService;
+import www.validator.CommunityInputValidator;
 
 /**
  * 社区控制器
@@ -36,6 +40,16 @@ public class CommunityAction {
     private CommunityService communityService;
     @Resource
     private SubdistrictService subdistrictService;
+    @Autowired
+    private HttpServletRequest request;
+
+    @InitBinder
+    public void initBinder(DataBinder binder) {
+        String validFunction = (String) request.getSession().getAttribute("validFunction");
+        if ("communityCreateOrEditHandle".equals(validFunction)) {
+            binder.replaceValidators(new CommunityInputValidator(communityService, request));
+        }
+    }
 
     /**
      * 社区列表
@@ -73,7 +87,7 @@ public class CommunityAction {
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "community/create";
+        return "community/edit";
     }
 
     /**
@@ -110,10 +124,16 @@ public class CommunityAction {
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     public String communityCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Community community, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            // 输出错误信息
-            List<ObjectError> allErrors = bindingResult.getAllErrors();
-            model.addAttribute("messageErrors", allErrors);
-            return "community/edit";
+            try {
+                // 输出错误信息
+                List<ObjectError> allErrors = bindingResult.getAllErrors();
+                model.addAttribute("messageErrors", allErrors);
+                List<Subdistrict> subdistricts = subdistrictService.findObjects();
+                model.addAttribute("subdistricts", subdistricts);
+                return "community/edit";
+            } catch (Exception e) {
+                throw new BusinessException("展示社区失败！", e);
+            }
         }
         if ("POST".equals(request.getMethod())) {
             try {
@@ -132,7 +152,7 @@ public class CommunityAction {
     }
 
     /**
-     * 使用AJAX技术通过社区ID删除社区
+     * 使用AJAX技术通过社区编号删除社区
      *
      * @param id
      * @return

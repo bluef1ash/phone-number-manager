@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <jsp:include page="/jsp/layouts/header.jsp" />
-		<title>修改街道 - 街道管理 - 社区居民联系电话管理系统</title>
+		<title><c:choose><c:when test="${subdistrict.subdistrictId == null}">添加</c:when><c:otherwise>修改</c:otherwise></c:choose>街道 - 街道管理 - 社区居民联系电话管理系统</title>
 	</head>
 	<body>
         <c:if test="${messageErrors != null}">
@@ -34,9 +34,11 @@
 					</tr>
 					<tr>
 						<td colspan="2" class="text-center">
-							<input type="hidden" name="subdistrictId" value="${subdistrict.subdistrictId}">
+                            <c:if test="${subdistrict.subdistrictId != null}">
+                                <input type="hidden" name="subdistrictId" value="${subdistrict.subdistrictId}">
+                                <input type="hidden" name="_method" value="PUT">
+                            </c:if>
 							<input type="hidden" name="_token" value="${_token}">
-                            <input type="hidden" name="_method" value="PUT">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="保存" class="btn btn-primary">
 						</td>

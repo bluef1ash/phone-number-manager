@@ -11,9 +11,7 @@ import javax.validation.constraints.NotNull;
 public class SystemUser implements Serializable {
 	private static final long serialVersionUID = -5035917619026010434L;
 	private Integer systemUserId;
-	@NotNull(message="{systemUser.username.isNull}")
 	private String username;
-	@NotNull(message="{systemUser.password.isNull}")
 	private String password;
 	private Timestamp loginTime = new Timestamp(1000);
 	private String loginIp = "";

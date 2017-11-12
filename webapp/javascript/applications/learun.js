@@ -375,7 +375,7 @@
                             if (userPrivileges[i].subUserPrivileges != null) {
                                 _html += '<ul class="treeview-menu">';
                                 for (var j = 0; j < userPrivileges[i].subUserPrivileges.length; j++) {
-                                    _html += '<li><a class="menuItem" href="' + basePath + userPrivileges[i].subUserPrivileges[j].uri.substring(1) + '" data-id="' + userPrivileges[i].subUserPrivileges[j].privilegeId + '"><i class="' + userPrivileges[i].subUserPrivileges[j].iconName + '"></i>' + userPrivileges[i].subUserPrivileges[j].privilegeName + '</a></li>';
+                                    _html += '<li><a class="menuItem" href="' + basePath + userPrivileges[i].subUserPrivileges[j].uri.substring(1) + '.action" data-id="' + userPrivileges[i].subUserPrivileges[j].privilegeId + '"><i class="' + userPrivileges[i].subUserPrivileges[j].iconName + '"></i>' + userPrivileges[i].subUserPrivileges[j].privilegeName + '</a></li>';
                                 }
                                 _html += '</ul>';
                             }

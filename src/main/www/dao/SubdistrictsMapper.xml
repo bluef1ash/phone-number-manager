@@ -109,8 +109,28 @@
     </select>
     <select id="selectObjectsForIdAndName" resultMap="subdistrictResultMap">
         SELECT
-        `subdistrict_id`,
-        `name`
+            `subdistrict_id`,
+            `name`
         FROM `pm_subdistricts`
+    </select>
+    <select id="selectObjectsByObject" resultMap="subdistrictResultMap">
+        SELECT
+        `subdistrict_id`,
+        `name`,
+        `telephone`
+        FROM `pm_subdistricts`
+        <where>
+            <choose>
+                <when test="subdistrictId != null">
+                    `subdistrict_id` = #{subdistrictId}
+                </when>
+                <when test="subdistrictName != null">
+                    OR `name` = #{subdistrictName}
+                </when>
+                <when test="telephone != null">
+                    OR `telephone` = #{telephone}
+                </when>
+            </choose>
+        </where>
     </select>
 </mapper>

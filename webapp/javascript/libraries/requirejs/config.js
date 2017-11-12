@@ -10,6 +10,7 @@ require.config({
         layui: jsPath + "libraries/layui/layui",
         chart: jsPath + "libraries/chart.min",
         zeroClipboard: jsPath + "libraries/zeroclipboard/ZeroClipboard.min",
+        md5: jsPath + "libraries/md5.min",
         commonFunction: jsPath + "libraries/common"
     },
     shim: {
@@ -30,6 +31,9 @@ require.config({
                     dir: jsPath + "libraries/layui/"
                 });
             }
+        },
+        md5: {
+            exports: "md5"
         }
     }
 });

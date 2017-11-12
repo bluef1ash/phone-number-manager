@@ -17,10 +17,10 @@ public final class SystemConstant {
     /**
      * 社区用户角色编号
      */
-    public static final int COMMUNITY_ROLE_ID = 2;
+    public static final int COMMUNITY_ROLE_ID = 3;
 
     /**
      * 街道用户角色编号
      */
-    public static final int SUBDISTRICT_ROLE_ID = 3;
+    public static final int SUBDISTRICT_ROLE_ID = 2;
 }

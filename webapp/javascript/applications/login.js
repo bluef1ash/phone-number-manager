@@ -1,4 +1,4 @@
-require(["jquery", "layui"], function () {
+require(["jquery", "layui", "md5"], function () {
     $(function (){
         /**
          * 用户名输入框键盘事件
@@ -65,7 +65,7 @@ require(["jquery", "layui"], function () {
                             "async": false,
                             "data": {
                                 "username": username_value,
-                                "password": password_value,
+                                "password": md5(password_value),
                                 "captcha": captcha_value,
                                 "_token": $("input[name='_token']").val()
                             },

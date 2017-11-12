@@ -11,10 +11,8 @@ import javax.validation.constraints.NotNull;
 public class UserRole implements Serializable {
 	private static final long serialVersionUID = 1243539279689395722L;
 	private Integer roleId;
-	@NotNull(message="{userRole.roleName.isNull}")
 	private String roleName;
 	private String roleDescription;
-	@NotNull(message="{userRole.higherRole.isNull}")
 	private Integer higherRole;
 	private Set<SystemUser> systemUsers;
 	private Set<UserPrivilege> userPrivileges;

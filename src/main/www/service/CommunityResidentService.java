@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alibaba.fastjson.JSONArray;
 import www.entity.CommunityResident;
 import org.apache.poi.ss.usermodel.Workbook;
+import www.entity.SystemUser;
 
 import javax.servlet.http.HttpSession;
 
@@ -42,6 +43,7 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     /**
      * 通过社区居民查找匹配的社区居民
      *
+     * @param systemUser
      * @param communityResident
      * @param company
      * @param pageNum
@@ -49,7 +51,7 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @return
      * @throws Exception
      */
-    public Map<String, Object> findCommunityResidentByCommunityResident(CommunityResident communityResident, String company, Integer pageNum, Integer pageSize) throws Exception;
+    public Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, CommunityResident communityResident, String company, Integer pageNum, Integer pageSize) throws Exception;
 
     /**
      * 从Excel导入数据
@@ -63,12 +65,13 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     /**
      * 查找所有社区居民及所属社区
      *
+     * @param systemUser
      * @param pageNum
      * @param pageSize
      * @return
      * @throws Exception
      */
-    public Map<String, Object> findCommunityResidentsAndCommunity(Integer pageNum, Integer pageSize) throws Exception;
+    public Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Integer pageNum, Integer pageSize) throws Exception;
 
     /**
      * 通过居民姓名与地址查找所属社区
@@ -83,12 +86,12 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     /**
      * 通过居民联系方式与地址查找所属社区
      *
-     * @param communityResidentId
      * @param phones
+     * @param communityResidentId
      * @return
      * @throws Exception
      */
-    public List<CommunityResident> findCommunityResidentByPhones(Integer communityResidentId, List<String> phones) throws Exception;
+    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Integer communityResidentId) throws Exception;
 
     /**
      * 通过系统用户角色编号与定位角色编号查找社区居民及所属社区

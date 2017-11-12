@@ -10,8 +10,8 @@ import javax.servlet.http.HttpSession;
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSONArray;
-import exception.CsrfException;
-import www.entity.SystemUser;
+import www.entity.*;
+import www.service.SubdistrictService;
 import www.validator.CommunityResidentInputValidator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.*;
 
 import annotation.SystemUserAuth;
 import exception.BusinessException;
-import www.entity.Community;
-import www.entity.CommunityResident;
 import www.service.CommunityResidentService;
 import www.service.CommunityService;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +42,8 @@ public class CommunityResidentAction {
     private CommunityResidentService communityResidentService;
     @Resource
     private CommunityService communityService;
+    @Resource
+    private SubdistrictService subdistrictService;
     @Autowired
     private HttpServletRequest request;
 
@@ -58,6 +58,8 @@ public class CommunityResidentAction {
     /**
      * 社区居民列表
      *
+     * @param httpSession
+     * @param httpServletRequest
      * @param model
      * @param page
      * @param communityResident
@@ -66,15 +68,16 @@ public class CommunityResidentAction {
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String communityResidentList(HttpServletRequest httpServletRequest, Model model, Integer page, CommunityResident communityResident, String company) {
+    public String communityResidentList(HttpSession httpSession, HttpServletRequest httpServletRequest, Model model, Integer page, CommunityResident communityResident, String company) {
         try {
             Map<String, Object> communityResidentMap;
             String queryString = httpServletRequest.getQueryString();
+            SystemUser systemUser = (SystemUser) httpSession.getAttribute("systemUser");
             if (queryString == null || !queryString.contains("communityResidentName")) {
-                communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(page, null);
+                communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(systemUser, page, null);
             } else {
                 queryString = queryString.replaceAll("page=\\d+&", "");
-                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(communityResident, company, page, null);
+                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(systemUser, communityResident, company, page, null);
                 model.addAttribute("communityResident", communityResident);
             }
             Map<String, Object> dataAndPagination = (Map<String, Object>) communityResidentMap.get("dataAndPagination");
@@ -83,10 +86,8 @@ public class CommunityResidentAction {
             model.addAttribute("count", communityResidentMap.get("count"));
             model.addAttribute("queryString", queryString);
             model.addAttribute("company", company);
-        } catch (CsrfException e1) {
-            throw new CsrfException(e1.getMessage(), e1);
-        } catch (Exception e2) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e2);
+        } catch (Exception e) {
+            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
         return "resident/list";
     }
@@ -94,40 +95,44 @@ public class CommunityResidentAction {
     /**
      * 添加社区居民
      *
+     * @param session
      * @param model
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
-    public String createCommunityResident(Model model) {
+    public String createCommunityResident(HttpSession session, Model model) {
         try {
-            List<Community> communities = communityService.findObjects();
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser);
             model.addAttribute("communities", communities);
+            return "resident/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "resident/create";
     }
 
     /**
      * 编辑社区居民
      *
+     * @param session
      * @param model
      * @param id
      * @return
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
-    public String editCommunityResident(Model model, Integer id) {
+    public String editCommunityResident(HttpSession session, Model model, Integer id) {
         try {
             CommunityResident communityResident = communityResidentService.findCommunityResidentAndCommunityById(id);
-            List<Community> communities = communityService.findObjects();
-            model.addAttribute("communities", communities);
             model.addAttribute("communityResident", communityResident);
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser);
+            model.addAttribute("communities", communities);
+            return "resident/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "resident/edit";
     }
 
     /**
@@ -156,7 +161,6 @@ public class CommunityResidentAction {
         }
         if ("POST".equals(httpServletRequest.getMethod())) {
             try {
-
                 communityResidentService.createCommunityResident(communityResident);
             } catch (Exception e) {
                 throw new BusinessException("添加社区居民失败！", e);
@@ -187,7 +191,6 @@ public class CommunityResidentAction {
             map.put("state", 1);
             map.put("message", "删除社区居民成功！");
         } catch (Exception e) {
-            e.printStackTrace();
             map.put("state", 0);
             map.put("message", "删除社区居民失败！");
         }
@@ -220,7 +223,6 @@ public class CommunityResidentAction {
             map.put("state", state);
             return map;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new BusinessException("上传文件失败！", e);
         }
     }
@@ -240,6 +242,44 @@ public class CommunityResidentAction {
             ExcelUtil.downloadExcelFile(title, headMap, ja, response);
         } catch (Exception e) {
             throw new BusinessException("导出Excel文件失败！");
+        }
+    }
+
+    /**
+     * 使用AJAX技术列出社区居委会
+     *
+     * @return
+     */
+    @RequestMapping(value = "/ajax_select", method = RequestMethod.GET)
+    @VerifyCSRFToken
+    public @ResponseBody
+    Set<TreeMenu> findCommunityForAjax(HttpSession session) {
+        try {
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            Integer roleId = systemUser.getUserRole().getRoleId();
+            Integer roleLocationId = systemUser.getRoleLocationId();
+            Set<Subdistrict> subdistricts = subdistrictService.findCommunitiesAndSubdistrictsByRole(roleId, roleLocationId);
+            Set<TreeMenu> treeMenus = new HashSet<TreeMenu>();
+            for (Subdistrict subdistrict : subdistricts) {
+                TreeMenu treeMenu = new TreeMenu();
+                treeMenu.setId(subdistrict.getSubdistrictId());
+                treeMenu.setName(subdistrict.getSubdistrictName());
+                if (treeMenus.size() == 0) {
+                    treeMenu.setSpread(true);
+                }
+                List<TreeMenu> children = new ArrayList<TreeMenu>();
+                for (Community community : subdistrict.getCommunities()) {
+                    TreeMenu childrenTree = new TreeMenu();
+                    childrenTree.setId(community.getCommunityId());
+                    childrenTree.setName(community.getCommunityName());
+                    children.add(childrenTree);
+                }
+                treeMenu.setChildren(children);
+                treeMenus.add(treeMenu);
+            }
+            return treeMenus;
+        } catch (Exception e) {
+            throw new BusinessException("查找社区失败！", e);
         }
     }
 }

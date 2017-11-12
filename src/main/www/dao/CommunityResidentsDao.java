@@ -42,7 +42,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return
      * @throws Exception
      */
-    public List<CommunityResident> selectCommunityResidentsAndCommunity() throws Exception;
+    public List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityIds(@Param("communityIds") List<Integer> communityIds) throws Exception;
 
     /**
      * 通过姓名+地址查询姓名与社区编号
@@ -57,12 +57,12 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
     /**
      * 通过电话数组查询姓名与社区编号
      *
-     * @param communityResidentId
      * @param residentPhones
+     * @param communityResidentId
      * @return
      * @throws Exception
      */
-    public List<CommunityResident> selectCommunityResidentByPhones(@Param("communityResidentId") Integer communityResidentId, @Param("residentPhones") List<String> residentPhones) throws Exception;
+    public List<CommunityResident> selectCommunityResidentByPhones(@Param("residentPhones") List<String> residentPhones, @Param("communityResidentId") Integer communityResidentId) throws Exception;
 
     /**
      * 通过社区编号查询所属社区居民
@@ -80,7 +80,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return
      * @throws Exception
      */
-    public Integer countCommunityResidentsByCommunityResident(CommunityResident communityResident) throws Exception;
+    public Integer countCommunityResidentsByCommunityResident(@Param("communityResident") CommunityResident communityResident) throws Exception;
 
     /**
      * 通过社区居民查询社区居民与所属社区的数量
@@ -92,12 +92,13 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
     public Integer countCommunityResidentsByCommunityResidentAndCommunityIds(CommunityResident communityResident) throws Exception;
 
     /**
-     * 查询所有社区居民与所属社区的数量
+     * 通过多个社区编号查询所有社区居民与所属社区的数量
      *
+     * @param communityIds
      * @return
      * @throws Exception
      */
-    public Integer countCommunityResidentsAndCommunity() throws Exception;
+    public Integer countCommunityResidentsAndCommunityByCommunityIds(@Param("communityIds") List<Integer> communityIds) throws Exception;
 
     /**
      * 通过社区编号查询社区居民与所属社区的数量
@@ -110,6 +111,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
 
     /**
      * 通过街道编号查询社区居民与所属社区的数量
+     *
      * @param subdistrictId
      * @return
      * @throws Exception
@@ -118,6 +120,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
 
     /**
      * 统计所有社区居民数量
+     *
      * @return
      * @throws Exception
      */

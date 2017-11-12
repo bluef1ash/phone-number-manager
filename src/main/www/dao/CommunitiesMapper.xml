@@ -149,4 +149,24 @@
             `name`
         FROM `pm_communities`
     </select>
+    <select id="selectObjectsByObject" resultMap="communityResultMap">
+        SELECT
+            `community_id`,
+            `name`,
+            `telephone`
+        FROM `pm_communities`
+        <where>
+            <choose>
+                <when test="communityId != null">
+                    `community_id` = #{communityId}
+                </when>
+                <when test="communityName != null">
+                    OR `name` = #{communityName}
+                </when>
+                <when test="telephone != null">
+                    OR `telephone` = #{telephone}
+                </when>
+            </choose>
+        </where>
+    </select>
 </mapper>

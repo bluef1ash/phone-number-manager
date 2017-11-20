@@ -230,20 +230,34 @@ public class ExcelUtil {
         int rowIndex = 0;
         for (Object obj : jsonArray) {
             if (rowIndex == 65535 || rowIndex == 0) {
-                if (rowIndex != 0) sheet = workbook.createSheet();//如果数据超过了，则在第二页显示
-
-                SXSSFRow titleRow = sheet.createRow(0);//表头 rowIndex=0
+                if (rowIndex != 0) {
+                    sheet = workbook.createSheet();//如果数据超过了，则在第二页显示
+                }
+                // 附件格式
+                SXSSFRow fujianTitle = sheet.createRow(rowIndex);
+                fujianTitle.createCell(0).setCellValue("附件2");
+                rowIndex++;
+                // 表头
+                SXSSFRow titleRow = sheet.createRow(rowIndex);
                 titleRow.createCell(0).setCellValue(title);
                 titleRow.getCell(0).setCellStyle(titleStyle);
-                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, headMap.size() - 1));
-
-                SXSSFRow headerRow = sheet.createRow(1); //列头 rowIndex =1
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, headMap.size() - 1));
+                rowIndex++;
+                // 日期
+                SXSSFRow dateRow = sheet.createRow(rowIndex);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+                dateRow.createCell(6).setCellValue("时间：" + simpleDateFormat.format(new Date()));
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 6, 7));
+                rowIndex++;
+                // 列头
+                SXSSFRow headerRow = sheet.createRow(rowIndex);
                 for (int i = 0; i < headers.length; i++) {
                     headerRow.createCell(i).setCellValue(headers[i]);
                     headerRow.getCell(i).setCellStyle(headerStyle);
 
                 }
-                rowIndex = 2;//数据内容从 rowIndex=2开始
+                // 数据内容
+                rowIndex++;
             }
             JSONObject jo = (JSONObject) JSONObject.toJSON(obj);
             SXSSFRow dataRow = sheet.createRow(rowIndex);

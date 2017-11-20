@@ -179,29 +179,39 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Override
     public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Integer roleId, Integer roleLocationId) throws Exception {
         List<CommunityResident> communityResidents = null;
+        List<Integer> communityIds = new ArrayList<Integer>();
         switch (roleId) {
             case SystemConstant.SYSTEM_ROLE_ID:
-                communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityIds(null);
+                communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(null);
                 break;
             case SystemConstant.COMMUNITY_ROLE_ID:
-                communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityId(roleLocationId);
+                communityIds.add(roleLocationId);
+                communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(communityIds);
                 break;
             case SystemConstant.SUBDISTRICT_ROLE_ID:
+                List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(roleLocationId);
+                for (Community community : communities) {
+                    communityIds.add(community.getCommunityId());
+                }
+                communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(communityIds);
                 break;
         }
         if (communityResidents != null) {
             String[] phones = null;
-            int index = 1;
+//            int index = 1;
             for (CommunityResident communityResident : communityResidents) {
-                communityResident.setIndexId(index);
-                String communityName = communityResident.getCommunity().getCommunityName().replaceAll("居委会", "");
+                //communityResident.setIndexId(index);
+                String communityName = communityResident.getCommunity().getCommunityName().replaceAll("居委会", "").replaceAll("社区", "");
+                String subdistrictName = communityResident.getCommunity().getSubdistrict().getSubdistrictName().replaceAll("办事处", "").replaceAll("街道", "");
+                communityResident.setSubdistrictName(subdistrictName);
+                communityResident.setCommunityName(communityName);
                 // 处理多个联系方式
                 if (communityResident.getCommunityResidentPhones().contains(",")) {
                     phones = communityResident.getCommunityResidentPhones().split(",");
                     if (phones.length == 2) {
                         communityResident.setCommunityResidentPhone1(phones[0]);
                         communityResident.setCommunityResidentPhone2(phones[1]);
-                    } else if (phones.length == 3) {
+                    } else {
                         communityResident.setCommunityResidentPhone1(phones[0]);
                         communityResident.setCommunityResidentPhone2(phones[1]);
                         communityResident.setCommunityResidentPhone3(phones[2]);
@@ -210,10 +220,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                     communityResident.setCommunityResidentPhone1(communityResident.getCommunityResidentPhones());
                 }
                 // 处理地址
-                communityResident.setCommunityResidentAddress(communityName + communityResident.getCommunityResidentAddress());
                 // 处理分包人
                 communityResident.setCommunityResidentSubcontractor(communityName + communityResident.getCommunityResidentSubcontractor());
-                index++;
+//                index++;
             }
         }
         return (JSONArray) JSON.toJSON(communityResidents);
@@ -222,7 +231,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Override
     public Map<String, String> getPartStatHead() throws Exception {
         Map<String, String> tableHead = new LinkedHashMap<String, String>();
-        tableHead.put("indexId", "序号");
+        tableHead.put("subdistrictName", "街道");
+        tableHead.put("communityName", "社区");
         tableHead.put("communityResidentName", "户主姓名");
         tableHead.put("communityResidentAddress", "家庭地址");
         tableHead.put("communityResidentPhone1", "电话1");

@@ -236,10 +236,10 @@ public class CommunityResidentAction {
     public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response) {
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            JSONArray ja = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(systemUser.getRoleId(), systemUser.getRoleLocationId());//获取业务数据集
+            JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(systemUser.getRoleId(), systemUser.getRoleLocationId());//获取业务数据集
             Map<String, String> headMap = communityResidentService.getPartStatHead();//获取属性-列头
             String title = "“评社区”活动电话库登记表";
-            ExcelUtil.downloadExcelFile(title, headMap, ja, response);
+            ExcelUtil.downloadExcelFile(title, headMap, data, response);
         } catch (Exception e) {
             throw new BusinessException("导出Excel文件失败！");
         }

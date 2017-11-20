@@ -39,10 +39,20 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
     /**
      * 查询所有社区居民与所属社区
      *
+     * @param communityIds
      * @return
      * @throws Exception
      */
     public List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityIds(@Param("communityIds") List<Integer> communityIds) throws Exception;
+
+    /**
+     * 查询所有社区居民与所属社区和街道
+     *
+     * @param communityIds
+     * @return
+     * @throws Exception
+     */
+    public List<CommunityResident> selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(@Param("communityIds") List<Integer> communityIds) throws Exception;
 
     /**
      * 通过姓名+地址查询姓名与社区编号

@@ -11,6 +11,8 @@ public class CommunityResident implements Serializable {
     private static final long serialVersionUID = -5117708878202596711L;
     private Integer communityResidentId;
     private Integer indexId;
+    private String subdistrictName;
+    private String communityName;
     private String communityResidentName;
     private String communityResidentAddress;
     private String communityResidentPhones;
@@ -26,9 +28,11 @@ public class CommunityResident implements Serializable {
     public CommunityResident() {
     }
 
-    public CommunityResident(Integer communityResidentId, Integer indexId, String communityResidentName, String communityResidentAddress, String communityResidentPhones, String communityResidentSubcontractor, Timestamp communityResidentEditTime, Integer communityId, Integer[] communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
+    public CommunityResident(Integer communityResidentId, Integer indexId, String subdistrictName, String communityName, String communityResidentName, String communityResidentAddress, String communityResidentPhones, String communityResidentSubcontractor, Timestamp communityResidentEditTime, Integer communityId, Integer[] communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
         this.communityResidentId = communityResidentId;
         this.indexId = indexId;
+        this.subdistrictName = subdistrictName;
+        this.communityName = communityName;
         this.communityResidentName = communityResidentName;
         this.communityResidentAddress = communityResidentAddress;
         this.communityResidentPhones = communityResidentPhones;
@@ -56,6 +60,22 @@ public class CommunityResident implements Serializable {
 
     public void setIndexId(Integer indexId) {
         this.indexId = indexId;
+    }
+
+    public String getSubdistrictName() {
+        return subdistrictName;
+    }
+
+    public void setSubdistrictName(String subdistrictName) {
+        this.subdistrictName = subdistrictName;
+    }
+
+    public String getCommunityName() {
+        return communityName;
+    }
+
+    public void setCommunityName(String communityName) {
+        this.communityName = communityName;
     }
 
     public String getCommunityResidentName() {
@@ -102,12 +122,12 @@ public class CommunityResident implements Serializable {
         return communityId;
     }
 
-    public Integer[] getCommunityIds() {
-        return communityIds;
-    }
-
     public void setCommunityId(Integer communityId) {
         this.communityId = communityId;
+    }
+
+    public Integer[] getCommunityIds() {
+        return communityIds;
     }
 
     public void setCommunityIds(Integer[] communityIds) {
@@ -151,6 +171,8 @@ public class CommunityResident implements Serializable {
         return "CommunityResident{" +
             "communityResidentId=" + communityResidentId +
             ", indexId=" + indexId +
+            ", subdistrictName='" + subdistrictName + '\'' +
+            ", communityName='" + communityName + '\'' +
             ", communityResidentName='" + communityResidentName + '\'' +
             ", communityResidentAddress='" + communityResidentAddress + '\'' +
             ", communityResidentPhones='" + communityResidentPhones + '\'' +

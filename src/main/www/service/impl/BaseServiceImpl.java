@@ -16,10 +16,11 @@ import java.util.Map;
 /**
  * 基础Service实现
  *
- * @param <T> 模型泛型
+ * @param <T> SERVICE泛型
+ * @author 廿二月的天
  */
 public class BaseServiceImpl<T> implements BaseService<T> {
-    protected BaseDao<T> baseDao;
+    BaseDao<T> baseDao;
     @Autowired
     protected SystemUsersDao systemUsersDao;
     @Autowired
@@ -38,7 +39,7 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     /**
      * 最先运行的方法，自动加载对应类型的DAO
      *
-     * @throws Exception
+     * @throws Exception SERVICE层异常
      */
     @PostConstruct
     private void initBaseDao() throws Exception {
@@ -85,11 +86,9 @@ public class BaseServiceImpl<T> implements BaseService<T> {
 
     @Override
     public Map<String, Object> findObjects(Integer pageNum, Integer pageSize) throws Exception {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
-        PageHelper.startPage(pageNum, pageSize);
+        setPageHelper(pageNum, pageSize);
         List<T> data = baseDao.selectObjectsAll();
-        return findObjectsMethod(data, pageNum, pageSize);
+        return findObjectsMethod(data);
     }
 
     @Override
@@ -99,20 +98,16 @@ public class BaseServiceImpl<T> implements BaseService<T> {
 
     @Override
     public Map<String, Object> findObjects(String name, Integer pageNum, Integer pageSize) throws Exception {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
-        PageHelper.startPage(pageNum, pageSize);
+        setPageHelper(pageNum, pageSize);
         List<T> data = baseDao.selectObjectsByName(name);
-        return findObjectsMethod(data, pageNum, pageSize);
+        return findObjectsMethod(data);
     }
 
     @Override
     public Map<String, Object> findObjects(T object, Integer pageNum, Integer pageSize) throws Exception {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
-        PageHelper.startPage(pageNum, pageSize);
+        setPageHelper(pageNum, pageSize);
         List<T> data = baseDao.selectObjectsByObject(object);
-        return findObjectsMethod(data, pageNum, pageSize);
+        return findObjectsMethod(data);
     }
 
     @Override
@@ -126,16 +121,25 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     }
 
     /**
+     * 配置PageHelper
+     *
+     * @param pageNum  分页页码
+     * @param pageSize 每页显示数量
+     */
+    protected void setPageHelper(Integer pageNum, Integer pageSize) {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 10 : pageSize;
+        PageHelper.startPage(pageNum, pageSize);
+    }
+
+    /**
      * 查找对象的方法
      *
-     * @param data
-     * @param pageNum
-     * @param pageSize
-     * @return
-     * @throws Exception
+     * @param data 对象集合
+     * @return 查找到的对象集合与分页对象
      */
-    protected Map<String, Object> findObjectsMethod(List<T> data, Integer pageNum, Integer pageSize) throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+    protected Map<String, Object> findObjectsMethod(List<T> data) {
+        Map<String, Object> map = new HashMap<>(3);
         map.put("data", data);
         map.put("pageInfo", new PageInfo<T>(data));
         return map;

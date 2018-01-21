@@ -4,24 +4,22 @@
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/error.css">
 	</head>
 	<body>
-        <div>
-            <h2></h2>
-            <h3>${exception.message}</h3>
-            <a href="javascript:;" class="btn btn-default reload" role="button">刷新</a>
+        <div class="container top">
+            <div class="row">
+                <h2 class="col-md-5 error-code">500</h2>
+                <div class="col-md-7 error-message">
+                    <h3>抱歉，出现错误了！</h3>
+                    <div class="text">
+                        无法访问本页面的原因是：<br>
+                        ${exception.message}<br>
+                        您可以<a href="javascript:history.go(-1);" title="返回">返回</a>上一页，或者再次<a href="javascript:location.reload();" title="刷新" ondragstart="return false;">刷新</a>本页面！<br>
+                        管理员为系统给您带来的不便致以诚挚的歉意！
+                    </div>
+                </div>
+            </div>
         </div>
-        <script type="text/javascript">
-            require(["jquery"], function () {
-                $(function () {
-                    var bodyHeight = $("body").height();
-                    var div = $("div");
-                    var divHeight = div.height();
-                    var marginTop = bodyHeight / 2 - divHeight / 2;
-                    div.css("margin-top", marginTop + "px");
-                    $("a").click(function () {
-                        location.reload();
-                    });
-                });
-            });
-        </script>
+        <div class="container bottom">
+            <img src="${pageContext.request.contextPath}/images/try.png" alt="程序猿已在路上">
+        </div>
 	</body>
 </html>

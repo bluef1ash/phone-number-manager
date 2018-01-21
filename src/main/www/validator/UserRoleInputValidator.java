@@ -4,19 +4,16 @@ import exception.BusinessException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import www.entity.Subdistrict;
 import www.entity.UserRole;
-import www.service.SubdistrictService;
 import www.service.UserRoleService;
 
-import javax.management.relation.Role;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 系统用户角色添加/更新验证
+ *
+ * @author 廿二月的天
  */
 public class UserRoleInputValidator implements Validator {
     private String message;
@@ -54,8 +51,9 @@ public class UserRoleInputValidator implements Validator {
     /**
      * 验证输入数据
      *
-     * @param userRole
-     * @return
+     * @param userRole 需要验证的系统用户角色对象
+     * @return 验证是否成功
+     * @throws Exception 数据库操作异常
      */
     private Boolean checkInput(UserRole userRole) throws Exception {
         if (userRole.getHigherRole() < 0) {

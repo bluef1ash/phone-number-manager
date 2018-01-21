@@ -1,5 +1,6 @@
 package www.service.impl;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,10 +10,11 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.github.pagehelper.PageHelper;
 import constant.SystemConstant;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import utils.EncryptUtil;
 import www.entity.SystemUser;
 import www.entity.UserPrivilege;
 import www.service.SystemUserService;
@@ -21,15 +23,17 @@ import utils.DateUtil;
 
 /**
  * 系统用户Service实现
+ *
+ * @author 廿二月的天
  */
 @Service("systemUserService")
 public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implements SystemUserService {
 
     @Override
     public Map<String, Object> loginCheck(HttpServletRequest request, SystemUser systemUser, String captcha, String sRand) throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>(5);
         map.put("state", -1);
-        if (captcha == null || captcha.isEmpty()) {
+        if (StringUtils.isEmpty(captcha)) {
             //得到用户读入框信息，如果没有输入或者为空，直接跳转到验证失败页面
             map.put("message", "验证码不能为空！");
         } else {
@@ -47,16 +51,16 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
                             if (user.getIsLocked() == 1) {
                                 map.put("message", "登录失败！" + user.getUsername() + "已被锁定，请联系管理员！");
                             } else {
-                                user.setLoginTime(DateUtil.getDateNow(new Date()));
+                                user.setLoginTime(new Timestamp(System.currentTimeMillis()));
                                 user.setLoginIp(CommonUtil.getIp(request));
                                 systemUsersDao.updateObject(user);
                                 user.setPassword(null);
-                                Set<String> privilegeAuth = new HashSet<String>();
-                                Set<String> privilegeParents = new HashSet<String>();
-                                Map<String, Set<String>> privilegeMap = new HashMap<String, Set<String>>();
-                                Set<UserPrivilege> userPrivileges = null;
+                                Set<String> privilegeAuth = new HashSet<>();
+                                Set<String> privilegeParents = new HashSet<>();
+                                Map<String, Set<String>> privilegeMap = new HashMap<>(3);
+                                Set<UserPrivilege> userPrivileges;
                                 if (user.getSystemUserId() == SystemConstant.SYSTEM_ADMINISTRATOR_ID) {
-                                    userPrivileges = new HashSet<UserPrivilege>(userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(0, 1));
+                                    userPrivileges = new HashSet<>(userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(0, 1));
                                 } else {
                                     userPrivileges = user.getUserRole().getUserPrivileges();
                                 }
@@ -87,27 +91,25 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
 
     @Override
     public int createSystemUser(SystemUser systemUser) throws Exception {
-        if (systemUser.getPassword() != null && !"".equals(systemUser.getPassword())) {
-            systemUser.setPassword(CommonUtil.MD5(systemUser.getPassword()));
+        if (StringUtils.isNotEmpty(systemUser.getPassword())) {
+            systemUser.setPassword(CommonUtil.getMd5String(systemUser.getPassword()));
         }
         return baseDao.insertObject(systemUser);
     }
 
     @Override
     public int updateSystemUser(SystemUser systemUser) throws Exception {
-        if (systemUser.getPassword() != null && !"".equals(systemUser.getPassword())) {
-            systemUser.setPassword(CommonUtil.MD5(systemUser.getPassword()));
+        if (StringUtils.isNotEmpty(systemUser.getPassword())) {
+            systemUser.setPassword(EncryptUtil.encryptMD5(systemUser.getPassword()));
         }
-        return baseDao.updateObject(systemUser);
+        return systemUsersDao.updateObject(systemUser);
     }
 
     @Override
     public Map<String, Object> findSystemUsersAndRoles(Integer pageNum, Integer pageSize) throws Exception {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
-        PageHelper.startPage(pageNum, pageSize);
+        setPageHelper(pageNum, pageSize);
         List<SystemUser> data = systemUsersDao.selectSystemUsersAndRolesAll();
-        return findObjectsMethod(data, pageNum, pageSize);
+        return findObjectsMethod(data);
     }
 
     @Override
@@ -117,6 +119,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
 
     @Override
     public List<SystemUser> findSystemUserByUserName(String username) throws Exception {
-        return baseDao.selectObjectsByName(username);
+        return systemUsersDao.selectObjectsByName(username);
     }
 }

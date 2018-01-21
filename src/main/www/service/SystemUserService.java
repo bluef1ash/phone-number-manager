@@ -9,63 +9,65 @@ import www.entity.SystemUser;
 
 /**
  * 系统用户业务接口
+ *
+ * @author 廿二月的天
  */
 public interface SystemUserService extends BaseService<SystemUser> {
     /**
      * 登录验证
      *
-     * @param request
-     * @param systemUser
-     * @param captcha
-     * @param sRand
-     * @return
-     * @throws Exception
+     * @param request    HTTP请求对象
+     * @param systemUser 需要验证的系统用户对象
+     * @param captcha    验证码
+     * @param sRand      随机数
+     * @return 验证成功或失败的信息
+     * @throws Exception SERVICE层异常
      */
-    public Map<String, Object> loginCheck(HttpServletRequest request, SystemUser systemUser, String captcha, String sRand) throws Exception;
+    Map<String, Object> loginCheck(HttpServletRequest request, SystemUser systemUser, String captcha, String sRand) throws Exception;
 
     /**
      * 添加系统用户
      *
-     * @param systemUser
-     * @return
-     * @throws Exception
+     * @param systemUser 需要添加的系统用户对象
+     * @return 添加数据库影响的行数
+     * @throws Exception SERVICE层异常
      */
-    public int createSystemUser(SystemUser systemUser) throws Exception;
+    int createSystemUser(SystemUser systemUser) throws Exception;
 
     /**
      * 更新系统用户
      *
-     * @param systemUser
-     * @return
-     * @throws Exception
+     * @param systemUser 需要更新的系统用户对象
+     * @return 更新数据库影响的行数
+     * @throws Exception SERVICE层异常
      */
-    public int updateSystemUser(SystemUser systemUser) throws Exception;
+    int updateSystemUser(SystemUser systemUser) throws Exception;
 
     /**
      * 查找所有系统用户和关联角色
      *
-     * @param pageNo
-     * @param pageSize
-     * @return
-     * @throws Exception
+     * @param pageNo   分页页码
+     * @param pageSize 每页显示的条目数
+     * @return 查找到的所有系统用户和关联角色与分页对象
+     * @throws Exception SERVICE层异常
      */
-    public Map<String, Object> findSystemUsersAndRoles(Integer pageNo, Integer pageSize) throws Exception;
+    Map<String, Object> findSystemUsersAndRoles(Integer pageNo, Integer pageSize) throws Exception;
 
     /**
      * 通过查找系统用户和关联角色
      *
-     * @param id
-     * @return
-     * @throws Exception
+     * @param id 系统用户编号
+     * @return 查找到的系统用户对象
+     * @throws Exception SERVICE层异常
      */
-    public SystemUser findSystemUsersAndRoles(Integer id) throws Exception;
+    SystemUser findSystemUsersAndRoles(Integer id) throws Exception;
 
     /**
      * 通过系统用户名称查找
      *
-     * @param username
-     * @return
-     * @throws Exception
+     * @param username 系统用户名称
+     * @return 查找到的系统用户对象集合（因使用基础类中的方法返回为集合类型）
+     * @throws Exception SERVICE层异常
      */
-    public List<SystemUser> findSystemUserByUserName(String username) throws Exception;
+    List<SystemUser> findSystemUserByUserName(String username) throws Exception;
 }

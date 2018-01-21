@@ -64,7 +64,7 @@
                 <div class="panel-body">
                     <ul>
                         <li>
-                            <a href="javascript:;">测试信息</a><span class="time">0000-00-00</span>
+                            <a href="javascript:;" ondragstart="return false;">测试信息</a><span class="time">0000-00-00</span>
                         </li>
                     </ul>
                 </div>

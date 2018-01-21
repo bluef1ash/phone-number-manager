@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * 树形菜单
+ *
+ * @author 廿二月的天
  */
 public class TreeMenu implements Serializable {
     private static final long serialVersionUID = 8852726242252640057L;
@@ -79,12 +81,37 @@ public class TreeMenu implements Serializable {
     @Override
     public String toString() {
         return "TreeMenu{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", href='" + href + '\'' +
-                ", spread=" + spread +
-                ", alias='" + alias + '\'' +
-                ", children=" + children +
-                '}';
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", href='" + href + '\'' +
+            ", spread=" + spread +
+            ", alias='" + alias + '\'' +
+            ", children=" + children +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        TreeMenu treeMenu = (TreeMenu) o;
+
+        return (id != null ? id.equals(treeMenu.id) : treeMenu.id == null) && (name != null ? name.equals(treeMenu.name) : treeMenu.name == null) && (href != null ? href.equals(treeMenu.href) : treeMenu.href == null) && (spread != null ? spread.equals(treeMenu.spread) : treeMenu.spread == null) && (alias != null ? alias.equals(treeMenu.alias) : treeMenu.alias == null) && (children != null ? children.equals(treeMenu.children) : treeMenu.children == null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (href != null ? href.hashCode() : 0);
+        result = 31 * result + (spread != null ? spread.hashCode() : 0);
+        result = 31 * result + (alias != null ? alias.hashCode() : 0);
+        result = 31 * result + (children != null ? children.hashCode() : 0);
+        return result;
     }
 }

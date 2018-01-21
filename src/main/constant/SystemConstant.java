@@ -2,6 +2,8 @@ package constant;
 
 /**
  * 系统常量类
+ *
+ * @author 廿二月的天
  */
 public final class SystemConstant {
     /**

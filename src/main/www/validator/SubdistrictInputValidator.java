@@ -1,22 +1,20 @@
 package www.validator;
 
 import exception.BusinessException;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import www.entity.Community;
+import utils.StringCheckedRegexUtil;
 import www.entity.Subdistrict;
-import www.service.CommunityService;
 import www.service.SubdistrictService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 街道添加/更新验证
+ *
+ * @author 廿二月的天
  */
 public class SubdistrictInputValidator implements Validator {
     private String message;
@@ -55,8 +53,9 @@ public class SubdistrictInputValidator implements Validator {
     /**
      * 验证输入数据
      *
-     * @param subdistrict
-     * @return
+     * @param subdistrict 需要验证的街道办事处对象
+     * @return 验证是否成功
+     * @throws Exception 数据库操作异常
      */
     private Boolean checkInput(Subdistrict subdistrict) throws Exception {
         // 联系方式合法
@@ -71,13 +70,11 @@ public class SubdistrictInputValidator implements Validator {
     /**
      * 验证联系方式是否合法
      *
-     * @param phone
-     * @return
+     * @param phone 需要验证的联系方式
+     * @return 是否验证成功
      */
     private boolean checkedPhone(String phone) {
-        Pattern regex = Pattern.compile("(?iUs)^(?:(?:[\\(（]?(?:[0-9]{3,4})?\\s*[\\)）-])?\\d{7,9}(?:[-转]\\d{2,6})?)|(?:[\\(\\+]?(?:86)?[\\)]?0?1[34578]{1}\\d{9})$");
-        Matcher matcher = regex.matcher(phone);
-        if (!matcher.matches()) {
+        if (!StringCheckedRegexUtil.checkPhone(phone)) {
             field = "subdistrictTelephone";
             errorCode = "subdistrict.subdistrictTelephone.errorCode";
             message = "输入的联系方式不合法，请检查后重试！";
@@ -89,8 +86,8 @@ public class SubdistrictInputValidator implements Validator {
     /**
      * 验证数据库返回数据是否为空
      *
-     * @param subdistricts
-     * @return
+     * @param subdistricts 需要验证的街道办事处对象的集合
+     * @return 是否验证成功
      */
     private boolean checkedListData(List<Subdistrict> subdistricts) {
         if (subdistricts != null && subdistricts.size() > 0) {
@@ -100,5 +97,13 @@ public class SubdistrictInputValidator implements Validator {
             return false;
         }
         return true;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
     }
 }

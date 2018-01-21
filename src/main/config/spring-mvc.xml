@@ -36,9 +36,9 @@
     <!--异常配置-->
     <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
         <!-- 定义异常处理页面用来获取异常信息的变量名，默认名为exception -->
-        <property name="exceptionAttribute" value="exception" />
+        <property name="exceptionAttribute" value="exception"/>
         <!-- 定义默认的异常处理页面，当该异常类型的注册时使用 -->
-        <property name="defaultErrorView" value="exception/default" />
+        <property name="defaultErrorView" value="exception/default"/>
         <!-- 定义需要特殊处理的异常，用类名或完全路径名作为key，异常也页名作为值 -->
         <property name="exceptionMappings">
             <props>
@@ -80,6 +80,7 @@
             <mvc:exclude-mapping path="/login/captcha.action"/>
             <bean class="www.interceptor.SystemUserPrivilegeAuthInterceptor"/>
         </mvc:interceptor>
+        <!--将当前控制器名称存入session以用于验证的拦截器-->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
             <mvc:exclude-mapping path="/css/**"/>
@@ -93,16 +94,6 @@
             <bean class="www.interceptor.ValidFunctionsInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>
-    <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="locations">
-            <list>
-                <value>classpath*:config/captcha.properties</value>
-            </list>
-        </property>
-    </bean>
-    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
-        <property name="properties" ref="configProperties"/>
-    </bean>
     <!-- 校验器 -->
     <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
         <!-- 校验器 -->
@@ -113,11 +104,7 @@
     <!-- 校验错误信息配置文件 -->
     <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
         <!-- 资源文件名 -->
-        <property name="basenames">
-            <list>
-                <value>customValidationMessages</value>
-            </list>
-        </property>
+        <property name="basenames" value="config.validationMessages"/>
         <!-- 资源文件编码格式 -->
         <property name="fileEncodings" value="utf-8"/>
         <!-- 对资源文件内容缓存时间，单位秒 -->
@@ -125,17 +112,13 @@
     </bean>
     <!-- 处理静态资源 -->
     <!-- 上传的图片缓存1个月，其他js，css，img资源缓存一年 -->
-    <mvc:resources mapping="/css/**" location="/css/" cache-period="0"/>
-    <mvc:resources mapping="/javascript/**" location="/javascript/" cache-period="0"/>
-    <mvc:resources mapping="/images/**" location="/images/" cache-period="0"/>
+    <mvc:resources mapping="/css/**" location="/css/" cache-period="86400"/>
+    <mvc:resources mapping="/javascript/**" location="/javascript/" cache-period="86400"/>
+    <mvc:resources mapping="/images/**" location="/images/" cache-period="86400"/>
     <!--上传配置-->
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <!-- 设置上传文件的最大尺寸为10MB -->
-        <property name="maxUploadSize">
-            <value>1048576000</value>
-        </property>
-        <property name="maxInMemorySize">
-            <value>1024</value>
-        </property>
+        <property name="maxUploadSize" value="1048576000"/>
+        <property name="maxInMemorySize" value="1024"/>
     </bean>
 </beans>

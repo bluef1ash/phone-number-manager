@@ -27,9 +27,13 @@ import java.util.regex.Pattern;
 
 /**
  * 社区居民业务实现
+ *
+ * @author 廿二月的天
  */
 @Service("communityResidentService")
 public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResident> implements CommunityResidentService {
+
+    private Pattern communityPattern = Pattern.compile("(?iUs)^(.*)(?:社区|居委会)(.*)$");
 
     @Override
     public CommunityResident findCommunityResidentAndCommunityById(Integer id) throws Exception {
@@ -56,12 +60,12 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Override
     public int createCommunityResident(CommunityResident communityResident) throws Exception {
-        return baseDao.insertObject(multiplePhoneHandler(communityResident));
+        return communityResidentsDao.insertObject(multiplePhoneHandler(communityResident));
     }
 
     @Override
     public int updateCommunityResident(CommunityResident communityResident) throws Exception {
-        return baseDao.updateObject(multiplePhoneHandler(communityResident));
+        return communityResidentsDao.updateObject(multiplePhoneHandler(communityResident));
     }
 
     @Override
@@ -107,23 +111,23 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                     break;
             }
         }
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("dataAndPagination", findObjectsMethod(communityResidents, pageNum, pageSize));
+        Map<String, Object> map = new HashMap<>(3);
+        map.put("dataAndPagination", findObjectsMethod(communityResidents));
         map.put("count", count);
         return map;
     }
 
     @Override
     public int addCommunityResidentFromExcel(Workbook workbook) throws Exception {
-        Sheet sheet = null;
-        Row row = null;
-        List<CommunityResident> residents = new ArrayList<CommunityResident>();
+        Sheet sheet;
+        Row row;
+        List<CommunityResident> residents = new ArrayList<>();
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             sheet = workbook.getSheetAt(i);
             if (sheet == null) {
                 continue;
             }
-            //遍历当前sheet中的所有行
+            // 遍历当前sheet中的所有行
             for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
                 row = sheet.getRow(j);
                 if (row == null || row.getFirstCellNum() == j || ExcelUtil.isMergedRegion(sheet, j, 0) || String.valueOf(ExcelUtil.getCellValue(row.getCell(0))).contains("序号")) {
@@ -132,7 +136,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 residents.add(residentHandler(row));
             }
         }
-        int index = communityResidentsDao.truncateTable();
+        // 截断表
+        communityResidentsDao.truncateTable();
         return communityResidentsDao.insertBatchCommunityResidents(residents);
     }
 
@@ -142,7 +147,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         pageSize = pageSize == null ? 10 : pageSize;
         Integer roleId = systemUser.getRoleId();
         Integer roleLocationId = systemUser.getRoleLocationId();
-        List<Integer> roleLocationIds = new ArrayList<Integer>();
+        List<Integer> roleLocationIds = new ArrayList<>();
         switch (roleId) {
             case SystemConstant.COMMUNITY_ROLE_ID:
                 roleLocationIds.add(roleLocationId);
@@ -160,8 +165,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         Integer count = communityResidentsDao.countCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
         PageHelper.startPage(pageNum, pageSize);
         List<CommunityResident> data = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("dataAndPagination", findObjectsMethod(data, pageNum, pageSize));
+        Map<String, Object> map = new HashMap<>(3);
+        map.put("dataAndPagination", findObjectsMethod(data));
         map.put("count", count);
         return map;
     }
@@ -179,7 +184,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Override
     public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Integer roleId, Integer roleLocationId) throws Exception {
         List<CommunityResident> communityResidents = null;
-        List<Integer> communityIds = new ArrayList<Integer>();
+        List<Integer> communityIds = new ArrayList<>();
         switch (roleId) {
             case SystemConstant.SYSTEM_ROLE_ID:
                 communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(null);
@@ -194,6 +199,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                     communityIds.add(community.getCommunityId());
                 }
                 communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(communityIds);
+                break;
+            default:
                 break;
         }
         if (communityResidents != null) {
@@ -229,8 +236,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, String> getPartStatHead() throws Exception {
-        Map<String, String> tableHead = new LinkedHashMap<String, String>();
+    public Map<String, String> getPartStatHead() {
+        Map<String, String> tableHead = new LinkedHashMap<>();
         tableHead.put("subdistrictName", "街道");
         tableHead.put("communityName", "社区");
         tableHead.put("communityResidentName", "户主姓名");
@@ -246,22 +253,22 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     public Map<String, Object> computedCount(HttpSession session) throws Exception {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
         String roleName = userRolesDao.selectRoleNameById(systemUser.getRoleId());
-        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        Map<String, Object> jsonMap = new HashMap<>(4);
         // 饼图
-        Map<String, Object> pieBaseData = new HashMap<String, Object>();
-        Integer countCommunityResidents = null;
-        Integer actualNumber = null;
-        List<Integer> pieData = new ArrayList<Integer>();
-        List<String> pieBackgroundColor = new ArrayList<String>();
-        Map<String, List<?>> pieDataMap = new HashMap<String, List<?>>();
-        List<Map<String, List<?>>> pieDataSets = new ArrayList<Map<String, List<?>>>();
-        List<String> pieLabels = new ArrayList<String>();
-        Map<String, Object> barChartMap = new HashMap<String, Object>();
-        Map<String, Object> barData = new HashMap<String, Object>();
-        List<String> barChartLabels = new ArrayList<String>();
-        List<Map<String, Object>> barDataSets = new ArrayList<Map<String, Object>>();
-        List<Integer> barChartData = new ArrayList<Integer>();
-        List<String> barBackgroundColor = new ArrayList<String>();
+        Map<String, Object> pieBaseData = new HashMap<>(3);
+        Integer countCommunityResidents;
+        Integer actualNumber;
+        List<Integer> pieData = new ArrayList<>();
+        List<String> pieBackgroundColor = new ArrayList<>();
+        Map<String, List<?>> pieDataMap = new HashMap<>(3);
+        List<Map<String, List<?>>> pieDataSets = new ArrayList<>();
+        List<String> pieLabels = new ArrayList<>();
+        Map<String, Object> barChartMap = new HashMap<>(3);
+        Map<String, Object> barData = new HashMap<>(4);
+        List<String> barChartLabels = new ArrayList<>();
+        List<Map<String, Object>> barDataSets = new ArrayList<>();
+        List<Integer> barChartData = new ArrayList<>();
+        List<String> barBackgroundColor = new ArrayList<>();
         if (roleName.contains("社区") || roleName.contains("居委会")) {
             countCommunityResidents = communityResidentsDao.countCommunityResidentsByCommunityId(systemUser.getRoleLocationId());
             actualNumber = communitiesDao.selectActualNumberByCommunityId(systemUser.getRoleLocationId());
@@ -275,7 +282,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             List<Community> communities = communitiesDao.countCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
             for (Community community : communities) {
                 barChartLabels.add(community.getCommunityName());
-                barChartData.add(community.getActualNumber()); // 临时借用此变量
+                // 临时借用此变量
+                barChartData.add(community.getActualNumber());
             }
             barData.put("label", "社区");
         } else {
@@ -284,7 +292,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             List<Subdistrict> subdistricts = subdistrictsDao.countCommunityResidents();
             for (Subdistrict subdistrict : subdistricts) {
                 barChartLabels.add(subdistrict.getSubdistrictName());
-                barChartData.add(subdistrict.getSubdistrictId()); // 临时借用此变量
+                // 临时借用此变量
+                barChartData.add(subdistrict.getSubdistrictId());
             }
             barData.put("label", "街道");
         }
@@ -311,7 +320,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         barChartMap.put("datasets", barDataSets);
         jsonMap.put("barChart", barChartMap);
         // 提示数据
-        Map<String, Integer> tipMap = new HashMap<String, Integer>();
+        Map<String, Integer> tipMap = new HashMap<>(3);
         tipMap.put("databaseNumber", countCommunityResidents);
         tipMap.put("actualNumber", actualNumber);
         jsonMap.put("tipData", tipMap);
@@ -321,16 +330,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     /**
      * 从Excel导入数据库数据处理
      *
-     * @param row
-     * @return
-     * @throws Exception
+     * @param row Excel工作表的行对象
+     * @return 处理后的社区居民对象
      */
-    private CommunityResident residentHandler(Row row) throws Exception {
+    private CommunityResident residentHandler(Row row) {
         CommunityResident resident = new CommunityResident();
         // 处理地址和社区名称
-        Pattern regex = Pattern.compile("(?iUs)^(.*)(?:社区|居委会)(.*)$");
         String address = String.valueOf(ExcelUtil.getCellValue(row.getCell(2)));
-        Matcher matcher = regex.matcher(address);
+        Matcher matcher = communityPattern.matcher(address);
         String communityAliasName = null;
         String realAddress = null;
         while (matcher.find()) {
@@ -373,10 +380,10 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     /**
      * 添加、修改到数据库前处理
      *
-     * @param communityResident
-     * @return
+     * @param communityResident 需要处理的社区居民对象
+     * @return 处理后的社区居民对象
      */
-    private CommunityResident multiplePhoneHandler(CommunityResident communityResident) throws Exception {
+    private CommunityResident multiplePhoneHandler(CommunityResident communityResident) {
 //        社区居民姓名
         communityResident.setCommunityResidentName(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentName())).replaceAll("—", "-"));
 //        社区居民地址
@@ -396,17 +403,17 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         }
         communityResident.setCommunityResidentPhones(tempPhone.toString().substring(0, tempPhone.length() - 1));
 //        编辑时间
-        communityResident.setCommunityResidentEditTime(new Timestamp(new Date().getTime()));
+        communityResident.setCommunityResidentEditTime(new Timestamp(System.currentTimeMillis()));
         return communityResident;
     }
 
     /**
-     * 获取单位
+     * 获取单位的数量
      *
-     * @param communityResident
-     * @param communities
-     * @return
-     * @throws Exception
+     * @param communityResident 需要查找的社区居民信息对象
+     * @param communities 社区集合
+     * @return 单位的统计数量
+     * @throws Exception DAO层异常
      */
     private Integer getCompany(CommunityResident communityResident, List<Community> communities) throws Exception {
         int communitiesLength = communities.size();
@@ -415,6 +422,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             communityIds[i] = communities.get(i).getCommunityId();
         }
         communityResident.setCommunityIds(communityIds);
-        return communityResidentsDao.countCommunityResidentsByCommunityResidentAndCommunityIds(communityResident);
+        return communityResidentsDao.countCommunityResidentsByCommunityResident(communityResident);
     }
 }

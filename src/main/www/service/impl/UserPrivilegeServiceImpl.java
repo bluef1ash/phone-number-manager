@@ -9,6 +9,8 @@ import java.util.*;
 
 /**
  * 系统用户权限业务实现
+ *
+ * @author 廿二月的天
  */
 @Service("userPrivilegeService")
 public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> implements UserPrivilegeService {
@@ -21,33 +23,35 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
     public List<UserPrivilege> findPrivilegesByIsDisplay(Integer isDisplay, HttpSession session) throws Exception {
         @SuppressWarnings("unchecked")
         Set<String> privilegeAuthes = (Set<String>) ((Map<String, Object>) session.getAttribute("privilegeMap")).get("privilegeAuth");
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>(3);
         map.put("isDisplay", isDisplay);
         map.put("constraintAuthes", privilegeAuthes);
         List<UserPrivilege> userPrivileges = userPrivilegesDao.selectPrivilegesByIsDisplayAndConstraintAuth(map);
-        return findPrivilegesAndSubPrivileges(userPrivileges, isDisplay); //userPrivileges;
+        //userPrivileges;
+        return findPrivilegesAndSubPrivileges(userPrivileges, isDisplay);
     }
 
     @Override
-    public List<UserPrivilege> findPrivilegesAndsubPrivilegesAll() throws Exception {
-        List<UserPrivilege> userPrivileges = baseDao.selectObjectsAll();
-        return findPrivilegesAndSubPrivileges(userPrivileges, null);// userPrivileges;
+    public List<UserPrivilege> findPrivilegesAndSubPrivilegesAll() throws Exception {
+        List<UserPrivilege> userPrivileges = userPrivilegesDao.selectObjectsAll();
+        // userPrivileges;
+        return findPrivilegesAndSubPrivileges(userPrivileges, null);
     }
 
     /**
      * 有序排列用户权限
-     * 注意：需要改成递归算法！！！！！！！！
      *
-     * @param userPrivileges
-     * @return
-     * @throws Exception
+     * @param userPrivileges 需要排列的系统用户权限对象集合
+     * @param isDisplay      是否在导航栏中显示
+     * @return 排列成功的统用户权限对象集合
      */
-    private List<UserPrivilege> findPrivilegesAndSubPrivileges(List<UserPrivilege> userPrivileges, Integer isDisplay) throws Exception {
+    private List<UserPrivilege> findPrivilegesAndSubPrivileges(List<UserPrivilege> userPrivileges, Integer isDisplay) {
         List<UserPrivilege> subUserPrivileges = null;
-        Map<Integer, UserPrivilege> newUserPrivilegesMap = new HashMap<Integer, UserPrivilege>();
+        Map<Integer, UserPrivilege> newUserPrivilegesMap = new LinkedHashMap<>();
         UserPrivilege tempPrivilege = null;
         for (UserPrivilege userPrivilege : userPrivileges) {
-            if (userPrivilege.getHigherPrivilege() == 0) { // 顶级分类
+            if (userPrivilege.getHigherPrivilege() == 0) {
+                // 顶级分类
                 if (isDisplay == null) {
                     subUserPrivileges = userPrivilegesDao.selectPrivilegesByHigherPrivilege(userPrivilege.getPrivilegeId());
                 } else {
@@ -56,16 +60,18 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
                 userPrivilege.setSubUserPrivileges(subUserPrivileges);
                 newUserPrivilegesMap.put(userPrivilege.getPrivilegeId(), userPrivilege);
             } else {
-                if (subUserPrivileges != null && subUserPrivileges.size() > 0) { // 第一次加入子分类对象
-                    if (subUserPrivileges.get(0).getHigherPrivilege().equals(userPrivilege.getHigherPrivilege())) { // 判断是否为同一父分类
+                if (subUserPrivileges != null && subUserPrivileges.size() > 0) {
+                    // 第一次加入子分类对象
+                    if (subUserPrivileges.get(0).getHigherPrivilege().equals(userPrivilege.getHigherPrivilege())) {
+                        // 判断是否为同一父分类
                         tempPrivilege = newUserPrivilegesMap.get(subUserPrivileges.get(0).getHigherPrivilege());
                         if (tempPrivilege.getSubUserPrivileges() != null) {
                             tempPrivilege.setSubUserPrivileges(subUserPrivileges);
                         }
-                        subUserPrivileges = new ArrayList<UserPrivilege>();
+                        subUserPrivileges = new ArrayList<>();
                     }
                 } else {
-                    subUserPrivileges = new ArrayList<UserPrivilege>();
+                    subUserPrivileges = new ArrayList<>();
                 }
                 subUserPrivileges.add(userPrivilege);
             }
@@ -73,6 +79,6 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
         if (subUserPrivileges != null && subUserPrivileges.size() > 0) {
             newUserPrivilegesMap.get(subUserPrivileges.get(0).getHigherPrivilege()).setSubUserPrivileges(subUserPrivileges);
         }
-        return new ArrayList<UserPrivilege>(newUserPrivilegesMap.values());
+        return new ArrayList<>(newUserPrivilegesMap.values());
     }
 }

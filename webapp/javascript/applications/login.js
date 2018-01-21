@@ -52,6 +52,7 @@ require(["jquery", "layui", "md5"], function () {
                     var captcha = $("#captcha");
                     var captchaImg = $("#captcha_img");
                     var username_value = $.trim(username.val());
+                    password.val(md5(password.val()));
                     var password_value = password.val();
                     var captcha_value = captcha.val();
                     var username_li = username.parent("span").parent("li");
@@ -65,7 +66,7 @@ require(["jquery", "layui", "md5"], function () {
                             "async": false,
                             "data": {
                                 "username": username_value,
-                                "password": md5(password_value),
+                                "password": password_value,
                                 "captcha": captcha_value,
                                 "_token": $("input[name='_token']").val()
                             },
@@ -82,11 +83,14 @@ require(["jquery", "layui", "md5"], function () {
                                     username_li.removeClass("has-success").addClass("has-error");
                                     password_li.removeClass("has-success").addClass("has-error");
                                     layer.msg(data.message, {icon: 5});
+                                    password.val("");
+                                    captchaImg.trigger("click");
                                 } else if (data.state == -1) {
                                     username_li.removeClass("has-error").addClass("has-success");
                                     password_li.removeClass("has-error").addClass("has-success");
                                     captcha_li.removeClass("has-success").addClass("has-error");
                                     layer.msg(data.message, {icon: 5});
+                                    password.val("");
                                     captchaImg.trigger("click");
                                 }
                             }

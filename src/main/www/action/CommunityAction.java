@@ -31,6 +31,8 @@ import www.validator.CommunityInputValidator;
 
 /**
  * 社区控制器
+ *
+ * @author 廿二月的天
  */
 @SystemUserAuth
 @Controller
@@ -54,9 +56,9 @@ public class CommunityAction {
     /**
      * 社区列表
      *
-     * @param model
-     * @param page
-     * @return
+     * @param model 前台模型
+     * @param page  分页对象
+     * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @RefreshCsrfToken
@@ -75,8 +77,8 @@ public class CommunityAction {
     /**
      * 添加社区
      *
-     * @param model
-     * @return
+     * @param model 前台模型
+     * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
@@ -93,9 +95,9 @@ public class CommunityAction {
     /**
      * 编辑社区
      *
-     * @param model
-     * @param id
-     * @return
+     * @param model 前台模型
+     * @param id    编辑的对应编号
+     * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
@@ -114,11 +116,11 @@ public class CommunityAction {
     /**
      * 添加、修改社区处理
      *
-     * @param request
-     * @param model
-     * @param community
-     * @param bindingResult
-     * @return
+     * @param request       HTTP响应对象
+     * @param model         前台模型
+     * @param community     社区对象
+     * @param bindingResult 错误信息对象
+     * @return 视图页面
      */
     @VerifyCSRFToken
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
@@ -154,14 +156,14 @@ public class CommunityAction {
     /**
      * 使用AJAX技术通过社区编号删除社区
      *
-     * @param id
-     * @return
+     * @param id 对应编号
+     * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> deleteCommunityForAjax(Integer id) {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>(3);
         try {
             communityService.deleteObjectById(id);
             map.put("state", 1);

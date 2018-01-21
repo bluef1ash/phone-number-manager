@@ -1,5 +1,6 @@
 package www.action;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Map;
 import javax.annotation.Resource;
@@ -11,7 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
-import www.entity.Captcha;
+import utils.CaptchaUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,20 +25,20 @@ import www.service.SystemUserService;
 
 /**
  * 登录控制器
+ *
+ * @author 廿二月的天
  */
 @Controller
 @RequestMapping("/login")
 public class LoginAction {
     @Resource
     private SystemUserService systemUserService;
-    @Resource
-    private Captcha captchaEntity;
     private static String sRand;
 
     /**
      * 登录页面
      *
-     * @return
+     * @return 视图页面
      */
     @RequestMapping(method = RequestMethod.GET)
     @RefreshCsrfToken
@@ -48,7 +49,10 @@ public class LoginAction {
     /**
      * 通过AJAX验证用户能否登录
      *
+     * @param request HTTP请求对象
+     * @param session session对象
      * @param systemUser 异步传输的用户实体对象
+     * @param captcha 验证码字符串
      * @return JSON格式信息
      */
     @RequestMapping(value = "/ajax", method = RequestMethod.POST)
@@ -70,8 +74,8 @@ public class LoginAction {
     /**
      * 退出系统
      *
-     * @param session
-     * @return
+     * @param session session对象
+     * @return 视图页面
      */
     @RequestMapping("/loginout")
     public String loginOut(HttpSession session) {
@@ -86,8 +90,8 @@ public class LoginAction {
     /**
      * 图片验证码
      *
-     * @param request
-     * @param response
+     * @param request HTTP请求对象
+     * @param response HTTP响应对象
      */
     @RequestMapping(value = "/captcha", method = RequestMethod.GET)
     public void captcha(HttpServletRequest request, HttpServletResponse response
@@ -97,10 +101,11 @@ public class LoginAction {
             response.setHeader("Pragma", "no-cache");
             response.setHeader("Cache-Control", "no-cache");
             response.setDateHeader("Expires", 0);
-            response.setContentType("image/jpeg");
+            response.setContentType("image/png");
             // 将图像输出到servlet输出流中
+            BufferedImage captchaImage = CaptchaUtil.getImage(request);
             ServletOutputStream sos = response.getOutputStream();
-            ImageIO.write(captchaEntity.getImage(request), "jpeg", sos);
+            ImageIO.write(captchaImage, "png", sos);
             sos.close();
             sRand = (String) request.getAttribute("sRand");
         } catch (IOException e) {

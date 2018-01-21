@@ -33,6 +33,8 @@ import utils.ExcelUtil;
 
 /**
  * 社区居民控制器
+ *
+ * @author 廿二月的天
  */
 @SystemUserAuth
 @Controller
@@ -58,13 +60,13 @@ public class CommunityResidentAction {
     /**
      * 社区居民列表
      *
-     * @param httpSession
-     * @param httpServletRequest
-     * @param model
-     * @param page
-     * @param communityResident
-     * @param company
-     * @return
+     * @param httpSession        session对象
+     * @param httpServletRequest HTTP请求对象
+     * @param model              前台模型
+     * @param page               分页对象
+     * @param communityResident  前台传过来的社区居民对象
+     * @param company            单位
+     * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @RefreshCsrfToken
@@ -95,9 +97,9 @@ public class CommunityResidentAction {
     /**
      * 添加社区居民
      *
-     * @param session
-     * @param model
-     * @return
+     * @param session session对象
+     * @param model   前台模型
+     * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
@@ -115,10 +117,10 @@ public class CommunityResidentAction {
     /**
      * 编辑社区居民
      *
-     * @param session
-     * @param model
-     * @param id
-     * @return
+     * @param session session对象
+     * @param model   前台模型
+     * @param id      需要编辑的社区居民的编号
+     * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
@@ -138,11 +140,11 @@ public class CommunityResidentAction {
     /**
      * 添加、修改社区居民处理
      *
-     * @param httpServletRequest
-     * @param model
-     * @param communityResident
-     * @param bindingResult
-     * @return
+     * @param httpServletRequest HTTP响应对象
+     * @param model              前台模型
+     * @param communityResident  前台传递的社区居民对象
+     * @param bindingResult      错误信息对象
+     * @return 视图页面
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
@@ -178,14 +180,14 @@ public class CommunityResidentAction {
     /**
      * 使用AJAX技术通过社区居民ID删除社区居民
      *
-     * @param id
-     * @return
+     * @param id 对应编号
+     * @return 视图页面
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> deleteCommunityResidentForAjax(String id) {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>(3);
         try {
             communityResidentService.deleteObjectById(Integer.parseInt(id));
             map.put("state", 1);
@@ -200,7 +202,7 @@ public class CommunityResidentAction {
     /**
      * 导入居民信息进系统
      *
-     * @return
+     * @return Ajax信息
      */
     @SystemUserAuth(enforce = true)
     @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
@@ -219,7 +221,7 @@ public class CommunityResidentAction {
                 throw new Exception("创建Excel工作薄为空！");
             }
             int state = communityResidentService.addCommunityResidentFromExcel(workbook);
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>(2);
             map.put("state", state);
             return map;
         } catch (Exception e) {
@@ -230,14 +232,16 @@ public class CommunityResidentAction {
     /**
      * 导出居民信息到Excel
      *
-     * @param session
+     * @param session session对象
      */
     @RequestMapping(value = "/save_as_excel", method = RequestMethod.GET)
     public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response) {
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(systemUser.getRoleId(), systemUser.getRoleLocationId());//获取业务数据集
-            Map<String, String> headMap = communityResidentService.getPartStatHead();//获取属性-列头
+            // 获取业务数据集
+            JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(systemUser.getRoleId(), systemUser.getRoleLocationId());
+            //获取属性-列头
+            Map<String, String> headMap = communityResidentService.getPartStatHead();
             String title = "“评社区”活动电话库登记表";
             ExcelUtil.downloadExcelFile(title, headMap, data, response);
         } catch (Exception e) {
@@ -248,7 +252,7 @@ public class CommunityResidentAction {
     /**
      * 使用AJAX技术列出社区居委会
      *
-     * @return
+     * @return Ajax消息
      */
     @RequestMapping(value = "/ajax_select", method = RequestMethod.GET)
     @VerifyCSRFToken
@@ -259,7 +263,7 @@ public class CommunityResidentAction {
             Integer roleId = systemUser.getUserRole().getRoleId();
             Integer roleLocationId = systemUser.getRoleLocationId();
             Set<Subdistrict> subdistricts = subdistrictService.findCommunitiesAndSubdistrictsByRole(roleId, roleLocationId);
-            Set<TreeMenu> treeMenus = new HashSet<TreeMenu>();
+            Set<TreeMenu> treeMenus = new HashSet<>();
             for (Subdistrict subdistrict : subdistricts) {
                 TreeMenu treeMenu = new TreeMenu();
                 treeMenu.setId(subdistrict.getSubdistrictId());
@@ -267,7 +271,7 @@ public class CommunityResidentAction {
                 if (treeMenus.size() == 0) {
                     treeMenu.setSpread(true);
                 }
-                List<TreeMenu> children = new ArrayList<TreeMenu>();
+                List<TreeMenu> children = new ArrayList<>();
                 for (Community community : subdistrict.getCommunities()) {
                     TreeMenu childrenTree = new TreeMenu();
                     childrenTree.setId(community.getCommunityId());

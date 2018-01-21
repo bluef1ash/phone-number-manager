@@ -4,18 +4,16 @@ import exception.BusinessException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import www.entity.Subdistrict;
 import www.entity.UserPrivilege;
-import www.service.SubdistrictService;
 import www.service.UserPrivilegeService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 街道添加/更新验证
+ *
+ * @author 廿二月的天
  */
 public class UserPrivilegeInputValidator implements Validator {
     private String message;
@@ -55,8 +53,9 @@ public class UserPrivilegeInputValidator implements Validator {
     /**
      * 验证输入数据
      *
-     * @param userPrivilege
-     * @return
+     * @param userPrivilege 需要验证的系统用户权限对象
+     * @return 验证是否成功
+     * @throws Exception 数据库操作异常
      */
     private Boolean checkInput(UserPrivilege userPrivilege) throws Exception {
         if (userPrivilege.getIsDisplay() != 0 || userPrivilege.getIsDisplay() != 1) {

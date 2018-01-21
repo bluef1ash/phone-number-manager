@@ -27,6 +27,8 @@ import www.validator.SubdistrictInputValidator;
 
 /**
  * 街道控制器
+ *
+ * @author 廿二月的天
  */
 @Controller
 @SystemUserAuth
@@ -48,9 +50,9 @@ public class SubdistrictAction {
     /**
      * 街道列表
      *
-     * @param model
-     * @param page
-     * @return
+     * @param model 前台模型
+     * @param page  分页对象
+     * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @RefreshCsrfToken
@@ -68,7 +70,7 @@ public class SubdistrictAction {
     /**
      * 添加街道
      *
-     * @return
+     * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
@@ -79,9 +81,9 @@ public class SubdistrictAction {
     /**
      * 编辑街道
      *
-     * @param model
-     * @param id
-     * @return
+     * @param model 前台模型
+     * @param id    编辑的对应编号
+     * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
@@ -89,19 +91,19 @@ public class SubdistrictAction {
         try {
             Subdistrict subdistrict = subdistrictService.findObject(id);
             model.addAttribute("subdistrict", subdistrict);
+            return "subdistrict/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "subdistrict/edit";
     }
 
     /**
      * 添加、修改街道处理
      *
-     * @param model
-     * @param subdistrict
-     * @param bindingResult
-     * @return
+     * @param model         前台模型
+     * @param subdistrict   街道对象
+     * @param bindingResult 错误信息对象
+     * @return 视图页面
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
@@ -131,14 +133,14 @@ public class SubdistrictAction {
     /**
      * 使用AJAX技术通过街道编号删除
      *
-     * @param id
-     * @return
+     * @param id 对应编号
+     * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> deleteSubdistrictForAjax(Integer id) {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>(3);
         try {
             subdistrictService.deleteObjectById(id);
             map.put("state", 1);

@@ -2,6 +2,7 @@ package www.validator;
 
 import exception.BusinessException;
 import utils.CommonUtil;
+import utils.StringCheckedRegexUtil;
 import www.entity.CommunityResident;
 import www.service.CommunityResidentService;
 import org.apache.commons.lang3.StringUtils;
@@ -11,11 +12,11 @@ import org.springframework.validation.Validator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 社区居民添加/更新验证
+ *
+ * @author 廿二月的天
  */
 public class CommunityResidentInputValidator implements Validator {
     private String message;
@@ -56,8 +57,9 @@ public class CommunityResidentInputValidator implements Validator {
     /**
      * 验证输入数据
      *
-     * @param communityResident
-     * @return
+     * @param communityResident 需要验证的社区居民对象
+     * @return 是否验证成功
+     * @throws Exception 数据库查询异常
      */
     private Boolean checkInput(CommunityResident communityResident) throws Exception {
         String communityResidentName = CommonUtil.replaceBlank(communityResident.getCommunityResidentName()).replaceAll("—", "-");
@@ -82,7 +84,7 @@ public class CommunityResidentInputValidator implements Validator {
         if (!checkedListData(isNameAndAddressRepeat, false)) {
             return false;
         }
-        List<String> phones = new ArrayList<String>();
+        List<String> phones = new ArrayList<>();
         if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone1())) {
             phones.add(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone1()).replaceAll("—", "-"));
         }
@@ -105,15 +107,13 @@ public class CommunityResidentInputValidator implements Validator {
     /**
      * 验证联系方式是否合法
      *
-     * @return
+     * @param residentPhones 社区居民联系方式的集合
+     * @return 是否验证成功
      */
     private boolean checkedPhone(List<String> residentPhones) {
-        Pattern regex = Pattern.compile("(?iUs)^(?:(?:[\\(（]?(?:[0-9]{3,4})?\\s*[\\)）-])?\\d{7,9}(?:[-转]\\d{2,6})?)|(?:[\\(\\+]?(?:86)?[\\)]?0?1[34578]{1}\\d{9})$");
-        Matcher matcher = null;
         for (String residentPhone : residentPhones) {
             // 验证固定电话
-            matcher = regex.matcher(residentPhone);
-            if (!matcher.matches()) {
+            if (!StringCheckedRegexUtil.checkPhone(residentPhone)) {
                 message = "输入的联系方式不合法，请检查后重试！";
                 return false;
             }
@@ -124,9 +124,9 @@ public class CommunityResidentInputValidator implements Validator {
     /**
      * 验证数据库返回数据是否为空
      *
-     * @param isNameAndAddressRepeat
-     * @param isCheckedPhone
-     * @return
+     * @param isNameAndAddressRepeat 需要验证的社区居民对象的集合
+     * @param isCheckedPhone         是否合法的社区居民联系方式
+     * @return 是否验证成功
      */
     private boolean checkedListData(List<CommunityResident> isNameAndAddressRepeat, Boolean isCheckedPhone) {
         StringBuilder communityNames = new StringBuilder();
@@ -155,5 +155,13 @@ public class CommunityResidentInputValidator implements Validator {
             return false;
         }
         return true;
+    }
+
+    public String getReferer() {
+        return referer;
+    }
+
+    public void setReferer(String referer) {
+        this.referer = referer;
     }
 }

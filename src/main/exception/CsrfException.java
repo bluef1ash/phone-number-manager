@@ -2,6 +2,8 @@ package exception;
 
 /**
  * CSRF验证异常
+ *
+ * @author 廿二月的天
  */
 public class CsrfException extends RuntimeException {
     public CsrfException() {

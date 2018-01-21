@@ -8,7 +8,7 @@
 <body class="denglu02">
 	<div class="dl">
 		<h2 class="biaoti">
-			<a href="${pageContext.request.contextPath}/" title="社区居民联系方式报送系统">社区居民联系方式报送系统</a></h2>
+			<a href="${pageContext.request.contextPath}/" title="社区居民联系方式报送系统" ondragstart="return false;">社区居民联系方式报送系统</a></h2>
 		<div class="log">
 			<dl class="xuzhi02">
 				<dt class="xz">注意：</dt>

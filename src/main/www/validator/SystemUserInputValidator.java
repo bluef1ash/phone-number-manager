@@ -11,6 +11,8 @@ import java.util.List;
 
 /**
  * 系统用户添加/更新验证
+ *
+ * @author 廿二月的天
  */
 public class SystemUserInputValidator implements Validator {
     private String message;

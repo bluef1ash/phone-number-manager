@@ -14,6 +14,8 @@ import java.util.Map;
 
 /**
  * 社区业务实现
+ *
+ * @author 廿二月的天
  */
 @Service("communityService")
 public class CommunityServiceImpl extends BaseServiceImpl<Community> implements CommunityService {
@@ -28,7 +30,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
         pageSize = pageSize == null ? 10 : pageSize;
         PageHelper.startPage(pageNum, pageSize);
         List<Community> data = communitiesDao.selectCommunitiesAndSubdistrictAll();
-        return findObjectsMethod(data, pageNum, pageSize);
+        return findObjectsMethod(data);
     }
 
     @Override
@@ -42,7 +44,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
         List<Community> communities;
         switch (roleId) {
             case SystemConstant.COMMUNITY_ROLE_ID:
-                communities = new ArrayList<Community>();
+                communities = new ArrayList<>();
                 Community community = communitiesDao.selectObjectById(systemUser.getRoleLocationId());
                 communities.add(community);
                 break;

@@ -7,12 +7,13 @@ import java.lang.annotation.Target;
 
 /**
  * 系统用户权限验证注解
- *
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SystemUserAuth {
-	String value() default "";
-	boolean enforce() default false;
-	boolean unAuth() default false;
+    String value() default "";
+
+    boolean enforce() default false;
+
+    boolean unAuth() default false;
 }

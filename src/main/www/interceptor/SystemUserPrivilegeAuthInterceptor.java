@@ -13,9 +13,11 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import annotation.SystemUserAuth;
 import exception.PrivilegeException;
+
 /**
  * 系统用户权限拦截器
  *
+ * @author 廿二月的天
  */
 public class SystemUserPrivilegeAuthInterceptor extends HandlerInterceptorAdapter {
     @Override
@@ -30,20 +32,22 @@ public class SystemUserPrivilegeAuthInterceptor extends HandlerInterceptorAdapte
                 Map<String, Set<String>> privilegeMap = (Map<String, Set<String>>) request.getSession().getAttribute("privilegeMap");
                 Set<String> privilegeAuth = privilegeMap.get("privilegeAuth");
                 String className = clazz.getSimpleName().substring(0, 1).toLowerCase() + clazz.getSimpleName().substring(1);
-                if (authMethod != null) {// 有权限控制的就要检查
+                // 有权限控制的就要检查
+                if (authMethod != null) {
                     if (!authMethod.unAuth()) {
                         String constraintAuth = ((HandlerMethod) handler).getMethod().getName();
                         if (!"".equals(authMethod.value())) {
                             constraintAuth = authMethod.value();
                         }
-                        boolean flag = false;
+                        boolean flag;
                         if (authMethod.enforce()) {
                             flag = !privilegeAuth.contains(constraintAuth);
                         } else {
                             flag = !privilegeAuth.contains(constraintAuth) && !privilegeAuth.contains(className);
 
                         }
-                        if (flag) {// 提示用户没权限
+                        // 提示用户没权限
+                        if (flag) {
                             throw new PrivilegeException("您没有该权限！");
                         }
                     }
@@ -52,7 +56,8 @@ public class SystemUserPrivilegeAuthInterceptor extends HandlerInterceptorAdapte
                     if (!"".equals(authClass.value())) {
                         className = authClass.value();
                     }
-                    if (!privilegeAuth.contains(className) && !privilegeParents.contains(className)) {// 提示用户没权限
+                    // 提示用户没权限
+                    if (!privilegeAuth.contains(className) && !privilegeParents.contains(className)) {
                         throw new PrivilegeException("您没有该权限！");
                     }
                 }

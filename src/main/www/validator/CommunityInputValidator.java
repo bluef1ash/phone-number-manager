@@ -1,25 +1,19 @@
 package www.validator;
 
 import exception.BusinessException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import utils.CommonUtil;
+import utils.StringCheckedRegexUtil;
 import www.entity.Community;
-import www.entity.CommunityResident;
-import www.service.CommunityResidentService;
 import www.service.CommunityService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * 社区添加/更新验证
+ *
+ * @author 廿二月的天
  */
 public class CommunityInputValidator implements Validator {
     private String message;
@@ -59,8 +53,8 @@ public class CommunityInputValidator implements Validator {
     /**
      * 验证输入数据
      *
-     * @param community
-     * @return
+     * @param community 需要验证的社区居委会对象
+     * @return 验证是否成功
      */
     private Boolean checkInput(Community community) throws Exception {
         // 联系方式合法
@@ -75,13 +69,11 @@ public class CommunityInputValidator implements Validator {
     /**
      * 验证联系方式是否合法
      *
-     * @param phone
-     * @return
+     * @param phone 需要验证的联系方式
+     * @return 联系方式是否合法
      */
     private boolean checkedPhone(String phone) {
-        Pattern regex = Pattern.compile("(?iUs)^(?:(?:[\\(（]?(?:[0-9]{3,4})?\\s*[\\)）-])?\\d{7,9}(?:[-转]\\d{2,6})?)|(?:[\\(\\+]?(?:86)?[\\)]?0?1[34578]{1}\\d{9})$");
-        Matcher matcher = regex.matcher(phone);
-        if (!matcher.matches()) {
+        if (!StringCheckedRegexUtil.checkPhone(phone)) {
             message = "输入的联系方式不合法，请检查后重试！";
             return false;
         }
@@ -91,8 +83,8 @@ public class CommunityInputValidator implements Validator {
     /**
      * 验证数据库返回数据是否为空
      *
-     * @param communities
-     * @return
+     * @param communities 需要验证的社区居委会对象的集合
+     * @return 是否验证成功
      */
     private boolean checkedListData(List<Community> communities) {
         if (communities != null && communities.size() > 0) {
@@ -102,5 +94,13 @@ public class CommunityInputValidator implements Validator {
             return false;
         }
         return true;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
     }
 }

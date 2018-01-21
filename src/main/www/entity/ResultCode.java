@@ -2,6 +2,8 @@ package www.entity;
 
 /**
  * 结果状态码工具
+ *
+ * @author 廿二月的天
  */
 public class ResultCode {
     private String code;

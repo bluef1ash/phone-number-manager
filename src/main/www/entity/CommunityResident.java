@@ -6,6 +6,8 @@ import java.util.Arrays;
 
 /**
  * 社区居民实体
+ *
+ * @author 廿二月的天
  */
 public class CommunityResident implements Serializable {
     private static final long serialVersionUID = -5117708878202596711L;

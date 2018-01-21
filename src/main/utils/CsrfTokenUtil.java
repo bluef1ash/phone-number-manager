@@ -11,6 +11,8 @@ import java.util.UUID;
 
 /**
  * 防止CSRF攻击
+ *
+ * @author 廿二月的天
  */
 public class CsrfTokenUtil {
 
@@ -18,31 +20,32 @@ public class CsrfTokenUtil {
     }
 
     /**
-     * The token parameter name
+     * token参数名称
      */
     private static final String CSRF_PARAM_NAME = "_token";
 
     /**
-     * The location on the session which stores the token
+     * token在session中的名称
      */
     private static final String CSRF_TOKEN_FOR_SESSION_ATTR_NAME = CsrfTokenUtil.class.getName() + ".tokenval";
 
     /**
      * 从Session中获取Token
      *
-     * @param session
-     * @param sessionKey
-     * @return
+     * @param session    session对象
+     * @param sessionKey token在session中的名称
+     * @return 新的token
      */
     public static String getTokenForSession(HttpSession session, String sessionKey) {
         String token = null;
         if (sessionKey == null) {
             sessionKey = CSRF_TOKEN_FOR_SESSION_ATTR_NAME;
         }
-        // I cannot allow more than one token on a session - in the case of two
-        // requests trying to
-        // init the token concurrently
-        synchronized (session) {
+        if (session == null) {
+            return null;
+        }
+        // I cannot allow more than one token on a session - in the case of two requests trying to init the token concurrently
+        synchronized (CsrfTokenUtil.class) {
             token = (String) session.getAttribute(sessionKey);
             if (null == token) {
                 token = generate();
@@ -55,27 +58,31 @@ public class CsrfTokenUtil {
     /**
      * 设置Token到Session中
      *
-     * @param session
-     * @return
+     * @param session session对象
      */
-    public static String setTokenForSession(HttpSession session) {
+    public static void setTokenForSession(HttpSession session) {
         session.setAttribute(CSRF_TOKEN_FOR_SESSION_ATTR_NAME, generate());
-        return (String) session.getAttribute(CSRF_TOKEN_FOR_SESSION_ATTR_NAME);
+        session.getAttribute(CSRF_TOKEN_FOR_SESSION_ATTR_NAME);
     }
 
-    public static String setTokenForSessionAndModel(HttpSession session, ModelAndView model) {
+    /**
+     * 设置token到session和模型中
+     *
+     * @param session session对象
+     * @param model 模型对象
+     */
+    public static void setTokenForSessionAndModel(HttpSession session, ModelAndView model) {
         String token = generate();
         session.setAttribute(CSRF_TOKEN_FOR_SESSION_ATTR_NAME, token);
         model.addObject(CSRF_PARAM_NAME, token);
-        return token;
     }
 
     /**
      * 从提交的表单获取Token
      *
-     * @param request
-     * @return
-     * @exception
+     * @param request HTTP请求对象
+     * @return 新的token
+     * @throws UnsupportedEncodingException
      */
     public static String getTokenFromRequest(HttpServletRequest request) throws UnsupportedEncodingException {
         String token = request.getParameter(CSRF_PARAM_NAME);
@@ -86,21 +93,21 @@ public class CsrfTokenUtil {
     }
 
     /**
-     * 算Token
+     * 生成Token
      *
-     * @return
+     * @return 生成的token值
      */
-    public static String generate() {
+    private static String generate() {
         return UUID.randomUUID().toString();
     }
 
     /**
      * Token校验
      *
-     * @param request
-     * @param sessionKey
-     * @return
-     * @exception
+     * @param request HTTP请求对象
+     * @param sessionKey token在session中的名称
+     * @return 是否效验成功
+     * @throws UnsupportedEncodingException
      */
     public static boolean verifyCSRFToken(HttpServletRequest request, String sessionKey) throws UnsupportedEncodingException {
         String requestToken = null;
@@ -114,10 +121,7 @@ public class CsrfTokenUtil {
             requestToken = formToken;
         }
         String sessionCSRFToken = getTokenForSession(request.getSession(), sessionKey);
-        if (StringUtils.isEmpty(sessionCSRFToken) || StringUtils.isEmpty(requestToken)) {
-            return false;
-        }
-        return requestToken.equals(sessionCSRFToken);
+        return !StringUtils.isEmpty(sessionCSRFToken) && !StringUtils.isEmpty(requestToken) && requestToken.equals(sessionCSRFToken);
     }
 
     public static String getCsrfParamName() {

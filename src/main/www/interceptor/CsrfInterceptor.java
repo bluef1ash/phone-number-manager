@@ -20,6 +20,8 @@ import java.lang.reflect.Method;
 
 /**
  * 防止CSRF攻击拦截器
+ *
+ * @author 廿二月的天
  */
 public class CsrfInterceptor extends HandlerInterceptorAdapter {
     @Override
@@ -56,11 +58,11 @@ public class CsrfInterceptor extends HandlerInterceptorAdapter {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView)
-        throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
         HttpSession session = request.getSession();
         // 第一次生成token
-        if (modelAndView != null && (request.getSession(false) == null || StringUtils.isEmpty(CsrfTokenUtil.getTokenForSession(session, null)))) {
+        boolean sessionIsNotEmpty = request.getSession(false) == null || StringUtils.isEmpty(CsrfTokenUtil.getTokenForSession(session, null));
+        if (modelAndView != null && sessionIsNotEmpty) {
             CsrfTokenUtil.setTokenForSessionAndModel(session, modelAndView);
             return;
         }
@@ -71,6 +73,7 @@ public class CsrfInterceptor extends HandlerInterceptorAdapter {
         // 跳转到一个新页面 刷新token
         String xrq = request.getHeader("X-Requested-With");
         if (refreshAnnotation != null && refreshAnnotation.refresh() && StringUtils.isEmpty(xrq)) {
+            assert modelAndView != null;
             CsrfTokenUtil.setTokenForSessionAndModel(session, modelAndView);
             return;
         }
@@ -79,9 +82,9 @@ public class CsrfInterceptor extends HandlerInterceptorAdapter {
         if (verifyAnnotation != null) {
             if (verifyAnnotation.verify()) {
                 if (StringUtils.isEmpty(xrq)) {
+                    assert modelAndView != null;
                     CsrfTokenUtil.setTokenForSessionAndModel(session, modelAndView);
                 } else {
-                    ;
                     response.setContentType("application/json;charset=UTF-8");
                 }
             }

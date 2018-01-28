@@ -384,7 +384,6 @@ body, html {
                 }
             }
         }
-
         .sidebar-form {
             input:focus {
                 border-color: transparent;
@@ -504,9 +503,6 @@ body, html {
                                 color: #c00 !important;
                             }
                         }
-                        &.active i:hover {
-                            color: #fff !important;
-                        }
                     }
                 }
                 .roll-right {
@@ -558,7 +554,7 @@ body, html {
         }
     }
 
-    @media (max-width: 767px) {
+    @media only screen and (max-width: 767px) {
         .wrapper {
             .content-wrapper, .main-footer, .right-side {
                 margin-left: 0;
@@ -619,7 +615,7 @@ body, html {
         }
     }
 
-    @media (min-width: 768px) {
+    @media only screen and (min-width: 768px) {
         .sidebar-collapse {
             .wrapper {
                 .content-wrapper, .main-footer, .right-side {
@@ -724,7 +720,7 @@ body, html {
         }
     }
 
-    @media (max-width: 991px) {
+    @media only screen and (max-width: 991px) {
         .main-header {
             .navbar-custom-menu a, .navbar-right a {
                 color: inherit;

@@ -8,6 +8,7 @@ import java.util.*;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
@@ -20,6 +21,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+
+import static org.apache.poi.ss.usermodel.CellType.*;
 
 /**
  * Excel工具类
@@ -188,14 +191,16 @@ public class ExcelUtil {
     /**
      * 导出Excel 2007 OOXML (.xlsx)格式
      *
-     * @param title       标题行
-     * @param headMap     属性-列头
+     * @param titleUp     标题之上的文字
+     * @param title       标题
+     * @param headMap     表头
      * @param jsonArray   数据集
      * @param datePattern 日期格式，传null值则默认 年月日
      * @param colWidth    列宽 默认 至少17个字节
      * @param out         输出流
+     * @throws IOException IO流异常
      */
-    public static void exportExcelX(String title, Map<String, String> headMap, JSONArray jsonArray, String datePattern, int colWidth, OutputStream out) {
+    public static void exportExcelX(String titleUp, String title, Map<String, String> headMap, JSONArray jsonArray, String datePattern, int colWidth, OutputStream out) throws IOException {
         if (datePattern == null) {
             datePattern = DEFAULT_DATE_PATTERN;
         }
@@ -265,9 +270,11 @@ public class ExcelUtil {
                     sheet = workbook.createSheet();
                 }
                 // 附件格式
-                SXSSFRow fujianTitle = sheet.createRow(rowIndex);
-                fujianTitle.createCell(0).setCellValue("附件2");
-                rowIndex++;
+                if (StringUtils.isNotEmpty(titleUp)) {
+                    SXSSFRow fujianTitle = sheet.createRow(rowIndex);
+                    fujianTitle.createCell(0).setCellValue(titleUp);
+                    rowIndex++;
+                }
                 // 表头
                 SXSSFRow titleRow = sheet.createRow(rowIndex);
                 titleRow.createCell(0).setCellValue(title);
@@ -276,8 +283,7 @@ public class ExcelUtil {
                 rowIndex++;
                 // 日期
                 SXSSFRow dateRow = sheet.createRow(rowIndex);
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日");
-                dateRow.createCell(6).setCellValue("时间：" + simpleDateFormat.format(new Date()));
+                dateRow.createCell(6).setCellValue("时间：" + DateUtil.date2Str("yyyy年MM月dd日", new Date()));
                 sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 6, 7));
                 rowIndex++;
                 // 列头
@@ -315,50 +321,44 @@ public class ExcelUtil {
             sheet.autoSizeColumn(i);
             sheet.setColumnWidth(i, headers[i].getBytes().length * 2 * 256);
         }
-        try {
-            workbook.write(out);
-            workbook.close();
-            workbook.dispose();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        workbook.write(out);
+        workbook.close();
+        workbook.dispose();
     }
 
     /**
      * 导出下载excel
      *
+     * @param titleUp  标题上文字
      * @param title    文件标题
      * @param headMap  表头
      * @param ja       表内容
      * @param response HTTP响应对象
+     * @throws Exception 文件流异常/字符串转换异常
      */
-    public static void downloadExcelFile(String title, Map<String, String> headMap, JSONArray ja, HttpServletResponse response) {
-        try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            ExcelUtil.exportExcelX(title, headMap, ja, null, 0, os);
-            byte[] content = os.toByteArray();
-            InputStream is = new ByteArrayInputStream(content);
-            // 设置response参数，可以打开下载页面
-            response.reset();
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-            response.setHeader("Content-Disposition", "attachment;filename=" + new String((title + ".xlsx").getBytes(), "iso-8859-1"));
-            response.setContentLength(content.length);
-            ServletOutputStream outputStream = response.getOutputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-            byte[] buff = new byte[8192];
-            int bytesRead;
-            while (-1 != (bytesRead = bis.read(buff, 0, buff.length))) {
-                bos.write(buff, 0, bytesRead);
+    public static void downloadExcelFile(String titleUp, String title, Map<String, String> headMap, JSONArray ja, HttpServletResponse response) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        exportExcelX(titleUp, title, headMap, ja, null, 0, os);
+        byte[] content = os.toByteArray();
+        InputStream is = new ByteArrayInputStream(content);
+        // 设置response参数，可以打开下载页面
+        response.reset();
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + new String((title + ".xlsx").getBytes(), "iso-8859-1"));
+        response.setContentLength(content.length);
+        ServletOutputStream outputStream = response.getOutputStream();
+        BufferedInputStream bis = new BufferedInputStream(is);
+        BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+        byte[] buff = new byte[8192];
+        int bytesRead;
+        while (-1 != (bytesRead = bis.read(buff, 0, buff.length))) {
+            bos.write(buff, 0, bytesRead);
 
-            }
-            bis.close();
-            bos.close();
-            outputStream.flush();
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        bis.close();
+        bos.close();
+        outputStream.flush();
+        outputStream.close();
     }
 
     /**
@@ -367,7 +367,7 @@ public class ExcelUtil {
      * @param in       输入流对象
      * @param fileName 文件名称
      * @return 文件内容
-     * @throws IOException
+     * @throws Exception 操作异常
      */
     public List<List<Object>> getBankListByExcel(InputStream in, String fileName) throws Exception {
         //创建Excel工作薄
@@ -375,10 +375,10 @@ public class ExcelUtil {
         if (null == work) {
             throw new Exception("创建Excel工作薄为空！");
         }
-        Sheet sheet = null;
-        Row row = null;
-        Cell cell = null;
-        List<List<Object>> list = new ArrayList<List<Object>>();
+        Sheet sheet;
+        Row row;
+        Cell cell;
+        List<List<Object>> list = new ArrayList<>();
         //遍历Excel中所有的sheet
         for (int i = 0; i < work.getNumberOfSheets(); i++) {
             sheet = work.getSheetAt(i);
@@ -392,10 +392,10 @@ public class ExcelUtil {
                     continue;
                 }
                 //遍历所有的列
-                List<Object> li = new ArrayList<Object>();
+                List<Object> li = new ArrayList<>();
                 for (int y = row.getFirstCellNum(); y < row.getLastCellNum(); y++) {
                     cell = row.getCell(y);
-                    li.add(getCellValue(cell));
+                    li.add(getCellValue(cell, null));
                 }
                 list.add(li);
             }
@@ -410,7 +410,7 @@ public class ExcelUtil {
      * @param inputStream 输入流对象
      * @param fileName    文件名
      * @return 文件对象
-     * @throws Exception
+     * @throws Exception 文件后缀解析异常
      */
     public static Workbook getWorkbook(InputStream inputStream, String fileName) throws Exception {
         Workbook wb;
@@ -430,23 +430,29 @@ public class ExcelUtil {
     /**
      * 描述：对表格中数值进行格式化
      *
-     * @param cell 单元格对象
-     * @return
+     * @param cell     单元格对象
+     * @param cellType 单元格类型
+     * @return 单元格数据
      */
-    public static Object getCellValue(Cell cell) {
+    public static Object getCellValue(Cell cell, CellType cellType) {
         Object value = null;
-        //格式化number String字符
-        DecimalFormat df = new DecimalFormat("0");
-        //日期格式化
-        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd");
-        //格式化数字
-        DecimalFormat df2 = new DecimalFormat("0.00");
         if (cell != null) {
-            switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_STRING:
+            if (cellType == null) {
+                cellType = cell.getCellTypeEnum();
+            }
+            switch (cellType) {
+                case STRING:
+                    cell.setCellType(STRING);
                     value = cell.getRichStringCellValue().getString();
                     break;
-                case Cell.CELL_TYPE_NUMERIC:
+                case NUMERIC:
+                    //格式化number String字符
+                    DecimalFormat df = new DecimalFormat("0");
+                    //日期格式化
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd");
+                    //格式化数字
+                    DecimalFormat df2 = new DecimalFormat("0.00");
+                    cell.setCellType(NUMERIC);
                     if ("General".equals(cell.getCellStyle().getDataFormatString())) {
                         value = df.format(cell.getNumericCellValue());
                     } else if ("m/d/yy".equals(cell.getCellStyle().getDataFormatString())) {
@@ -455,10 +461,12 @@ public class ExcelUtil {
                         value = df2.format(cell.getNumericCellValue());
                     }
                     break;
-                case Cell.CELL_TYPE_BOOLEAN:
+                case BOOLEAN:
+                    cell.setCellType(BOOLEAN);
                     value = cell.getBooleanCellValue();
                     break;
-                case Cell.CELL_TYPE_BLANK:
+                case BLANK:
+                    cell.setCellType(BLANK);
                     value = "";
                     break;
                 default:

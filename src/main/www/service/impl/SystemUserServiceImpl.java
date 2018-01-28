@@ -51,7 +51,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
                             if (user.getIsLocked() == 1) {
                                 map.put("message", "登录失败！" + user.getUsername() + "已被锁定，请联系管理员！");
                             } else {
-                                user.setLoginTime(new Timestamp(System.currentTimeMillis()));
+                                user.setLoginTime(DateUtil.getTimestamp(new Date()));
                                 user.setLoginIp(CommonUtil.getIp(request));
                                 systemUsersDao.updateObject(user);
                                 user.setPassword(null);

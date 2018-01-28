@@ -24,27 +24,35 @@ define("commonFunction", ["jquery", "layui"], function () {
                 return false;
             }
         },
+        /**
+         * 删除数据
+         * @param url
+         * @param id
+         * @param token
+         */
         deleteObject: function (url, id, token) {
-            if (id !== null || id !== "") {
-                $.ajax({
-                    url: url,
-                    type: "POST",
-                    data: {"id": id, "_token": token, _method: "DELETE"},
-                    success: function (data) {
-                        layui.use("layer", function () {
-                            var layer = layui.layer;
-                            layer.ready(function () {
-                                if (data !== null && data.state) {
-                                    layer.msg(data.message, {icon: 6});
-                                    setTimeout(function () {
-                                        location.reload();
-                                    }, 1000);
-                                } else {
-                                    layer.msg(data.message, {icon: 5});
+            if (id !== null && id !== "") {
+                layui.use("layer", function () {
+                    var layer = layui.layer;
+                    layer.ready(function () {
+                        layer.confirm("是否真的删除此条目？", {title: "注意", btn: ["是", "否"]}, function () {
+                            $.ajax({
+                                url: url,
+                                type: "POST",
+                                data: {"id": id, "_token": token, _method: "DELETE"},
+                                success: function (data) {
+                                    if (data !== null && data.state) {
+                                        layer.msg(data.message, {icon: 6});
+                                        setTimeout(function () {
+                                            location.reload();
+                                        }, 3000);
+                                    } else {
+                                        layer.msg(data.message, {icon: 5});
+                                    }
                                 }
                             });
                         });
-                    }
+                    });
                 });
             }
         }

@@ -404,7 +404,7 @@ public class DateUtil {
      * @param date 日期对象
      * @return 数据库时间戳
      */
-    public static Timestamp getDateNow(Date date) {
+    public static Timestamp getTimestamp(Date date) {
         return new Timestamp(date.getTime());
     }
 }

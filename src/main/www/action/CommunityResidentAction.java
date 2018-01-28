@@ -10,6 +10,7 @@ import javax.servlet.http.HttpSession;
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSONArray;
+import constant.SystemConstant;
 import www.entity.*;
 import www.service.SubdistrictService;
 import www.validator.CommunityResidentInputValidator;
@@ -242,8 +243,7 @@ public class CommunityResidentAction {
             JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(systemUser.getRoleId(), systemUser.getRoleLocationId());
             //获取属性-列头
             Map<String, String> headMap = communityResidentService.getPartStatHead();
-            String title = "“评社区”活动电话库登记表";
-            ExcelUtil.downloadExcelFile(title, headMap, data, response);
+            ExcelUtil.downloadExcelFile(SystemConstant.EXCEL_TITLE_UP, SystemConstant.EXCEL_TITLE, headMap, data, response);
         } catch (Exception e) {
             throw new BusinessException("导出Excel文件失败！");
         }

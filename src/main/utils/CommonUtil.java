@@ -19,11 +19,11 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author 廿二月的天
  */
-public final class CommonUtil {
+public class CommonUtil {
     /**
      * 替换空字符串的正则表达式
      */
-    private static Pattern replaceBlankPattern = Pattern.compile("\\s*|\t|\r|\n");
+    private static Pattern replaceBlankPattern = Pattern.compile("(?iUs)[\\s\\t\\r\\n]*");
     /**
      * 客户端状态
      */
@@ -70,9 +70,7 @@ public final class CommonUtil {
     }
 
     /**
-     * 例： String strVal="This is a dog"; String
-     * strResult=CTools.replace(strVal,"dog","cat"); 结果： strResult equals
-     * "This is cat"
+     * 替换字符串
      *
      * @param strSrc 要进行替换操作的字符串
      * @param strOld 要查找的字符串

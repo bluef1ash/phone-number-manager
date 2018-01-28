@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import constant.SystemConstant;
 import exception.BusinessException;
+import org.apache.poi.ss.usermodel.CellType;
+import utils.DateUtil;
 import www.entity.Community;
 import www.entity.CommunityResident;
 import www.entity.Subdistrict;
@@ -20,7 +22,8 @@ import www.entity.SystemUser;
 import www.service.CommunityResidentService;
 
 import javax.servlet.http.HttpSession;
-import java.sql.Timestamp;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,7 +36,7 @@ import java.util.regex.Pattern;
 @Service("communityResidentService")
 public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResident> implements CommunityResidentService {
 
-    private Pattern communityPattern = Pattern.compile("(?iUs)^(.*)(?:社区|居委会)(.*)$");
+    private Pattern communityPattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
 
     @Override
     public CommunityResident findCommunityResidentAndCommunityById(Integer id) throws Exception {
@@ -124,21 +127,22 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         List<CommunityResident> residents = new ArrayList<>();
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             sheet = workbook.getSheetAt(i);
-            if (sheet == null) {
-                continue;
-            }
-            // 遍历当前sheet中的所有行
-            for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
-                row = sheet.getRow(j);
-                if (row == null || row.getFirstCellNum() == j || ExcelUtil.isMergedRegion(sheet, j, 0) || String.valueOf(ExcelUtil.getCellValue(row.getCell(0))).contains("序号")) {
-                    continue;
+            if (sheet != null) {
+                // 遍历当前sheet中的所有行
+                for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
+                    row = sheet.getRow(j);
+                    if (row != null && row.getFirstCellNum() != j && !ExcelUtil.isMergedRegion(sheet, j, 0) && StringUtils.isNotEmpty(ExcelUtil.getCellValue(row.getCell(0), null).toString()) && !String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_SUBDISTRICT_CELL_NUMBER), null)).contains("街道")) {
+                        residents.add(residentHandler(row));
+                    }
                 }
-                residents.add(residentHandler(row));
             }
         }
-        // 截断表
-        communityResidentsDao.truncateTable();
-        return communityResidentsDao.insertBatchCommunityResidents(residents);
+        if (residents.size() > 0) {
+            // 截断表
+            communityResidentsDao.truncateTable();
+            return communityResidentsDao.insertBatchCommunityResidents(residents);
+        }
+        return -1;
     }
 
     @Override
@@ -204,7 +208,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 break;
         }
         if (communityResidents != null) {
-            String[] phones = null;
 //            int index = 1;
             for (CommunityResident communityResident : communityResidents) {
                 //communityResident.setIndexId(index);
@@ -214,7 +217,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 communityResident.setCommunityName(communityName);
                 // 处理多个联系方式
                 if (communityResident.getCommunityResidentPhones().contains(",")) {
-                    phones = communityResident.getCommunityResidentPhones().split(",");
+                    String[] phones = communityResident.getCommunityResidentPhones().split(",");
                     if (phones.length == 2) {
                         communityResident.setCommunityResidentPhone1(phones[0]);
                         communityResident.setCommunityResidentPhone2(phones[1]);
@@ -335,8 +338,11 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      */
     private CommunityResident residentHandler(Row row) {
         CommunityResident resident = new CommunityResident();
+        // 居民姓名
+        resident.setCommunityResidentName(String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_COMMUNITY_RESIDENT_NAME_CELL_NUMBER), CellType.STRING)));
+        // 居民地址
         // 处理地址和社区名称
-        String address = String.valueOf(ExcelUtil.getCellValue(row.getCell(2)));
+        String address = String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_ADDRESS_CELL_NUMBER), CellType.STRING));
         Matcher matcher = communityPattern.matcher(address);
         String communityAliasName = null;
         String realAddress = null;
@@ -344,14 +350,11 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             communityAliasName = matcher.group(1);
             realAddress = matcher.group(2);
         }
-        // 居民姓名
-        resident.setCommunityResidentName(String.valueOf(ExcelUtil.getCellValue(row.getCell(1))));
-        // 居民地址
         resident.setCommunityResidentAddress(realAddress);
         // 居民电话三个合一
-        String phone1 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(3)))));
-        String phone2 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(4)))));
-        String phone3 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(5)))));
+        String phone1 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_PHONE1_CELL_NUMBER), CellType.STRING))));
+        String phone2 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_PHONE2_CELL_NUMBER), CellType.STRING))));
+        String phone3 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_PHONE3_CELL_NUMBER), CellType.STRING))));
         StringBuilder phones = new StringBuilder();
         if (!StringUtils.isEmpty(phone1)) {
             phones.append(phone1);
@@ -363,15 +366,13 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             phones.append(",").append(phone3);
         }
         resident.setCommunityResidentPhones(phones.toString());
+        String communityName = String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_COMMUNITY_CELL_NUMBER), CellType.STRING));
         // 分包人
-        if (communityAliasName == null) {
-            throw new BusinessException("社区名称没有找到！");
-        }
-        resident.setCommunityResidentSubcontractor(String.valueOf(ExcelUtil.getCellValue(row.getCell(6))).replaceAll(communityAliasName, ""));
+        resident.setCommunityResidentSubcontractor(String.valueOf(ExcelUtil.getCellValue(row.getCell(SystemConstant.EXCEL_SUBCONTRACTOR_CELL_NUMBER), CellType.STRING)).replaceAll(communityName, ""));
         // 社区名称
-        Integer communityId = communitiesDao.selectCommunityIdByCommunityName(communityAliasName);
+        Integer communityId = communitiesDao.selectCommunityIdByCommunityName(communityName);
         if (communityId == null) {
-            throw new BusinessException("社区编号" + communityAliasName);
+            throw new BusinessException("社区编号" + communityName);
         }
         resident.setCommunityId(communityId);
         return resident;
@@ -384,13 +385,13 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      * @return 处理后的社区居民对象
      */
     private CommunityResident multiplePhoneHandler(CommunityResident communityResident) {
-//        社区居民姓名
+        // 社区居民姓名
         communityResident.setCommunityResidentName(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentName())).replaceAll("—", "-"));
-//        社区居民地址
+        // 社区居民地址
         communityResident.setCommunityResidentAddress(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentAddress())).replaceAll("—", "-"));
-//        社区分包人
+        // 社区分包人
         communityResident.setCommunityResidentSubcontractor(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentSubcontractor())).replaceAll("—", "-"));
-//        联系方式数组处理
+        // 联系方式数组处理
         StringBuilder tempPhone = new StringBuilder();
         if (!StringUtils.isEmpty(communityResident.getCommunityResidentPhone1())) {
             tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone1())).replaceAll("—", "-")).append(",");
@@ -402,8 +403,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             tempPhone.append(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone3())).replaceAll("—", "-")).append(",");
         }
         communityResident.setCommunityResidentPhones(tempPhone.toString().substring(0, tempPhone.length() - 1));
-//        编辑时间
-        communityResident.setCommunityResidentEditTime(new Timestamp(System.currentTimeMillis()));
+        // 编辑时间
+        communityResident.setCommunityResidentEditTime(DateUtil.getTimestamp(new Date()));
         return communityResident;
     }
 
@@ -411,7 +412,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      * 获取单位的数量
      *
      * @param communityResident 需要查找的社区居民信息对象
-     * @param communities 社区集合
+     * @param communities       社区集合
      * @return 单位的统计数量
      * @throws Exception DAO层异常
      */

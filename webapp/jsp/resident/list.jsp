@@ -12,31 +12,35 @@
             <a href="${pageContext.request.contextPath}/resident/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button" title="添加社区居民" ondragstart="return false;">添加社区居民</a>
             <a href="${pageContext.request.contextPath}/resident/save_as_excel.action" class="btn btn-default float-right margin-br-10" role="button" title="导出到Excel" ondragstart="return false;">导出到Excel</a>
             <a href="javascript:;" class="btn btn-default float-right margin-br-10" id="import_as_system" role="button" title="从Excel文件导入系统" ondragstart="return false;">从Excel文件导入系统</a>
-            <button id="confirm_upload" class="hidden"></button>
+            <button id="confirm_upload" class="hidden" onsubmit="return false;"></button>
         </div>
         <form class="form-horizontal" role="form" action="${pageContext.request.contextPath}/resident/list.action" method="get">
             <div class="query-input">
-                <div class="form-group">
-                    <label class="col-md-4 control-label">单位</label>
-                    <span class="col-md-8 search-company">
-                        <input type="text" name="company" class="form-control" value="${company}" readonly="readonly" onclick="selectCompany();" style="background-color: #eee;cursor: pointer;">
-                        <button type="button" class="btn btn-default" onclick="selectCompany();"><span class="glyphicon glyphicon-search"></span></button>
-                    </span>
+                <div class="row">
+                    <div class="col-md-2 form-group">
+                        <label class="col-md-4 control-label">单位</label>
+                        <span class="col-md-8 search-company">
+                            <input type="text" name="company" class="form-control" value="${company}" readonly="readonly" onclick="selectCompany();" style="background-color: #eee;cursor: pointer;">
+                            <button type="button" class="btn btn-default" onclick="selectCompany();"><span class="glyphicon glyphicon-search"></span></button>
+                        </span>
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label class="col-md-5 control-label">社区居民姓名</label>
+                        <span class="col-md-7"><input type="text" name="communityResidentName" class="form-control" placeholder="请输入社区居民姓名" value="${communityResident.communityResidentName}"></span>
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label class="col-md-4 control-label">家庭住址</label>
+                        <span class="col-md-8"><input type="text" name="communityResidentAddress" class="form-control" placeholder="请输入社区居民家庭住址" value="${communityResident.communityResidentAddress}"></span>
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label class="col-md-4 control-label">联系方式</label>
+                        <span class="col-md-8"><input type="text" name="communityResidentPhones" class="form-control" placeholder="请输入社区居民联系方式" value="${communityResident.communityResidentPhones}"></span>
+                    </div>
+                    <div class="col-md-1">
+                        <input type="hidden" name="_token" value="${_token}">
+                        <input type="submit" value="查询" class="btn btn-primary search-company-submit">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="col-md-5 control-label">社区居民姓名</label>
-                    <span class="col-md-7"><input type="text" name="communityResidentName" class="form-control" placeholder="请输入社区居民姓名" value="${communityResident.communityResidentName}"></span>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-4 control-label">家庭住址</label>
-                    <span class="col-md-8"><input type="text" name="communityResidentAddress" class="form-control" placeholder="请输入社区居民家庭住址" value="${communityResident.communityResidentAddress}"></span>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-4 control-label">联系方式</label>
-                    <span class="col-md-8"><input type="text" name="communityResidentPhones" class="form-control" placeholder="请输入社区居民联系方式" value="${communityResident.communityResidentPhones}"></span>
-                </div>
-                <input type="hidden" name="_token" value="${_token}">
-                <input type="submit" value="查询" class="btn btn-primary search-company-submit">
             </div>
         </form>
         <table class="table table-bordered font-size-14">
@@ -45,7 +49,7 @@
                     <th>序号</th>
                     <th>社区居民姓名</th>
                     <th style="width: 30%">家庭住址</th>
-                    <th style="width: 25%">联系方式（多个方式以英文逗号分隔）</th>
+                    <th style="width: 25%">联系方式（多个联系方式以英文逗号分隔）</th>
                     <th>所属社区居委会</th>
                     <th>操作</th>
                 </tr>
@@ -59,8 +63,8 @@
                         <td>${communityResident.communityResidentPhones}</td>
                         <td>${communityResident.community.communityName}</td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default operation" role="button" title="修改" ondragstart="return false;">修改</a>
-                            <a href="javascript:;" class="btn btn-default operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除" ondragstart="return false;">删除</a>
+                            <a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default btn-sm operation" role="button" title="修改" ondragstart="return false;">修改</a>
+                            <a href="javascript:;" class="btn btn-danger btn-sm operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除" ondragstart="return false;">删除</a>
                         </td>
                     </tr>
                 </c:forEach>
@@ -137,10 +141,11 @@
             require(["commonFunction", "jquery", "bootstrap", "layui"], function (commonFunction) {
                 window.commonFunction = commonFunction;
                 $(function () {
+                    var paginationParent = $("#pagination_parent");
                     // 分页
-                    var pagination_ul = $("#pagination_parent").children("ul").css("width");
+                    var pagination_ul = paginationParent.children("ul").css("width");
                     pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";
-                    $("#pagination_parent").css("width", pagination_ul);
+                    paginationParent.css("width", pagination_ul);
                     // 查询
                     $("form[name='query_input']").submit(function () {
                         if ($("input[name='communityResidentName']").val() == "" && $("input[name='communityResidentAddress']").val() == "" && $("input[name='communityResidentPhones']").val() == "") {
@@ -159,33 +164,44 @@
                     /**
                      * 上传Excel
                      */
-                    layui.use(["layer", "upload"], function(){
+                    layui.use(["layer", "upload"], function() {
                         var layer = layui.layer;
                         var upload = layui.upload;
-                        var index = null;
+                        var layerIndex = null;
                         //执行实例
                         var uploadInst = upload.render({
-                            elem: "#import_as_system", //绑定元素
-                            url: "${pageContext.request.contextPath}/resident/import_as_system.action", //上传接口
+                            elem: "#import_as_system",
+                            url: "${pageContext.request.contextPath}/resident/import_as_system.action",
+                            auto: false,
+                            bindAction: "#confirm_upload",
                             accept: "file",
                             exts: "xls|xlsx",
                             data: {
                                 _token: "${_token}"
                             },
-                            choose: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
-                                index = layer.load();
+                            choose: function(obj) {
+                                var tipIndex = layer.open({
+                                    title: "友情提示",
+                                    content: "必须按照民政局下发的Excel表的格式上传，否则会上传失败！",
+                                    btn: ["知道了，开始上传"],
+                                    yes: function (index, layero) {
+                                        layerIndex = layer.load(0, {shade: [0.3, "#000"]});
+                                        $("#confirm_upload").trigger("click");
+                                        layer.close(tipIndex);
+                                    }
+                                })
                             },
-                            done: function(res){
+                            done: function(res) {
                                 //上传完毕回调
-                                layer.close(index);
-                                layer.msg("上传成功！", {icon: 6});
+                                layer.close(layerIndex);
+                                layer.msg("上传成功！等待3秒后自动刷新。", {icon: 6});
                                 setTimeout(function () {
                                     location.reload();
-                                }, 1000);
+                                }, 3000);
                             },
-                            error: function(){
+                            error: function() {
                                 //请求异常回调
-                                layer.close(index);
+                                layer.close(layerIndex);
                                 layer.msg("上传失败！", {icon: 5});
                             }
                         });

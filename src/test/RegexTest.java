@@ -12,15 +12,14 @@ public class RegexTest {
 
     @Test
     public void addressTest() {
-        Pattern pattern = Pattern.compile("(?iUs)^((.*?)[社区居委会])?\\1?(.*?)$");
-        String address = "大海阳社区大海阳社区大海阳中街11-11";
+        Pattern pattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
+        String address = "大海阳中街11-11";
         Matcher matcher = pattern.matcher(address);
 //        System.out.println(matcher.matches());
         while (matcher.find()) {
             System.out.println("全部----" + matcher.group());
             System.out.println("第一个----" + matcher.group(1));
             System.out.println("第二个----" + matcher.group(2));
-            System.out.println("第三个----" + matcher.group(2));
         }
     }
 

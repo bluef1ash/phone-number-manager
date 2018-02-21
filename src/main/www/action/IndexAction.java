@@ -3,6 +3,8 @@ package www.action;
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
 import exception.BusinessException;
+import org.springframework.ui.Model;
+import www.entity.SystemUser;
 import www.entity.UserPrivilege;
 import www.service.CommunityResidentService;
 import www.service.UserPrivilegeService;
@@ -33,10 +35,14 @@ public class IndexAction {
     /**
      * 登录后首页
      *
+     * @param session session对象
+     * @param model   前台模型
      * @return 视图页面
      */
     @RequestMapping(method = RequestMethod.GET)
-    public String index() {
+    public String index(HttpSession session, Model model) {
+        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+        model.addAttribute("systemUser", systemUser);
         return "index/index";
     }
 
@@ -91,7 +97,8 @@ public class IndexAction {
     public @ResponseBody
     Map<String, Object> getComputedCount(HttpSession session) {
         try {
-            return communityResidentService.computedCount(session);
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            return communityResidentService.computedCount(systemUser);
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }

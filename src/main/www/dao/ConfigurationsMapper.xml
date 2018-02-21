@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="www.dao.ConfigurationsDao">
+    <resultMap type="Configuration" id="configurationResultMap">
+        <id property="key" column="key"/>
+        <result property="type" column="type"/>
+        <result property="value" column="value"/>
+        <result property="description" column="description"/>
+        <result property="keyIsChanged" column="key_is_changed"/>
+    </resultMap>
+    <select id="selectObjectsAll" resultMap="configurationResultMap">
+        SELECT
+            `key`,
+            `value`,
+            `description`,
+            `key_is_changed`
+        FROM `pm_configurations`
+    </select>
+    <select id="selectConfigurationByKey" resultMap="configurationResultMap">
+        SELECT
+            `key`,
+            `type`,
+            `value`,
+            `description`,
+            `key_is_changed`
+        FROM `pm_configurations`
+        WHERE `key` = #{key}
+    </select>
+    <insert id="insertObject">
+        INSERT INTO `pm_configurations` (`key`, `type`, `value`, `description`, `key_is_changed`)
+        VALUES (#{key}, #{type}, #{value}, #{description}, #{keyIsChanged})
+    </insert>
+    <update id="updateObject">
+        UPDATE `pm_configurations`
+        <set>
+            <if test="key != null">
+                `key` = #{key}
+            </if>
+            <if test="type != null">
+                , `type` = #{type}
+            </if>
+            <if test="value != null">
+                , `value` = #{value}
+            </if>
+            <if test="description != null">
+                , `description` = #{description}
+            </if>
+            <if test="keyIsChanged != null">
+                , `key_is_changed` = #{keyIsChanged}
+            </if>
+        </set>
+        WHERE `key` = #{key}
+    </update>
+    <delete id="deleteConfigurationByKey">
+        DELETE FROM `pm_configurations`
+        WHERE `key` = #{key}
+    </delete>
+    <select id="selectObjectsByObject" resultMap="configurationResultMap">
+        SELECT `key`, `type`, `value`, `description`, `key_is_changed`
+        FROM `pm_configurations`
+        <where>
+            <if test="key != null">
+                `key` = #{key}
+            </if>
+            <if test="type != null">
+                AND `type` = #{type}
+            </if>
+            <if test="value != null">
+                AND `value` = #{value}
+            </if>
+            <if test="description != null">
+                AND `description` = #{description}
+            </if>
+            <if test="keyIsChanged != null">
+                AND `key_is_changed` = #{keyIsChanged}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -55,6 +55,21 @@ define("commonFunction", ["jquery", "layui"], function () {
                     });
                 });
             }
+        },
+        /**
+         * 设置分页页码条水平居中宽度
+         * @param paginationParent
+         */
+        paginationCenter: function (paginationParent) {
+            var pagination_ul = paginationParent.children("ul").css("width");
+            paginationParent.css("width", Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px");
+        },
+        /**
+         * 去除字符串中所有空格、制表符、换行符
+         * @returns {string | void | *}
+         */
+        trim: function (string) {
+            return string.replace(/[\s\n\t]+/g, "");
         }
     }
 });

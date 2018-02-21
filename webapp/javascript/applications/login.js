@@ -1,4 +1,4 @@
-require(["jquery", "layui", "md5"], function () {
+require(["jquery", "layui", "sha"], function () {
     $(function (){
         /**
          * 用户名输入框键盘事件
@@ -52,14 +52,14 @@ require(["jquery", "layui", "md5"], function () {
                     var captcha = $("#captcha");
                     var captchaImg = $("#captcha_img");
                     var username_value = $.trim(username.val());
-                    password.val(md5(password.val()));
+                    password.val(sha256(password.val()));
                     var password_value = password.val();
                     var captcha_value = captcha.val();
                     var username_li = username.parent("span").parent("li");
                     var password_li = password.parent("span").parent("li");
                     var captcha_li = captcha.parent("span").parent("li");
                     if (username_value != "" && password_value != "" &&  captcha_value != "") {
-                        var index = layer.load(1, {shade: [0.8, '#000']});
+                        var index = null;
                         $.ajax({
                             "type": "post",
                             "url": basePath + "login/ajax.action",
@@ -70,6 +70,9 @@ require(["jquery", "layui", "md5"], function () {
                                 "captcha": captcha_value,
                                 "_token": $("input[name='_token']").val()
                             },
+                            "beforeSend": function () {
+                                index = layer.load(1, {shade: [0.8, '#000']});
+                            },
                             "success": function (data) {
                                 layer.close(index);
                                 if (data.state > 0) {
@@ -79,17 +82,16 @@ require(["jquery", "layui", "md5"], function () {
                                     layer.msg(data.message, {icon: 6, shade: [0.8, '#000']}, function () {
                                         location.href = basePath + "index.action";
                                     });
-                                } else if (data.state == 0) {
-                                    username_li.removeClass("has-success").addClass("has-error");
-                                    password_li.removeClass("has-success").addClass("has-error");
-                                    layer.msg(data.message, {icon: 5});
-                                    password.val("");
-                                    captchaImg.trigger("click");
-                                } else if (data.state == -1) {
-                                    username_li.removeClass("has-error").addClass("has-success");
-                                    password_li.removeClass("has-error").addClass("has-success");
-                                    captcha_li.removeClass("has-success").addClass("has-error");
-                                    layer.msg(data.message, {icon: 5});
+                                } else {
+                                    if (data.messageError.code == "systemUser.captcha.error") {
+                                        username_li.removeClass("has-error").addClass("has-success");
+                                        password_li.removeClass("has-error").addClass("has-success");
+                                        captcha_li.removeClass("has-success").addClass("has-error");
+                                    } else {
+                                        username_li.removeClass("has-success").addClass("has-error");
+                                        password_li.removeClass("has-success").addClass("has-error");
+                                    }
+                                    layer.msg(data.messageError.defaultMessage, {icon: 5});
                                     password.val("");
                                     captchaImg.trigger("click");
                                 }

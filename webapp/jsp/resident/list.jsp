@@ -1,5 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ include file="/jsp/layouts/header.jsp" %>
         <title>社区居民列表 - 社区居民管理 - 社区居民联系电话管理系统</title>
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/content-search.css">
@@ -9,20 +10,23 @@
             您的位置：<a href="${pageContext.request.contextPath}/index.action" title="主页" ondragstart="return false;">主页</a> > <a href="javascript:;" title="社区居民管理" ondragstart="return false;">社区居民管理</a> > <a href="${pageContext.request.contextPath}/resident/list.action" title="社区居民列表" ondragstart="return false;">社区居民列表</a>
         </div>
         <div class="resident-excel">
-            <a href="${pageContext.request.contextPath}/resident/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button" title="添加社区居民" ondragstart="return false;">添加社区居民</a>
-            <a href="${pageContext.request.contextPath}/resident/save_as_excel.action" class="btn btn-default float-right margin-br-10" role="button" title="导出到Excel" ondragstart="return false;">导出到Excel</a>
-            <a href="javascript:;" class="btn btn-default float-right margin-br-10" id="import_as_system" role="button" title="从Excel文件导入系统" ondragstart="return false;">从Excel文件导入系统</a>
-            <button id="confirm_upload" class="hidden" onsubmit="return false;"></button>
+            <a href="" class="btn btn-warning margin-br-10" data-toggle="modal" data-target="#import_as_system_modal" role="button" title="从Excel文件导入系统" ondragstart="return false;">从Excel文件导入系统</a>
+
+            <a href="${pageContext.request.contextPath}/resident/save_as_excel.action" class="btn btn-default margin-br-10" role="button" title="导出到Excel" ondragstart="return false;">导出到Excel</a>
+            <a href="${pageContext.request.contextPath}/resident/create.action" class="btn btn-primary margin-br-10 menu-tab" role="button" title="添加社区居民" ondragstart="return false;">添加社区居民</a>
         </div>
-        <form class="form-horizontal" role="form" action="${pageContext.request.contextPath}/resident/list.action" method="get">
-            <div class="query-input">
-                <div class="row">
+        <div class="query-input">
+            <div class="row">
+                <form action="${pageContext.request.contextPath}/resident/list.action" method="get" name="resident_search" class="form-horizontal" role="form">
                     <div class="col-md-2 form-group">
-                        <label class="col-md-4 control-label">单位</label>
-                        <span class="col-md-8 search-company">
-                            <input type="text" name="company" class="form-control" value="${company}" readonly="readonly" onclick="selectCompany();" style="background-color: #eee;cursor: pointer;">
-                            <button type="button" class="btn btn-default" onclick="selectCompany();"><span class="glyphicon glyphicon-search"></span></button>
-                        </span>
+                        <label class="col-md-4 control-label" for="company_name">单位</label>
+                        <div class="col-md-8 search-company">
+                            <input type="hidden" name="companyId" value="${companyId}">
+                            <input type="hidden" name="companyRid" value="${companyRid}">
+                            <input type="hidden" name="companyName" value="${companyName}">
+                            <input type="text" id="company_name" class="form-control" readonly="readonly"  data-toggle="modal" data-target="#search_company_modal">
+                            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#search_company_modal"><span class="glyphicon glyphicon-search"></span></button>
+                        </div>
                     </div>
                     <div class="col-md-3 form-group">
                         <label class="col-md-5 control-label">社区居民姓名</label>
@@ -40,9 +44,9 @@
                         <input type="hidden" name="_token" value="${_token}">
                         <input type="submit" value="查询" class="btn btn-primary search-company-submit">
                     </div>
-                </div>
+                </form>
             </div>
-        </form>
+        </div>
         <table class="table table-bordered font-size-14">
             <thead>
                 <tr>
@@ -56,15 +60,15 @@
             </thead>
             <tbody>
                 <c:forEach items="${communityResidents}" var="communityResident" varStatus="status">
-                    <tr>
+                    <tr data-toggle="tooltip" title="修改时间：<fmt:formatDate pattern="yyyy-MM-dd HH:mm" value="${communityResident.communityResidentEditTime}" />">
                         <td>${status.count}</td>
                         <td>${communityResident.communityResidentName}</td>
                         <td>${communityResident.communityResidentAddress}</td>
                         <td>${communityResident.communityResidentPhones}</td>
                         <td>${communityResident.community.communityName}</td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default btn-sm operation" role="button" title="修改" ondragstart="return false;">修改</a>
-                            <a href="javascript:;" class="btn btn-danger btn-sm operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除" ondragstart="return false;">删除</a>
+                            <a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default btn-sm operation" role="button" title="修改此记录" ondragstart="return false;">修改</a>
+                            <a href="javascript:;" class="btn btn-danger btn-sm operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除此记录" ondragstart="return false;">删除</a>
                         </td>
                     </tr>
                 </c:forEach>
@@ -120,114 +124,53 @@
             </ul>
         </div>
         <!-- 单位模态框 -->
-        <div class="modal fade" id="search_company_modal" tabindex="-1" role="dialog" aria-labelledby="search_company_modal_label">
-            <div class="modal-dialog" role="document">
+        <div class="modal fade bs-example-modal-sm" id="search_company_modal" tabindex="-1" role="dialog" aria-labelledby="search_company_modal_label">
+            <div class="modal-dialog modal-sm" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" id="search_company_modal_label">选择所在区域</h4>
                     </div>
                     <div class="modal-body">
-                        <ul id="company_tree"></ul>
+                        <ul class="ztree" id="company_tree"></ul>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" id="search_closed_modal">确定</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 导入Excel模态框 -->
+        <div class="modal fade bs-example-modal-sm" id="import_as_system_modal" tabindex="-1" role="dialog" aria-labelledby="import_as_system_modal_label">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="import_as_system_modal_label">选择导入的街道</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal" action="#" method="get" onsubmit="return false;">
+                            <div class="form-group">
+                                <div class="col-sm-8">
+                                    <select class="form-control" id="subdistrict_id">
+                                        <option value="0">请选择</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4">
+                                    <button class="btn btn-primary" id="import_as_system_file">选择文件</button>
+                                    <button id="confirm_upload"></button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
         <script type="text/javascript">
-            var clickedCompany = null;
-            require(["commonFunction", "jquery", "bootstrap", "layui"], function (commonFunction) {
+            require(["commonFunction", "resident_list"], function (commonFunction, residentList) {
                 window.commonFunction = commonFunction;
-                $(function () {
-                    var paginationParent = $("#pagination_parent");
-                    // 分页
-                    var pagination_ul = paginationParent.children("ul").css("width");
-                    pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";
-                    paginationParent.css("width", pagination_ul);
-                    // 查询
-                    $("form[name='query_input']").submit(function () {
-                        if ($("input[name='communityResidentName']").val() == "" && $("input[name='communityResidentAddress']").val() == "" && $("input[name='communityResidentPhones']").val() == "") {
-                            return false;
-                        }
-                    });
-                    /**
-                     * 关闭模态框
-                     */
-                    $("#search_closed_modal").click(function () {
-                        if (clickedCompany != null) {
-                            $("input[name='company']").val(clickedCompany.name);
-                            $("#search_company_modal").modal("hide");
-                        }
-                    });
-                    /**
-                     * 上传Excel
-                     */
-                    layui.use(["layer", "upload"], function() {
-                        var layer = layui.layer;
-                        var upload = layui.upload;
-                        var layerIndex = null;
-                        //执行实例
-                        var uploadInst = upload.render({
-                            elem: "#import_as_system",
-                            url: "${pageContext.request.contextPath}/resident/import_as_system.action",
-                            auto: false,
-                            bindAction: "#confirm_upload",
-                            accept: "file",
-                            exts: "xls|xlsx",
-                            data: {
-                                _token: "${_token}"
-                            },
-                            choose: function(obj) {
-                                var tipIndex = layer.open({
-                                    title: "友情提示",
-                                    content: "必须按照民政局下发的Excel表的格式上传，否则会上传失败！",
-                                    btn: ["知道了，开始上传"],
-                                    yes: function (index, layero) {
-                                        layerIndex = layer.load(0, {shade: [0.3, "#000"]});
-                                        $("#confirm_upload").trigger("click");
-                                        layer.close(tipIndex);
-                                    }
-                                })
-                            },
-                            done: function(res) {
-                                //上传完毕回调
-                                layer.close(layerIndex);
-                                layer.msg("上传成功！等待3秒后自动刷新。", {icon: 6});
-                                setTimeout(function () {
-                                    location.reload();
-                                }, 3000);
-                            },
-                            error: function() {
-                                //请求异常回调
-                                layer.close(layerIndex);
-                                layer.msg("上传失败！", {icon: 5});
-                            }
-                        });
-                    });
-                });
+                residentList("${pageContext.request.contextPath}/");
             });
-            /**
-             * 选择社区居委会
-             */
-            function selectCompany() {
-                $("#company_tree").html("");
-                $.get("${pageContext.request.contextPath}/resident/ajax_select.action", {"_token": "${_token}"}, function (data) {
-                    if (data) {
-                        layui.use("tree", function () {
-                            layui.tree({
-                                elem: "#company_tree", //传入元素选择器
-                                nodes: data,
-                                click: function (node) {
-                                    clickedCompany = node;
-                                }
-                            });
-                        });
-                    }
-                });
-                $("#search_company_modal").modal("show");
-            }
         </script>
     </body>
 </html>

@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFCell;
@@ -194,13 +195,13 @@ public class ExcelUtil {
      * @param titleUp     标题之上的文字
      * @param title       标题
      * @param headMap     表头
-     * @param jsonArray   数据集
+     * @param data        数据集
      * @param datePattern 日期格式，传null值则默认 年月日
      * @param colWidth    列宽 默认 至少17个字节
      * @param out         输出流
      * @throws IOException IO流异常
      */
-    public static void exportExcelX(String titleUp, String title, Map<String, String> headMap, JSONArray jsonArray, String datePattern, int colWidth, OutputStream out) throws IOException {
+    public static void exportExcelX(String titleUp, String title, Map<String, String> headMap, JSONArray data, String datePattern, int colWidth, OutputStream out) throws IOException {
         if (datePattern == null) {
             datePattern = DEFAULT_DATE_PATTERN;
         }
@@ -241,7 +242,6 @@ public class ExcelUtil {
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         Font cellFont = workbook.createFont();
         cellFont.setFontName("宋体");
-        cellFont.setBold(true);
         cellStyle.setFont(cellFont);
         // 生成一个(带标题)表格
         SXSSFSheet sheet = workbook.createSheet();
@@ -263,7 +263,7 @@ public class ExcelUtil {
         }
         // 遍历集合数据，产生数据行
         int rowIndex = 0;
-        for (Object obj : jsonArray) {
+        for (Object obj : data) {
             if (rowIndex == 65535 || rowIndex == 0) {
                 if (rowIndex != 0) {
                     //如果数据超过了，则在第二页显示
@@ -332,13 +332,13 @@ public class ExcelUtil {
      * @param titleUp  标题上文字
      * @param title    文件标题
      * @param headMap  表头
-     * @param ja       表内容
+     * @param data     表内容
      * @param response HTTP响应对象
      * @throws Exception 文件流异常/字符串转换异常
      */
-    public static void downloadExcelFile(String titleUp, String title, Map<String, String> headMap, JSONArray ja, HttpServletResponse response) throws Exception {
+    public static void downloadExcelFile(String titleUp, String title, Map<String, String> headMap, JSONArray data, HttpServletResponse response) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        exportExcelX(titleUp, title, headMap, ja, null, 0, os);
+        exportExcelX(titleUp, title, headMap, data, null, 0, os);
         byte[] content = os.toByteArray();
         InputStream is = new ByteArrayInputStream(content);
         // 设置response参数，可以打开下载页面
@@ -442,8 +442,8 @@ public class ExcelUtil {
             }
             switch (cellType) {
                 case STRING:
-                    cell.setCellType(STRING);
-                    value = cell.getRichStringCellValue().getString();
+                    DataFormatter dataFormatter = new DataFormatter();
+                    value = dataFormatter.formatCellValue(cell);
                     break;
                 case NUMERIC:
                     //格式化number String字符
@@ -462,11 +462,9 @@ public class ExcelUtil {
                     }
                     break;
                 case BOOLEAN:
-                    cell.setCellType(BOOLEAN);
                     value = cell.getBooleanCellValue();
                     break;
                 case BLANK:
-                    cell.setCellType(BLANK);
                     value = "";
                     break;
                 default:

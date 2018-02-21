@@ -38,12 +38,12 @@
 							    </a>
 								<ul class="dropdown-menu pull-right">
 									<li>
-                                        <a class="menu-item" data-id="userInfo" href="${pageContext.request.contextPath}/SystemManage/User/Info" title="个人信息" ondragstart="return false;">
+                                        <a class="menu-item" data-id="userInfo" href="${pageContext.request.contextPath}/system/user_role/user/edit.action?id=${systemUser.systemUserId}" title="个人信息" ondragstart="return false;">
                                             <i class="fa fa-user"></i>个人信息
                                         </a>
                                     </li>
 									<li>
-                                        <a href="javascript:;" title="清空缓存" ondragstart="return false;">
+                                        <a href="javascript:;" title="清空缓存" id="clean_cache" ondragstart="return false;">
                                             <i class="fa fa-trash-o"></i>清空缓存
                                         </a>
                                     </li>
@@ -136,12 +136,11 @@
             </div>
 		</div>
 		<script type="text/javascript">
-			require(["learun", "jquery", "bootstrap"], function (learun) {
-                var login_url = "${pageContext.request.contextPath}/jsp/login/login.jsp";
+			require(["learun"], function (learun) {
                 /**
                  * 显示页面
                  */
-                learun.load(login_url);
+                learun();
 			});
 		</script>
 	</body>

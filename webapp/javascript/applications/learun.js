@@ -1,9 +1,7 @@
-﻿define("learun", ["jquery"], function ($) {
+﻿define("learun", ["jquery", "bootstrap", "layui"], function () {
     var pageTabsContent = $(".page-tabs-content");
     var contentTabs = $(".content-tabs");
     var contentMain = $("#content_main");
-    var aEl = null;
-    var loginUrlLocal = null;
     var mObject = {
         /**
          * 设置全屏
@@ -136,7 +134,8 @@
         addTab: function () {
             var menuTab = $(".menu-tab");
             $(".lradms-iframe").each(function (index, element) {
-                if (loginUrlLocal !== null && $(element).prop("src") === loginUrlLocal) {
+                var loginUrlLocal = basePath + "login.action";
+                if ($(element).prop("src") == loginUrlLocal) {
                     location.href = loginUrlLocal;
                 }
             });
@@ -446,11 +445,9 @@
         },
         /**
          * 加载
-         * @param loginUrl
          */
-        load: function (loginUrl) {
+        load: function () {
             $(function () {
-                loginUrlLocal = loginUrl;
                 /**
                  * 加载侧边栏导航菜单
                  */
@@ -464,6 +461,30 @@
                 setTimeout(function () {
                     $("#ajax_loader").fadeOut();
                 }, 500);
+                /**
+                 * 清理缓存点击事件
+                 */
+                $("#clean_cache").click(function () {
+                    layui.use("layer", function () {
+                        var layer = layui.layer;
+                        var layerIndex;
+                        $.ajax({
+                            url: basePath,
+                            async: false,
+                            beforeSend: function (xmlHttp) {
+                                layerIndex = layer.load(1, {shade: [0.3, "#000"]});
+                                xmlHttp.setRequestHeader("If-Modified-Since","0");
+                                xmlHttp.setRequestHeader("Cache-Control","no-cache");
+                            },
+                            success: function () {
+                                setTimeout(function () {
+                                    layer.close(layerIndex);
+                                    layer.msg("清理缓存完成！", {icon: 6});
+                                }, 1000);
+                            }
+                        });
+                    });
+                });
             });
         },
         /**
@@ -550,5 +571,5 @@
             });
         }
     };
-    return mObject;
+    return mObject.load;
 });

@@ -22,7 +22,7 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> impleme
         switch (roleId) {
             case 3:
                 // 社区角色
-                subdistricts = new HashSet<Subdistrict>();
+                subdistricts = new HashSet<>();
                 Subdistrict subdistrict = subdistrictsDao.selectSubdistrictAndCommunityByCommunityId(roleLocationId);
                 subdistricts.add(subdistrict);
                 break;

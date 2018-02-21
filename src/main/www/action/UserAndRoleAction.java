@@ -3,12 +3,12 @@ package www.action;
 import annotation.RefreshCsrfToken;
 import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
-import com.github.pagehelper.PageInfo;
 import exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
+import utils.CommonUtil;
 import www.entity.*;
 import www.service.*;
 import org.springframework.stereotype.Controller;
@@ -53,8 +53,12 @@ public class UserAndRoleAction {
     private CommunityService communityService;
     @Resource
     private SubdistrictService subdistrictService;
+    private final HttpServletRequest request;
+
     @Autowired
-    private HttpServletRequest request;
+    public UserAndRoleAction(HttpServletRequest request) {
+        this.request = request;
+    }
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -91,6 +95,7 @@ public class UserAndRoleAction {
     /**
      * 通过AJAX进行系统用户锁定与解锁
      *
+     * @param session      session对象
      * @param systemUserId 系统用户编号
      * @param locked       锁定与解锁的标记
      * @return Ajax信息
@@ -98,18 +103,31 @@ public class UserAndRoleAction {
     @RequestMapping(value = "/user/ajax_user_lock", method = RequestMethod.GET)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> systemUserLockedForAjax(Integer systemUserId, Integer locked) {
+    Map<String, Integer> systemUserLockedForAjax(HttpSession session, Integer systemUserId, Integer locked) {
+        Map<String, Integer> map = new HashMap<>(2);
         try {
-            Map<String, Object> map = new HashMap<>(2);
-            SystemUser systemUser = new SystemUser();
-            systemUser.setSystemUserId(systemUserId);
-            systemUser.setIsLocked(locked);
-            systemUserService.updateObject(systemUser);
-            map.put("state", 1);
-            return map;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Integer systemAdministratorId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_administrator_id"));
+            if (!systemUserId.equals(systemAdministratorId)) {
+                SystemUser systemUser = new SystemUser();
+                systemUser.setSystemUserId(systemUserId);
+                systemUser.setIsLocked(locked);
+                systemUserService.updateObject(systemUser);
+                map.put("state", 1);
+            } else {
+                map.put("state", 0);
+            }
         } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
+            map.put("state", 0);
         }
+        try {
+            SystemUser user = systemUserService.findObject(systemUserId);
+            map.put("isLocked", user.getIsLocked());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
     }
 
     /**
@@ -190,21 +208,32 @@ public class UserAndRoleAction {
     /**
      * 使用AJAX技术通过系统用户编号删除系统用户
      *
+     * @param session session对象
      * @param id 对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/user/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteSystemUserForAjax(Integer id) {
+    Map<String, Object> deleteSystemUserForAjax(HttpSession session, Integer id) {
+        Map<String, Object> map = new HashMap<>(3);
         try {
-            systemUserService.deleteObjectById(id);
-            Map<String, Object> map = new HashMap<>(2);
-            map.put("message", 1);
-            return map;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Integer systemAdministratorId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_administrator_id"));
+            if (id.equals(systemAdministratorId)) {
+                map.put("state", 0);
+                map.put("message", "不允许删除超级管理员！");
+            } else {
+                systemUserService.deleteObjectById(id);
+                map.put("state", 1);
+                map.put("message", "删除系统用户成功！");
+            }
         } catch (Exception e) {
-            throw new BusinessException("删除用户失败！", e);
+            map.put("state", 0);
+            map.put("message", "删除系统用户失败！");
         }
+        return map;
     }
 
     /**
@@ -246,6 +275,30 @@ public class UserAndRoleAction {
     }
 
     /**
+     * 使用Ajax技术获取所有系统用户
+     *
+     * @param session session对象
+     * @return Ajax信息
+     */
+    @RequestMapping(value = "/user/ajax_get", method = RequestMethod.GET)
+    @VerifyCSRFToken
+    public @ResponseBody
+    Map<String, Object> getSystemUsersForAjax(HttpSession session) {
+        Map<String, Object> map = new HashMap<>(4);
+        try {
+            List<SystemUser> systemUsers = systemUserService.findSystemUsers();
+            map.put("state", 1);
+            map.put("systemUsers", systemUsers);
+        } catch (Exception e) {
+            e.printStackTrace();
+            map.put("state", 0);
+            map.put("message", "获取系统用户失败！");
+        }
+        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+        return map;
+    }
+
+    /**
      * 系统角色列表
      *
      * @param model 前台模型
@@ -257,10 +310,8 @@ public class UserAndRoleAction {
     public String systemUserRoleList(Model model, Integer page) {
         try {
             Map<String, Object> userRoles = userRoleService.findObjects(page, null);
-            @SuppressWarnings("unchecked")
-            PageInfo<UserRole> pageInfo = (PageInfo<UserRole>) userRoles.get("pageInfo");
             model.addAttribute("userRoles", userRoles.get("data"));
-            model.addAttribute("pageInfo", pageInfo);
+            model.addAttribute("pageInfo", userRoles.get("pageInfo"));
             return "role/list";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
@@ -355,24 +406,35 @@ public class UserAndRoleAction {
     /**
      * 使用AJAX技术通过系统用户角色编号删除系统用户角色
      *
+     * @param session session对象
      * @param id 对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/role/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteSystemUserRoleForAjax(Integer id) {
+    Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, Integer id) {
+        Map<String, Object> map = new HashMap<>(3);
         try {
-            UserRolePrivilege userRolePrivilege = new UserRolePrivilege();
-            userRolePrivilege.setRoleId(id);
-            userRolePrivilegeService.deleteUserRolePrivilegeByUserRolePrivilege(userRolePrivilege);
-            userRoleService.deleteObjectById(id);
-            Map<String, Object> map = new HashMap<>(2);
-            map.put("message", 1);
-            return map;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Integer systemRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_role_id"));
+            if (id.equals(systemRoleId)) {
+                UserRolePrivilege userRolePrivilege = new UserRolePrivilege();
+                userRolePrivilege.setRoleId(id);
+                userRolePrivilegeService.deleteUserRolePrivilegeByUserRolePrivilege(userRolePrivilege);
+                userRoleService.deleteObjectById(id);
+                map.put("state", 1);
+                map.put("message", "删除用户角色成功！");
+            } else {
+                map.put("state", 0);
+                map.put("message", "不允许删除系统用户角色！");
+            }
         } catch (Exception e) {
-            throw new BusinessException("删除用户角色失败！", e);
+            map.put("state", 0);
+            map.put("message", "删除用户角色失败！");
         }
+        return map;
     }
 
     /**
@@ -387,10 +449,8 @@ public class UserAndRoleAction {
     public String systemUserPrivilegeList(Model model, Integer page) {
         try {
             Map<String, Object> userPrivileges = userPrivilegeService.findObjects(page, null);
-            @SuppressWarnings("unchecked")
-            PageInfo<UserPrivilege> pageInfo = (PageInfo<UserPrivilege>) userPrivileges.get("pageInfo");
             model.addAttribute("userPrivileges", userPrivileges.get("data"));
-            model.addAttribute("pageInfo", pageInfo);
+            model.addAttribute("pageInfo", userPrivileges.get("pageInfo"));
             return "privilege/list";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
@@ -484,14 +544,16 @@ public class UserAndRoleAction {
     @VerifyCSRFToken
     public @ResponseBody
     Map<String, Object> deleteSystemUserPrivilegeForAjax(Integer id) {
+        Map<String, Object> map = new HashMap<>(3);
         try {
             userPrivilegeService.deleteObjectById(id);
-            Map<String, Object> map = new HashMap<>(2);
-            map.put("message", 1);
-            return map;
+            map.put("state", 1);
+            map.put("message", "删除用户权限成功！");
         } catch (Exception e) {
-            throw new BusinessException("删除用户权限失败！", e);
+            map.put("state", 0);
+            map.put("message", "删除用户权限失败！");
         }
+        return map;
     }
 
     /**

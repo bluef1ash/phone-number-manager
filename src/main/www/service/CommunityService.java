@@ -43,9 +43,10 @@ public interface CommunityService extends BaseService<Community> {
     /**
      * 通过系统用户查找
      *
-     * @param systemUser 系统用户对象
+     * @param systemUser        系统用户对象
+     * @param configurationsMap 系统配置
      * @return 查找到的社区对象的集合
      * @throws Exception SERVICE层异常
      */
-    List<Community> findCommunitiesBySystemUser(SystemUser systemUser) throws Exception;
+    List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Map<String, Object> configurationsMap) throws Exception;
 }

@@ -6,6 +6,7 @@ import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 import www.entity.SystemUser;
 import www.service.SystemUserService;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -14,11 +15,8 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class SystemUserInputValidator implements Validator {
-    private String message;
-    private String field;
+public class SystemUserInputValidator extends BaseInputValidator implements Validator {
     private SystemUserService systemUserService;
-    private HttpServletRequest request;
 
     public SystemUserInputValidator() {
     }
@@ -34,7 +32,7 @@ public class SystemUserInputValidator implements Validator {
     }
 
     @Override
-    public void validate(Object target, Errors errors) {
+    protected boolean checkInput(Object target, Errors errors) {
         try {
             ValidationUtils.rejectIfEmpty(errors, "username", "systemUser.username.required", "系统用户名称不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "isLocked", "systemUser.isLocked.required", "系统用户是否锁定不能为空！");
@@ -58,6 +56,7 @@ public class SystemUserInputValidator implements Validator {
             } else {
                 systemUser.setPassword(null);
             }
+            return true;
         } catch (Exception e) {
             throw new BusinessException("系统用户验证失败！");
         }

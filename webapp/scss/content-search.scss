@@ -2,27 +2,46 @@
 .resident-excel {
     height: auto;
     overflow: hidden;
+    width: 410px;
+    float: right;
 }
+
+#confirm_upload {
+    display: none;
+}
+
 .query-input {
     padding: 10px 0;
     overflow: hidden;
+    clear: both;
     .form-group {
         float: left;
         margin: 10px 0;
+        .search-company {
+            position: relative;
+            button {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
+            #company_name {
+                background-color: #eee;
+                cursor: pointer;
+            }
+        }
     }
     .search-company-submit {
         margin-top: 10px;
         margin-left: 20px;
     }
 }
-.search-company {
-    position: relative;
-    button {
-        position: absolute;
-        top: 0;
-        right: 0;
-    }
-}
+
 .company-tree {
     padding: 0 15px;
+}
+
+#subdistrict_id {
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    appearance: menulist;
 }

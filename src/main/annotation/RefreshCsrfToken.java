@@ -16,5 +16,5 @@ public @interface RefreshCsrfToken {
      *
      * @return 是否刷新
      */
-    public abstract boolean refresh() default true;
+    boolean refresh() default true;
 }

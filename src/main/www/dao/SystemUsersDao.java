@@ -36,4 +36,12 @@ public interface SystemUsersDao extends BaseDao<SystemUser> {
      * @throws DataAccessException 数据库操作异常
      */
     SystemUser selectSystemUserAndRoleAndPrivilegesByName(String username) throws DataAccessException;
+
+    /**
+     * 查询系统用户（不含密码）
+     *
+     * @return 查询到的系统用户
+     * @throws DataAccessException 数据库操作异常
+     */
+    List<SystemUser> selectSystemUsersAll() throws DataAccessException;
 }

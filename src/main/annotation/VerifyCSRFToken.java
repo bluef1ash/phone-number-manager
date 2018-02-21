@@ -13,6 +13,7 @@ public @interface VerifyCSRFToken {
 
     /**
      * 需要验证防跨站请求
+     *
      * @return 是否需要验证
      */
     public abstract boolean verify() default true;

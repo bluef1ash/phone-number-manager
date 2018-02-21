@@ -35,6 +35,8 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     protected CommunitiesDao communitiesDao;
     @Autowired
     protected CommunityResidentsDao communityResidentsDao;
+    @Autowired
+    protected ConfigurationsDao configurationsDao;
 
     /**
      * 最先运行的方法，自动加载对应类型的DAO

@@ -9,6 +9,7 @@
         <result property="communityResidentSubcontractor" column="subcontractor"/>
         <result property="communityResidentEditTime" column="edit_time"/>
         <result property="communityId" column="community_id"/>
+        <collection property="communityIds" column="community_id" ofType="java.lang.Integer"/>
     </resultMap>
     <resultMap type="CommunityResident" id="AliasResultMap">
         <id property="communityResidentId" column="community_resident_id"/>
@@ -123,25 +124,25 @@
                 `pm_community_residents`.`community_resident_id` = #{communityResidentId}
             </if>
             <if test="communityResidentName != null and communityResidentName != ''">
-                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
+                AND `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
             </if>
             <if test="communityResidentAddress != null and communityResidentAddress != ''">
-                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+                AND `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
             </if>
             <if test="communityResidentPhones != null and communityResidentPhones != ''">
-                and `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+                AND `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
             </if>
             <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
-                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+                AND `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
             </if>
             <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
-                and `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+                AND `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
             </if>
             <if test="communityId != null and communityId != ''">
-                and `pm_community_residents`.`community_id` = #{communityId}
+                AND `pm_community_residents`.`community_id` = #{communityId}
             </if>
             <if test="community != null and community.communityName != null and community.communityName != ''">
-                and `pm_communities`.`name` = #{community.communityName}
+                AND `pm_communities`.`name` = #{community.communityName}
             </if>
         </where>
         ORDER BY `community_resident_id`
@@ -164,7 +165,7 @@
             LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         WHERE `pm_community_residents`.`community_resident_id` = #{communityResidentId}
     </select>
-    <select id="selectCommunityResidentsByCommunityResidentAndCommunityIds"
+    <select id="selectCommunityResidentsByCommunityResident"
             resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT `pm_community_residents`.`community_resident_id`, `pm_community_residents`.`name` AS
         'community_resident_name', `pm_community_residents`.`address`, `pm_community_residents`.`phones`,
@@ -172,29 +173,34 @@
         `pm_communities`.`name` FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
-            1 = 1
-            <if test="communityResidentId != null and communityResidentId != ''">
-                and `pm_community_residents`.`community_resident_id` = #{communityResidentId}
+            <if test="communityResident.communityResidentId != null and communityResident.communityResidentId != ''">
+                `pm_community_residents`.`community_resident_id` = #{communityResident.communityResidentId}
             </if>
-            <if test="communityResidentName != null and communityResidentName != ''">
-                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
+            <if test="communityResident.communityResidentName != null and communityResident.communityResidentName != ''">
+                AND `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResident.communityResidentName}, '%')
             </if>
-            <if test="communityResidentAddress != null and communityResidentAddress != ''">
-                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+            <if test="communityResident.communityResidentAddress != null and communityResident.communityResidentAddress != ''">
+                AND `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResident.communityResidentAddress},
+                '%')
             </if>
-            <if test="communityResidentPhones != null and communityResidentPhones != ''">
-                and `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+            <if test="communityResident.communityResidentPhones != null and communityResident.communityResidentPhones != ''">
+                AND `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResident.communityResidentPhones},
+                '%')
             </if>
-            <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
-                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+            <if test="communityResident.communityResidentSubcontractor != null and communityResident.communityResidentSubcontractor != ''">
+                AND `pm_community_residents`.`subcontractor` LIKE CONCAT('%',
+                #{communityResident.communityResidentSubcontractor}, '%')
             </if>
-            <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
-                and `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+            <if test="communityResident.communityResidentEditTime != null and communityResident.communityResidentEditTime != ''">
+                AND `pm_community_residents`.`edit_time` = #{communityResident.communityResidentEditTime}
             </if>
-            <if test="communityId != null and communityId != ''">
-                and `pm_community_residents`.`community_id` IN
-                <foreach collection="communityIds" separator="," open="(" close=")" item="cId">
-                    #{cId}
+            <if test="communityResident.communityId != null and communityResident.communityId != ''">
+                AND `pm_community_residents`.`community_id` = #{communityResident.communityId}
+            </if>
+            <if test="communityResident.communityIds != null and communityResident.communityIds.size > 0">
+                AND `pm_community_residents`.`community_id` IN
+                <foreach collection="communityResident.communityIds" item="item" separator="," open="(" close=")">
+                    #{item}
                 </foreach>
             </if>
         </where>
@@ -208,6 +214,7 @@
         `pm_community_residents`.`address`,
         `pm_community_residents`.`phones`,
         `pm_community_residents`.`subcontractor`,
+        `pm_community_residents`.`edit_time`,
         `pm_community_residents`.`community_id`,
         `pm_communities`.`name`
         FROM
@@ -217,7 +224,7 @@
             <if test="communityIds != null">
                 `pm_community_residents`.`community_id`
                 <choose>
-                    <when test="communityIds.size == 1">
+                    <when test="communityIds.size eq 1">
                         = #{communityIds[0]}
                     </when>
                     <otherwise>
@@ -272,7 +279,9 @@
     </select>
     <select id="selectCommunityResidentByPhones" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
+        `pm_community_residents`.`community_resident_id`,
         `pm_community_residents`.`name` AS 'community_resident_name',
+        `pm_community_residents`.`phones`,
         `pm_community_residents`.`community_id`,
         `pm_communities`.`name`
         FROM `pm_community_residents`
@@ -304,15 +313,14 @@
         SELECT COUNT(`pm_community_residents`.`community_resident_id`) FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
-            1 = 1
             <if test="communityResident.communityResidentId != null and communityResident.communityResidentId != ''">
-                and `pm_community_residents`.`community_resident_id` = #{communityResident.communityResidentId}
+                `pm_community_residents`.`community_resident_id` = #{communityResident.communityResidentId}
             </if>
             <if test="communityResident.communityResidentName != null and communityResident.communityResidentName != ''">
-                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResident.communityResidentName}, '%')
+                AND `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResident.communityResidentName}, '%')
             </if>
             <if test="communityResident.communityResidentAddress != null and communityResident.communityResidentAddress != ''">
-                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResident.communityResidentAddress},
+                AND `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResident.communityResidentAddress},
                 '%')
             </if>
             <if test="communityResident.communityResidentPhones != null and communityResident.communityResidentPhones != ''">
@@ -320,17 +328,23 @@
                 '%')
             </if>
             <if test="communityResident.communityResidentSubcontractor != null and communityResident.communityResidentSubcontractor != ''">
-                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%',
+                AND `pm_community_residents`.`subcontractor` LIKE CONCAT('%',
                 #{communityResident.communityResidentSubcontractor}, '%')
             </if>
             <if test="communityResident.communityResidentEditTime != null and communityResident.communityResidentEditTime != ''">
-                and `pm_community_residents`.`edit_time` = #{communityResident.communityResidentEditTime}
+                AND `pm_community_residents`.`edit_time` = #{communityResident.communityResidentEditTime}
             </if>
             <if test="communityResident.communityId != null and communityResident.communityId != 0">
-                and `pm_community_residents`.`community_id` = #{communityResident.communityId}
+                AND `pm_community_residents`.`community_id` = #{communityResident.communityId}
             </if>
             <if test="communityResident.community != null and communityResident.community.communityName != null">
                 and `pm_communities`.`name` = #{communityResident.community.communityName}
+            </if>
+            <if test="communityResident.communityIds != null and communityResident.communityIds.size > 0">
+                AND `pm_community_residents`.`community_id` IN
+                <foreach collection="communityResident.communityIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
         ORDER BY `community_resident_id`
@@ -343,25 +357,22 @@
                 `pm_community_residents`.`community_resident_id` = #{communityResidentId}
             </if>
             <if test="communityResidentName != null and communityResidentName != ''">
-                and `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
+                AND `pm_community_residents`.`name` LIKE CONCAT('%', #{communityResidentName}, '%')
             </if>
             <if test="communityResidentAddress != null and communityResidentAddress != ''">
-                and `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
+                AND `pm_community_residents`.`address` LIKE CONCAT('%', #{communityResidentAddress}, '%')
             </if>
             <if test="communityResidentPhones != null and communityResidentPhones != ''">
-                and `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
+                AND `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
             </if>
             <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
-                and `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
+                AND `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
             </if>
             <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
-                and `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+                AND `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
             </if>
             <if test="communityId != null and communityId != ''">
-                and `pm_community_residents`.`community_id` IN
-                <foreach collection="communityIds" separator="," open="(" close=")" item="cId">
-                    #{cId}
-                </foreach>
+                AND `pm_community_residents`.`community_id` = #{communityId}
             </if>
         </where>
         ORDER BY `pm_community_residents`.`community_resident_id`
@@ -403,4 +414,10 @@
         SELECT count(`community_resident_id`)
         FROM `pm_community_residents`
     </select>
+    <delete id="deleteCommunityResidentsBySubdistrictId">
+        DELETE `pm_community_residents`
+        FROM `pm_community_residents`
+            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
+    </delete>
 </mapper>

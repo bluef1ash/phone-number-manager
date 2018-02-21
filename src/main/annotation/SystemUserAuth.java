@@ -11,9 +11,25 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SystemUserAuth {
+
+    /**
+     * 验证的字段
+     *
+     * @return 需要验证的字段
+     */
     String value() default "";
 
+    /**
+     * 是否强制验证
+     *
+     * @return 是否强制验证
+     */
     boolean enforce() default false;
 
+    /**
+     * 是否不进行验证
+     *
+     * @return 是否不进行验证
+     */
     boolean unAuth() default false;
 }

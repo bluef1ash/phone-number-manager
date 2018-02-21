@@ -12,7 +12,10 @@
 		<div class="log">
 			<dl class="xuzhi02">
 				<dt class="xz">注意：</dt>
-				<dd>本系统由于设计和编写时间有限，界面或者功能可能有些问题，如有发现问题请立即通知设计人员。谢谢！</dd>
+				<dd>本系统由于设计和编写的时间与人员有限，界面或者功能可能有些问题，如有发现问题请立即通知设计人员。谢谢！
+                    <br>
+                    <i class="font-color-red font-weight-bold font-style-normal">本系统仅支持Internet Explorer 9以上浏览器、谷歌Chrome、火狐Firefox以及360安全浏览器、360极速浏览器、搜狗、QQ浏览器等国产浏览器的极速模式！</i>
+                </dd>
 			</dl>
 			<form class="form-horizontal" role="form">
 				<ul class="deng02">

@@ -2,6 +2,8 @@ package www.action;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
@@ -12,15 +14,17 @@ import javax.servlet.http.HttpSession;
 
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import utils.CaptchaUtil;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import exception.BusinessException;
 import www.entity.SystemUser;
+import www.validator.LoginInputValidator;
 import www.service.SystemUserService;
 
 /**
@@ -33,7 +37,21 @@ import www.service.SystemUserService;
 public class LoginAction {
     @Resource
     private SystemUserService systemUserService;
-    private static String sRand;
+    private String captcha;
+    private final HttpServletRequest request;
+
+    @Autowired
+    public LoginAction(HttpServletRequest request) {
+        this.request = request;
+    }
+
+    @InitBinder
+    public void initBinder(DataBinder binder) {
+        String validFunction = (String) request.getSession().getAttribute("validFunction");
+        if ("ajaxLogin".equals(validFunction)) {
+            binder.replaceValidators(new LoginInputValidator(systemUserService, request, captcha));
+        }
+    }
 
     /**
      * 登录页面
@@ -52,23 +70,37 @@ public class LoginAction {
      * @param request HTTP请求对象
      * @param session session对象
      * @param systemUser 异步传输的用户实体对象
-     * @param captcha 验证码字符串
+     * @param bindingResult 错误信息对象
      * @return JSON格式信息
      */
     @RequestMapping(value = "/ajax", method = RequestMethod.POST)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> ajaxLogin(HttpServletRequest request, HttpSession session, SystemUser systemUser, @RequestParam("captcha") String captcha) {
-        try {
-            Map<String, Object> map = systemUserService.loginCheck(request, systemUser, captcha, sRand);
-            if (map.containsKey("systemUser")) {
-                session.setAttribute("systemUser", map.get("systemUser"));
-                session.setAttribute("privilegeMap", map.get("privilegeMap"));
+    Map<String, Object> ajaxLogin(HttpServletRequest request, HttpSession session, @Validated SystemUser systemUser, BindingResult bindingResult) {
+        Map<String, Object> map;
+        if (bindingResult.hasErrors()) {
+            map = new HashMap<>(3);
+            map.put("state", 0);
+            List<ObjectError> allErrors = bindingResult.getAllErrors();
+            map.put("messageError", allErrors.get(0));
+        } else {
+            try {
+                map = systemUserService.login(request, systemUser);
+                if (map.containsKey("systemUser")) {
+                    session.setAttribute("systemUser", map.get("systemUser"));
+                    session.setAttribute("privilegeMap", map.get("privilegeMap"));
+                    session.setAttribute("configurationsMap", map.get("configurationsMap"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Map<String, String> errorMap = new HashMap<>(2);
+                errorMap.put("defaultMessage", "登录失败，请稍后再试！");
+                map = new HashMap<>(3);
+                map.put("state", 0);
+                map.put("messageErrors", errorMap);
             }
-            return map;
-        } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
+        return map;
     }
 
     /**
@@ -107,7 +139,7 @@ public class LoginAction {
             ServletOutputStream sos = response.getOutputStream();
             ImageIO.write(captchaImage, "png", sos);
             sos.close();
-            sRand = (String) request.getAttribute("sRand");
+            captcha = (String) request.getAttribute(CaptchaUtil.getSessionKey());
         } catch (IOException e) {
             e.printStackTrace();
         }

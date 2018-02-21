@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -736,7 +737,6 @@ public class CommonUtil {
      *
      * @param len 随机数的长度
      * @return 随机数
-     * @throws Exception 获取异常
      */
     public static String randomHexString(int len) {
         StringBuilder result = new StringBuilder();
@@ -759,5 +759,60 @@ public class CommonUtil {
     public static Integer randomInt(int num) {
         Random random = new Random();
         return random.nextInt(num);
+    }
+
+    /**
+     * 转换系统配置项数值
+     *
+     * @param object 系统配置项
+     * @return 转换完成
+     */
+    public static Integer convertConfigurationInteger(Object object) {
+        return Integer.parseInt(String.valueOf(object));
+    }
+
+    /**
+     * 转换系统配置项字符串
+     *
+     * @param object 系统配置项
+     * @return 转换完成
+     */
+    public static String convertConfigurationString(Object object) {
+        return String.valueOf(object);
+    }
+
+    /**
+     * 将16进制字符串转换成字节数组
+     *
+     * @param hex 要转换的字符串
+     * @return 转换成功的字节数组
+     */
+    public static byte[] hexString2Byte(String hex) {
+        int len = (hex.length() / 2);
+        byte[] result = new byte[len];
+        char[] hexChars = hex.toCharArray();
+        for (int i = 0; i < len; i++) {
+            int pos = i * 2;
+            result[i] = (byte) (SystemConstant.HEX_NUMBER_STRING.indexOf(hexChars[pos]) << 4 | SystemConstant.HEX_NUMBER_STRING.indexOf(hexChars[pos + 1]));
+        }
+        return result;
+    }
+
+    /**
+     * 将指定byte数组转换成16进制字符串
+     *
+     * @param b 要转换的字符数组
+     * @return 转换成功的16进制字符串
+     */
+    public static String byte2HexString(byte[] b) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte aB : b) {
+            String hex = Integer.toHexString(aB & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+            hexString.append(hex.toUpperCase());
+        }
+        return hexString.toString();
     }
 }

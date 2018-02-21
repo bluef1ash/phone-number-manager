@@ -14,16 +14,14 @@ import www.entity.SystemUser;
  */
 public interface SystemUserService extends BaseService<SystemUser> {
     /**
-     * 登录验证
+     * 系统用户登录
      *
      * @param request    HTTP请求对象
      * @param systemUser 需要验证的系统用户对象
-     * @param captcha    验证码
-     * @param sRand      随机数
      * @return 验证成功或失败的信息
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> loginCheck(HttpServletRequest request, SystemUser systemUser, String captcha, String sRand) throws Exception;
+    Map<String, Object> login(HttpServletRequest request, SystemUser systemUser) throws Exception;
 
     /**
      * 添加系统用户
@@ -70,4 +68,11 @@ public interface SystemUserService extends BaseService<SystemUser> {
      * @throws Exception SERVICE层异常
      */
     List<SystemUser> findSystemUserByUserName(String username) throws Exception;
+
+    /**
+     * 查找系统用户
+     * @return 系统用户集合
+     * @throws Exception SERVICE层异常
+     */
+    List<SystemUser> findSystemUsers() throws Exception;
 }

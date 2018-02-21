@@ -88,9 +88,6 @@
             <mvc:exclude-mapping path="/uploads/**"/>
             <mvc:exclude-mapping path="/images/**"/>
             <mvc:exclude-mapping path="/fonts/**"/>
-            <mvc:exclude-mapping path="/login.action"/>
-            <mvc:exclude-mapping path="/login/ajax.action"/>
-            <mvc:exclude-mapping path="/login/captcha.action"/>
             <bean class="www.interceptor.ValidFunctionsInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>

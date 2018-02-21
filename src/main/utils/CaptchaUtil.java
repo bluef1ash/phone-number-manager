@@ -21,7 +21,7 @@ public class CaptchaUtil {
     private static final int HEIGHT = 38;
     private static final int CODE_LENGTH = 4;
     private static final String RANDOM_STRING = "ABCDEFGHIJKLMNPQRSTUVWXYZ1234567890abcdefghijkmnpqrstuvwxyz";
-    private static final String SESSION_KEY = "CAPTCHA";
+    private static final String SESSION_KEY = "captcha";
     private static final String FONT_NAME = "Times New Roman";
     private static final int FONT_SIZE = 24;
 
@@ -64,7 +64,7 @@ public class CaptchaUtil {
             g.drawString(rand, 13 * i + 6 + strWidth, strHeight);
         }
         request.getSession().setAttribute(SESSION_KEY, sRand);
-        request.setAttribute("sRand", sRand);
+        request.setAttribute(SESSION_KEY, sRand);
         g.dispose();
         return image;
     }
@@ -123,5 +123,33 @@ public class CaptchaUtil {
             rand.append(RANDOM_STRING.charAt((int) r));
         }
         return rand.toString();
+    }
+
+    public static int getWIDTH() {
+        return WIDTH;
+    }
+
+    public static int getHEIGHT() {
+        return HEIGHT;
+    }
+
+    public static int getCodeLength() {
+        return CODE_LENGTH;
+    }
+
+    public static String getRandomString() {
+        return RANDOM_STRING;
+    }
+
+    public static String getSessionKey() {
+        return SESSION_KEY;
+    }
+
+    public static String getFontName() {
+        return FONT_NAME;
+    }
+
+    public static int getFontSize() {
+        return FONT_SIZE;
     }
 }

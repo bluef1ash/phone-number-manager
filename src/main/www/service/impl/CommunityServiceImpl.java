@@ -1,9 +1,9 @@
 package www.service.impl;
 
 import com.github.pagehelper.PageHelper;
-import constant.SystemConstant;
 import org.springframework.stereotype.Service;
 
+import utils.CommonUtil;
 import www.entity.Community;
 import www.entity.SystemUser;
 import www.service.CommunityService;
@@ -39,21 +39,19 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
     }
 
     @Override
-    public List<Community> findCommunitiesBySystemUser(SystemUser systemUser) throws Exception {
+    public List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Map<String, Object> configurationsMap) throws Exception {
         Integer roleId = systemUser.getRoleId();
         List<Community> communities;
-        switch (roleId) {
-            case SystemConstant.COMMUNITY_ROLE_ID:
-                communities = new ArrayList<>();
-                Community community = communitiesDao.selectObjectById(systemUser.getRoleLocationId());
-                communities.add(community);
-                break;
-            case SystemConstant.SUBDISTRICT_ROLE_ID:
-                communities = communitiesDao.selectCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
-                break;
-            default:
-                communities = communitiesDao.selectObjectsAll();
-                break;
+        Integer communityRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_role_id"));
+        Integer subdistrictRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_role_id"));
+        if (roleId.equals(communityRoleId)) {
+            communities = new ArrayList<>();
+            Community community = communitiesDao.selectObjectById(systemUser.getRoleLocationId());
+            communities.add(community);
+        } else if (roleId.equals(subdistrictRoleId)) {
+            communities = communitiesDao.selectCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
+        } else {
+            communities = communitiesDao.selectObjectsAll();
         }
         return communities;
     }

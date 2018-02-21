@@ -57,7 +57,7 @@ public class CommunityAction {
      * 社区列表
      *
      * @param model 前台模型
-     * @param page  分页对象
+     * @param page  分页页码
      * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -66,7 +66,6 @@ public class CommunityAction {
         try {
             Map<String, Object> communityMap = communityService.findCommunitiesAndSubdistrict(page, null);
             model.addAttribute("communities", communityMap.get("data"));
-            System.out.println(communityMap.get("data"));
             model.addAttribute("pageInfo", communityMap.get("pageInfo"));
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);

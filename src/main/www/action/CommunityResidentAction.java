@@ -10,7 +10,8 @@ import javax.servlet.http.HttpSession;
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSONArray;
-import constant.SystemConstant;
+import utils.CommonUtil;
+import utils.CsrfTokenUtil;
 import www.entity.*;
 import www.service.SubdistrictService;
 import www.validator.CommunityResidentInputValidator;
@@ -47,8 +48,12 @@ public class CommunityResidentAction {
     private CommunityService communityService;
     @Resource
     private SubdistrictService subdistrictService;
+    private final HttpServletRequest request;
+
     @Autowired
-    private HttpServletRequest request;
+    public CommunityResidentAction(HttpServletRequest request) {
+        this.request = request;
+    }
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -61,35 +66,41 @@ public class CommunityResidentAction {
     /**
      * 社区居民列表
      *
-     * @param httpSession        session对象
+     * @param session        session对象
      * @param httpServletRequest HTTP请求对象
      * @param model              前台模型
      * @param page               分页对象
      * @param communityResident  前台传过来的社区居民对象
-     * @param company            单位
+     * @param companyId          单位编号
+     * @param companyRid         单位类别编号
+     * @param companyName        单位名称
      * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String communityResidentList(HttpSession httpSession, HttpServletRequest httpServletRequest, Model model, Integer page, CommunityResident communityResident, String company) {
+    public String communityResidentList(HttpSession session, HttpServletRequest httpServletRequest, Model model, Integer page, CommunityResident communityResident, Integer companyId, Integer companyRid, String companyName) {
         try {
             Map<String, Object> communityResidentMap;
             String queryString = httpServletRequest.getQueryString();
-            SystemUser systemUser = (SystemUser) httpSession.getAttribute("systemUser");
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             if (queryString == null || !queryString.contains("communityResidentName")) {
-                communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(systemUser, page, null);
+                communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(systemUser, configurationsMap, page, null);
             } else {
                 queryString = queryString.replaceAll("page=\\d+&", "");
-                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(systemUser, communityResident, company, page, null);
+                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(systemUser, configurationsMap, communityResident, companyId, companyRid, page, null);
                 model.addAttribute("communityResident", communityResident);
             }
+            @SuppressWarnings("unchecked")
             Map<String, Object> dataAndPagination = (Map<String, Object>) communityResidentMap.get("dataAndPagination");
             model.addAttribute("communityResidents", dataAndPagination.get("data"));
             model.addAttribute("pageInfo", dataAndPagination.get("pageInfo"));
             model.addAttribute("count", communityResidentMap.get("count"));
             model.addAttribute("queryString", queryString);
-            model.addAttribute("company", company);
+            model.addAttribute("companyName", companyName);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
         return "resident/list";
@@ -107,10 +118,13 @@ public class CommunityResidentAction {
     public String createCommunityResident(HttpSession session, Model model) {
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
             model.addAttribute("communities", communities);
             return "resident/edit";
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
     }
@@ -130,10 +144,13 @@ public class CommunityResidentAction {
             CommunityResident communityResident = communityResidentService.findCommunityResidentAndCommunityById(id);
             model.addAttribute("communityResident", communityResident);
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
             model.addAttribute("communities", communities);
             return "resident/edit";
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
     }
@@ -160,18 +177,21 @@ public class CommunityResidentAction {
                 return "resident/edit";
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessException("系统出现错误，请联系管理员！");
         }
         if ("POST".equals(httpServletRequest.getMethod())) {
             try {
                 communityResidentService.createCommunityResident(communityResident);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new BusinessException("添加社区居民失败！", e);
             }
         } else {
             try {
                 communityResidentService.updateCommunityResident(communityResident);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new BusinessException("修改社区居民失败！", e);
             }
         }
@@ -181,14 +201,15 @@ public class CommunityResidentAction {
     /**
      * 使用AJAX技术通过社区居民ID删除社区居民
      *
-     * @param id 对应编号
-     * @return 视图页面
+     * @param session session对象
+     * @param id      对应编号
+     * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteCommunityResidentForAjax(String id) {
-        Map<String, Object> map = new HashMap<>(3);
+    Map<String, Object> deleteCommunityResidentForAjax(HttpSession session, String id) {
+        Map<String, Object> map = new HashMap<>(4);
         try {
             communityResidentService.deleteObjectById(Integer.parseInt(id));
             map.put("state", 1);
@@ -196,6 +217,8 @@ public class CommunityResidentAction {
         } catch (Exception e) {
             map.put("state", 0);
             map.put("message", "删除社区居民失败！");
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            e.printStackTrace();
         }
         return map;
     }
@@ -203,13 +226,17 @@ public class CommunityResidentAction {
     /**
      * 导入居民信息进系统
      *
+     * @param httpServletRequest HTTP请求对象
+     * @param session            session对象
+     * @param subdistrictId      导入的街道编号
      * @return Ajax信息
      */
     @SystemUserAuth(enforce = true)
     @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> communityResidentImportAsSystem(HttpServletRequest httpServletRequest) {
+    Map<String, Object> communityResidentImportAsSystem(HttpServletRequest httpServletRequest, HttpSession session, Integer subdistrictId) {
+        Map<String, Object> map = new HashMap<>(4);
         try {
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) httpServletRequest;
             MultipartFile file = multipartRequest.getFile("file");
@@ -221,13 +248,17 @@ public class CommunityResidentAction {
             if (workbook == null) {
                 throw new Exception("创建Excel工作薄为空！");
             }
-            int state = communityResidentService.addCommunityResidentFromExcel(workbook);
-            Map<String, Object> map = new HashMap<>(2);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            int state = communityResidentService.addCommunityResidentFromExcel(workbook, subdistrictId, configurationsMap);
             map.put("state", state);
-            return map;
         } catch (Exception e) {
-            throw new BusinessException("上传文件失败！", e);
+            map.put("state", 0);
+            map.put("message", "上传文件失败！");
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            e.printStackTrace();
         }
+        return map;
     }
 
     /**
@@ -239,12 +270,17 @@ public class CommunityResidentAction {
     public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response) {
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             // 获取业务数据集
-            JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(systemUser.getRoleId(), systemUser.getRoleLocationId());
+            JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(configurationsMap, systemUser.getRoleId(), systemUser.getRoleLocationId());
             //获取属性-列头
             Map<String, String> headMap = communityResidentService.getPartStatHead();
-            ExcelUtil.downloadExcelFile(SystemConstant.EXCEL_TITLE_UP, SystemConstant.EXCEL_TITLE, headMap, data, response);
+            String excelTitleUp = CommonUtil.convertConfigurationString(configurationsMap.get("excel_title_up"));
+            String excelTitle = CommonUtil.convertConfigurationString(configurationsMap.get("excel_title"));
+            ExcelUtil.downloadExcelFile(excelTitleUp, excelTitle, headMap, data, response);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessException("导出Excel文件失败！");
         }
     }
@@ -257,33 +293,42 @@ public class CommunityResidentAction {
     @RequestMapping(value = "/ajax_select", method = RequestMethod.GET)
     @VerifyCSRFToken
     public @ResponseBody
-    Set<TreeMenu> findCommunityForAjax(HttpSession session) {
+    Map<String, Object> findCommunityForAjax(HttpSession session) {
+        Map<String, Object> map = new HashMap<>(3);
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
             Integer roleId = systemUser.getUserRole().getRoleId();
             Integer roleLocationId = systemUser.getRoleLocationId();
             Set<Subdistrict> subdistricts = subdistrictService.findCommunitiesAndSubdistrictsByRole(roleId, roleLocationId);
             Set<TreeMenu> treeMenus = new HashSet<>();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Integer subdistrictRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_role_id"));
+            Integer communityRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_role_id"));
+            // 街道循环
             for (Subdistrict subdistrict : subdistricts) {
                 TreeMenu treeMenu = new TreeMenu();
                 treeMenu.setId(subdistrict.getSubdistrictId());
                 treeMenu.setName(subdistrict.getSubdistrictName());
-                if (treeMenus.size() == 0) {
-                    treeMenu.setSpread(true);
-                }
+                treeMenu.setRoleLocationId(subdistrictRoleId);
                 List<TreeMenu> children = new ArrayList<>();
+                // 社区循环
                 for (Community community : subdistrict.getCommunities()) {
                     TreeMenu childrenTree = new TreeMenu();
                     childrenTree.setId(community.getCommunityId());
                     childrenTree.setName(community.getCommunityName());
+                    childrenTree.setRoleLocationId(communityRoleId);
                     children.add(childrenTree);
                 }
                 treeMenu.setChildren(children);
                 treeMenus.add(treeMenu);
             }
-            return treeMenus;
+            map.put("treeMenus", treeMenus);
         } catch (Exception e) {
-            throw new BusinessException("查找社区失败！", e);
+            e.printStackTrace();
+            map.put("message", "查找社区失败！");
         }
+        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+        return map;
     }
 }

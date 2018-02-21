@@ -28,7 +28,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 多个社区居民与所属社区
      * @throws DataAccessException 数据库操作异常
      */
-    List<CommunityResident> selectCommunityResidentsByCommunityResidentAndCommunityIds(CommunityResident communityResident) throws DataAccessException;
+    List<CommunityResident> selectCommunityResidentsByCommunityResident(@Param("communityResident") CommunityResident communityResident) throws DataAccessException;
 
     /**
      * 批量插入社区居民数据
@@ -129,4 +129,12 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @throws DataAccessException 数据库操作异常
      */
     Integer countCommunityResidents() throws DataAccessException;
+
+    /**
+     * 通过所属街道编号删除
+     *
+     * @param subdistrictId 需要删除的所属街道编号
+     * @throws DataAccessException 数据库操作异常
+     */
+    void deleteCommunityResidentsBySubdistrictId(Integer subdistrictId) throws DataAccessException;
 }

@@ -41,6 +41,7 @@
 							<input type="hidden" name="_token" value="${_token}">
 							<spring:htmlEscape defaultHtmlEscape="true" />
 							<input type="submit" value="保存" class="btn btn-primary">
+                            <button class="btn btn-default margin-l-10" role="button" onclick="history.go(-1)">返回</button>
 						</td>
 					</tr>
 				</tbody>

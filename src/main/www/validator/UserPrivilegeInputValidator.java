@@ -15,12 +15,8 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class UserPrivilegeInputValidator implements Validator {
-    private String message;
-    private String field;
-    private String errorCode;
+public class UserPrivilegeInputValidator extends BaseInputValidator implements Validator {
     private UserPrivilegeService userPrivilegeService;
-    private HttpServletRequest request;
 
     public UserPrivilegeInputValidator() {
     }
@@ -36,43 +32,30 @@ public class UserPrivilegeInputValidator implements Validator {
     }
 
     @Override
-    public void validate(Object target, Errors errors) {
+    public boolean checkInput(Object target, Errors errors) {
         try {
             ValidationUtils.rejectIfEmpty(errors, "privilegeName", "userPrivilege.privilegeName.required", "系统用户权限名称不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "constraintAuth", "userPrivilege.constraintAuth.required", "系统用户权限约束名称不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "uri", "userPrivilege.uri.required", "系统用户权限访问地址不能为空！");
             UserPrivilege userPrivilege = (UserPrivilege) target;
-            if (!checkInput(userPrivilege)) {
-                errors.rejectValue(field, errorCode, message);
+            if (userPrivilege.getIsDisplay() != 0 || userPrivilege.getIsDisplay() != 1) {
+                field = "isDisplay";
+                errorCode = "userPrivilege.isDisplay.errorCode";
+                message = "是否在菜单栏中显示错误！";
+                return false;
             }
+            if ("POST".equals(request.getMethod())) {
+                List<UserPrivilege> userPrivileges = userPrivilegeService.findObjects(userPrivilege);
+                if (userPrivileges != null && userPrivileges.size() > 0) {
+                    field = "privilegeId";
+                    errorCode = "userPrivilege.privilegeId.errorCode";
+                    message = "所填内容已存在！";
+                    return false;
+                }
+            }
+            return true;
         } catch (Exception e) {
             throw new BusinessException("系统用户权限验证失败！");
         }
-    }
-
-    /**
-     * 验证输入数据
-     *
-     * @param userPrivilege 需要验证的系统用户权限对象
-     * @return 验证是否成功
-     * @throws Exception 数据库操作异常
-     */
-    private Boolean checkInput(UserPrivilege userPrivilege) throws Exception {
-        if (userPrivilege.getIsDisplay() != 0 || userPrivilege.getIsDisplay() != 1) {
-            field = "isDisplay";
-            errorCode = "userPrivilege.isDisplay.errorCode";
-            message = "是否在菜单栏中显示错误！";
-            return false;
-        }
-        if ("POST".equals(request.getMethod())) {
-            List<UserPrivilege> userPrivileges = userPrivilegeService.findObjects(userPrivilege);
-            if (userPrivileges != null && userPrivileges.size() > 0) {
-                field = "privilegeId";
-                errorCode = "userPrivilege.privilegeId.errorCode";
-                message = "所填内容已存在！";
-                return false;
-            }
-        }
-        return true;
     }
 }

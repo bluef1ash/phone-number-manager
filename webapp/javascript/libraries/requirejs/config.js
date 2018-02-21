@@ -3,22 +3,35 @@ require.config({
     paths: {
         css: jsPath + "libraries/requirejs/plugin/css.min",
         domReady: jsPath + "libraries/requirejs/plugin/dom-ready.min",
-        jquery: (belowIe9 && jsPath + "libraries/jquery/jquery-1.X.min") || jsPath + "libraries/jquery/jquery-3.X.min",
+        jquery: jsPath + "libraries/jquery/jquery-3.X.min",
+        vue: jsPath + "libraries/vue.min",
         bootstrap: jsPath + "libraries/bootstrap.min",
-        angular: jsPath + "libraries/angular.min",
+        easyui: jsPath + "libraries/jquery/jquery-easyui/jquery.easyui.min",
+        easyui_zhCN: jsPath + "libraries/jquery/jquery-easyui/locale/easyui-lang-zh_CN",
+        ztree: jsPath + "libraries/ztree/js/jquery.ztree.all.min",
         lodash: jsPath + "libraries/lodash/lodash.min",
         layui: jsPath + "libraries/layui/layui",
         chart: jsPath + "libraries/chart.min",
         zeroClipboard: jsPath + "libraries/zeroclipboard/ZeroClipboard.min",
         md5: jsPath + "libraries/md5.min",
+        sha: jsPath + "libraries/sha256.min",
         commonFunction: jsPath + "libraries/common"
     },
     shim: {
         jquery: {
             exports: "$"
         },
-        angular: {
-            exports: "angular"
+        vue: {
+            exports: "Vue"
+        },
+        easyui: {
+            deps: ["jquery", "css!" + jsPath + "libraries/jquery/jquery-easyui/themes/default/easyui.css", "css!" + jsPath + "libraries/jquery/jquery-easyui/themes/icon.css", "easyui_zhCN"]
+        },
+        easyui_zhCN: {
+            deps: ["jquery"]
+        },
+        ztree: {
+            deps: ["jquery", "css!" + jsPath + "libraries/ztree/css/zTreeStyle/zTreeStyle.css"]
         },
         bootstrap: {
             deps: ["jquery"]
@@ -34,6 +47,9 @@ require.config({
         },
         md5: {
             exports: "md5"
+        },
+        sha: {
+            exports: "sha"
         }
     }
 });

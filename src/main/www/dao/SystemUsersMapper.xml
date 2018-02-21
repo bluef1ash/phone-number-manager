@@ -143,11 +143,11 @@
             `pm_system_users`.`is_locked`,
             `pm_system_users`.`role_location_id`,
             `pm_system_users`.`role_id`,
-            `pm_roles`.`name`             AS 'role_name',
-            `pm_roles`.`description`      AS 'role_description',
+            `pm_roles`.`name`        AS 'role_name',
+            `pm_roles`.`description` AS 'role_description',
             `pm_roles`.`higher_role`,
             `pm_privileges`.`privilege_id`,
-            `pm_privileges`.`name`        AS 'privilege_name',
+            `pm_privileges`.`name`   AS 'privilege_name',
             `pm_privileges`.`constraint_auth`,
             `pm_privileges`.`uri`,
             `pm_privileges`.`higher_privilege`,
@@ -159,5 +159,11 @@
             LEFT JOIN `pm_roles_privileges` ON `pm_roles`.`role_id` = `pm_roles_privileges`.`role_id`
             LEFT JOIN `pm_privileges` ON `pm_roles_privileges`.`privilege_id` = `pm_privileges`.`privilege_id`
         WHERE `pm_system_users`.`username` = #{username}
+    </select>
+    <select id="selectSystemUsersAll" resultMap="systemUserResultMap">
+        SELECT
+            `system_user_id`,
+            `username`
+        FROM `pm_system_users`
     </select>
 </mapper>

@@ -3,6 +3,7 @@ package www.entity;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 社区居民实体
@@ -21,7 +22,7 @@ public class CommunityResident implements Serializable {
     private String communityResidentSubcontractor;
     private Timestamp communityResidentEditTime;
     private Integer communityId;
-    private Integer[] communityIds;
+    private List<Integer> communityIds;
     private Community community;
     private String communityResidentPhone1;
     private String communityResidentPhone2;
@@ -30,7 +31,7 @@ public class CommunityResident implements Serializable {
     public CommunityResident() {
     }
 
-    public CommunityResident(Integer communityResidentId, Integer indexId, String subdistrictName, String communityName, String communityResidentName, String communityResidentAddress, String communityResidentPhones, String communityResidentSubcontractor, Timestamp communityResidentEditTime, Integer communityId, Integer[] communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
+    public CommunityResident(Integer communityResidentId, Integer indexId, String subdistrictName, String communityName, String communityResidentName, String communityResidentAddress, String communityResidentPhones, String communityResidentSubcontractor, Timestamp communityResidentEditTime, Integer communityId, List<Integer> communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
         this.communityResidentId = communityResidentId;
         this.indexId = indexId;
         this.subdistrictName = subdistrictName;
@@ -128,11 +129,11 @@ public class CommunityResident implements Serializable {
         this.communityId = communityId;
     }
 
-    public Integer[] getCommunityIds() {
+    public List<Integer> getCommunityIds() {
         return communityIds;
     }
 
-    public void setCommunityIds(Integer[] communityIds) {
+    public void setCommunityIds(List<Integer> communityIds) {
         this.communityIds = communityIds;
     }
 
@@ -181,7 +182,7 @@ public class CommunityResident implements Serializable {
             ", communityResidentSubcontractor='" + communityResidentSubcontractor + '\'' +
             ", communityResidentEditTime=" + communityResidentEditTime +
             ", communityId=" + communityId +
-            ", communityIds=" + Arrays.toString(communityIds) +
+            ", communityIds=" + communityIds +
             ", community=" + community +
             ", communityResidentPhone1='" + communityResidentPhone1 + '\'' +
             ", communityResidentPhone2='" + communityResidentPhone2 + '\'' +

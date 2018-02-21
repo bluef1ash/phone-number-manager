@@ -7,7 +7,7 @@
 		<div class="content-title">
 			您的位置：<a href="${pageContext.request.contextPath}/index.action" ondragstart="return false;">主页</a> > <a href="javascript:;">用户管理</a> > <a href="${pageContext.request.contextPath}/system/user_role/role/list.action" ondragstart="return false;">角色列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/system/user_role/privilege/create.action" class="btn btn-default float-right margin-br-10 menu-tab" role="button" ondragstart="return false;">添加权限</a>
+		<a href="${pageContext.request.contextPath}/system/user_role/privilege/create.action" class="btn btn-primary float-right margin-br-10 menu-tab" role="button" ondragstart="return false;">添加权限</a>
 		<table class="table table-bordered font-size-14">
 			<thead></thead>
 			<tbody>
@@ -21,8 +21,8 @@
 						<td>${status.count}</td>
 						<td>${userPrivilege.privilegeName}</td>
 						<td>
-							<a href="${pageContext.request.contextPath}/system/user_role/privilege/edit.action?id=${userPrivilege.privilegeId}" class="btn btn-default operation" role="button" ondragstart="return false;">修改</a>
-                            <a href="javascript:;" class="btn btn-default operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete.action', ${userPrivilege.privilegeId}, '${_token}');" ondragstart="return false;">删除</a>
+							<a href="${pageContext.request.contextPath}/system/user_role/privilege/edit.action?id=${userPrivilege.privilegeId}" class="btn btn-default btn-sm operation" role="button" ondragstart="return false;">修改</a>
+                            <a href="javascript:;" class="btn btn-danger btn-sm operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete.action', ${userPrivilege.privilegeId}, '${_token}');" ondragstart="return false;">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -89,9 +89,7 @@
             require(["commonFunction", "jquery"], function (commonFunction) {
                 window.commonFunction = commonFunction;
 				$(function (){
-					var pagination_ul = $("#pagination_parent").children("ul").css("width");
-					pagination_ul = Math.ceil(pagination_ul.substr(0, pagination_ul.length - 2)) + "px";
-					$("#pagination_parent").css("width", pagination_ul);
+                    commonFunction.paginationCenter($("#pagination_parent"));
 				});
 			});
 		</script>

@@ -4,6 +4,7 @@ import java.util.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import annotation.SystemUserAuth;
 import exception.BusinessException;
+import utils.CsrfTokenUtil;
 import www.entity.Subdistrict;
 import www.service.SubdistrictService;
 import www.validator.SubdistrictInputValidator;
@@ -36,8 +38,12 @@ import www.validator.SubdistrictInputValidator;
 public class SubdistrictAction {
     @Resource
     private SubdistrictService subdistrictService;
+    private final HttpServletRequest request;
+
     @Autowired
-    private HttpServletRequest request;
+    public SubdistrictAction(HttpServletRequest request) {
+        this.request = request;
+    }
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -150,6 +156,30 @@ public class SubdistrictAction {
             map.put("state", 0);
             map.put("message", "删除街道失败！");
         }
+        return map;
+    }
+
+    /**
+     * 通过Ajax技术获取街道信息
+     *
+     * @param session session对象
+     * @return 街道信息
+     */
+    @RequestMapping(value = "/ajax_load", method = RequestMethod.GET)
+    @VerifyCSRFToken
+    public @ResponseBody
+    Map<String, Object> getSubdistrictForAjax(HttpSession session) {
+        Map<String, Object> map = new HashMap<>(4);
+        try {
+            List<Subdistrict> subdistricts = subdistrictService.findObjects();
+            map.put("state", 1);
+            map.put("subdistricts", subdistricts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            map.put("state", 0);
+            map.put("message", "获取街道失败！");
+        }
+        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
         return map;
     }
 }

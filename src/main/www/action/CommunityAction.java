@@ -42,8 +42,12 @@ public class CommunityAction {
     private CommunityService communityService;
     @Resource
     private SubdistrictService subdistrictService;
+    private final HttpServletRequest request;
+
     @Autowired
-    private HttpServletRequest request;
+    public CommunityAction(HttpServletRequest request) {
+        this.request = request;
+    }
 
     @InitBinder
     public void initBinder(DataBinder binder) {

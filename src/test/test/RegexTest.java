@@ -1,3 +1,4 @@
+package test;
 
 import org.apache.poi.util.SystemOutLogger;
 import org.junit.Test;

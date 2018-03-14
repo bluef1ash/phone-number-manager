@@ -59,6 +59,7 @@
 E-mail: liangtian_2005@163.com
 
 ## Author: Bluef1ash(Liang Tian)
+E-mail: liangtian_2005@163.com
 
 ## 商业友好的开源协议
 

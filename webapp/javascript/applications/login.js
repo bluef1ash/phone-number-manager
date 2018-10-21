@@ -62,7 +62,7 @@ require(["jquery", "layui", "sha"], function () {
                         var index = null;
                         $.ajax({
                             "type": "post",
-                            "url": basePath + "login/ajax.action",
+                            "url": basePath + "login/ajax",
                             "async": false,
                             "data": {
                                 "username": username_value,
@@ -80,7 +80,7 @@ require(["jquery", "layui", "sha"], function () {
                                     password_li.removeClass("has-error").addClass("has-success");
                                     captcha_li.removeClass("has-error").addClass("has-success");
                                     layer.msg(data.message, {icon: 6, shade: [0.8, '#000']}, function () {
-                                        location.href = basePath + "index.action";
+                                        location.href = basePath + "index";
                                     });
                                 } else {
                                     if (data.messageError.code == "systemUser.captcha.error") {

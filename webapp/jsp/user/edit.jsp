@@ -16,7 +16,7 @@
                 require(["bootstrap"]);
             </script>
         </c:if>
-		<form action="${pageContext.request.contextPath}/system/user_role/user/handle.action" method="post">
+        <form action="${pageContext.request.contextPath}/system/user_role/user/handle" method="post">
 			<table class="table table-bordered font-size-14">
 				<thead></thead>
 				<tbody>
@@ -108,7 +108,7 @@
                  */
                 function getCompany(obj, roleLocationId) {
                     $.ajax({
-                        url: "${pageContext.request.contextPath}/system/user_role/user/ajax_get_company.action",
+                        url: "${pageContext.request.contextPath}/system/user_role/user/ajax_get_company",
                         method: "get",
                         async: false,
                         data: {

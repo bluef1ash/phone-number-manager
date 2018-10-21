@@ -134,7 +134,7 @@
         addTab: function () {
             var menuTab = $(".menu-tab");
             $(".lradms-iframe").each(function (index, element) {
-                var loginUrlLocal = basePath + "login.action";
+                var loginUrlLocal = basePath + "login";
                 if ($(element).prop("src") == loginUrlLocal) {
                     location.href = loginUrlLocal;
                 }
@@ -499,7 +499,7 @@
         loadMenu: function () {
             var _html = "";
             $.ajax({
-                "url": basePath + "index/getmenu.action",
+                "url": basePath + "index/getmenu",
                 "type": "get",
                 "async": false,
                 "cache": false,
@@ -516,7 +516,18 @@
                             if (userPrivileges[i].subUserPrivileges != null) {
                                 _html += '<ul class="treeview-menu">';
                                 for (var j = 0; j < userPrivileges[i].subUserPrivileges.length; j++) {
-                                    _html += '<li><a class="menu-item" href="' + basePath + userPrivileges[i].subUserPrivileges[j].uri.substring(1) + '.action" data-id="' + userPrivileges[i].subUserPrivileges[j].privilegeId + '" ondragstart="return false;" title="' + userPrivileges[i].subUserPrivileges[j].privilegeName + '"><i class="' + userPrivileges[i].subUserPrivileges[j].iconName + '"></i>' + userPrivileges[i].subUserPrivileges[j].privilegeName + "</a></li>";
+                                    _html += "<li><a class=\"menu-item\" href=\"" +
+                                        basePath +
+                                        userPrivileges[i].subUserPrivileges[j].uri.substring(1) +
+                                        "\" data-id=\"" +
+                                        userPrivileges[i].subUserPrivileges[j].privilegeId +
+                                        "\" ondragstart=\"return false;\" title=\"" +
+                                        userPrivileges[i].subUserPrivileges[j].privilegeName +
+                                        "\"><i class=\"" +
+                                        userPrivileges[i].subUserPrivileges[j].iconName +
+                                        "\"></i>" +
+                                        userPrivileges[i].subUserPrivileges[j].privilegeName +
+                                        "</a></li>";
                                 }
                                 _html += "</ul>";
                             }

@@ -5,9 +5,11 @@
 	</head>
 	<body>
 		<div class="content-title">
-			您的位置：<a href="${pageContext.request.contextPath}/index.action" ondragstart="return false;">主页</a> > <a href="javascript:">用户管理</a> > <a href="${pageContext.request.contextPath}/system/user_role/role/list.action" ondragstart="return false;">角色列表</a>
+            您的位置：<a href="${pageContext.request.contextPath}/index" ondragstart="return false;">主页</a> >
+            <a href="javascript:">用户管理</a> >
+            <a href="${pageContext.request.contextPath}/system/user_role/role/list" ondragstart="return false;">角色列表</a>
 		</div>
-		<a href="${pageContext.request.contextPath}/system/user_role/privilege/create.action" class="btn btn-primary float-right margin-br-10 menu-tab" role="button" ondragstart="return false;">添加权限</a>
+        <a href="${pageContext.request.contextPath}/system/user_role/privilege/create" class="btn btn-primary float-right margin-br-10 menu-tab" role="button" ondragstart="return false;">添加权限</a>
 		<table class="table table-bordered font-size-14">
 			<thead></thead>
 			<tbody>
@@ -21,8 +23,8 @@
 						<td>${status.count}</td>
 						<td>${userPrivilege.privilegeName}</td>
 						<td>
-							<a href="${pageContext.request.contextPath}/system/user_role/privilege/edit.action?id=${userPrivilege.privilegeId}" class="btn btn-default btn-sm operation" role="button" ondragstart="return false;">修改</a>
-                            <a href="javascript:" class="btn btn-danger btn-sm operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete.action', ${userPrivilege.privilegeId}, '${_token}');" ondragstart="return false;">删除</a>
+                            <a href="${pageContext.request.contextPath}/system/user_role/privilege/edit?id=${userPrivilege.privilegeId}" class="btn btn-default btn-sm operation" role="button" ondragstart="return false;">修改</a>
+                            <a href="javascript:" class="btn btn-danger btn-sm operation" role="button" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/system/user_role/privilege/ajax_delete', ${userPrivilege.privilegeId}, '${_token}');" ondragstart="return false;">删除</a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -30,7 +32,7 @@
 		</table>
         <ul class="pagination">
             <li<c:if test="${pageInfo.isIsFirstPage() eq true}"> class="disabled"</c:if>>
-                <a href="${pageContext.request.contextPath}/system/user_role/privilege/list.action" ondragstart="return false;">&laquo;</a>
+                <a href="${pageContext.request.contextPath}/system/user_role/privilege/list" ondragstart="return false;">&laquo;</a>
             </li>
             <c:choose>
                 <c:when test="${pageInfo.getPages() gt 5}">
@@ -39,7 +41,7 @@
                             <c:set var="i" value="${pageInfo.getPages() - 4}" />
                             <c:forEach begin="1" end="5" varStatus="status">
                                 <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                    <a href="${pageContext.request.contextPath}/system/user_role/privilege/list.action?page=${i}" ondragstart="return false;">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/system/user_role/privilege/list?page=${i}" ondragstart="return false;">${i}</a>
                                 </li>
                                 <c:set var="i" value="${i + 1}" />
                             </c:forEach>
@@ -48,7 +50,7 @@
                             <c:set var="i" value="${pageInfo.getPageNum() - 2}" />
                             <c:forEach begin="1" end="5" varStatus="status">
                                 <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                    <a href="${pageContext.request.contextPath}/system/user_role/privilege/list.action?page=${i}" ondragstart="return false;">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/system/user_role/privilege/list?page=${i}" ondragstart="return false;">${i}</a>
                                 </li>
                                 <c:set var="i" value="${i + 1}" />
                             </c:forEach>
@@ -56,7 +58,7 @@
                         <c:otherwise>
                             <c:forEach begin="1" end="5" varStatus="status">
                                 <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                    <a href="${pageContext.request.contextPath}/system/user_role/privilege/list.action?page=${status.count}" ondragstart="return false;">${status.count}</a>
+                                    <a href="${pageContext.request.contextPath}/system/user_role/privilege/list?page=${status.count}" ondragstart="return false;">${status.count}</a>
                                 </li>
                             </c:forEach>
                         </c:otherwise>
@@ -65,7 +67,7 @@
                 <c:otherwise>
                     <c:forEach begin="1" end="${pageInfo.getPages()}" varStatus="status">
                         <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                            <a href="${pageContext.request.contextPath}/system/user_role/privilege/list.action?page=${status.count}" ondragstart="return false;">${status.count}</a>
+                            <a href="${pageContext.request.contextPath}/system/user_role/privilege/list?page=${status.count}" ondragstart="return false;">${status.count}</a>
                         </li>
                     </c:forEach>
                 </c:otherwise>
@@ -78,7 +80,7 @@
                 </c:when>
                 <c:otherwise>
                     <li>
-                        <a href="${pageContext.request.contextPath}/system/user_role/privilege/list.action?page=${pageInfo.getPages()}" ondragstart="return false;">&raquo;</a>
+                        <a href="${pageContext.request.contextPath}/system/user_role/privilege/list?page=${pageInfo.getPages()}" ondragstart="return false;">&raquo;</a>
                     </li>
                 </c:otherwise>
             </c:choose>

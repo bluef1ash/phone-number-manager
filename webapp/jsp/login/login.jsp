@@ -36,7 +36,7 @@
 						<span class="col-md-5">
 							<input type="text" class="form-control" id="captcha" placeholder="请输入验证码">
 						</span>
-						<img src="${pageContext.request.contextPath}/login/captcha.action" alt="" class="col-md-3" id="captcha_img">
+                        <img src="${pageContext.request.contextPath}/login/captcha" alt="" class="col-md-3" id="captcha_img">
 					</li>
 					<li style="width:100%; height:60px;">
 						<input type="hidden" name="_token" value="${_token}">

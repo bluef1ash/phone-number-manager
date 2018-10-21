@@ -16,7 +16,7 @@
                 require(["bootstrap"]);
             </script>
         </c:if>
-		<form action="${pageContext.request.contextPath}/subdistrict/handle.action" method="post">
+        <form action="${pageContext.request.contextPath}/subdistrict/handle" method="post">
 			<table class="table table-bordered font-size-14">
 				<thead></thead>
 				<tbody>

@@ -13,7 +13,7 @@
                 </div>
             </c:forEach>
         </c:if>
-		<form action="${pageContext.request.contextPath}/system/configuration/handle.action" method="post">
+        <form action="${pageContext.request.contextPath}/system/configuration/handle" method="post">
 			<table class="table table-bordered font-size-14">
 				<thead></thead>
 				<tbody>
@@ -74,7 +74,7 @@
 		</form>
         <script type="text/javascript">
             require(["configuration"], function (configuration) {
-                configuration("${pageContext.request.contextPath}/system/user_role/user/ajax_get.action", "${configuration.value}");
+                configuration("${pageContext.request.contextPath}/system/user_role/user/ajax_get", "${configuration.value}");
             });
         </script>
 	</body>

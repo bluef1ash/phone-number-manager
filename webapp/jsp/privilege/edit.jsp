@@ -16,7 +16,7 @@
                 require(["bootstrap"]);
             </script>
         </c:if>
-		<form action="${pageContext.request.contextPath}/system/user_role/privilege/handle.action" method="post">
+        <form action="${pageContext.request.contextPath}/system/user_role/privilege/handle" method="post">
 			<table class="table table-bordered font-size-14">
 				<thead></thead>
 				<tbody>

@@ -114,9 +114,9 @@ public class LoginAction {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
         if (systemUser != null) {
             session.invalidate();
-            return "redirect:/login.action";
+            return "redirect:/login";
         }
-        return "redirect:/index.action";
+        return "redirect:/index";
     }
 
     /**

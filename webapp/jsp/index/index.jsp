@@ -39,7 +39,7 @@
                                     </a>
                                     <ul class="dropdown-menu pull-right">
                                         <li>
-                                            <a class="menu-item" data-id="userInfo" href="${pageContext.request.contextPath}/system/user_role/user/edit.action?id=${systemUser.systemUserId}" title="个人信息" ondragstart="return false;">
+                                            <a class="menu-item" data-id="userInfo" href="${pageContext.request.contextPath}/system/user_role/user/edit?id=${systemUser.systemUserId}" title="个人信息" ondragstart="return false;">
                                                 <i class="fa fa-user"></i>个人信息
                                             </a>
                                         </li>
@@ -55,7 +55,7 @@
                                         </li>
                                         <li class="divider"></li>
                                         <li>
-                                            <a href="${pageContext.request.contextPath}/login/loginout.action" title="安全退出" ondragstart="return false;">
+                                            <a href="${pageContext.request.contextPath}/login/loginout" title="安全退出" ondragstart="return false;">
                                                 <i class="ace-icon fa fa-power-off"></i>安全退出
                                             </a>
                                         </li>
@@ -96,8 +96,8 @@
                             </button>
                             <nav class="page-tabs menu-tabs">
                                 <div class="page-tabs-content">
-                                    <a href="javascript:" class="menu-tab active" data-id="${pageContext.request.contextPath}/index/welcome.action">欢迎首页</a>
-                                    <a href="javascript:" class="menu-tab" data-id="${pageContext.request.contextPath}/index/about.action" style="padding-right: 15px;">平台介绍</a>
+                                    <a href="javascript:" class="menu-tab active" data-id="${pageContext.request.contextPath}/index/welcome">欢迎首页</a>
+                                    <a href="javascript:" class="menu-tab" data-id="${pageContext.request.contextPath}/index/about" style="padding-right: 15px;">平台介绍</a>
                                 </div>
                             </nav>
                             <button class="roll-nav roll-right" id="tab_right">
@@ -127,8 +127,8 @@
                             </button>
                         </div>
                         <div id="content_main">
-                            <iframe class="lradms-iframe" width="100%" height="100%" src="${pageContext.request.contextPath}/index/welcome.action" data-id="${pageContext.request.contextPath}/index/welcome.action"></iframe>
-                            <iframe class="lradms-iframe" width="100%" height="100%" src="${pageContext.request.contextPath}/index/about.action" data-id="${pageContext.request.contextPath}/index/about.action" style="display: none"></iframe>
+                            <iframe class="lradms-iframe" width="100%" height="100%" src="${pageContext.request.contextPath}/index/welcome" data-id="${pageContext.request.contextPath}/index/welcome"></iframe>
+                            <iframe class="lradms-iframe" width="100%" height="100%" src="${pageContext.request.contextPath}/index/about" data-id="${pageContext.request.contextPath}/index/about" style="display: none"></iframe>
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@
         <title>欢迎 - 后台管理系统</title>
         <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/welcome.css" />
         <script type="text/javascript">
-            var getComputedCountUrl = "${pageContext.request.contextPath}/index/getcomputedcount.action";
+            var getComputedCountUrl = "${pageContext.request.contextPath}/index/getcomputedcount";
             var _token = "${_token}";
             require(["welcome"]);
         </script>
@@ -64,7 +64,7 @@
                 <div class="panel-body">
                     <ul>
                         <li>
-                            <a href="javascript:;" ondragstart="return false;">测试信息</a><span class="time">0000-00-00</span>
+                            <a href="javascript:" ondragstart="return false;">测试信息</a><span class="time">0000-00-00</span>
                         </li>
                     </ul>
                 </div>

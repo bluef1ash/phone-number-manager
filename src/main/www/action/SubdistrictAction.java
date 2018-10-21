@@ -133,7 +133,7 @@ public class SubdistrictAction {
                 throw new BusinessException("修改街道失败！", e);
             }
         }
-        return "redirect:/subdistrict/list.action";
+        return "redirect:/subdistrict/list";
     }
 
     /**

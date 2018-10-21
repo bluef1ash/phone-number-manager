@@ -7,17 +7,18 @@
     </head>
     <body>
         <div class="content-title">
-            您的位置：<a href="${pageContext.request.contextPath}/index.action" title="主页" ondragstart="return false;">主页</a> > <a href="javascript:" title="社区居民管理" ondragstart="return false;">社区居民管理</a> > <a href="${pageContext.request.contextPath}/resident/list.action" title="社区居民列表" ondragstart="return false;">社区居民列表</a>
+            您的位置：<a href="${pageContext.request.contextPath}/index" title="主页" ondragstart="return false;">主页</a> >
+            <a href="javascript:" title="社区居民管理" ondragstart="return false;">社区居民管理</a> >
+            <a href="${pageContext.request.contextPath}/resident/list" title="社区居民列表" ondragstart="return false;">社区居民列表</a>
         </div>
         <div class="resident-excel">
             <a href="" class="btn btn-warning margin-br-10" data-toggle="modal" data-target="#import_as_system_modal" role="button" title="从Excel文件导入系统" ondragstart="return false;">从Excel文件导入系统</a>
-
-            <a href="${pageContext.request.contextPath}/resident/save_as_excel.action" class="btn btn-default margin-br-10" role="button" title="导出到Excel" ondragstart="return false;">导出到Excel</a>
-            <a href="${pageContext.request.contextPath}/resident/create.action" class="btn btn-primary margin-br-10 menu-tab" role="button" title="添加社区居民" ondragstart="return false;">添加社区居民</a>
+            <a href="${pageContext.request.contextPath}/resident/save_as_excel" class="btn btn-default margin-br-10" role="button" title="导出到Excel" ondragstart="return false;">导出到Excel</a>
+            <a href="${pageContext.request.contextPath}/resident/create" class="btn btn-primary margin-br-10 menu-tab" role="button" title="添加社区居民" ondragstart="return false;">添加社区居民</a>
         </div>
         <div class="query-input">
             <div class="row">
-                <form action="${pageContext.request.contextPath}/resident/list.action" method="get" name="resident_search" class="form-horizontal" role="form">
+                <form action="${pageContext.request.contextPath}/resident/list" method="get" name="resident_search" class="form-horizontal" role="form">
                     <div class="col-md-2 form-group">
                         <label class="col-md-4 control-label" for="company_name">单位</label>
                         <div class="col-md-8 search-company">
@@ -67,8 +68,8 @@
                         <td>${communityResident.communityResidentPhones}</td>
                         <td>${communityResident.community.communityName}</td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default btn-sm operation" role="button" title="修改此记录" ondragstart="return false;">修改</a>
-                            <a href="javascript:" class="btn btn-danger btn-sm operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除此记录" ondragstart="return false;">删除</a>
+                            <a href="${pageContext.request.contextPath}/resident/edit?id=${communityResident.communityResidentId}" class="btn btn-default btn-sm operation" role="button" title="修改此记录" ondragstart="return false;">修改</a>
+                            <a href="javascript:" class="btn btn-danger btn-sm operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除此记录" ondragstart="return false;">删除</a>
                         </td>
                     </tr>
                 </c:forEach>
@@ -76,7 +77,7 @@
         </table>
         <ul class="pagination">
             <li<c:if test="${pageInfo.isIsFirstPage() eq true}"> class="disabled"</c:if>>
-                <a href="${pageContext.request.contextPath}/resident/list.action?${queryString}" title="第一页" ondragstart="return false;">&laquo;</a>
+                <a href="${pageContext.request.contextPath}/resident/list?${queryString}" title="第一页" ondragstart="return false;">&laquo;</a>
             </li>
             <c:choose>
                 <c:when test="${pageInfo.getPages() gt 5}">
@@ -85,7 +86,7 @@
                             <c:set var="i" value="${pageInfo.getPages() - 4}" />
                             <c:forEach begin="1" end="5" varStatus="status">
                                 <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/resident/list?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
                                 </li>
                                 <c:set var="i" value="${i + 1}" />
                             </c:forEach>
@@ -94,7 +95,7 @@
                             <c:set var="i" value="${pageInfo.getPageNum() - 2}" />
                             <c:forEach begin="1" end="5" varStatus="status">
                                 <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/resident/list?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
                                 </li>
                                 <c:set var="i" value="${i + 1}" />
                             </c:forEach>
@@ -102,7 +103,7 @@
                         <c:otherwise>
                             <c:forEach begin="1" end="5" varStatus="status">
                                 <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
+                                    <a href="${pageContext.request.contextPath}/resident/list?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
                                 </li>
                             </c:forEach>
                         </c:otherwise>
@@ -111,13 +112,13 @@
                 <c:otherwise>
                     <c:forEach begin="1" end="${pageInfo.getPages()}" varStatus="status">
                         <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                            <a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
+                            <a href="${pageContext.request.contextPath}/resident/list?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
                         </li>
                     </c:forEach>
                 </c:otherwise>
             </c:choose>
             <li<c:if test="${pageInfo.isIsLastPage() eq true}"> class="disabled"</c:if>>
-                <a href="${pageContext.request.contextPath}/resident/list.action?page=${pageInfo.getPages()}&${queryString}" title="最后一页" ondragstart="return false;">&raquo;</a>
+                <a href="${pageContext.request.contextPath}/resident/list?page=${pageInfo.getPages()}&${queryString}" title="最后一页" ondragstart="return false;">&raquo;</a>
             </li>
             <li class="pagination-count">共有${count}条</li>
         </ul>

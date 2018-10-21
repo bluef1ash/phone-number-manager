@@ -195,7 +195,7 @@ public class CommunityResidentAction {
                 throw new BusinessException("修改社区居民失败！", e);
             }
         }
-        return "redirect:/resident/list.action";
+        return "redirect:/resident/list";
     }
 
     /**

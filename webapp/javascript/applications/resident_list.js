@@ -47,7 +47,7 @@ define("resident_list", ["commonFunction", "jquery", "bootstrap", "layui", "ztre
                             enable: true,
                             otherParam: {"_token": _token.val()},
                             type: "get",
-                            url: url + "resident/ajax_select.action"
+                            url: url + "resident/ajax_select"
                         },
                         callback: {
                             onClick: function (event, treeId, treeNode, clickFlag) {
@@ -76,7 +76,7 @@ define("resident_list", ["commonFunction", "jquery", "bootstrap", "layui", "ztre
                 var subdistrictId = $("#subdistrict_id");
                 var uploadInst = upload.render({
                     elem: "#import_as_system_file",
-                    url: url + "resident/import_as_system.action",
+                    url: url + "resident/import_as_system",
                     auto: false,
                     bindAction: "#confirm_upload",
                     accept: "file",
@@ -123,7 +123,7 @@ define("resident_list", ["commonFunction", "jquery", "bootstrap", "layui", "ztre
             importAsSystemModal.on("show.bs.modal", function (e) {
                 if (!isSuccess.subdistricts) {
                     $.ajax({
-                        url: url + "subdistrict/ajax_load.action",
+                        url: url + "subdistrict/ajax_load",
                         method: "get",
                         data: {
                             _token: _token.val()

@@ -153,7 +153,7 @@ public class CommunityAction {
                 throw new BusinessException("修改社区失败！", e);
             }
         }
-        return "redirect:/community/list.action";
+        return "redirect:/community/list";
     }
 
     /**

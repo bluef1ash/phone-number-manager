@@ -139,7 +139,7 @@ public class SystemAction {
                 throw new BusinessException("修改系统配置失败！", e);
             }
         }
-        return "redirect:/system/configuration/list.action";
+        return "redirect:/system/configuration/list";
     }
 
     /**

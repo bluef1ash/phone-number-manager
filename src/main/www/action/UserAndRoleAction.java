@@ -202,7 +202,7 @@ public class UserAndRoleAction {
                 throw new BusinessException("修改用户失败！", e);
             }
         }
-        return "redirect:/system/user_role/user/list.action";
+        return "redirect:/system/user_role/user/list";
     }
 
     /**
@@ -400,7 +400,7 @@ public class UserAndRoleAction {
                 throw new BusinessException("修改角色失败！", e);
             }
         }
-        return "redirect:/system/user_role/role/list.action";
+        return "redirect:/system/user_role/role/list";
     }
 
     /**
@@ -531,7 +531,7 @@ public class UserAndRoleAction {
                 throw new BusinessException("修改权限失败！", e);
             }
         }
-        return "redirect:/system/user_role/privilege/list.action";
+        return "redirect:/system/user_role/privilege/list";
     }
 
     /**

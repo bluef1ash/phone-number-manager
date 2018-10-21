@@ -13,7 +13,7 @@
                 </div>
             </c:forEach>
         </c:if>
-		<form action="${pageContext.request.contextPath}/resident/handle.action" method="post" name="community_resident">
+        <form action="${pageContext.request.contextPath}/resident/handle" method="post" name="community_resident">
 			<table class="table table-bordered font-size-14">
 				<thead>
 				</thead>

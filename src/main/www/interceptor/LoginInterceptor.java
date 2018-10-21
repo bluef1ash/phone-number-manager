@@ -19,7 +19,7 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
         HttpSession session = request.getSession();
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
         if (systemUser == null) {
-            response.sendRedirect(request.getContextPath() + "/login.action");
+            response.sendRedirect(request.getContextPath() + "/login");
             return false;
         }
         return super.preHandle(request, response, handler);

@@ -13,7 +13,7 @@
                 </div>
             </c:forEach>
         </c:if>
-		<form action="${pageContext.request.contextPath}/system/user_role/role/handle.action" method="post">
+        <form action="${pageContext.request.contextPath}/system/user_role/role/handle" method="post">
 			<table class="table table-bordered font-size-14">
 				<thead></thead>
 				<tbody>
@@ -85,7 +85,10 @@
                     var arr = [11];
                     var privilegeIds = $("input[name='privilegeIds']");
                     // 获取系统用户角色拥有的权限
-                    $.get("${pageContext.request.contextPath}/system/user_role/privilege/ajax_get_privileges.action", {"roleId" : ${userRole.roleId}, "_token": "${_token}"}, function (data) {
+                    $.get("${pageContext.request.contextPath}/system/user_role/privilege/ajax_get_privileges", {
+                        "roleId": ${userRole.roleId},
+                        "_token": "${_token}"
+                    }, function(data) {
                         if (data !== null) {
                             for (i = 0; i < data.privileges.length; i++) {
                                 $("input[name='privilegeIds'][value='" + data.privileges[i].privilegeId + "']").attr("checked", true);

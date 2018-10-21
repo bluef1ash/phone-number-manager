@@ -15,7 +15,7 @@
         <property name="dataSource" ref="dataSource"/>
         <property name="typeAliasesPackage" value="www.entity"/>
         <property name="plugins">
-            <bean class="com.github.pagehelper.PageHelper">
+            <bean class="com.github.pagehelper.PageInterceptor">
                 <property name="properties">
                     <props>
                         <prop key="offsetAsPageNum">true</prop>

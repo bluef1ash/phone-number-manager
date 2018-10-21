@@ -66,12 +66,12 @@
     float: right;
 }
 
-#pagination_parent {
-    .pagination {
-        .pagination-count {
-            line-height: 35px;
-            margin-left: 10px;
-        }
+.pagination {
+    display: flex;
+    justify-content: center;
+    .pagination-count {
+        line-height: 35px;
+        margin-left: 10px;
     }
 }
 

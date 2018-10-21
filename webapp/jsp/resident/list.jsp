@@ -7,7 +7,7 @@
     </head>
     <body>
         <div class="content-title">
-            您的位置：<a href="${pageContext.request.contextPath}/index.action" title="主页" ondragstart="return false;">主页</a> > <a href="javascript:;" title="社区居民管理" ondragstart="return false;">社区居民管理</a> > <a href="${pageContext.request.contextPath}/resident/list.action" title="社区居民列表" ondragstart="return false;">社区居民列表</a>
+            您的位置：<a href="${pageContext.request.contextPath}/index.action" title="主页" ondragstart="return false;">主页</a> > <a href="javascript:" title="社区居民管理" ondragstart="return false;">社区居民管理</a> > <a href="${pageContext.request.contextPath}/resident/list.action" title="社区居民列表" ondragstart="return false;">社区居民列表</a>
         </div>
         <div class="resident-excel">
             <a href="" class="btn btn-warning margin-br-10" data-toggle="modal" data-target="#import_as_system_modal" role="button" title="从Excel文件导入系统" ondragstart="return false;">从Excel文件导入系统</a>
@@ -68,61 +68,59 @@
                         <td>${communityResident.community.communityName}</td>
                         <td>
                             <a href="${pageContext.request.contextPath}/resident/edit.action?id=${communityResident.communityResidentId}" class="btn btn-default btn-sm operation" role="button" title="修改此记录" ondragstart="return false;">修改</a>
-                            <a href="javascript:;" class="btn btn-danger btn-sm operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除此记录" ondragstart="return false;">删除</a>
+                            <a href="javascript:" class="btn btn-danger btn-sm operation delete-resident" onclick="commonFunction.deleteObject('${pageContext.request.contextPath}/resident/ajax_delete.action', ${communityResident.communityResidentId}, '${_token}')" role="button" title="删除此记录" ondragstart="return false;">删除</a>
                         </td>
                     </tr>
                 </c:forEach>
             </tbody>
         </table>
-        <div id="pagination_parent">
-            <ul class="pagination">
-                <li<c:if test="${pageInfo.isIsFirstPage() eq true}"> class="disabled"</c:if>>
-                    <a href="${pageContext.request.contextPath}/resident/list.action?${queryString}" title="第一页" ondragstart="return false;">&laquo;</a>
-                </li>
-                <c:choose>
-                    <c:when test="${pageInfo.getPages() gt 5}">
-                        <c:choose>
-                            <c:when test="${pageInfo.getPageNum() + 2 gt pageInfo.getPages()}">
-                                <c:set var="i" value="${pageInfo.getPages() - 4}" />
-                                <c:forEach begin="1" end="5" varStatus="status">
-                                    <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                        <a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
-                                    </li>
-                                    <c:set var="i" value="${i + 1}" />
-                                </c:forEach>
-                            </c:when>
-                            <c:when test="${pageInfo.getPageNum() gt 3}">
-                                <c:set var="i" value="${pageInfo.getPageNum() - 2}" />
-                                <c:forEach begin="1" end="5" varStatus="status">
-                                    <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                        <a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
-                                    </li>
-                                    <c:set var="i" value="${i + 1}" />
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach begin="1" end="5" varStatus="status">
-                                    <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                        <a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
-                                    </li>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:when>
-                    <c:otherwise>
-                        <c:forEach begin="1" end="${pageInfo.getPages()}" varStatus="status">
-                            <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
-                                <a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
-                            </li>
-                        </c:forEach>
-                    </c:otherwise>
-                </c:choose>
-                <li<c:if test="${pageInfo.isIsLastPage() eq true}"> class="disabled"</c:if>>
-                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${pageInfo.getPages()}&${queryString}" title="最后一页" ondragstart="return false;">&raquo;</a>
-                </li>
-                <li class="pagination-count">共有${count}条</li>
-            </ul>
-        </div>
+        <ul class="pagination">
+            <li<c:if test="${pageInfo.isIsFirstPage() eq true}"> class="disabled"</c:if>>
+                <a href="${pageContext.request.contextPath}/resident/list.action?${queryString}" title="第一页" ondragstart="return false;">&laquo;</a>
+            </li>
+            <c:choose>
+                <c:when test="${pageInfo.getPages() gt 5}">
+                    <c:choose>
+                        <c:when test="${pageInfo.getPageNum() + 2 gt pageInfo.getPages()}">
+                            <c:set var="i" value="${pageInfo.getPages() - 4}" />
+                            <c:forEach begin="1" end="5" varStatus="status">
+                                <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
+                                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
+                                </li>
+                                <c:set var="i" value="${i + 1}" />
+                            </c:forEach>
+                        </c:when>
+                        <c:when test="${pageInfo.getPageNum() gt 3}">
+                            <c:set var="i" value="${pageInfo.getPageNum() - 2}" />
+                            <c:forEach begin="1" end="5" varStatus="status">
+                                <li<c:if test="${i eq pageInfo.getPageNum()}"> class="active"</c:if>>
+                                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${i}&${queryString}" title="第${i}页" ondragstart="return false;">${i}</a>
+                                </li>
+                                <c:set var="i" value="${i + 1}" />
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach begin="1" end="5" varStatus="status">
+                                <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
+                                    <a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
+                                </li>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
+                </c:when>
+                <c:otherwise>
+                    <c:forEach begin="1" end="${pageInfo.getPages()}" varStatus="status">
+                        <li<c:if test="${status.count eq pageInfo.getPageNum()}"> class="active"</c:if>>
+                            <a href="${pageContext.request.contextPath}/resident/list.action?page=${status.count}&${queryString}" title="第${status.count}页" ondragstart="return false;">${status.count}</a>
+                        </li>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
+            <li<c:if test="${pageInfo.isIsLastPage() eq true}"> class="disabled"</c:if>>
+                <a href="${pageContext.request.contextPath}/resident/list.action?page=${pageInfo.getPages()}&${queryString}" title="最后一页" ondragstart="return false;">&raquo;</a>
+            </li>
+            <li class="pagination-count">共有${count}条</li>
+        </ul>
         <!-- 单位模态框 -->
         <div class="modal fade bs-example-modal-sm" id="search_company_modal" tabindex="-1" role="dialog" aria-labelledby="search_company_modal_label">
             <div class="modal-dialog modal-sm" role="document">
@@ -167,8 +165,7 @@
             </div>
         </div>
         <script type="text/javascript">
-            require(["commonFunction", "resident_list"], function (commonFunction, residentList) {
-                window.commonFunction = commonFunction;
+            require(["resident_list"], function (commonFunction, residentList) {
                 residentList("${pageContext.request.contextPath}/");
             });
         </script>

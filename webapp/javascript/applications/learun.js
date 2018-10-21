@@ -291,12 +291,6 @@
          * 初始化
          */
         init: function () {
-            var documentBody = $(document.body);
-            var mainHeaderHeight = $(".main-header").height();
-            var footerHeight = $(".footer").height();
-            var mainSidebar = $(".main-sidebar");
-            contentMain.height(documentBody.height() - mainHeaderHeight - contentTabs.height() - footerHeight - 5);
-            mainSidebar.height(documentBody.height() - mainHeaderHeight - footerHeight - 5);
             /**
              * 设置导航栏点击事件
              */
@@ -360,13 +354,6 @@
                 $(this).contents().on("click", ".menu-tab", mObject.addTab);
             });
             /**
-             * 窗口变化事件
-             */
-            $(window).on("resize", function (e) {
-                contentMain.height(documentBody.height() - mainHeaderHeight - $(".content-tabs").height() - footerHeight - 5);
-                mainSidebar.height(documentBody.height() - mainHeaderHeight - footerHeight - 5);
-            });
-            /**
              * 展开或者缩小左侧菜单栏
              */
             $(".sidebar-toggle").on("click", function () {
@@ -376,17 +363,18 @@
                 var logo = $(".logo");
                 var navbar = $(".navbar");
                 var body = $("body");
+                var sidebar = $(".sidebar");
                 if (!body.hasClass("sidebar-collapse")) {
                     // 缩小
                     body.addClass("sidebar-collapse");
-                    mainSidebar.removeClass("col-md-2").addClass("col-md-1");
+                    sidebar.removeClass("col-md-2").addClass("col-md-1");
                     contentWrapper.removeClass("col-md-10").addClass("col-md-11");
                     logo.removeClass("col-md-2").addClass("col-md-1");
                     navbar.removeClass("col-md-10").addClass("col-md-11");
                 } else {
                     // 展开
                     body.removeClass("sidebar-collapse");
-                    mainSidebar.removeClass("col-md-1").addClass("col-md-2");
+                    sidebar.removeClass("col-md-1").addClass("col-md-2");
                     contentWrapper.removeClass("col-md-11").addClass("col-md-10");
                     logo.removeClass("col-md-1").addClass("col-md-2");
                     navbar.removeClass("col-md-11").addClass("col-md-10");

@@ -35,7 +35,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     private Pattern communityPattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
 
     @Override
-    public CommunityResident findCommunityResidentAndCommunityById(Integer id) throws Exception {
+    public CommunityResident findCommunityResidentAndCommunityById(Integer id) {
         CommunityResident communityResident = communityResidentsDao.selectCommunityResidentAndCommunityById(id);
         String[] residentPhones = communityResident.getCommunityResidentPhones().split(",");
         switch (residentPhones.length) {
@@ -58,12 +58,12 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public void createCommunityResident(CommunityResident communityResident) throws Exception {
+    public void createCommunityResident(CommunityResident communityResident) {
         communityResidentsDao.insertObject(multiplePhoneHandler(communityResident));
     }
 
     @Override
-    public void updateCommunityResident(CommunityResident communityResident) throws Exception {
+    public void updateCommunityResident(CommunityResident communityResident) {
         communityResidentsDao.updateObject(multiplePhoneHandler(communityResident));
     }
 
@@ -112,11 +112,11 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public int addCommunityResidentFromExcel(Workbook workbook, Integer subdistrictId, Map<String, Object> configurationsMap) throws Exception {
+    public int addCommunityResidentFromExcel(Workbook workbook, Integer subdistrictId, Map<String, Object> configurationsMap) {
         Sheet sheet;
         Row row;
         List<CommunityResident> residents = new ArrayList<>();
-        Integer readExcelStartRowNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("READ_EXCEL_START_ROW_NUMBER"));
+        Integer readExcelStartRowNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("read_excel_start_row_number"));
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             sheet = workbook.getSheetAt(i);
             if (sheet != null) {
@@ -137,7 +137,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Map<String, Object> configurationsMap, Integer pageNum, Integer pageSize) throws Exception {
+    public Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Map<String, Object> configurationsMap, Integer pageNum, Integer pageSize) {
         pageNum = pageNum == null ? 1 : pageNum;
         pageSize = pageSize == null ? 10 : pageSize;
         Integer roleId = systemUser.getRoleId();
@@ -165,17 +165,17 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Integer communityResidentId) throws Exception {
+    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Integer communityResidentId) {
         return communityResidentsDao.selectCommunityResidentByNameAndAddress(nameAddress, communityResidentId);
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Integer communityResidentId) throws Exception {
+    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Integer communityResidentId) {
         return communityResidentsDao.selectCommunityResidentByPhones(phones, communityResidentId);
     }
 
     @Override
-    public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, Integer roleId, Integer roleLocationId) throws Exception {
+    public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, Integer roleId, Integer roleLocationId) {
         List<CommunityResident> communityResidents = null;
         List<Integer> communityIds = new ArrayList<>();
         Integer systemRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_role_id"));
@@ -239,7 +239,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> computedCount(SystemUser systemUser) throws Exception {
+    public Map<String, Object> computedCount(SystemUser systemUser) {
         String roleName = userRolesDao.selectRoleNameById(systemUser.getRoleId());
         Map<String, Object> jsonMap = new HashMap<>(4);
         // 饼图
@@ -407,9 +407,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      * @param communityResident 需要查找的社区居民信息对象
      * @param communities       社区集合
      * @return 单位的统计数量
-     * @throws Exception DAO层异常
      */
-    private Integer getCompany(CommunityResident communityResident, List<Community> communities) throws Exception {
+    private Integer getCompany(CommunityResident communityResident, List<Community> communities) {
         List<Integer> communityIds = new ArrayList<>();
         for (Community community : communities) {
             communityIds.add(community.getCommunityId());

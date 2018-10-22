@@ -166,7 +166,7 @@
             </div>
         </div>
         <script type="text/javascript">
-            require(["resident_list"], function (commonFunction, residentList) {
+            require(["resident_list"], function(residentList) {
                 residentList("${pageContext.request.contextPath}/");
             });
         </script>

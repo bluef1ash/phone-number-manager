@@ -9,7 +9,6 @@ define("resident_list", ["commonFunction", "jquery", "bootstrap", "layui", "ztre
         var companyName = null;
         $(function () {
             _token = $("input[name='_token']");
-            commonFunction.paginationCenter($("#pagination_parent"));
             var importAsSystemModal = $("#import_as_system_modal");
             companyNameHidden = $("input[name='companyName']");
             companyName = $("#company_name");

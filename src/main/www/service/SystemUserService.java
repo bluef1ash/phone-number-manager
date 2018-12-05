@@ -1,11 +1,10 @@
 package www.service;
 
-import java.util.List;
-import java.util.Map;
+import www.entity.SystemUser;
 
 import javax.servlet.http.HttpServletRequest;
-
-import www.entity.SystemUser;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 系统用户业务接口
@@ -45,11 +44,11 @@ public interface SystemUserService extends BaseService<SystemUser> {
      * 查找所有系统用户和关联角色
      *
      * @param pageNo   分页页码
-     * @param pageSize 每页显示的条目数
+     * @param pageDataSize 每页显示的条目数
      * @return 查找到的所有系统用户和关联角色与分页对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findSystemUsersAndRoles(Integer pageNo, Integer pageSize) throws Exception;
+    Map<String, Object> findSystemUsersAndRoles(Integer pageNo, Integer pageDataSize) throws Exception;
 
     /**
      * 通过查找系统用户和关联角色

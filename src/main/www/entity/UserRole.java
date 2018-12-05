@@ -10,17 +10,17 @@ import java.util.Set;
  */
 public class UserRole implements Serializable {
     private static final long serialVersionUID = 1243539279689395722L;
-    private Integer roleId;
+    private Long roleId;
     private String roleName;
     private String roleDescription;
-    private Integer higherRole;
+    private Long higherRole;
     private Set<SystemUser> systemUsers;
     private Set<UserPrivilege> userPrivileges;
 
     public UserRole() {
     }
 
-    public UserRole(Integer roleId, String roleName, String roleDescription, Integer higherRole, Set<SystemUser> systemUsers) {
+    public UserRole(Long roleId, String roleName, String roleDescription, Long higherRole, Set<SystemUser> systemUsers) {
         this.roleId = roleId;
         this.roleName = roleName;
         this.roleDescription = roleDescription;
@@ -28,11 +28,11 @@ public class UserRole implements Serializable {
         this.systemUsers = systemUsers;
     }
 
-    public Integer getRoleId() {
+    public Long getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(Integer roleId) {
+    public void setRoleId(Long roleId) {
         this.roleId = roleId;
     }
 
@@ -52,11 +52,11 @@ public class UserRole implements Serializable {
         this.roleDescription = roleDescription;
     }
 
-    public Integer getHigherRole() {
+    public Long getHigherRole() {
         return higherRole;
     }
 
-    public void setHigherRole(Integer higherRole) {
+    public void setHigherRole(Long higherRole) {
         this.higherRole = higherRole;
     }
 
@@ -74,6 +74,46 @@ public class UserRole implements Serializable {
 
     public void setUserPrivileges(Set<UserPrivilege> userPrivileges) {
         this.userPrivileges = userPrivileges;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        UserRole userRole = (UserRole) o;
+
+        if (roleId != null ? !roleId.equals(userRole.roleId) : userRole.roleId != null) {
+            return false;
+        }
+        if (roleName != null ? !roleName.equals(userRole.roleName) : userRole.roleName != null) {
+            return false;
+        }
+        if (roleDescription != null ? !roleDescription.equals(userRole.roleDescription) : userRole.roleDescription != null) {
+            return false;
+        }
+        if (higherRole != null ? !higherRole.equals(userRole.higherRole) : userRole.higherRole != null) {
+            return false;
+        }
+        if (systemUsers != null ? !systemUsers.equals(userRole.systemUsers) : userRole.systemUsers != null) {
+            return false;
+        }
+        return userPrivileges != null ? userPrivileges.equals(userRole.userPrivileges) : userRole.userPrivileges == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleId != null ? roleId.hashCode() : 0;
+        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        result = 31 * result + (roleDescription != null ? roleDescription.hashCode() : 0);
+        result = 31 * result + (higherRole != null ? higherRole.hashCode() : 0);
+        result = 31 * result + (systemUsers != null ? systemUsers.hashCode() : 0);
+        result = 31 * result + (userPrivileges != null ? userPrivileges.hashCode() : 0);
+        return result;
     }
 
     @Override

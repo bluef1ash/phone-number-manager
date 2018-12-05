@@ -11,6 +11,7 @@ import www.entity.UserPrivilege;
 import www.service.SystemUserService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.*;
@@ -41,14 +42,14 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
         Set<String> privilegeParents = new HashSet<>();
         Map<String, Set<String>> privilegeMap = new HashMap<>(3);
         Set<UserPrivilege> userPrivileges;
-        Integer systemAdministratorId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_administrator_id"));
-        if (user.getSystemUserId().equals(systemAdministratorId)) {
-            userPrivileges = new HashSet<>(userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(0, 1));
+        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        if (systemAdministratorId.equals(user.getSystemUserId())) {
+            userPrivileges = new HashSet<>(userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(0L, 1));
         } else {
             userPrivileges = user.getUserRole().getUserPrivileges();
         }
         for (UserPrivilege userPrivilege : userPrivileges) {
-            Integer higherPrivilegeId = userPrivilege.getHigherPrivilege();
+            Long higherPrivilegeId = userPrivilege.getHigherPrivilege();
             privilegeAuth.add(userPrivilege.getConstraintAuth());
             if (higherPrivilegeId != 0) {
                 UserPrivilege privilege = userPrivilegesDao.selectObjectById(higherPrivilegeId);
@@ -82,8 +83,8 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
     }
 
     @Override
-    public Map<String, Object> findSystemUsersAndRoles(Integer pageNum, Integer pageSize) throws Exception {
-        setPageHelper(pageNum, pageSize);
+    public Map<String, Object> findSystemUsersAndRoles(Integer pageNumber, Integer pageDataSize) throws Exception {
+        setPageHelper(pageNumber, pageDataSize);
         List<SystemUser> data = systemUsersDao.selectSystemUsersAndRolesAll();
         return findObjectsMethod(data);
     }
@@ -124,7 +125,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
         //将盐数据传入消息摘要对象
         md.update(salt);
         //将口令的数据传给消息摘要对象
-        md.update(password.getBytes("UTF-8"));
+        md.update(password.getBytes(StandardCharsets.UTF_8));
         //获得消息摘要的字节数组
         byte[] digest = md.digest();
         //因为要在口令的字节数组中存放盐，所以加上盐的字节长度

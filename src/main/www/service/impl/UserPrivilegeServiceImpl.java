@@ -1,8 +1,8 @@
 package www.service.impl;
 
+import org.springframework.stereotype.Service;
 import www.entity.UserPrivilege;
 import www.service.UserPrivilegeService;
-import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
 import java.util.*;
@@ -23,10 +23,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
     public List<UserPrivilege> findPrivilegesByIsDisplay(Integer isDisplay, HttpSession session) throws Exception {
         @SuppressWarnings("unchecked")
         Set<String> privilegeAuthes = (Set<String>) ((Map<String, Object>) session.getAttribute("privilegeMap")).get("privilegeAuth");
-        Map<String, Object> map = new HashMap<>(3);
-        map.put("isDisplay", isDisplay);
-        map.put("constraintAuthes", privilegeAuthes);
-        List<UserPrivilege> userPrivileges = userPrivilegesDao.selectPrivilegesByIsDisplayAndConstraintAuth(map);
+        List<UserPrivilege> userPrivileges = userPrivilegesDao.selectPrivilegesByIsDisplayAndConstraintAuth(isDisplay, privilegeAuthes);
         //userPrivileges;
         return findPrivilegesAndSubPrivileges(userPrivileges, isDisplay);
     }
@@ -47,8 +44,8 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
      */
     private List<UserPrivilege> findPrivilegesAndSubPrivileges(List<UserPrivilege> userPrivileges, Integer isDisplay) {
         List<UserPrivilege> subUserPrivileges = null;
-        Map<Integer, UserPrivilege> newUserPrivilegesMap = new LinkedHashMap<>();
-        UserPrivilege tempPrivilege = null;
+        Map<Long, UserPrivilege> newUserPrivilegesMap = new LinkedHashMap<>();
+        UserPrivilege tempPrivilege;
         for (UserPrivilege userPrivilege : userPrivileges) {
             if (userPrivilege.getHigherPrivilege() == 0) {
                 // 顶级分类

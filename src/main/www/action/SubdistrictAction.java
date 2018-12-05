@@ -1,31 +1,31 @@
 package www.action;
 
-import java.util.*;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import annotation.RefreshCsrfToken;
+import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
+import exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import annotation.SystemUserAuth;
-import exception.BusinessException;
 import utils.CsrfTokenUtil;
 import www.entity.Subdistrict;
 import www.service.SubdistrictService;
 import www.validator.SubdistrictInputValidator;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 街道控制器
@@ -93,7 +93,7 @@ public class SubdistrictAction {
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
-    public String editSubdistrict(Model model, Integer id) {
+    public String editSubdistrict(Model model, Long id) {
         try {
             Subdistrict subdistrict = subdistrictService.findObject(id);
             model.addAttribute("subdistrict", subdistrict);
@@ -145,7 +145,7 @@ public class SubdistrictAction {
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteSubdistrictForAjax(Integer id) {
+    Map<String, Object> deleteSubdistrictForAjax(Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             subdistrictService.deleteObjectById(id);

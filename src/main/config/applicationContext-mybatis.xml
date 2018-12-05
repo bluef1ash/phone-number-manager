@@ -18,11 +18,11 @@
             <bean class="com.github.pagehelper.PageInterceptor">
                 <property name="properties">
                     <props>
-                        <prop key="offsetAsPageNum">true</prop>
+                        <prop key="offsetAspageNumber">true</prop>
                         <prop key="rowBoundsWithCount">true</prop>
                         <prop key="pageSizeZero">true</prop>
                         <prop key="reasonable">false</prop>
-                        <prop key="params">pageNum=start;pageSize=limit;</prop>
+                        <prop key="params">pageNumber=start;pageSize=limit;</prop>
                         <prop key="returnPageInfo">check</prop>
                     </props>
                 </property>
@@ -31,6 +31,7 @@
         <!--配置扫描式加载SQL映射文件,记得去掉mybatis-config配置 -->
         <property name="mapperLocations"
                   value="classpath:www/dao/*Mapper.xml"/>
+        <property name="configLocation" value="classpath:config/mybatis-config.xml"/>
     </bean>
     <!-- 配置事务管理器,管理数据源事务处理 -->
     <bean id="transactionManager"

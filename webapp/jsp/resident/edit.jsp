@@ -13,58 +13,68 @@
                 </div>
             </c:forEach>
         </c:if>
-        <form action="${pageContext.request.contextPath}/resident/handle" method="post" name="community_resident">
+        <form action="${pageContext.request.contextPath}/resident/handle" method="post" id="resident" v-cloak @submit="submit">
 			<table class="table table-bordered font-size-14">
 				<thead>
 				</thead>
 				<tbody>
-					<tr>
+                    <tr :class="{'has-error': hasErrors[0]}">
 						<td class="text-right" style="width: 35%;">社区居民姓名</td>
 						<td>
-							<input type="text" name="communityResidentName" class="form-control" placeholder="请输入社区居民姓名" value="${communityResident.communityResidentName}">
+                            <input type="text" name="communityResidentName" v-model="communityResidentName" class="form-control" placeholder="请输入社区居民姓名" value="${communityResident.communityResidentName}">
 						</td>
 					</tr>
-					<tr>
-						<td class="text-right">社区居民家庭地址</td>
-						<td>
-							<input type="text" name="communityResidentAddress" class="form-control" placeholder="请输入社区居民家庭地址" value="${communityResident.communityResidentAddress}">
+                    <tr :class="{'has-error': hasErrors[1]}">
+                        <td class="text-right">社区居民家庭地址</td>
+                        <td>
+                            <input type="text" name="communityResidentAddress" v-model="communityResidentAddress" class="form-control" placeholder="请输入社区居民家庭地址" value="${communityResident.communityResidentAddress}">
+                        </td>
+                    </tr>
+                    <tr :class="{'has-error': hasErrors[2]}">
+                        <td class="text-right">社区居民联系方式一</td>
+                        <td>
+                            <input type="text" name="communityResidentPhone1" v-model="communityResidentPhone1" class="form-control" placeholder="请输入社区居民联系方式一" value="${communityResident.communityResidentPhone1}">
 						</td>
 					</tr>
-					<tr>
-						<td class="text-right">社区居民联系方式一</td>
-						<td>
-							<input type="text" name="communityResidentPhone1" class="form-control" placeholder="请输入社区居民联系方式一" value="${communityResident.communityResidentPhone1}">
-						</td>
-					</tr>
-					<tr>
+                    <tr :class="{'has-error': hasErrors[3]}">
 						<td class="text-right">社区居民联系方式二</td>
 						<td>
-							<input type="text" name="communityResidentPhone2" class="form-control" placeholder="请输入社区居民联系方式二" value="${communityResident.communityResidentPhone2}">
+                            <input type="text" name="communityResidentPhone2" v-model="communityResidentPhone2" class="form-control" placeholder="请输入社区居民联系方式二" value="${communityResident.communityResidentPhone2}">
 						</td>
 					</tr>
-					<tr>
+                    <tr :class="{'has-error': hasErrors[4]}">
 						<td class="text-right">社区居民联系方式三</td>
 						<td>
-							<input type="text" name="communityResidentPhone3" class="form-control" placeholder="请输入社区居民联系方式三" value="${communityResident.communityResidentPhone3}">
+                            <input type="text" name="communityResidentPhone3" v-model="communityResidentPhone3" class="form-control" placeholder="请输入社区居民联系方式三" value="${communityResident.communityResidentPhone3}">
 						</td>
 					</tr>
-					<tr>
-						<td class="text-right">社区分包人</td>
+                    <tr :class="{'has-error': hasErrors[5]}">
+                        <td class="text-right">所属街道</td>
 						<td>
-							<input type="text" name="communityResidentSubcontractor" class="form-control" placeholder="请输入社区分包人" value="${communityResident.communityResidentSubcontractor}">
+                            <select name="subdistrictId" class="form-control" v-model="subdistrictId" @change="chooseSubdistrict">
+                                <option :value="0">请选择</option>
+                                <option :value="subdistrict.subdistrictId" v-for="(subdistrict, index) in subdistricts" :key="subdistrict.subdistrictId">{{subdistrict.subdistrictName}}</option>
+                            </select>
 						</td>
 					</tr>
-					<tr>
+                    <tr :class="{'has-error': hasErrors[6]}">
 						<td class="text-right">所属社区</td>
 						<td>
-							<select name="communityId" class="form-control" autocomplete="off">
-								<option value="0">请选择</option>
-								<c:forEach items="${communities}" var="community">
-									<option value="${community.communityId}"<c:if test="${community.communityId eq communityResident.communityId}"> selected</c:if>>${community.communityName}</option>
-								</c:forEach>
-							</select>
-						</td>
-					</tr>
+                            <select name="communityId" class="form-control" v-model="communityId" @change="chooseSubcontractor">
+                                <option :value="0">请选择</option>
+                                <option :value="community.communityId" v-for="(community, index) in newCommunities" :key="community.communityId">{{community.communityName}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr :class="{'has-error': hasErrors[7]}">
+                        <td class="text-right">社区分包人</td>
+                        <td>
+                            <select name="subcontractorId" class="form-control" v-model="subcontractorId">
+                                <option :value="0">请选择</option>
+                                <option :value="subcontractor.id" v-for="(subcontractor, index) in newSubcontractors" :key="subcontractor.id">{{subcontractor.name}}</option>
+                            </select>
+                        </td>
+                    </tr>
 					<tr>
 						<td colspan="2" class="text-center">
                             <c:if test="${communityResident.communityResidentId != null}">
@@ -81,7 +91,9 @@
 			</table>
 		</form>
         <script type="text/javascript">
-            require(["check_resident_input", "bootstrap"], function (check_resident_input) {check_resident_input();});
+            require(["check_resident_input"], function(check_resident_input) {
+                check_resident_input(${empty communityResident ? "null" : communityResident}, ${communities}, ${subcontractors})
+            });
         </script>
 	</body>
 </html>

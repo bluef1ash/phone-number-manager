@@ -1,17 +1,18 @@
 package www.validator;
 
 import exception.BusinessException;
-import utils.CommonUtil;
-import utils.StringCheckedRegexUtil;
-import www.entity.CommunityResident;
-import www.service.CommunityResidentService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
+import utils.CommonUtil;
+import utils.StringCheckedRegexUtil;
+import www.entity.CommunityResident;
+import www.service.CommunityResidentService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 社区居民添加/更新验证
@@ -36,7 +37,7 @@ public class CommunityResidentInputValidator extends BaseInputValidator implemen
         try {
             ValidationUtils.rejectIfEmpty(errors, "communityResidentName", "communityResident.communityResidentName.required", "社区居民姓名不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "communityResidentAddress", "communityResident.communityResidentAddress.required", "社区居民地址不能为空！");
-            ValidationUtils.rejectIfEmpty(errors, "communityResidentSubcontractor", "communityResident.communityResidentSubcontractor.required", "社区分包人不能为空！");
+            ValidationUtils.rejectIfEmpty(errors, "subcontractorId", "communityResident.subcontractorId.required", "社区分包人不能为空！");
             CommunityResident communityResident = (CommunityResident) target;
             String communityResidentName = CommonUtil.replaceBlank(communityResident.getCommunityResidentName()).replaceAll("—", "-");
             if (communityResidentName.length() > 10) {
@@ -48,12 +49,11 @@ public class CommunityResidentInputValidator extends BaseInputValidator implemen
                 message = "社区居民地址不能超过255个字符！";
                 return false;
             }
-            String subcontractor = CommonUtil.replaceBlank(communityResident.getCommunityResidentSubcontractor());
-            if (subcontractor.length() > 10) {
-                message = "社区分包人不能超过10个字符！";
+            if (communityResident.getSubcontractorId() == null || communityResident.getSubcontractorId() == 0) {
+                message = "未选择社区分包人！";
                 return false;
             }
-            Integer communityResidentId = communityResident.getCommunityResidentId();
+            Long communityResidentId = communityResident.getCommunityResidentId();
             // 验证姓名+地址重复
             String nameAddress = communityResidentName + communityResidentAddress;
             List<CommunityResident> isNameAndAddressRepeat = communityResidentService.findCommunityResidentByNameAndAddress(nameAddress, communityResidentId);

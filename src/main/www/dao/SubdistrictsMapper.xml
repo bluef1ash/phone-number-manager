@@ -15,18 +15,18 @@
         <collection property="communities" column="subdistrict_id"
                     resultMap="www.dao.CommunitiesDao.communityAliasResultMap"/>
     </resultMap>
-    <insert id="insertObject" parameterType="Subdistrict">
+    <insert id="insertObject">
         INSERT INTO `pm_subdistricts` (`name`, `telephone`) VALUES (#{subdistrictName}, #{subdistrictTelephone})
     </insert>
-    <delete id="deleteObjectById" parameterType="integer">
+    <delete id="deleteObjectById">
         DELETE FROM `pm_subdistricts`
         WHERE `subdistrict_id` = #{subdistrictId}
     </delete>
-    <delete id="deleteObjectsByName" parameterType="string">
+    <delete id="deleteObjectsByName">
         DELETE FROM `pm_subdistricts`
         WHERE `name` = #{subdistrictName}
     </delete>
-    <update id="updateObject" parameterType="Subdistrict">
+    <update id="updateObject">
         UPDATE `pm_subdistricts`
         <set>
             <if test="subdistrictId != null">
@@ -49,7 +49,7 @@
         FROM `pm_subdistricts`
         ORDER BY `subdistrict_id`
     </select>
-    <select id="selectObjectById" parameterType="integer" resultMap="subdistrictResultMap">
+    <select id="selectObjectById" resultMap="subdistrictResultMap">
         SELECT
             `subdistrict_id`,
             `name`,
@@ -57,7 +57,7 @@
         FROM `pm_subdistricts`
         WHERE `subdistrict_id` = #{subdistrictId}
     </select>
-    <select id="selectObjectsByName" parameterType="string" resultMap="subdistrictResultMap">
+    <select id="selectObjectsByName" resultMap="subdistrictResultMap">
         SELECT
             `subdistrict_id`,
             `name`,

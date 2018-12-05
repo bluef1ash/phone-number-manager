@@ -2,7 +2,6 @@ package www.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
-
 import utils.CommonUtil;
 import www.entity.Community;
 import www.entity.SystemUser;
@@ -20,15 +19,15 @@ import java.util.Map;
 @Service("communityService")
 public class CommunityServiceImpl extends BaseServiceImpl<Community> implements CommunityService {
     @Override
-    public Community findCommunityAndSubdistrictById(Integer communityId) throws Exception {
+    public Community findCommunityAndSubdistrictById(Long communityId) throws Exception {
         return communitiesDao.selectCommunityAndSubdistrictById(communityId);
     }
 
     @Override
-    public Map<String, Object> findCommunitiesAndSubdistrict(Integer pageNum, Integer pageSize) throws Exception {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
-        PageHelper.startPage(pageNum, pageSize);
+    public Map<String, Object> findCommunitiesAndSubdistrict(Integer pageNumber, Integer pageDataSize) throws Exception {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+        PageHelper.startPage(pageNumber, pageDataSize);
         List<Community> data = communitiesDao.selectCommunitiesAndSubdistrictAll();
         return findObjectsMethod(data);
     }
@@ -40,18 +39,17 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
 
     @Override
     public List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Map<String, Object> configurationsMap) throws Exception {
-        Integer roleId = systemUser.getRoleId();
         List<Community> communities;
-        Integer communityRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_role_id"));
-        Integer subdistrictRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_role_id"));
-        if (roleId.equals(communityRoleId)) {
+        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
+        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
+        if (systemUser.getRoleId().equals(communityRoleId)) {
             communities = new ArrayList<>();
-            Community community = communitiesDao.selectObjectById(systemUser.getRoleLocationId());
+            Community community = communitiesDao.selectCommunityCorrelationById(systemUser.getRoleLocationId());
             communities.add(community);
-        } else if (roleId.equals(subdistrictRoleId)) {
+        } else if (systemUser.getRoleId().equals(subdistrictRoleId)) {
             communities = communitiesDao.selectCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
         } else {
-            communities = communitiesDao.selectObjectsAll();
+            communities = communitiesDao.selectCommunitiesCorrelationSubdistrictsAll();
         }
         return communities;
     }

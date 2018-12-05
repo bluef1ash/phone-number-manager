@@ -1,9 +1,9 @@
 package www.dao;
 
-import java.util.List;
-
 import org.springframework.dao.DataAccessException;
 import www.entity.UserRole;
+
+import java.util.List;
 
 /**
  * 用户角色DAO接口
@@ -43,5 +43,5 @@ public interface UserRolesDao extends BaseDao<UserRole> {
      * @return 系统角色名称
      * @throws DataAccessException 数据库操作异常
      */
-    String selectRoleNameById(Integer roleId) throws DataAccessException;
+    String selectRoleNameById(Long roleId) throws DataAccessException;
 }

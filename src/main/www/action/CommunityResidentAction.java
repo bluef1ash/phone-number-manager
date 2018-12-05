@@ -1,20 +1,12 @@
 package www.action;
 
-import java.io.InputStream;
-import java.util.*;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import annotation.RefreshCsrfToken;
+import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import utils.CommonUtil;
-import utils.CsrfTokenUtil;
-import www.entity.*;
-import www.service.SubdistrictService;
-import www.validator.CommunityResidentInputValidator;
+import exception.BusinessException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,15 +15,28 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import annotation.SystemUserAuth;
-import exception.BusinessException;
-import www.service.CommunityResidentService;
-import www.service.CommunityService;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import utils.CommonUtil;
+import utils.CsrfTokenUtil;
 import utils.ExcelUtil;
+import www.entity.*;
+import www.service.CommunityResidentService;
+import www.service.CommunityService;
+import www.service.SubcontractorService;
+import www.service.SubdistrictService;
+import www.validator.CommunityResidentInputValidator;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * 社区居民控制器
@@ -48,6 +53,8 @@ public class CommunityResidentAction {
     private CommunityService communityService;
     @Resource
     private SubdistrictService subdistrictService;
+    @Resource
+    private SubcontractorService subcontractorService;
     private final HttpServletRequest request;
 
     @Autowired
@@ -66,7 +73,7 @@ public class CommunityResidentAction {
     /**
      * 社区居民列表
      *
-     * @param session        session对象
+     * @param session            session对象
      * @param httpServletRequest HTTP请求对象
      * @param model              前台模型
      * @param page               分页对象
@@ -78,13 +85,12 @@ public class CommunityResidentAction {
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String communityResidentList(HttpSession session, HttpServletRequest httpServletRequest, Model model, Integer page, CommunityResident communityResident, Integer companyId, Integer companyRid, String companyName) {
+    public String communityResidentList(HttpSession session, HttpServletRequest httpServletRequest, Model model, Integer page, CommunityResident communityResident, Long companyId, Long companyRid, String companyName) {
         try {
             Map<String, Object> communityResidentMap;
             String queryString = httpServletRequest.getQueryString();
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             if (queryString == null || !queryString.contains("communityResidentName")) {
                 communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(systemUser, configurationsMap, page, null);
             } else {
@@ -92,8 +98,7 @@ public class CommunityResidentAction {
                 communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(systemUser, configurationsMap, communityResident, companyId, companyRid, page, null);
                 model.addAttribute("communityResident", communityResident);
             }
-            @SuppressWarnings("unchecked")
-            Map<String, Object> dataAndPagination = (Map<String, Object>) communityResidentMap.get("dataAndPagination");
+            @SuppressWarnings("unchecked") Map<String, Object> dataAndPagination = (Map<String, Object>) communityResidentMap.get("dataAndPagination");
             model.addAttribute("communityResidents", dataAndPagination.get("data"));
             model.addAttribute("pageInfo", dataAndPagination.get("pageInfo"));
             model.addAttribute("count", communityResidentMap.get("count"));
@@ -116,12 +121,13 @@ public class CommunityResidentAction {
     @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String createCommunityResident(HttpSession session, Model model) {
+        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
         try {
-            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
-            model.addAttribute("communities", communities);
+            List<Subcontractor> subcontractors = subcontractorService.findSubcontractors(systemUser.getRoleId(), systemUser.getRoleLocationId(), configurationsMap);
+            model.addAttribute("communities", JSON.toJSON(communities));
+            model.addAttribute("subcontractors", JSON.toJSON(subcontractors));
             return "resident/edit";
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,12 +146,11 @@ public class CommunityResidentAction {
     @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public String editCommunityResident(HttpSession session, Model model, Integer id) {
+        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
         try {
             CommunityResident communityResident = communityResidentService.findCommunityResidentAndCommunityById(id);
             model.addAttribute("communityResident", communityResident);
-            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
             model.addAttribute("communities", communities);
             return "resident/edit";
@@ -208,10 +213,10 @@ public class CommunityResidentAction {
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteCommunityResidentForAjax(HttpSession session, String id) {
+    Map<String, Object> deleteCommunityResidentForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(4);
         try {
-            communityResidentService.deleteObjectById(Integer.parseInt(id));
+            communityResidentService.deleteObjectById(id);
             map.put("state", 1);
             map.put("message", "删除社区居民成功！");
         } catch (Exception e) {
@@ -235,21 +240,24 @@ public class CommunityResidentAction {
     @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> communityResidentImportAsSystem(HttpServletRequest httpServletRequest, HttpSession session, Integer subdistrictId) {
+    Map<String, Object> communityResidentImportAsSystem(HttpServletRequest httpServletRequest, HttpSession session, Long subdistrictId) {
         Map<String, Object> map = new HashMap<>(4);
         try {
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) httpServletRequest;
             MultipartFile file = multipartRequest.getFile("file");
-            if (file.isEmpty()) {
+            if (file == null || file.isEmpty()) {
                 throw new BusinessException("文件不存在！");
             }
             InputStream inputStream = file.getInputStream();
-            Workbook workbook = ExcelUtil.getWorkbook(inputStream, file.getOriginalFilename());
+            String filename = file.getOriginalFilename();
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            if (StringUtils.isEmpty(filename)) {
+                filename = CommonUtil.convertConfigurationString(configurationsMap.get("excel_title"));
+            }
+            Workbook workbook = ExcelUtil.getWorkbook(inputStream, filename);
             if (workbook == null) {
                 throw new Exception("创建Excel工作薄为空！");
             }
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             int state = communityResidentService.addCommunityResidentFromExcel(workbook, subdistrictId, configurationsMap);
             map.put("state", state);
         } catch (Exception e) {
@@ -270,8 +278,7 @@ public class CommunityResidentAction {
     public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response) {
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             // 获取业务数据集
             JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(configurationsMap, systemUser.getRoleId(), systemUser.getRoleLocationId());
             //获取属性-列头
@@ -297,14 +304,13 @@ public class CommunityResidentAction {
         Map<String, Object> map = new HashMap<>(3);
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            Integer roleId = systemUser.getUserRole().getRoleId();
-            Integer roleLocationId = systemUser.getRoleLocationId();
+            Long roleId = systemUser.getUserRole().getRoleId();
+            Long roleLocationId = systemUser.getRoleLocationId();
             Set<Subdistrict> subdistricts = subdistrictService.findCommunitiesAndSubdistrictsByRole(roleId, roleLocationId);
             Set<TreeMenu> treeMenus = new HashSet<>();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-            Integer subdistrictRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_role_id"));
-            Integer communityRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_role_id"));
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
+            Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
             // 街道循环
             for (Subdistrict subdistrict : subdistricts) {
                 TreeMenu treeMenu = new TreeMenu();

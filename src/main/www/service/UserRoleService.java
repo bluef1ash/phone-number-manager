@@ -1,9 +1,9 @@
 package www.service;
 
+import www.entity.UserRole;
+
 import java.util.List;
 import java.util.Map;
-
-import www.entity.UserRole;
 
 /**
  * 系统用户角色业务接口
@@ -14,22 +14,22 @@ public interface UserRoleService extends BaseService<UserRole> {
     /**
      * 查找所有角色与所属系统用户（包含分页）
      *
-     * @param pageNum  分页页码
-     * @param pageSize 每页显示的条目数
+     * @param pageNumber  分页页码
+     * @param pageDataSize 每页显示的条目数
      * @return 查找到的所有角色与所属系统用户与分页对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findRolesAndSystemUsersAll(Integer pageNum, Integer pageSize) throws Exception;
+    Map<String, Object> findRolesAndSystemUsersAll(Integer pageNumber, Integer pageDataSize) throws Exception;
 
     /**
      * 查找所有角色与所属权限（包含分页）
      *
-     * @param pageNum  分页页码
-     * @param pageSize 每页显示的条目数
+     * @param pageNumber  分页页码
+     * @param pageDataSize 每页显示的条目数
      * @return 查找到的所有角色与所属系统权限与分页对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findRolesAndPrivileges(Integer pageNum, Integer pageSize) throws Exception;
+    Map<String, Object> findRolesAndPrivileges(Integer pageNumber, Integer pageDataSize) throws Exception;
 
     /**
      * 通过角色ID查找角色与所属权限

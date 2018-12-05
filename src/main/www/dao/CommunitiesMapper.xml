@@ -16,15 +16,17 @@
                      resultMap="www.dao.SubdistrictsDao.subdistrictAliasResultMap"/>
     </resultMap>
     <insert id="insertObject">
-        INSERT INTO `pm_communities` (`name`, `telephone`, `actual_number`, `subdistrict_id`)
+        INSERT INTO `pm_communities`(`name`, `telephone`, `actual_number`, `subdistrict_id`)
         VALUES (#{communityName}, #{communityTelephone}, #{actualNumber}, #{subdistrictId})
     </insert>
     <delete id="deleteObjectById">
-        DELETE FROM `pm_communities`
+        DELETE
+        FROM `pm_communities`
         WHERE `community_id` = #{communityId}
     </delete>
     <delete id="deleteObjectsByName">
-        DELETE FROM `pm_communities`
+        DELETE
+        FROM `pm_communities`
         WHERE `name` = #{communityName}
     </delete>
     <update id="updateObject">
@@ -46,114 +48,103 @@
         WHERE `community_id` = #{communityId}
     </update>
     <select id="selectObjectsAll" resultMap="communityResultMap">
-        SELECT
-            `community_id`,
+        SELECT `community_id`,
             `name`,
             `telephone`,
             `subdistrict_id`
         FROM `pm_communities`
     </select>
     <select id="selectObjectById" resultMap="communityResultMap">
-        SELECT
-            `community_id`,
+        SELECT `community_id`,
             `name`,
             `telephone`
         FROM `pm_communities`
         WHERE `community_id` = #{communityId}
     </select>
     <select id="selectObjectsByName" resultMap="communityResultMap">
-        SELECT
-            `community_id`,
+        SELECT `community_id`,
             `name`,
             `telephone`
         FROM `pm_communities`
         WHERE `name` = #{communityName}
     </select>
     <select id="selectCommunitiesAndSubdistrictAll" resultMap="communitiesCorrelationSubdistrictResultMap">
-        SELECT
-            `pm_communities`.`community_id`,
+        SELECT `pm_communities`.`community_id`,
             `pm_communities`.`name`,
             `pm_communities`.`telephone`,
             `pm_communities`.`subdistrict_id`,
             `pm_subdistricts`.`name` AS 'subdistrict_name'
         FROM `pm_communities`
-            LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+                 LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
         ORDER BY CONVERT(`pm_communities`.`name` USING gbk) ASC
     </select>
-    <select id="selectCommunityAndSubdistrictById" parameterType="integer"
-            resultMap="communitiesCorrelationSubdistrictResultMap">
-        SELECT
-            `pm_communities`.`community_id`,
+    <select id="selectCommunityAndSubdistrictById" resultMap="communitiesCorrelationSubdistrictResultMap">
+        SELECT `pm_communities`.`community_id`,
             `pm_communities`.`name`,
             `pm_communities`.`telephone`,
             `pm_communities`.`actual_number`,
             `pm_communities`.`subdistrict_id`,
-            `pm_subdistricts`.`name`      AS 'subdistrict_name',
+            `pm_subdistricts`.`name` AS 'subdistrict_name',
             `pm_subdistricts`.`telephone` AS 'subdistrict_telephone'
         FROM `pm_communities`
-            LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+                 LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
         WHERE `pm_communities`.`community_id` = #{communityId}
     </select>
-    <select id="selectCommunitiesBySubdistrictId" resultMap="communityResultMap">
-        SELECT `community_id`
+    <select id="selectCommunitiesBySubdistrictId" resultMap="communitiesCorrelationSubdistrictResultMap">
+        SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_subdistricts`.subdistrict_id,
+            `pm_subdistricts`.`name` AS 'subdistrict_name'
         FROM `pm_communities`
-        WHERE `subdistrict_id` = #{subdistrict_id}
+                 LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrict_id}
     </select>
-    <select id="selectCommunityIdByCommunityName" resultType="java.lang.Integer">
+    <select id="selectCommunityIdByCommunityName" resultType="long">
         SELECT `community_id`
         FROM `pm_communities`
         WHERE `name` LIKE CONCAT('%', #{communityName}, '%')
     </select>
     <select id="selectCommunitiesBySubdistrictName" resultMap="communitiesCorrelationSubdistrictResultMap">
-        SELECT
-            `pm_communities`.`community_id`,
+        SELECT `pm_communities`.`community_id`,
             `pm_communities`.`name`,
             `pm_communities`.`subdistrict_id`,
             `pm_subdistricts`.`name` AS 'subdistrict_name'
         FROM `pm_communities`
-            LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+                 LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
         WHERE `pm_subdistricts`.`name` = #{subdistrictName}
     </select>
-    <select id="selectActualNumberByCommunityId" resultType="java.lang.Integer">
+    <select id="selectActualNumberByCommunityId" resultType="int">
         SELECT `actual_number`
         FROM `pm_communities`
         WHERE `community_id` = #{communityId}
     </select>
-    <select id="sumActualNumberBySubdistrictId" resultType="java.lang.Integer">
+    <select id="sumActualNumberBySubdistrictId" resultType="int">
         SELECT SUM(`pm_communities`.`actual_number`)
-        FROM
-            `pm_communities`
-            LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
-        WHERE
-            `pm_subdistricts`.`subdistrict_id` = #{subdistrictId}
+        FROM `pm_communities`
+                 LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+        WHERE `pm_subdistricts`.`subdistrict_id` = #{subdistrictId}
     </select>
-    <select id="sumActualNumber" resultType="java.lang.Integer">
+    <select id="sumActualNumber" resultType="long">
         SELECT SUM(`actual_number`)
         FROM `pm_communities`
     </select>
     <select id="countCommunitiesBySubdistrictId" resultMap="communityResultMap">
-        SELECT
-            `pm_communities`.`name`,
+        SELECT `pm_communities`.`name`,
             COUNT(`pm_community_residents`.`community_resident_id`) AS 'actual_number'
-        FROM
-            `pm_communities`
-            LEFT JOIN `pm_community_residents` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
-        WHERE
-            `pm_communities`.`subdistrict_id` = #{subdistrictId}
-        GROUP BY
-            `pm_communities`.`name`;
+        FROM `pm_communities`
+                 LEFT JOIN `pm_community_residents`
+            ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
+        GROUP BY `pm_communities`.`name`;
     </select>
     <select id="selectObjectsForIdAndName" resultMap="communityResultMap">
-        SELECT
-            `community_id`,
+        SELECT `community_id`,
             `name`
         FROM `pm_communities`
     </select>
     <select id="selectObjectsByObject" resultMap="communityResultMap">
         SELECT
-            `community_id`,
-            `name`,
-            `telephone`
+        `community_id`,
+        `name`,
+        `telephone`
         FROM `pm_communities`
         <where>
             <choose>
@@ -168,5 +159,18 @@
                 </when>
             </choose>
         </where>
+    </select>
+    <select id="selectCommunitiesCorrelationSubdistrictsAll" resultMap="communitiesCorrelationSubdistrictResultMap">
+        SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_subdistricts`.`subdistrict_id`,
+            `pm_subdistricts`.`name` AS 'subdistrict_name'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+    </select>
+    <select id="selectCommunityCorrelationById" resultMap="communitiesCorrelationSubdistrictResultMap">
+        SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_subdistricts`.`subdistrict_id`,
+            `pm_subdistricts`.`name` AS 'subdistrict_name'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+        WHERE `pm_communities`.`community_id` = #{communityId}
     </select>
 </mapper>

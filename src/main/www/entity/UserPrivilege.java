@@ -10,11 +10,11 @@ import java.util.List;
  */
 public class UserPrivilege implements Serializable {
     private static final long serialVersionUID = 4308123257401857501L;
-    private Integer privilegeId;
+    private Long privilegeId;
     private String privilegeName;
     private String constraintAuth;
     private String uri;
-    private Integer higherPrivilege;
+    private Long higherPrivilege;
     private String iconName;
     private Integer orders = 0;
     private Integer isDisplay;
@@ -24,8 +24,7 @@ public class UserPrivilege implements Serializable {
     public UserPrivilege() {
     }
 
-    public UserPrivilege(Integer privilegeId, String privilegeName, String constraintAuth,
-                         String uri, Integer higherPrivilege, String iconName, Integer orders, Integer isDisplay, List<UserRole> userRoles, List<UserPrivilege> subUserPrivileges) {
+    public UserPrivilege(Long privilegeId, String privilegeName, String constraintAuth, String uri, Long higherPrivilege, String iconName, Integer orders, Integer isDisplay, List<UserRole> userRoles, List<UserPrivilege> subUserPrivileges) {
         this.privilegeId = privilegeId;
         this.privilegeName = privilegeName;
         this.constraintAuth = constraintAuth;
@@ -38,11 +37,11 @@ public class UserPrivilege implements Serializable {
         this.subUserPrivileges = subUserPrivileges;
     }
 
-    public Integer getPrivilegeId() {
+    public Long getPrivilegeId() {
         return privilegeId;
     }
 
-    public void setPrivilegeId(Integer privilegeId) {
+    public void setPrivilegeId(Long privilegeId) {
         this.privilegeId = privilegeId;
     }
 
@@ -70,11 +69,11 @@ public class UserPrivilege implements Serializable {
         this.uri = uri;
     }
 
-    public Integer getHigherPrivilege() {
+    public Long getHigherPrivilege() {
         return higherPrivilege;
     }
 
-    public void setHigherPrivilege(Integer higherPrivilege) {
+    public void setHigherPrivilege(Long higherPrivilege) {
         this.higherPrivilege = higherPrivilege;
     }
 
@@ -119,15 +118,6 @@ public class UserPrivilege implements Serializable {
     }
 
     @Override
-    public String toString() {
-        return "UserPrivilege [privilegeId=" + privilegeId + ", privilegeName=" + privilegeName
-            + ", constraintAuth=" + constraintAuth + ", uri="
-            + uri + ", higherPrivilege=" + higherPrivilege + ", iconName=" + iconName + ", orders=" + orders
-            + ", isDisplay=" + isDisplay + ", userRoles=" + userRoles + ", subUserPrivileges=" + subUserPrivileges
-            + "]";
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -138,7 +128,34 @@ public class UserPrivilege implements Serializable {
 
         UserPrivilege that = (UserPrivilege) o;
 
-        return (privilegeId != null ? privilegeId.equals(that.privilegeId) : that.privilegeId == null) && (privilegeName != null ? privilegeName.equals(that.privilegeName) : that.privilegeName == null) && (constraintAuth != null ? constraintAuth.equals(that.constraintAuth) : that.constraintAuth == null) && (uri != null ? uri.equals(that.uri) : that.uri == null) && (higherPrivilege != null ? higherPrivilege.equals(that.higherPrivilege) : that.higherPrivilege == null) && (iconName != null ? iconName.equals(that.iconName) : that.iconName == null) && (orders != null ? orders.equals(that.orders) : that.orders == null) && (isDisplay != null ? isDisplay.equals(that.isDisplay) : that.isDisplay == null) && (userRoles != null ? userRoles.equals(that.userRoles) : that.userRoles == null) && (subUserPrivileges != null ? subUserPrivileges.equals(that.subUserPrivileges) : that.subUserPrivileges == null);
+        if (privilegeId != null ? !privilegeId.equals(that.privilegeId) : that.privilegeId != null) {
+            return false;
+        }
+        if (privilegeName != null ? !privilegeName.equals(that.privilegeName) : that.privilegeName != null) {
+            return false;
+        }
+        if (constraintAuth != null ? !constraintAuth.equals(that.constraintAuth) : that.constraintAuth != null) {
+            return false;
+        }
+        if (uri != null ? !uri.equals(that.uri) : that.uri != null) {
+            return false;
+        }
+        if (higherPrivilege != null ? !higherPrivilege.equals(that.higherPrivilege) : that.higherPrivilege != null) {
+            return false;
+        }
+        if (iconName != null ? !iconName.equals(that.iconName) : that.iconName != null) {
+            return false;
+        }
+        if (orders != null ? !orders.equals(that.orders) : that.orders != null) {
+            return false;
+        }
+        if (isDisplay != null ? !isDisplay.equals(that.isDisplay) : that.isDisplay != null) {
+            return false;
+        }
+        if (userRoles != null ? !userRoles.equals(that.userRoles) : that.userRoles != null) {
+            return false;
+        }
+        return subUserPrivileges != null ? subUserPrivileges.equals(that.subUserPrivileges) : that.subUserPrivileges == null;
     }
 
     @Override
@@ -154,5 +171,10 @@ public class UserPrivilege implements Serializable {
         result = 31 * result + (userRoles != null ? userRoles.hashCode() : 0);
         result = 31 * result + (subUserPrivileges != null ? subUserPrivileges.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "UserPrivilege [privilegeId=" + privilegeId + ", privilegeName=" + privilegeName + ", constraintAuth=" + constraintAuth + ", uri=" + uri + ", higherPrivilege=" + higherPrivilege + ", iconName=" + iconName + ", orders=" + orders + ", isDisplay=" + isDisplay + ", userRoles=" + userRoles + ", subUserPrivileges=" + subUserPrivileges + "]";
     }
 }

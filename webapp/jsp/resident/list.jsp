@@ -13,7 +13,7 @@
         </div>
         <div class="resident-excel">
             <a href="" class="btn btn-warning margin-br-10" data-toggle="modal" data-target="#import_as_system_modal" role="button" title="从Excel文件导入系统" ondragstart="return false;">从Excel文件导入系统</a>
-            <a href="${pageContext.request.contextPath}/resident/save_as_excel" class="btn btn-default margin-br-10" role="button" title="导出到Excel" ondragstart="return false;">导出到Excel</a>
+            <a href="${pageContext.request.contextPath}/resident/save_as_excel" class="btn btn-default margin-br-10" role="button" title="导出到Excel" id="save_excel" ondragstart="return false;">导出到Excel</a>
             <a href="${pageContext.request.contextPath}/resident/create" class="btn btn-primary margin-br-10 menu-tab" role="button" title="添加社区居民" ondragstart="return false;">添加社区居民</a>
         </div>
         <div class="query-input">
@@ -148,18 +148,12 @@
                         <h4 class="modal-title" id="import_as_system_modal_label">选择导入的街道</h4>
                     </div>
                     <div class="modal-body">
-                        <form class="form-horizontal" action="#" method="get" onsubmit="return false;">
-                            <div class="form-group">
-                                <div class="col-sm-8">
-                                    <select class="form-control" id="subdistrict_id">
-                                        <option value="0">请选择</option>
-                                    </select>
-                                </div>
-                                <div class="col-sm-4">
-                                    <button class="btn btn-primary" id="import_as_system_file">选择文件</button>
-                                    <button id="confirm_upload"></button>
-                                </div>
-                            </div>
+                        <form class="form-inline" action="#" method="get" onsubmit="return false;">
+                            <select class="form-control" id="subdistrict_id">
+                                <option value="0">请选择</option>
+                            </select>
+                            <button class="btn btn-primary" id="import_as_system_file">选择文件</button>
+                            <button id="confirm_upload"></button>
                         </form>
                     </div>
                 </div>

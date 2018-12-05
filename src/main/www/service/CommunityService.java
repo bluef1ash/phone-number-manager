@@ -19,17 +19,17 @@ public interface CommunityService extends BaseService<Community> {
      * @return 查找到的社区和所属街道
      * @throws Exception SERVICE层异常
      */
-    Community findCommunityAndSubdistrictById(Integer communityId) throws Exception;
+    Community findCommunityAndSubdistrictById(Long communityId) throws Exception;
 
     /**
      * 查找所有社区和所属街道
      *
-     * @param pageNum  分页页码
-     * @param pageSize 每页显示条目数量
+     * @param pageNumber   分页页码
+     * @param pageDataSize 每页显示条目数量
      * @return 查找道德所有社区和所属街道与分页对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findCommunitiesAndSubdistrict(Integer pageNum, Integer pageSize) throws Exception;
+    Map<String, Object> findCommunitiesAndSubdistrict(Integer pageNumber, Integer pageDataSize) throws Exception;
 
     /**
      * 通过社区联系方式查找

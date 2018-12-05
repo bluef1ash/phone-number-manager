@@ -1,13 +1,11 @@
 package www.service.impl;
 
-import java.util.List;
-import java.util.Map;
-
-import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
-
 import www.entity.UserRole;
 import www.service.UserRoleService;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 系统用户角色业务实现
@@ -17,15 +15,15 @@ import www.service.UserRoleService;
 @Service("userRoleService")
 public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements UserRoleService {
     @Override
-    public Map<String, Object> findRolesAndSystemUsersAll(Integer pageNum, Integer pageSize) throws Exception {
-        setPageHelper(pageNum, pageSize);
+    public Map<String, Object> findRolesAndSystemUsersAll(Integer pageNumber, Integer pageDataSize) throws Exception {
+        setPageHelper(pageNumber, pageDataSize);
         List<UserRole> data = userRolesDao.selectRolesAndSystemUsersAll();
         return findObjectsMethod(data);
     }
 
     @Override
-    public Map<String, Object> findRolesAndPrivileges(Integer pageNum, Integer pageSize) throws Exception {
-        setPageHelper(pageNum, pageSize);
+    public Map<String, Object> findRolesAndPrivileges(Integer pageNumber, Integer pageDataSize) throws Exception {
+        setPageHelper(pageNumber, pageDataSize);
         List<UserRole> data = userRolesDao.selectRolesAndPrivilegesAll();
         return findObjectsMethod(data);
     }

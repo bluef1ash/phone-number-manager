@@ -10,21 +10,21 @@ import java.sql.Timestamp;
  */
 public class SystemUser implements Serializable {
     private static final long serialVersionUID = -5035917619026010434L;
-    private Integer systemUserId;
+    private Long systemUserId;
     private String username;
     private String password;
     private Timestamp loginTime = new Timestamp(1000);
     private String loginIp = "";
     private Integer isLocked;
-    private Integer roleId;
-    private Integer roleLocationId;
+    private Long roleId;
+    private Long roleLocationId;
     private String captcha;
     private UserRole userRole;
 
     public SystemUser() {
     }
 
-    public SystemUser(Integer systemUserId, String username, String password, Timestamp loginTime, String loginIp, Integer isLocked, Integer roleId, Integer roleLocationId, String captcha, UserRole userRole) {
+    public SystemUser(Long systemUserId, String username, String password, Timestamp loginTime, String loginIp, Integer isLocked, Long roleId, Long roleLocationId, String captcha, UserRole userRole) {
         this.systemUserId = systemUserId;
         this.username = username;
         this.password = password;
@@ -41,11 +41,11 @@ public class SystemUser implements Serializable {
         return serialVersionUID;
     }
 
-    public Integer getSystemUserId() {
+    public Long getSystemUserId() {
         return systemUserId;
     }
 
-    public void setSystemUserId(Integer systemUserId) {
+    public void setSystemUserId(Long systemUserId) {
         this.systemUserId = systemUserId;
     }
 
@@ -89,19 +89,19 @@ public class SystemUser implements Serializable {
         this.isLocked = isLocked;
     }
 
-    public Integer getRoleId() {
+    public Long getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(Integer roleId) {
+    public void setRoleId(Long roleId) {
         this.roleId = roleId;
     }
 
-    public Integer getRoleLocationId() {
+    public Long getRoleLocationId() {
         return roleLocationId;
     }
 
-    public void setRoleLocationId(Integer roleLocationId) {
+    public void setRoleLocationId(Long roleLocationId) {
         this.roleLocationId = roleLocationId;
     }
 
@@ -152,17 +152,6 @@ public class SystemUser implements Serializable {
 
     @Override
     public String toString() {
-        return "SystemUser{" +
-            "systemUserId=" + systemUserId +
-            ", username='" + username + '\'' +
-            ", password='" + password + '\'' +
-            ", loginTime=" + loginTime +
-            ", loginIp='" + loginIp + '\'' +
-            ", isLocked=" + isLocked +
-            ", roleId=" + roleId +
-            ", roleLocationId=" + roleLocationId +
-            ", captcha='" + captcha + '\'' +
-            ", userRole=" + userRole +
-            '}';
+        return "SystemUser{" + "systemUserId=" + systemUserId + ", username='" + username + '\'' + ", password='" + password + '\'' + ", loginTime=" + loginTime + ", loginIp='" + loginIp + '\'' + ", isLocked=" + isLocked + ", roleId=" + roleId + ", roleLocationId=" + roleLocationId + ", captcha='" + captcha + '\'' + ", userRole=" + userRole + '}';
     }
 }

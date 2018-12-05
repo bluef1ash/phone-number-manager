@@ -5,20 +5,20 @@ import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
 import exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
-import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import utils.CommonUtil;
-import www.entity.*;
-import www.service.*;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import utils.CommonUtil;
 import utils.CsrfTokenUtil;
+import www.entity.*;
+import www.service.*;
 import www.validator.SystemUserInputValidator;
 import www.validator.UserPrivilegeInputValidator;
 import www.validator.UserRoleInputValidator;
@@ -103,12 +103,12 @@ public class UserAndRoleAction {
     @RequestMapping(value = "/user/ajax_user_lock", method = RequestMethod.GET)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Integer> systemUserLockedForAjax(HttpSession session, Integer systemUserId, Integer locked) {
+    Map<String, Integer> systemUserLockedForAjax(HttpSession session, Long systemUserId, Integer locked) {
         Map<String, Integer> map = new HashMap<>(2);
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-            Integer systemAdministratorId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_administrator_id"));
+            Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
             if (!systemUserId.equals(systemAdministratorId)) {
                 SystemUser systemUser = new SystemUser();
                 systemUser.setSystemUserId(systemUserId);
@@ -215,7 +215,7 @@ public class UserAndRoleAction {
     @RequestMapping(value = "/user/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteSystemUserForAjax(HttpSession session, Integer id) {
+    Map<String, Object> deleteSystemUserForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             @SuppressWarnings("unchecked")
@@ -347,7 +347,7 @@ public class UserAndRoleAction {
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/role/edit", method = RequestMethod.GET)
-    public String editSystemUserRole(Model model, Integer id) {
+    public String editSystemUserRole(Model model, Long id) {
         try {
             List<UserRole> userRoles = userRoleService.findObjects();
             UserRole userRole = userRoleService.findObject(id);
@@ -373,7 +373,7 @@ public class UserAndRoleAction {
      */
     @RequestMapping(value = "/role/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
-    public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserRole userRole, Integer[] privilegeIds, BindingResult bindingResult) {
+    public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserRole userRole, Long[] privilegeIds, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
             List<ObjectError> allErrors = bindingResult.getAllErrors();
@@ -413,7 +413,7 @@ public class UserAndRoleAction {
     @RequestMapping(value = "/role/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, Integer id) {
+    Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             @SuppressWarnings("unchecked")
@@ -485,7 +485,7 @@ public class UserAndRoleAction {
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/privilege/edit", method = RequestMethod.GET)
-    public String editSystemUserPrivilege(Model model, Integer id) {
+    public String editSystemUserPrivilege(Model model, Long id) {
         try {
             List<UserPrivilege> userPrivileges = userPrivilegeService.findObjects();
             UserPrivilege userPrivilege = userPrivilegeService.findObject(id);
@@ -543,7 +543,7 @@ public class UserAndRoleAction {
     @RequestMapping(value = "/privilege/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
     public @ResponseBody
-    Map<String, Object> deleteSystemUserPrivilegeForAjax(Integer id) {
+    Map<String, Object> deleteSystemUserPrivilegeForAjax(Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             userPrivilegeService.deleteObjectById(id);

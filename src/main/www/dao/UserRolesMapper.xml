@@ -15,23 +15,23 @@
         <collection property="userPrivileges" ofType="www.entity.UserPrivilege"
                     resultMap="www.dao.UserPrivilegesDao.userPrivilegeResultMap"/>
     </resultMap>
-    <insert id="insertObject" parameterType="UserRole" useGeneratedKeys="true" keyProperty="roleId">
+    <insert id="insertObject" useGeneratedKeys="true" keyProperty="roleId">
         INSERT INTO `pm_roles` (`name`, `description`, `higher_role`)
         VALUES (#{roleName}, #{roleDescription}, #{higherRole})
     </insert>
-    <delete id="deleteObjectById" parameterType="integer">
+    <delete id="deleteObjectById">
         DELETE FROM `pm_roles`
         WHERE `role_id` = #{roleId}
     </delete>
-    <delete id="deleteObjectsByName" parameterType="string">
+    <delete id="deleteObjectsByName">
         DELETE FROM `pm_roles`
         WHERE `name` = #{roleName};
     </delete>
-    <update id="updateObject" parameterType="UserRole">
+    <update id="updateObject">
         UPDATE `pm_roles`
         <set>
             <if test="roleId != null">
-                `role_id` = #{roleId,jdbcType=INTEGER}
+                `role_id` = #{roleId}
             </if>
             <if test="roleName != null">
                 , `name` = #{roleName}
@@ -54,7 +54,7 @@
         FROM `pm_roles`
         ORDER BY `role_id`
     </select>
-    <select id="selectObjectById" parameterType="integer" resultMap="userRoleResultMap">
+    <select id="selectObjectById" resultMap="userRoleResultMap">
         SELECT
             `role_id`,
             `name`,
@@ -63,7 +63,7 @@
         FROM `pm_roles`
         WHERE `role_id` = #{roleId}
     </select>
-    <select id="selectObjectsByName" parameterType="string" resultMap="userRoleResultMap">
+    <select id="selectObjectsByName" resultMap="userRoleResultMap">
         SELECT
             `role_id`,
             `name`,
@@ -109,8 +109,7 @@
             LEFT JOIN `pm_privileges` ON `pm_roles_privileges`.`privilege_id` = `pm_privileges`.`privilege_id`
         ORDER BY `pm_roles`.`role_id`
     </select>
-    <select id="selectRolesAndPrivilegesById" parameterType="integer"
-            resultMap="userRolesCorrelationUserPrivilegesResultMap">
+    <select id="selectRolesAndPrivilegesById" resultMap="userRolesCorrelationUserPrivilegesResultMap">
         SELECT
             `pm_roles`.`role_id`,
             `pm_roles`.`name`,
@@ -129,7 +128,7 @@
             LEFT JOIN `pm_privileges` ON `pm_roles_privileges`.`privilege_id` = `pm_privileges`.`privilege_id`
         WHERE `pm_roles`.`role_id` = #{roleId}
     </select>
-    <select id="selectRoleNameById" resultType="java.lang.String">
+    <select id="selectRoleNameById" resultType="string">
         SELECT `name`
         FROM `pm_roles`
         WHERE `role_id` = #{roleId}

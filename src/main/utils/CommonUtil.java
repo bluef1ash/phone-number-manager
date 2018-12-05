@@ -1,19 +1,19 @@
 package utils;
 
 
+import constant.SystemConstant;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Date;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
-import constant.SystemConstant;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 此类中收集Java编程中WEB开发常用到的一些工具。 为避免生成此类的实例，构造方法被申明为private类型的。
@@ -224,7 +224,7 @@ public class CommonUtil {
                 return "";
             } else {
                 strVal = strVal.trim();
-                strVal = new String(strVal.getBytes("UTF-8"), "GBK");
+                strVal = new String(strVal.getBytes(StandardCharsets.UTF_8), "GBK");
                 return strVal;
             }
         } catch (Exception exp) {
@@ -262,7 +262,7 @@ public class CommonUtil {
             if (strVal == null) {
                 return "";
             } else {
-                strVal = new String(strVal.getBytes("GBK"), "UTF-8");
+                strVal = new String(strVal.getBytes("GBK"), StandardCharsets.UTF_8);
                 return strVal;
             }
         } catch (Exception exp) {
@@ -281,7 +281,7 @@ public class CommonUtil {
             if (strVal == null) {
                 return "";
             } else {
-                strVal = new String(strVal.getBytes("ISO-8859-1"), "UTF-8");
+                strVal = new String(strVal.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
                 return strVal;
             }
         } catch (Exception exp) {
@@ -300,7 +300,7 @@ public class CommonUtil {
             if (strVal == null) {
                 return "";
             } else {
-                strVal = new String(strVal.getBytes("UTF-8"), "ISO-8859-1");
+                strVal = new String(strVal.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
                 return strVal;
             }
         } catch (Exception exp) {
@@ -604,13 +604,13 @@ public class CommonUtil {
             end = dataStr.indexOf("\\u", start + 2);
             String charStr = "";
             if (end == -1) {
-                charStr = dataStr.substring(start + 2, dataStr.length());
+                charStr = dataStr.substring(start + 2);
             } else {
                 charStr = dataStr.substring(start + 2, end);
             }
             // 16进制parse整形字符串。
             char letter = (char) Integer.parseInt(charStr, 16);
-            buffer.append(Character.toString(letter));
+            buffer.append(letter);
             start = end;
         }
         return buffer.toString();
@@ -769,6 +769,16 @@ public class CommonUtil {
      */
     public static Integer convertConfigurationInteger(Object object) {
         return Integer.parseInt(String.valueOf(object));
+    }
+
+    /**
+     * 转换系统配置项数值
+     *
+     * @param object 系统配置项
+     * @return 转换完成
+     */
+    public static Long convertConfigurationLong(Object object) {
+        return Long.parseLong(String.valueOf(object));
     }
 
     /**

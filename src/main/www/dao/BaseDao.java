@@ -27,7 +27,7 @@ public interface BaseDao<T> {
      * @return 影响的行数
      * @throws DataAccessException 数据库操作异常
      */
-    int deleteObjectById(Integer id) throws DataAccessException;
+    int deleteObjectById(Long id) throws DataAccessException;
 
     /**
      * 通过名称删除对象
@@ -56,13 +56,13 @@ public interface BaseDao<T> {
     List<T> selectObjectsAll() throws DataAccessException;
 
     /**
-     * 通过主键ID查询对象
+     * 通过主键编号查询对象
      *
-     * @param id 主键ID
+     * @param id 主键编号
      * @return 实体对象
      * @throws DataAccessException 数据库操作异常
      */
-    T selectObjectById(Integer id) throws DataAccessException;
+    T selectObjectById(Long id) throws DataAccessException;
 
     /**
      * 通过名称查询对象

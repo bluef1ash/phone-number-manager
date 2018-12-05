@@ -11,7 +11,6 @@
         <link rel="icon" href="${pageContext.request.contextPath}/images/favicon.ico">
 	    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/public.css">
 	    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/bootstrap.min.css">
-	    <!-- <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/bootstrap-switch.min.css"> -->
 	    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/font-awesome.min.css">
 	    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/index.css">
 	    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/skins/_all-skins.css">

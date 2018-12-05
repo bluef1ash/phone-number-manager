@@ -15,19 +15,19 @@
         <collection property="userRoles" ofType="www.entity.UserRole"
                     resultMap="www.dao.UserRolesDao.userRoleResultMap"/>
     </resultMap>
-    <insert id="insertObject" parameterType="UserPrivilege">
+    <insert id="insertObject">
         INSERT INTO `pm_privileges` (`name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display`)
         VALUES (#{privilegeName}, #{constraintAuth}, #{uri}, #{higherPrivilege}, #{iconName}, #{orders}, #{isDisplay})
     </insert>
-    <delete id="deleteObjectById" parameterType="integer">
+    <delete id="deleteObjectById">
         DELETE FROM `pm_privileges`
         WHERE `privilege_id` = #{privilegeId}
     </delete>
-    <delete id="deleteObjectsByName" parameterType="string">
+    <delete id="deleteObjectsByName">
         DELETE FROM `pm_privileges`
         WHERE `name` = #{privilegeName}
     </delete>
-    <update id="updateObject" parameterType="UserPrivilege">
+    <update id="updateObject">
         UPDATE `pm_privileges`
         <set>
             <if test="privilegeId != null">
@@ -70,7 +70,7 @@
         FROM `pm_privileges`
         ORDER BY `privilege_id`
     </select>
-    <select id="selectObjectById" parameterType="integer" resultMap="userPrivilegeResultMap">
+    <select id="selectObjectById" resultMap="userPrivilegeResultMap">
         SELECT
             `privilege_id`,
             `name`,
@@ -83,7 +83,7 @@
         FROM `pm_privileges`
         WHERE `privilege_id` = #{privilegeId}
     </select>
-    <select id="selectObjectsByName" parameterType="string" resultMap="userPrivilegeResultMap">
+    <select id="selectObjectsByName" resultMap="userPrivilegeResultMap">
         SELECT
             `privilege_id`,
             `name`,
@@ -97,7 +97,7 @@
         WHERE `name` = #{privilegeName}
         ORDER BY `privilege_id`
     </select>
-    <select id="selectPrivilegesByIsDisplay" parameterType="integer" resultMap="userPrivilegeResultMap">
+    <select id="selectPrivilegesByIsDisplay" resultMap="userPrivilegeResultMap">
         SELECT
             `privilege_id`,
             `name`,
@@ -111,7 +111,7 @@
         WHERE `is_display` = #{isDisplay}
         ORDER BY `privilege_id`
     </select>
-    <select id="selectPrivilegesByIsDisplayAndConstraintAuth" parameterType="map" resultMap="userPrivilegeResultMap">
+    <select id="selectPrivilegesByIsDisplayAndConstraintAuth" resultMap="userPrivilegeResultMap">
         SELECT `privilege_id`, `name`, `constraint_auth`, `uri`, `higher_privilege`, `icon_name`, `orders`, `is_display`
         FROM `pm_privileges` WHERE (`is_display` = #{isDisplay}) AND (`constraint_auth` IN
         <foreach collection="constraintAuthes" item="constraintAuth" open="(" separator="," close=")">
@@ -119,8 +119,7 @@
         </foreach>
         ) ORDER BY `privilege_id`
     </select>
-    <select id="selectPrivilegesByRoleId" parameterType="integer"
-            resultMap="UserPrivilegesCorrelationUserRolesResultMap">
+    <select id="selectPrivilegesByRoleId" resultMap="UserPrivilegesCorrelationUserRolesResultMap">
         SELECT
             `pm_privileges`.`privilege_id`,
             `pm_privileges`.`name`,

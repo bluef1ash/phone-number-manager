@@ -9,31 +9,55 @@ import java.io.Serializable;
  */
 public class UserRolePrivilege implements Serializable {
     private static final long serialVersionUID = -2765782497604371615L;
-    private Integer roleId;
-    private Integer privilegeId;
+    private Long roleId;
+    private Long privilegeId;
 
     public UserRolePrivilege() {
     }
 
-    public UserRolePrivilege(Integer roleId, Integer privilegeId) {
+    public UserRolePrivilege(Long roleId, Long privilegeId) {
         this.roleId = roleId;
         this.privilegeId = privilegeId;
     }
 
-    public Integer getRoleId() {
+    public Long getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(Integer roleId) {
+    public void setRoleId(Long roleId) {
         this.roleId = roleId;
     }
 
-    public Integer getPrivilegeId() {
+    public Long getPrivilegeId() {
         return privilegeId;
     }
 
-    public void setPrivilegeId(Integer privilegeId) {
+    public void setPrivilegeId(Long privilegeId) {
         this.privilegeId = privilegeId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        UserRolePrivilege that = (UserRolePrivilege) o;
+
+        if (roleId != null ? !roleId.equals(that.roleId) : that.roleId != null) {
+            return false;
+        }
+        return privilegeId != null ? privilegeId.equals(that.privilegeId) : that.privilegeId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleId != null ? roleId.hashCode() : 0;
+        result = 31 * result + (privilegeId != null ? privilegeId.hashCode() : 0);
+        return result;
     }
 
     @Override

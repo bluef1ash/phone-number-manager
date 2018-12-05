@@ -1,13 +1,12 @@
 package www.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import www.entity.UserRole;
 import www.entity.UserRolePrivilege;
 import www.service.UserRolePrivilegeService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 系统用户权限业务实现
@@ -22,10 +21,10 @@ public class UserRolePrivilegeServiceImpl extends BaseServiceImpl<UserRolePrivil
     }
 
     @Override
-    public int addUserRolePrivileges(UserRole userRole, Integer[] privilegeIds) {
+    public int addUserRolePrivileges(UserRole userRole, Long[] privilegeIds) {
         List<UserRolePrivilege> userRolePrivileges = new ArrayList<>();
-        UserRolePrivilege userRolePrivilege = null;
-        for (Integer privilegeId : privilegeIds) {
+        UserRolePrivilege userRolePrivilege;
+        for (Long privilegeId : privilegeIds) {
             if (privilegeId != 0) {
                 userRolePrivilege = new UserRolePrivilege();
                 userRolePrivilege.setRoleId(userRole.getRoleId());

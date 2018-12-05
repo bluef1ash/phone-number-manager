@@ -19,7 +19,7 @@ public interface SubdistrictService extends BaseService<Subdistrict> {
      * @return 查找到的街道及社区居委会的集合
      * @throws Exception SERVICE层异常
      */
-    Set<Subdistrict> findCommunitiesAndSubdistrictsByRole(Integer roleId, Integer roleLocationId) throws Exception;
+    Set<Subdistrict> findCommunitiesAndSubdistrictsByRole(Long roleId, Long roleLocationId) throws Exception;
 
     /**
      * 通过街道联系方式查找

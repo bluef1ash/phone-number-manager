@@ -5,42 +5,43 @@
 		<id property="roleId" column="role_id" />
 		<id property="privilegeId" column="privilege_id" />
 	</resultMap>
-	<insert id="insertObject" parameterType="UserRolePrivilege">
-		INSERT INTO `pm_roles_privileges`(`role_id`, `privilege_id`) VALUES(#{roleId,jdbcType=INTEGER}, #{privilegeId,jdbcType=INTEGER})
+    <insert id="insertObject">
+        INSERT INTO `pm_roles_privileges`(`role_id`, `privilege_id`)
+        VALUES (#{roleId}, #{privilegeId})
 	</insert>
-	<insert id="insertUserRolePrivileges" parameterType="java.util.List">
+    <insert id="insertUserRolePrivileges">
 		INSERT INTO `pm_roles_privileges`(`role_id`, `privilege_id`) VALUES
-		<foreach collection="list" item="privilege" separator=",">
-			(#{privilege.roleId,jdbcType=INTEGER}, #{privilege.privilegeId,jdbcType=INTEGER})
+        <foreach collection="userRolePrivileges" item="userRolePrivilege" separator=",">
+            (#{userRolePrivilege.roleId}, #{userRolePrivilege.privilegeId})
 		</foreach>
 	</insert>
-	<delete id="deleteUserRolePrivilegeByUserRolePrivilege" parameterType="UserRolePrivilege">
+    <delete id="deleteUserRolePrivilegeByUserRolePrivilege">
 		DELETE FROM `pm_roles_privileges`
 		<where>
 			<if test="roleId != null">
-				`role_id` =  #{roleId,jdbcType=INTEGER}
+                `role_id` = #{roleId}
 			</if>
 			<if test="privilegeId != null">
-				AND `privilege_id` = #{privilegeId,jdbcType=INTEGER}
+                AND `privilege_id` = #{privilegeId}
 			</if>
 		</where>
 	</delete>
-    <update id="updateObject" parameterType="UserRolePrivilege">
+    <update id="updateObject">
         UPDATE `pm_roles_privileges`
         <set>
 			<if test="roleId != null">
-				`role_id` = #{roleId,jdbcType=INTEGER}
+                `role_id` = #{roleId}
 			</if>
 			<if test="privilegeId != null">
-				, `privilege_id` = #{privilegeId,jdbcType=INTEGER}
+                , `privilege_id` = #{privilegeId}
 			</if>
 		</set>
 		<where>
 			<if test="roleId != null">
-				`role_id` =  #{roleId,jdbcType=INTEGER}
+                `role_id` = #{roleId}
 			</if>
 			<if test="privilegeId != null">
-				AND `privilege_id` = #{privilegeId,jdbcType=INTEGER}
+                AND `privilege_id` = #{privilegeId}
 			</if>
 		</where>
     </update>

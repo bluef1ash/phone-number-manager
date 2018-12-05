@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class Subdistrict implements Serializable {
     private static final long serialVersionUID = -7676924584213521372L;
-    private Integer subdistrictId;
+    private Long subdistrictId;
     private String subdistrictName;
     private String subdistrictTelephone;
     private List<Community> communities;
@@ -20,7 +20,7 @@ public class Subdistrict implements Serializable {
     public Subdistrict() {
     }
 
-    public Subdistrict(Integer subdistrictId, String subdistrictName, String subdistrictTelephone, List<Community> communities) {
+    public Subdistrict(Long subdistrictId, String subdistrictName, String subdistrictTelephone, List<Community> communities) {
         super();
         this.subdistrictId = subdistrictId;
         this.subdistrictName = subdistrictName;
@@ -28,11 +28,11 @@ public class Subdistrict implements Serializable {
         this.communities = communities;
     }
 
-    public Integer getSubdistrictId() {
+    public Long getSubdistrictId() {
         return subdistrictId;
     }
 
-    public void setSubdistrictId(Integer subdistrictId) {
+    public void setSubdistrictId(Long subdistrictId) {
         this.subdistrictId = subdistrictId;
     }
 

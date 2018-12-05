@@ -19,7 +19,7 @@ public interface SubdistrictsDao extends BaseDao<Subdistrict> {
      * @return 所属街道及社区
      * @throws DataAccessException 数据库操作异常
      */
-    Subdistrict selectSubdistrictAndCommunityByCommunityId(Integer communityId) throws DataAccessException;
+    Subdistrict selectSubdistrictAndCommunityByCommunityId(Long communityId) throws DataAccessException;
 
     /**
      * 通过街道编号查询所属街道及社区
@@ -28,7 +28,7 @@ public interface SubdistrictsDao extends BaseDao<Subdistrict> {
      * @return 所属街道及社区
      * @throws DataAccessException 数据库操作异常
      */
-    Set<Subdistrict> selectSubdistrictAndCommunityBySubdistrictId(Integer subdistrictId) throws DataAccessException;
+    Set<Subdistrict> selectSubdistrictAndCommunityBySubdistrictId(Long subdistrictId) throws DataAccessException;
 
     /**
      * 查询所有街道及社区

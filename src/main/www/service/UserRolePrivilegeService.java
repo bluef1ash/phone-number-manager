@@ -17,7 +17,7 @@ public interface UserRolePrivilegeService extends BaseService<UserRolePrivilege>
      * @return 数据库添加影响的行数
      * @throws Exception SERVICE层异常
      */
-    int addUserRolePrivileges(UserRole userRole, Integer[] privilegeIds) throws Exception;
+    int addUserRolePrivileges(UserRole userRole, Long[] privilegeIds) throws Exception;
 
     /**
      * 通过中间表对象删除

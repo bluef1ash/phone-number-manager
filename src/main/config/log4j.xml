@@ -14,6 +14,8 @@
         <logger name="org.springframework.context" level="trace"/>
         <logger name="org.springframework.web" level="trace"/>
         <logger name="org.apache.http" level="warn"/>
-        <Logger name="www.dao" level="trace" additivity="false"/>
+        <Logger name="www.dao" level="trace" additivity="false">
+            <appender-ref ref="console"/>
+        </Logger>
     </Loggers>
 </Configuration>

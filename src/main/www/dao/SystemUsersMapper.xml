@@ -22,15 +22,11 @@
         INSERT INTO `pm_system_users` (`username`, `password`, `login_time`, `login_ip`, `is_locked`, `role_location_id`, `role_id`)
         VALUES (#{username}, #{password}, #{loginTime}, #{loginIp}, #{isLocked}, #{roleLocationId}, #{roleId})
     </insert>
-    <delete id="deleteObjectById" parameterType="integer">
+    <delete id="deleteObjectById">
         DELETE FROM `pm_system_users`
         WHERE `system_user_id` = #{systemUserId}
     </delete>
-    <delete id="deleteObjectByName" parameterType="string">
-        DELETE FROM `pm_system_users`
-        WHERE `username` = #{username}
-    </delete>
-    <update id="updateObject" parameterType="SystemUser">
+    <update id="updateObject">
         UPDATE `pm_system_users`
         <set>
             <if test="systemUserId != null">
@@ -73,7 +69,7 @@
         FROM `pm_system_users`
         ORDER BY `system_user_id`
     </select>
-    <select id="selectObjectById" parameterType="integer" resultMap="systemUserResultMap">
+    <select id="selectObjectById" resultMap="systemUserResultMap">
         SELECT
             `system_user_id`,
             `username`,
@@ -86,7 +82,7 @@
         FROM `pm_system_users`
         WHERE `system_user_id` = #{systemUserId}
     </select>
-    <select id="selectObjectsByName" parameterType="string" resultMap="systemUserResultMap">
+    <select id="selectObjectsByName" resultMap="systemUserResultMap">
         SELECT
             `system_user_id`,
             `username`,
@@ -132,8 +128,7 @@
             LEFT JOIN `pm_roles` ON `pm_system_users`.`role_id` = `pm_roles`.`role_id`
         WHERE `pm_system_users`.`system_user_id` = #{systemUserId}
     </select>
-    <select id="selectSystemUserAndRoleAndPrivilegesByName" parameterType="string"
-            resultMap="systemUserCorrelationRoleAndPrivilegeResultMap">
+    <select id="selectSystemUserAndRoleAndPrivilegesByName" resultMap="systemUserCorrelationRoleAndPrivilegeResultMap">
         SELECT
             `pm_system_users`.`system_user_id`,
             `pm_system_users`.`username`,

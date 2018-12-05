@@ -7,8 +7,10 @@ package www.entity;
  */
 public class ResultCode {
     private String code;
-
     private String message;
+
+    public ResultCode() {
+    }
 
     public ResultCode(String code, String message) {
 

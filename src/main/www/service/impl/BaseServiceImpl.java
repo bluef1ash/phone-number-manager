@@ -4,9 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import www.dao.*;
 import www.service.BaseService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
@@ -21,22 +21,24 @@ import java.util.Map;
  */
 public class BaseServiceImpl<T> implements BaseService<T> {
     BaseDao<T> baseDao;
-    @Autowired
+    @Resource
     protected SystemUsersDao systemUsersDao;
-    @Autowired
+    @Resource
     protected UserRolesDao userRolesDao;
-    @Autowired
+    @Resource
     protected UserPrivilegesDao userPrivilegesDao;
-    @Autowired
+    @Resource
     protected UserRolePrivilegesDao userRolePrivilegesDao;
-    @Autowired
+    @Resource
     protected SubdistrictsDao subdistrictsDao;
-    @Autowired
+    @Resource
     protected CommunitiesDao communitiesDao;
-    @Autowired
+    @Resource
     protected CommunityResidentsDao communityResidentsDao;
-    @Autowired
+    @Resource
     protected ConfigurationsDao configurationsDao;
+    @Resource
+    protected SubcontractorsDao subcontractorsDao;
 
     /**
      * 最先运行的方法，自动加载对应类型的DAO
@@ -51,7 +53,7 @@ public class BaseServiceImpl<T> implements BaseService<T> {
         StringBuilder localField = new StringBuilder();
         localField.append(className.substring(0, 1).toLowerCase());
         if ("y".equals(className.substring(className.length() - 1))) {
-            localField.append(className.substring(1, className.length() - 1)).append("ies");
+            localField.append(className, 1, className.length() - 1).append("ies");
         } else {
             localField.append(className.substring(1)).append("s");
         }
@@ -67,7 +69,7 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     }
 
     @Override
-    public int deleteObjectById(Integer id) throws Exception {
+    public int deleteObjectById(Long id) throws Exception {
         return baseDao.deleteObjectById(id);
     }
 
@@ -87,27 +89,27 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     }
 
     @Override
-    public Map<String, Object> findObjects(Integer pageNum, Integer pageSize) throws Exception {
-        setPageHelper(pageNum, pageSize);
+    public Map<String, Object> findObjects(Integer pageNumber, Integer pageDataSize) throws Exception {
+        setPageHelper(pageNumber, pageDataSize);
         List<T> data = baseDao.selectObjectsAll();
         return findObjectsMethod(data);
     }
 
     @Override
-    public T findObject(Integer id) throws Exception {
+    public T findObject(Long id) throws Exception {
         return baseDao.selectObjectById(id);
     }
 
     @Override
-    public Map<String, Object> findObjects(String name, Integer pageNum, Integer pageSize) throws Exception {
-        setPageHelper(pageNum, pageSize);
+    public Map<String, Object> findObjects(String name, Integer pageNumber, Integer pageDataSize) throws Exception {
+        setPageHelper(pageNumber, pageDataSize);
         List<T> data = baseDao.selectObjectsByName(name);
         return findObjectsMethod(data);
     }
 
     @Override
-    public Map<String, Object> findObjects(T object, Integer pageNum, Integer pageSize) throws Exception {
-        setPageHelper(pageNum, pageSize);
+    public Map<String, Object> findObjects(T object, Integer pageNumber, Integer pageDataSize) throws Exception {
+        setPageHelper(pageNumber, pageDataSize);
         List<T> data = baseDao.selectObjectsByObject(object);
         return findObjectsMethod(data);
     }
@@ -125,13 +127,13 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     /**
      * 配置PageHelper
      *
-     * @param pageNum  分页页码
-     * @param pageSize 每页显示数量
+     * @param pageNumber  分页页码
+     * @param pageDataSize 每页显示数量
      */
-    protected void setPageHelper(Integer pageNum, Integer pageSize) {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
-        PageHelper.startPage(pageNum, pageSize);
+    protected void setPageHelper(Integer pageNumber, Integer pageDataSize) {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+        PageHelper.startPage(pageNumber, pageDataSize);
     }
 
     /**

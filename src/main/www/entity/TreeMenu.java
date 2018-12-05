@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class TreeMenu implements Serializable {
     private static final long serialVersionUID = 8852726242252640057L;
-    private Integer id;
+    private Long id;
     private String name;
     private Boolean checked;
     private List<TreeMenu> children;
@@ -20,13 +20,13 @@ public class TreeMenu implements Serializable {
     private Boolean nocheck;
     private String target;
     private String url;
-    private Integer roleLocationId;
+    private Long roleLocationId;
 
     public TreeMenu() {
         super();
     }
 
-    public TreeMenu(Integer id, String name, Boolean checked, List<TreeMenu> children, Boolean chkDisabled, Boolean halfCheck, String icon, Boolean nocheck, String target, String url, Integer roleLocationId) {
+    public TreeMenu(Long id, String name, Boolean checked, List<TreeMenu> children, Boolean chkDisabled, Boolean halfCheck, String icon, Boolean nocheck, String target, String url, Long roleLocationId) {
         this.id = id;
         this.name = name;
         this.checked = checked;
@@ -44,11 +44,11 @@ public class TreeMenu implements Serializable {
         return serialVersionUID;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -124,11 +124,11 @@ public class TreeMenu implements Serializable {
         this.url = url;
     }
 
-    public Integer getRoleLocationId() {
+    public Long getRoleLocationId() {
         return roleLocationId;
     }
 
-    public void setRoleLocationId(Integer roleLocationId) {
+    public void setRoleLocationId(Long roleLocationId) {
         this.roleLocationId = roleLocationId;
     }
 
@@ -143,7 +143,37 @@ public class TreeMenu implements Serializable {
 
         TreeMenu treeMenu = (TreeMenu) o;
 
-        return (id != null ? id.equals(treeMenu.id) : treeMenu.id == null) && (name != null ? name.equals(treeMenu.name) : treeMenu.name == null) && (checked != null ? checked.equals(treeMenu.checked) : treeMenu.checked == null) && (children != null ? children.equals(treeMenu.children) : treeMenu.children == null) && (chkDisabled != null ? chkDisabled.equals(treeMenu.chkDisabled) : treeMenu.chkDisabled == null) && (halfCheck != null ? halfCheck.equals(treeMenu.halfCheck) : treeMenu.halfCheck == null) && (icon != null ? icon.equals(treeMenu.icon) : treeMenu.icon == null) && (nocheck != null ? nocheck.equals(treeMenu.nocheck) : treeMenu.nocheck == null) && (target != null ? target.equals(treeMenu.target) : treeMenu.target == null) && (url != null ? url.equals(treeMenu.url) : treeMenu.url == null) && (roleLocationId != null ? roleLocationId.equals(treeMenu.roleLocationId) : treeMenu.roleLocationId == null);
+        if (id != null ? !id.equals(treeMenu.id) : treeMenu.id != null) {
+            return false;
+        }
+        if (name != null ? !name.equals(treeMenu.name) : treeMenu.name != null) {
+            return false;
+        }
+        if (checked != null ? !checked.equals(treeMenu.checked) : treeMenu.checked != null) {
+            return false;
+        }
+        if (children != null ? !children.equals(treeMenu.children) : treeMenu.children != null) {
+            return false;
+        }
+        if (chkDisabled != null ? !chkDisabled.equals(treeMenu.chkDisabled) : treeMenu.chkDisabled != null) {
+            return false;
+        }
+        if (halfCheck != null ? !halfCheck.equals(treeMenu.halfCheck) : treeMenu.halfCheck != null) {
+            return false;
+        }
+        if (icon != null ? !icon.equals(treeMenu.icon) : treeMenu.icon != null) {
+            return false;
+        }
+        if (nocheck != null ? !nocheck.equals(treeMenu.nocheck) : treeMenu.nocheck != null) {
+            return false;
+        }
+        if (target != null ? !target.equals(treeMenu.target) : treeMenu.target != null) {
+            return false;
+        }
+        if (url != null ? !url.equals(treeMenu.url) : treeMenu.url != null) {
+            return false;
+        }
+        return roleLocationId != null ? roleLocationId.equals(treeMenu.roleLocationId) : treeMenu.roleLocationId == null;
     }
 
     @Override

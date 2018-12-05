@@ -1,8 +1,8 @@
 package www.dao;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 import www.entity.CommunityResident;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 所有社区居民与所属社区
      * @throws DataAccessException 数据库操作异常
      */
-    List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityIds(@Param("communityIds") List<Integer> communityIds) throws DataAccessException;
+    List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityIds(@Param("communityIds") List<Long> communityIds) throws DataAccessException;
 
     /**
      * 查询所有社区居民与所属社区和街道
@@ -55,7 +55,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 所有社区居民与所属社区
      * @throws DataAccessException 数据库操作异常
      */
-    List<CommunityResident> selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(@Param("communityIds") List<Integer> communityIds) throws DataAccessException;
+    List<CommunityResident> selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(@Param("communityIds") List<Long> communityIds) throws DataAccessException;
 
     /**
      * 通过姓名+地址查询姓名与社区编号
@@ -65,7 +65,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 查询到的社区居民
      * @throws DataAccessException 数据库操作异常
      */
-    List<CommunityResident> selectCommunityResidentByNameAndAddress(@Param("nameAddress") String nameAddress, @Param("communityResidentId") Integer communityResidentId) throws DataAccessException;
+    List<CommunityResident> selectCommunityResidentByNameAndAddress(@Param("nameAddress") String nameAddress, @Param("communityResidentId") Long communityResidentId) throws DataAccessException;
 
     /**
      * 通过电话数组查询姓名与社区编号
@@ -75,7 +75,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 查询到的社区居民
      * @throws DataAccessException 数据库操作异常
      */
-    List<CommunityResident> selectCommunityResidentByPhones(@Param("residentPhones") List<String> residentPhones, @Param("communityResidentId") Integer communityResidentId) throws DataAccessException;
+    List<CommunityResident> selectCommunityResidentByPhones(@Param("residentPhones") List<String> residentPhones, @Param("communityResidentId") Long communityResidentId) throws DataAccessException;
 
     /**
      * 通过社区编号查询所属社区居民
@@ -93,7 +93,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 社区居民与所属社区的数量
      * @throws DataAccessException 数据库操作异常
      */
-    Integer countCommunityResidentsByCommunityResident(@Param("communityResident") CommunityResident communityResident) throws DataAccessException;
+    Long countCommunityResidentsByCommunityResident(@Param("communityResident") CommunityResident communityResident) throws DataAccessException;
 
     /**
      * 通过多个社区编号查询所有社区居民与所属社区的数量
@@ -102,7 +102,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 所有社区居民与所属社区的数量
      * @throws DataAccessException 数据库操作异常
      */
-    Integer countCommunityResidentsAndCommunityByCommunityIds(@Param("communityIds") List<Integer> communityIds) throws DataAccessException;
+    Long countCommunityResidentsAndCommunityByCommunityIds(@Param("communityIds") List<Long> communityIds) throws DataAccessException;
 
     /**
      * 通过社区编号查询社区居民与所属社区的数量
@@ -111,7 +111,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 社区居民与所属社区的数量
      * @throws DataAccessException 数据库操作异常
      */
-    Integer countCommunityResidentsByCommunityId(Integer communityId) throws DataAccessException;
+    Long countCommunityResidentsByCommunityId(Long communityId) throws DataAccessException;
 
     /**
      * 通过街道编号查询社区居民与所属社区的数量
@@ -120,7 +120,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 社区居民与所属社区的数量
      * @throws DataAccessException 数据库操作异常
      */
-    Integer countCommunityResidentsBySubdistrictId(Integer subdistrictId) throws DataAccessException;
+    Long countCommunityResidentsBySubdistrictId(Long subdistrictId) throws DataAccessException;
 
     /**
      * 统计所有社区居民数量
@@ -128,7 +128,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 所有社区居民数量
      * @throws DataAccessException 数据库操作异常
      */
-    Integer countCommunityResidents() throws DataAccessException;
+    Long countCommunityResidents() throws DataAccessException;
 
     /**
      * 通过所属街道编号删除
@@ -136,5 +136,5 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @param subdistrictId 需要删除的所属街道编号
      * @throws DataAccessException 数据库操作异常
      */
-    void deleteCommunityResidentsBySubdistrictId(Integer subdistrictId) throws DataAccessException;
+    void deleteCommunityResidentsBySubdistrictId(Long subdistrictId) throws DataAccessException;
 }

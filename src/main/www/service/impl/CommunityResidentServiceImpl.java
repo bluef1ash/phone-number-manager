@@ -4,20 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import exception.BusinessException;
-import org.apache.poi.ss.usermodel.CellType;
-import utils.DateUtil;
-import www.entity.Community;
-import www.entity.CommunityResident;
-import www.entity.Subdistrict;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Service;
 import utils.CommonUtil;
+import utils.DateUtil;
 import utils.ExcelUtil;
-import www.entity.SystemUser;
+import www.entity.*;
 import www.service.CommunityResidentService;
 
 import java.util.*;
@@ -68,41 +64,39 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Map<String, Object> configurationsMap, CommunityResident communityResident, Integer companyId, Integer companyRid, Integer pageNum, Integer pageSize) throws Exception {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
+    public Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Map<String, Object> configurationsMap, CommunityResident communityResident, Long companyId, Long companyRid, Integer pageNumber, Integer pageDataSize) throws Exception {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
         List<CommunityResident> communityResidents = null;
-        Integer count = null;
-        Integer communityRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_role_id"));
-        Integer subdistrictRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_role_id"));
+        Long count = null;
+        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
+        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
         if (companyRid.equals(communityRoleId)) {
-            Community community = new Community();
-            community.setCommunityId(companyId);
-            communityResident.setCommunity(community);
+            communityResident.setCommunityId(companyId);
             count = communityResidentsDao.countCommunityResidentsByCommunityResident(communityResident);
-            PageHelper.startPage(pageNum, pageSize);
+            PageHelper.startPage(pageNumber, pageDataSize);
             communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
         } else if (companyRid.equals(subdistrictRoleId)) {
             List<Community> newCommunities = communitiesDao.selectCommunitiesBySubdistrictId(companyId);
             count = getCompany(communityResident, newCommunities);
-            PageHelper.startPage(pageNum, pageSize);
+            PageHelper.startPage(pageNumber, pageDataSize);
             communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResident(communityResident);
         } else {
-            Integer systemAdministratorId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_administrator_id"));
+            Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
             if (systemUser.getRoleId().equals(systemAdministratorId)) {
                 count = communityResidentsDao.countCommunityResidentsByCommunityResident(communityResident);
-                PageHelper.startPage(pageNum, pageSize);
+                PageHelper.startPage(pageNumber, pageDataSize);
                 communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
             } else if (systemUser.getRoleId().equals(subdistrictRoleId)) {
                 List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
                 count = getCompany(communityResident, communities);
-                PageHelper.startPage(pageNum, pageSize);
+                PageHelper.startPage(pageNumber, pageDataSize);
                 communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResident(communityResident);
             } else if (systemUser.getRoleId().equals(communityRoleId)) {
                 communityResident.setCommunityId(systemUser.getRoleLocationId());
                 count = communityResidentsDao.countCommunityResidentsByCommunityResident(communityResident);
                 communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
-                PageHelper.startPage(pageNum, pageSize);
+                PageHelper.startPage(pageNumber, pageDataSize);
             }
         }
         Map<String, Object> map = new HashMap<>(3);
@@ -112,11 +106,19 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public int addCommunityResidentFromExcel(Workbook workbook, Integer subdistrictId, Map<String, Object> configurationsMap) {
+    public int addCommunityResidentFromExcel(Workbook workbook, Long subdistrictId, Map<String, Object> configurationsMap) {
         Sheet sheet;
         Row row;
         List<CommunityResident> residents = new ArrayList<>();
-        Integer readExcelStartRowNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("read_excel_start_row_number"));
+        Long readExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_excel_start_row_number"));
+        Integer excelCommunityResidentNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_community_resident_name_cell_number"));
+        Integer excelAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_address_cell_number"));
+        Integer excelPhone1CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone1_cell_number"));
+        Integer excelPhone2CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone2_cell_number"));
+        Integer excelPhone3CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone3_cell_number"));
+        Integer excelCommunityCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_community_cell_number"));
+        Integer excelSubcontractorCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_subcontractor_cell_number"));
+        List<Subcontractor> subcontractors = subcontractorsDao.selectObjectsAll();
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             sheet = workbook.getSheetAt(i);
             if (sheet != null) {
@@ -124,7 +126,50 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
                     row = sheet.getRow(j);
                     if (row != null && j >= sheet.getFirstRowNum() + readExcelStartRowNumber) {
-                        residents.add(residentHandler(row, configurationsMap));
+                        CommunityResident resident = new CommunityResident();
+                        // 居民姓名
+                        resident.setCommunityResidentName(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelCommunityResidentNameCellNumber), CellType.STRING)));
+                        // 居民地址
+                        // 处理地址和社区名称
+                        String address = String.valueOf(ExcelUtil.getCellValue(row.getCell(excelAddressCellNumber), CellType.STRING));
+                        Matcher matcher = communityPattern.matcher(address);
+                        String communityAliasName = null;
+                        String realAddress = null;
+                        while (matcher.find()) {
+                            communityAliasName = matcher.group(1);
+                            realAddress = matcher.group(2);
+                        }
+                        resident.setCommunityResidentAddress(realAddress);
+                        // 居民电话三个合一
+                        String phone1 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelPhone1CellNumber), CellType.STRING))));
+                        String phone2 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelPhone2CellNumber), CellType.STRING))));
+                        String phone3 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelPhone3CellNumber), CellType.STRING))));
+                        StringBuilder phones = new StringBuilder();
+                        if (!StringUtils.isEmpty(phone1)) {
+                            phones.append(phone1);
+                        }
+                        if (!StringUtils.isEmpty(phone2)) {
+                            phones.append(",").append(phone2);
+                        }
+                        if (!StringUtils.isEmpty(phone3)) {
+                            phones.append(",").append(phone3);
+                        }
+                        resident.setCommunityResidentPhones(phones.toString());
+                        String communityName = String.valueOf(ExcelUtil.getCellValue(row.getCell(excelCommunityCellNumber), CellType.STRING));
+                        // 分包人
+                        String subcontractor = String.valueOf(ExcelUtil.getCellValue(row.getCell(excelSubcontractorCellNumber), CellType.STRING)).replaceAll(communityName, "");
+                        for (Subcontractor sub : subcontractors) {
+                            if (subcontractor.equals(sub.getName())) {
+                                resident.setSubcontractorId(sub.getSubcontractorId());
+                            }
+                        }
+                        // 社区名称
+                        Long communityId = communitiesDao.selectCommunityIdByCommunityName(communityName);
+                        if (communityId == null) {
+                            throw new BusinessException("社区编号" + communityName);
+                        }
+                        resident.setCommunityId(communityId);
+                        residents.add(resident);
                     }
                 }
             }
@@ -137,14 +182,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Map<String, Object> configurationsMap, Integer pageNum, Integer pageSize) {
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
-        Integer roleId = systemUser.getRoleId();
-        Integer roleLocationId = systemUser.getRoleLocationId();
-        List<Integer> roleLocationIds = new ArrayList<>();
-        Integer communityRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_role_id"));
-        Integer subdistrictRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_role_id"));
+    public Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Map<String, Object> configurationsMap, Integer pageNumber, Integer pageDataSize) {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+        Long roleId = systemUser.getRoleId();
+        Long roleLocationId = systemUser.getRoleLocationId();
+        List<Long> roleLocationIds = new ArrayList<>();
+        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
+        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
         if (roleId.equals(communityRoleId)) {
             roleLocationIds.add(roleLocationId);
         } else if (roleId.equals(subdistrictRoleId)) {
@@ -155,8 +200,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         } else {
             roleLocationIds = null;
         }
-        Integer count = communityResidentsDao.countCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
-        PageHelper.startPage(pageNum, pageSize);
+        Long count = communityResidentsDao.countCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
+        PageHelper.startPage(pageNumber, pageDataSize);
         List<CommunityResident> data = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
         Map<String, Object> map = new HashMap<>(3);
         map.put("dataAndPagination", findObjectsMethod(data));
@@ -165,22 +210,22 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Integer communityResidentId) {
+    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Long communityResidentId) {
         return communityResidentsDao.selectCommunityResidentByNameAndAddress(nameAddress, communityResidentId);
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Integer communityResidentId) {
+    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Long communityResidentId) {
         return communityResidentsDao.selectCommunityResidentByPhones(phones, communityResidentId);
     }
 
     @Override
-    public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, Integer roleId, Integer roleLocationId) {
+    public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, Long roleId, Long roleLocationId) {
         List<CommunityResident> communityResidents = null;
-        List<Integer> communityIds = new ArrayList<>();
-        Integer systemRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_role_id"));
-        Integer communityRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_role_id"));
-        Integer subdistrictRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_role_id"));
+        List<Long> communityIds = new ArrayList<>();
+        Long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
+        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
+        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
         if (roleId.equals(systemRoleId)) {
             communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(null);
         } else if (roleId.equals(communityRoleId)) {
@@ -194,9 +239,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(communityIds);
         }
         if (communityResidents != null) {
-            // int index = 1;
             for (CommunityResident communityResident : communityResidents) {
-                //communityResident.setIndexId(index);
                 String communityName = communityResident.getCommunity().getCommunityName().replaceAll("居委会", "").replaceAll("社区", "");
                 String subdistrictName = communityResident.getCommunity().getSubdistrict().getSubdistrictName().replaceAll("办事处", "").replaceAll("街道", "");
                 communityResident.setSubdistrictName(subdistrictName);
@@ -217,8 +260,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 }
                 // 处理地址
                 // 处理分包人
-                communityResident.setCommunityResidentSubcontractor(communityName + communityResident.getCommunityResidentSubcontractor());
-                // index++;
+                Subcontractor subcontractor = subcontractorsDao.selectObjectById(communityResident.getSubcontractorId());
+                communityResident.setSubcontractorName(communityName + subcontractor.getName());
             }
         }
         return (JSONArray) JSON.toJSON(communityResidents);
@@ -244,9 +287,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         Map<String, Object> jsonMap = new HashMap<>(4);
         // 饼图
         Map<String, Object> pieBaseData = new HashMap<>(3);
-        Integer countCommunityResidents;
-        Integer actualNumber;
-        List<Integer> pieData = new ArrayList<>();
+        Long countCommunityResidents;
+        Long actualNumber;
+        List<Long> pieData = new ArrayList<>();
         List<String> pieBackgroundColor = new ArrayList<>();
         Map<String, List<?>> pieDataMap = new HashMap<>(3);
         List<Map<String, List<?>>> pieDataSets = new ArrayList<>();
@@ -255,23 +298,23 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         Map<String, Object> barData = new HashMap<>(4);
         List<String> barChartLabels = new ArrayList<>();
         List<Map<String, Object>> barDataSets = new ArrayList<>();
-        List<Integer> barChartData = new ArrayList<>();
+        List<Long> barChartData = new ArrayList<>();
         List<String> barBackgroundColor = new ArrayList<>();
         if (roleName.contains("社区") || roleName.contains("居委会")) {
             countCommunityResidents = communityResidentsDao.countCommunityResidentsByCommunityId(systemUser.getRoleLocationId());
-            actualNumber = communitiesDao.selectActualNumberByCommunityId(systemUser.getRoleLocationId());
+            actualNumber = Long.valueOf(communitiesDao.selectActualNumberByCommunityId(systemUser.getRoleLocationId()));
             Community community = communitiesDao.selectObjectById(systemUser.getRoleLocationId());
             barChartLabels.add(community.getCommunityName());
             barChartData.add(countCommunityResidents);
             barData.put("label", "社区");
         } else if (roleName.contains("街道") || roleName.contains("办事处")) {
             countCommunityResidents = communityResidentsDao.countCommunityResidentsBySubdistrictId(systemUser.getRoleLocationId());
-            actualNumber = communitiesDao.sumActualNumberBySubdistrictId(systemUser.getRoleLocationId());
+            actualNumber = Long.valueOf(communitiesDao.sumActualNumberBySubdistrictId(systemUser.getRoleLocationId()));
             List<Community> communities = communitiesDao.countCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
             for (Community community : communities) {
                 barChartLabels.add(community.getCommunityName());
                 // 临时借用此变量
-                barChartData.add(community.getActualNumber());
+                barChartData.add(Long.valueOf(community.getActualNumber()));
             }
             barData.put("label", "社区");
         } else {
@@ -308,67 +351,11 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         barChartMap.put("datasets", barDataSets);
         jsonMap.put("barChart", barChartMap);
         // 提示数据
-        Map<String, Integer> tipMap = new HashMap<>(3);
+        Map<String, Long> tipMap = new HashMap<>(3);
         tipMap.put("databaseNumber", countCommunityResidents);
         tipMap.put("actualNumber", actualNumber);
         jsonMap.put("tipData", tipMap);
         return jsonMap;
-    }
-
-    /**
-     * 从Excel导入数据库数据处理
-     *
-     * @param row               Excel工作表的行对象
-     * @param configurationsMap 系统配置
-     * @return 处理后的社区居民对象
-     */
-    private CommunityResident residentHandler(Row row, Map<String, Object> configurationsMap) {
-        CommunityResident resident = new CommunityResident();
-        Integer excelCommunityResidentNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_community_resident_name_cell_number"));
-        Integer excelAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_address_cell_number"));
-        Integer excelPhone1CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone1_cell_number"));
-        Integer excelPhone2CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone2_cell_number"));
-        Integer excelPhone3CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone3_cell_number"));
-        Integer excelCommunityCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_community_cell_number"));
-        Integer excelSubcontractorCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_subcontractor_cell_number"));
-        // 居民姓名
-        resident.setCommunityResidentName(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelCommunityResidentNameCellNumber), CellType.STRING)));
-        // 居民地址
-        // 处理地址和社区名称
-        String address = String.valueOf(ExcelUtil.getCellValue(row.getCell(excelAddressCellNumber), CellType.STRING));
-        Matcher matcher = communityPattern.matcher(address);
-        String communityAliasName = null;
-        String realAddress = null;
-        while (matcher.find()) {
-            communityAliasName = matcher.group(1);
-            realAddress = matcher.group(2);
-        }
-        resident.setCommunityResidentAddress(realAddress);
-        // 居民电话三个合一
-        String phone1 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelPhone1CellNumber), CellType.STRING))));
-        String phone2 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelPhone2CellNumber), CellType.STRING))));
-        String phone3 = CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelPhone3CellNumber), CellType.STRING))));
-        StringBuilder phones = new StringBuilder();
-        if (!StringUtils.isEmpty(phone1)) {
-            phones.append(phone1);
-        }
-        if (!StringUtils.isEmpty(phone2)) {
-            phones.append(",").append(phone2);
-        }
-        if (!StringUtils.isEmpty(phone3)) {
-            phones.append(",").append(phone3);
-        }
-        resident.setCommunityResidentPhones(phones.toString());
-        String communityName = String.valueOf(ExcelUtil.getCellValue(row.getCell(excelCommunityCellNumber), CellType.STRING));
-        // 分包人
-        resident.setCommunityResidentSubcontractor(String.valueOf(ExcelUtil.getCellValue(row.getCell(excelSubcontractorCellNumber), CellType.STRING)).replaceAll(communityName, ""));
-        // 社区名称
-        Integer communityId = communitiesDao.selectCommunityIdByCommunityName(communityName);
-        if (communityId == null) {
-            throw new BusinessException("社区编号" + communityName);
-        }
-        resident.setCommunityId(communityId);
-        return resident;
     }
 
     /**
@@ -382,8 +369,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         communityResident.setCommunityResidentName(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentName())).replaceAll("—", "-"));
         // 社区居民地址
         communityResident.setCommunityResidentAddress(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentAddress())).replaceAll("—", "-"));
-        // 社区分包人
-        communityResident.setCommunityResidentSubcontractor(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentSubcontractor())).replaceAll("—", "-"));
         // 联系方式数组处理
         StringBuilder tempPhone = new StringBuilder();
         if (!StringUtils.isEmpty(communityResident.getCommunityResidentPhone1())) {
@@ -408,8 +393,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      * @param communities       社区集合
      * @return 单位的统计数量
      */
-    private Integer getCompany(CommunityResident communityResident, List<Community> communities) {
-        List<Integer> communityIds = new ArrayList<>();
+    private Long getCompany(CommunityResident communityResident, List<Community> communities) {
+        List<Long> communityIds = new ArrayList<>();
         for (Community community : communities) {
             communityIds.add(community.getCommunityId());
         }

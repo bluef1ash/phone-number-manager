@@ -4,7 +4,6 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 import www.entity.UserPrivilege;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,7 +19,7 @@ public interface UserPrivilegesDao extends BaseDao<UserPrivilege> {
      * @return 系统用户权限列表
      * @throws DataAccessException 数据库操作异常
      */
-    List<UserPrivilege> selectPrivilegesByRoleId(Integer roleId) throws DataAccessException;
+    Set<UserPrivilege> selectPrivilegesByRoleId(Long roleId) throws DataAccessException;
 
     /**
      * 通过角色是否在导航栏显示查询
@@ -29,7 +28,7 @@ public interface UserPrivilegesDao extends BaseDao<UserPrivilege> {
      * @return 系统用户权限列表
      * @throws DataAccessException 数据库操作异常
      */
-    List<UserPrivilege> selectPrivilegesByIsDisplay(Integer isDisplay) throws DataAccessException;
+    Set<UserPrivilege> selectPrivilegesByIsDisplay(Integer isDisplay) throws DataAccessException;
 
     /**
      * 通过角色是否在导航栏和拥有的权限显示查询
@@ -39,7 +38,7 @@ public interface UserPrivilegesDao extends BaseDao<UserPrivilege> {
      * @return 系统用户权限列表
      * @throws DataAccessException 数据库操作异常
      */
-    List<UserPrivilege> selectPrivilegesByIsDisplayAndConstraintAuth(@Param("isDisplay") Integer isDisplay, @Param("constraintAuthes") Set<String> constraintAuthes) throws DataAccessException;
+    Set<UserPrivilege> selectPrivilegesByIsDisplayAndConstraintAuth(@Param("isDisplay") Integer isDisplay, @Param("constraintAuthes") Set<String> constraintAuthes) throws DataAccessException;
 
     /**
      * 通过角色父级ID查询
@@ -49,7 +48,7 @@ public interface UserPrivilegesDao extends BaseDao<UserPrivilege> {
      * @return 系统用户权限集合
      * @throws DataAccessException 数据库操作异常
      */
-    List<UserPrivilege> selectPrivilegesByHigherPrivilegeAndIsDisplay(@Param("higherPrivilege") Long higherPrivilege, @Param("isDisplay") Integer isDisplay) throws DataAccessException;
+    Set<UserPrivilege> selectPrivilegesByHigherPrivilegeAndIsDisplay(@Param("higherPrivilege") Long higherPrivilege, @Param("isDisplay") Integer isDisplay) throws DataAccessException;
 
     /**
      * 通过角色父级ID查询
@@ -58,5 +57,5 @@ public interface UserPrivilegesDao extends BaseDao<UserPrivilege> {
      * @return 系统用户权限集合
      * @throws DataAccessException 数据库操作异常
      */
-    List<UserPrivilege> selectPrivilegesByHigherPrivilege(Long higherPrivilege) throws DataAccessException;
+    Set<UserPrivilege> selectPrivilegesByHigherPrivilege(Long higherPrivilege) throws DataAccessException;
 }

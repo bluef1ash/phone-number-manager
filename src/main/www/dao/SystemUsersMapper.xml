@@ -98,15 +98,11 @@
         SELECT
             `pm_system_users`.`system_user_id`,
             `pm_system_users`.`username`,
-            `pm_system_users`.`password`,
             `pm_system_users`.`login_time`,
             `pm_system_users`.`login_ip`,
             `pm_system_users`.`is_locked`,
-            `pm_system_users`.`role_location_id`,
             `pm_roles`.`role_id`,
-            `pm_roles`.`name`,
-            `pm_roles`.`description`,
-            `pm_roles`.`higher_role`
+            `pm_roles`.`name`
         FROM `pm_system_users`
             LEFT JOIN `pm_roles` ON `pm_system_users`.`role_id` = `pm_roles`.`role_id`
         ORDER BY `pm_system_users`.`system_user_id`
@@ -115,15 +111,10 @@
         SELECT
             `pm_system_users`.`system_user_id`,
             `pm_system_users`.`username`,
-            `pm_system_users`.`password`,
-            `pm_system_users`.`login_time`,
-            `pm_system_users`.`login_ip`,
             `pm_system_users`.`is_locked`,
             `pm_system_users`.`role_location_id`,
             `pm_roles`.`role_id`,
-            `pm_roles`.`name`,
-            `pm_roles`.`description`,
-            `pm_roles`.`higher_role`
+            `pm_roles`.`name`
         FROM `pm_system_users`
             LEFT JOIN `pm_roles` ON `pm_system_users`.`role_id` = `pm_roles`.`role_id`
         WHERE `pm_system_users`.`system_user_id` = #{systemUserId}

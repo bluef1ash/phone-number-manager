@@ -26,10 +26,18 @@ public interface CommunityService extends BaseService<Community> {
      *
      * @param pageNumber   分页页码
      * @param pageDataSize 每页显示条目数量
-     * @return 查找道德所有社区和所属街道与分页对象
+     * @return 查找到的所有社区和所属街道与分页对象
      * @throws Exception SERVICE层异常
      */
     Map<String, Object> findCommunitiesAndSubdistrict(Integer pageNumber, Integer pageDataSize) throws Exception;
+
+    /**
+     * 查找所有社区和所属街道
+     *
+     * @return 查找到的所有社区和所属街道
+     * @throws Exception SERVICE层异常
+     */
+    List<Community> findCommunitiesAndSubdistrict() throws Exception;
 
     /**
      * 通过社区联系方式查找
@@ -49,4 +57,6 @@ public interface CommunityService extends BaseService<Community> {
      * @throws Exception SERVICE层异常
      */
     List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Map<String, Object> configurationsMap) throws Exception;
+
+    List<Community> findCommunityBySubdistrictId(Long subdistrictId) throws Exception;
 }

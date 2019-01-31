@@ -29,6 +29,15 @@ public interface CommunitiesDao extends BaseDao<Community> {
     List<Community> selectCommunitiesAndSubdistrictAll() throws DataAccessException;
 
     /**
+     * 通过所属街道编号关联查询社区
+     *
+     * @param subdistrictId 所属街道编号
+     * @return 所属街道的所有社区
+     * @throws DataAccessException 数据库操作异常
+     */
+    List<Community> selectCommunitiesCorrelationBySubdistrictId(Long subdistrictId) throws DataAccessException;
+
+    /**
      * 通过所属街道编号查询社区
      *
      * @param subdistrictId 所属街道编号

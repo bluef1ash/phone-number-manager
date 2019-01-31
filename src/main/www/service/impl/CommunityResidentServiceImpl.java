@@ -77,7 +77,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             PageHelper.startPage(pageNumber, pageDataSize);
             communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
         } else if (companyRid.equals(subdistrictRoleId)) {
-            List<Community> newCommunities = communitiesDao.selectCommunitiesBySubdistrictId(companyId);
+            List<Community> newCommunities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(companyId);
             count = getCompany(communityResident, newCommunities);
             PageHelper.startPage(pageNumber, pageDataSize);
             communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResident(communityResident);
@@ -88,7 +88,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 PageHelper.startPage(pageNumber, pageDataSize);
                 communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
             } else if (systemUser.getRoleId().equals(subdistrictRoleId)) {
-                List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
+                List<Community> communities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(systemUser.getRoleLocationId());
                 count = getCompany(communityResident, communities);
                 PageHelper.startPage(pageNumber, pageDataSize);
                 communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResident(communityResident);
@@ -193,7 +193,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         if (roleId.equals(communityRoleId)) {
             roleLocationIds.add(roleLocationId);
         } else if (roleId.equals(subdistrictRoleId)) {
-            List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(roleLocationId);
+            List<Community> communities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(roleLocationId);
             for (Community community : communities) {
                 roleLocationIds.add(community.getCommunityId());
             }
@@ -232,7 +232,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             communityIds.add(roleLocationId);
             communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(communityIds);
         } else if (roleId.equals(subdistrictRoleId)) {
-            List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(roleLocationId);
+            List<Community> communities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(roleLocationId);
             for (Community community : communities) {
                 communityIds.add(community.getCommunityId());
             }

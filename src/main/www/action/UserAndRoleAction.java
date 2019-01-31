@@ -3,18 +3,16 @@ package www.action;
 import annotation.RefreshCsrfToken;
 import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import exception.BusinessException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import utils.CommonUtil;
 import utils.CsrfTokenUtil;
 import www.entity.*;
@@ -27,10 +25,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 系统用户与用户角色控制器
@@ -53,12 +48,8 @@ public class UserAndRoleAction {
     private CommunityService communityService;
     @Resource
     private SubdistrictService subdistrictService;
-    private final HttpServletRequest request;
-
-    @Autowired
-    public UserAndRoleAction(HttpServletRequest request) {
-        this.request = request;
-    }
+    @Resource
+    private HttpServletRequest request;
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -81,10 +72,13 @@ public class UserAndRoleAction {
      */
     @RequestMapping(value = "/user/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String systemUserList(Model model, Integer page) {
+    public String systemUserList(HttpSession session, Model model, Integer page) {
         try {
             Map<String, Object> systemUsers = systemUserService.findSystemUsersAndRoles(page, null);
-            model.addAttribute("systemUsers", systemUsers.get("data"));
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+            model.addAttribute("systemAdministratorId", systemAdministratorId);
+            model.addAttribute("systemUsers", JSON.toJSON(systemUsers.get("data")));
             model.addAttribute("pageInfo", systemUsers.get("pageInfo"));
             return "user/list";
         } catch (Exception e) {
@@ -102,30 +96,25 @@ public class UserAndRoleAction {
      */
     @RequestMapping(value = "/user/ajax_user_lock", method = RequestMethod.GET)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Integer> systemUserLockedForAjax(HttpSession session, Long systemUserId, Integer locked) {
-        Map<String, Integer> map = new HashMap<>(2);
+    @ResponseBody
+    public Map<String, Integer> systemUserLockedForAjax(HttpSession session, Long systemUserId, Boolean locked) {
+        Map<String, Integer> map = new HashMap<>(3);
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
             if (!systemUserId.equals(systemAdministratorId)) {
                 SystemUser systemUser = new SystemUser();
                 systemUser.setSystemUserId(systemUserId);
-                systemUser.setIsLocked(locked);
+                systemUser.setIsLocked(locked ? 1 : 0);
                 systemUserService.updateObject(systemUser);
                 map.put("state", 1);
+                SystemUser user = systemUserService.findObject(systemUserId);
+                map.put("isLocked", user.getIsLocked());
             } else {
                 map.put("state", 0);
             }
         } catch (Exception e) {
             map.put("state", 0);
-        }
-        try {
-            SystemUser user = systemUserService.findObject(systemUserId);
-            map.put("isLocked", user.getIsLocked());
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return map;
     }
@@ -133,12 +122,14 @@ public class UserAndRoleAction {
     /**
      * 添加系统用户
      *
-     * @param model 前台模型
+     * @param session Session对象
+     * @param model   前台模型
      * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/user/create", method = RequestMethod.GET)
-    public String createSystemUser(Model model) {
+    public String createSystemUser(HttpSession session, Model model) {
+        setRoleId(session, model);
         try {
             List<UserRole> userRoles = userRoleService.findObjects();
             model.addAttribute("userRoles", userRoles);
@@ -151,13 +142,15 @@ public class UserAndRoleAction {
     /**
      * 修改系统用户
      *
-     * @param model 前台模型
-     * @param id    编辑的对应编号
+     * @param session Session对象
+     * @param model   前台模型
+     * @param id      编辑的对应编号
      * @return 视图页面
      */
     @RefreshCsrfToken
     @RequestMapping(value = "/user/edit", method = RequestMethod.GET)
-    public String editSystemUser(Model model, Integer id) {
+    public String editSystemUser(HttpSession session, Model model, Integer id) {
+        setRoleId(session, model);
         try {
             SystemUser user = systemUserService.findSystemUsersAndRoles(id);
             List<UserRole> userRoles = userRoleService.findObjects();
@@ -172,6 +165,7 @@ public class UserAndRoleAction {
     /**
      * 添加与修改处理系统用户
      *
+     * @param session       Session对象
      * @param request       HTTP响应对象
      * @param model         前台模型
      * @param systemUser    系统用户对象
@@ -180,8 +174,9 @@ public class UserAndRoleAction {
      */
     @RequestMapping(value = "/user/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
-    public String systemUserAddOrEditHandle(HttpServletRequest request, Model model, @Validated SystemUser systemUser, BindingResult bindingResult) {
+    public String systemUserAddOrEditHandle(HttpSession session, HttpServletRequest request, Model model, @Validated SystemUser systemUser, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            setRoleId(session, model);
             // 输出错误信息
             List<ObjectError> allErrors = bindingResult.getAllErrors();
             model.addAttribute("messageErrors", allErrors);
@@ -209,18 +204,17 @@ public class UserAndRoleAction {
      * 使用AJAX技术通过系统用户编号删除系统用户
      *
      * @param session session对象
-     * @param id 对应编号
+     * @param id      对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/user/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> deleteSystemUserForAjax(HttpSession session, Long id) {
+    @ResponseBody
+    public Map<String, Object> deleteSystemUserForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-            Integer systemAdministratorId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_administrator_id"));
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
             if (id.equals(systemAdministratorId)) {
                 map.put("state", 0);
                 map.put("message", "不允许删除超级管理员！");
@@ -230,10 +224,43 @@ public class UserAndRoleAction {
                 map.put("message", "删除系统用户成功！");
             }
         } catch (Exception e) {
+            Map<String, String> defaultMessage = new HashMap<>(2);
+            defaultMessage.put("defaultMessage", "删除系统用户失败！");
             map.put("state", 0);
-            map.put("message", "删除系统用户失败！");
+            map.put("messageError", defaultMessage);
         }
+        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
         return map;
+    }
+
+    /**
+     * 使用Ajax技术通过系统角色编号获取单位
+     *
+     * @param session Session对象
+     * @param roleId  角色编号
+     * @return 单位信息
+     */
+    @RequestMapping(value = "/user/ajax_get_companies", method = RequestMethod.GET)
+    @VerifyCSRFToken
+    @ResponseBody
+    public Map<String, Object> getCompanyForAjax(HttpSession session, Long roleId, Long roleLocationId) {
+        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
+        JSONArray jsonArray;
+        try {
+            if (roleId.equals(communityRoleId)) {
+                jsonArray = (JSONArray) JSON.toJSON(communityService.findCommunityBySubdistrictId(roleLocationId));
+            } else {
+                jsonArray = (JSONArray) JSON.toJSON(subdistrictService.findObjectsForIdAndName());
+            }
+            Map<String, Object> jsonMap = new HashMap<>(3);
+            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            jsonMap.put("data", jsonArray);
+            return jsonMap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException("查找单位失败，请稍后再试！");
+        }
     }
 
     /**
@@ -244,8 +271,8 @@ public class UserAndRoleAction {
      */
     @RequestMapping(value = "/user/ajax_get_company", method = RequestMethod.GET)
     @VerifyCSRFToken
-    public @ResponseBody
-    List<?> getCompanyIdForAjax(String roleId) {
+    @ResponseBody
+    public List<?> getCompanyIdForAjax(String roleId) {
         try {
             List<?> companies = null;
             String[] role = URLDecoder.decode(roleId, "utf-8").split("-");
@@ -282,8 +309,8 @@ public class UserAndRoleAction {
      */
     @RequestMapping(value = "/user/ajax_get", method = RequestMethod.GET)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> getSystemUsersForAjax(HttpSession session) {
+    @ResponseBody
+    public Map<String, Object> getSystemUsersForAjax(HttpSession session) {
         Map<String, Object> map = new HashMap<>(4);
         try {
             List<SystemUser> systemUsers = systemUserService.findSystemUsers();
@@ -329,7 +356,7 @@ public class UserAndRoleAction {
     public String createSystemUserRole(Model model) {
         try {
             List<UserRole> userRoles = userRoleService.findObjects();
-            List<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesAndSubPrivilegesAll();
+            Set<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesAndSubPrivilegesAll();
             model.addAttribute("userRoles", userRoles);
             model.addAttribute("userPrivileges", userPrivileges);
             return "role/edit";
@@ -350,8 +377,8 @@ public class UserAndRoleAction {
     public String editSystemUserRole(Model model, Long id) {
         try {
             List<UserRole> userRoles = userRoleService.findObjects();
-            UserRole userRole = userRoleService.findObject(id);
-            List<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesAndSubPrivilegesAll();
+            UserRole userRole = userRoleService.findRolesAndPrivileges(id);
+            Set<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesAndSubPrivilegesAll();
             model.addAttribute("userRoles", userRoles);
             model.addAttribute("userRole", userRole);
             model.addAttribute("userPrivileges", userPrivileges);
@@ -373,7 +400,7 @@ public class UserAndRoleAction {
      */
     @RequestMapping(value = "/role/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
-    public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserRole userRole, Long[] privilegeIds, BindingResult bindingResult) {
+    public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserRole userRole, @RequestParam Long[] privilegeIds, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
             List<ObjectError> allErrors = bindingResult.getAllErrors();
@@ -407,18 +434,17 @@ public class UserAndRoleAction {
      * 使用AJAX技术通过系统用户角色编号删除系统用户角色
      *
      * @param session session对象
-     * @param id 对应编号
+     * @param id      对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/role/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, Long id) {
+    @ResponseBody
+    public Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-            Integer systemRoleId = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_role_id"));
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
             if (id.equals(systemRoleId)) {
                 UserRolePrivilege userRolePrivilege = new UserRolePrivilege();
                 userRolePrivilege.setRoleId(id);
@@ -434,6 +460,7 @@ public class UserAndRoleAction {
             map.put("state", 0);
             map.put("message", "删除用户角色失败！");
         }
+        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
         return map;
     }
 
@@ -537,13 +564,14 @@ public class UserAndRoleAction {
     /**
      * 使用AJAX技术通过系统用户权限编号删除系统用户权限
      *
-     * @param id 系统用户权限编号
+     * @param session Session对象
+     * @param id      系统用户权限编号
      * @return Ajax消息
      */
     @RequestMapping(value = "/privilege/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> deleteSystemUserPrivilegeForAjax(Long id) {
+    @ResponseBody
+    public Map<String, Object> deleteSystemUserPrivilegeForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             userPrivilegeService.deleteObjectById(id);
@@ -553,6 +581,7 @@ public class UserAndRoleAction {
             map.put("state", 0);
             map.put("message", "删除用户权限失败！");
         }
+        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
         return map;
     }
 
@@ -566,10 +595,10 @@ public class UserAndRoleAction {
     @SystemUserAuth(unAuth = true)
     @RequestMapping(value = "/privilege/ajax_get_privileges", method = RequestMethod.GET)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> getPrivilegesByRoleIdForAjax(HttpSession session, Integer roleId) {
+    @ResponseBody
+    public Map<String, Object> getPrivilegesByRoleIdForAjax(HttpSession session, Long roleId) {
         try {
-            List<UserPrivilege> privileges = userPrivilegeService.findPrivilegesByRoleId(roleId);
+            Set<UserPrivilege> privileges = userPrivilegeService.findPrivilegesByRoleId(roleId);
             Map<String, Object> map = new HashMap<>(3);
             map.put("privileges", privileges);
             map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
@@ -577,5 +606,21 @@ public class UserAndRoleAction {
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
+    }
+
+    /**
+     * 设置系统用户角色编号
+     *
+     * @param session Session对象
+     * @param model   前台模型对象
+     */
+    private void setRoleId(HttpSession session, Model model) {
+        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
+        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
+        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        model.addAttribute("communityRoleId", communityRoleId);
+        model.addAttribute("subdistrictRoleId", subdistrictRoleId);
+        model.addAttribute("systemAdministratorId", systemAdministratorId);
     }
 }

@@ -6,6 +6,7 @@
         <result property="communityName" column="name"/>
         <result property="communityTelephone" column="telephone"/>
         <result property="actualNumber" column="actual_number"/>
+        <result property="subdistrictId" column="subdistrict_id"/>
     </resultMap>
     <resultMap type="Community" id="communityAliasResultMap" extends="communityResultMap">
         <result property="communityName" column="community_name"/>
@@ -90,12 +91,17 @@
                  LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
         WHERE `pm_communities`.`community_id` = #{communityId}
     </select>
-    <select id="selectCommunitiesBySubdistrictId" resultMap="communitiesCorrelationSubdistrictResultMap">
+    <select id="selectCommunitiesCorrelationBySubdistrictId" resultMap="communitiesCorrelationSubdistrictResultMap">
         SELECT `pm_communities`.`community_id`, `pm_communities`.`name`, `pm_subdistricts`.subdistrict_id,
             `pm_subdistricts`.`name` AS 'subdistrict_name'
         FROM `pm_communities`
                  LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
-        WHERE `pm_communities`.`subdistrict_id` = #{subdistrict_id}
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
+    </select>
+    <select id="selectCommunitiesBySubdistrictId" resultMap="communityResultMap">
+        SELECT `community_id`, `name`, `subdistrict_id`
+        FROM `pm_communities`
+        WHERE `subdistrict_id` = #{subdistrictId}
     </select>
     <select id="selectCommunityIdByCommunityName" resultType="long">
         SELECT `community_id`
@@ -131,7 +137,7 @@
             COUNT(`pm_community_residents`.`community_resident_id`) AS 'actual_number'
         FROM `pm_communities`
                  LEFT JOIN `pm_community_residents`
-            ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
         GROUP BY `pm_communities`.`name`;
     </select>

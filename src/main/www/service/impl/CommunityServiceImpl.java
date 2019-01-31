@@ -33,6 +33,11 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
     }
 
     @Override
+    public List<Community> findCommunitiesAndSubdistrict() throws Exception {
+        return communitiesDao.selectCommunitiesAndSubdistrictAll();
+    }
+
+    @Override
     public List<Community> findCommunityByCommunity(Community community) throws Exception {
         return baseDao.selectObjectsByObject(community);
     }
@@ -47,10 +52,15 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
             Community community = communitiesDao.selectCommunityCorrelationById(systemUser.getRoleLocationId());
             communities.add(community);
         } else if (systemUser.getRoleId().equals(subdistrictRoleId)) {
-            communities = communitiesDao.selectCommunitiesBySubdistrictId(systemUser.getRoleLocationId());
+            communities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(systemUser.getRoleLocationId());
         } else {
             communities = communitiesDao.selectCommunitiesCorrelationSubdistrictsAll();
         }
         return communities;
+    }
+
+    @Override
+    public List<Community> findCommunityBySubdistrictId(Long subdistrictId) throws Exception {
+        return communitiesDao.selectCommunitiesBySubdistrictId(subdistrictId);
     }
 }

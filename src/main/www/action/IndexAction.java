@@ -3,21 +3,21 @@ package www.action;
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
 import exception.BusinessException;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import www.entity.SystemUser;
 import www.entity.UserPrivilege;
 import www.service.CommunityResidentService;
 import www.service.UserPrivilegeService;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 首页控制器
@@ -76,10 +76,10 @@ public class IndexAction {
     @RequestMapping(value = "/getmenu", method = RequestMethod.GET)
     public @ResponseBody
     Map<String, Object> getMenu(Integer isDisplay, HttpSession session) {
+        Set<UserPrivilege> userPrivileges = (Set<UserPrivilege>) session.getAttribute("userPrivileges");
         try {
-            List<UserPrivilege> userPrivileges = userPrivilegeService.findPrivilegesByIsDisplay(isDisplay, session);
             Map<String, Object> map = new HashMap<>(2);
-            map.put("userPrivileges", userPrivileges);
+            map.put("userPrivileges", userPrivilegeService.findPrivilegesByIsDisplay(isDisplay, userPrivileges));
             return map;
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);

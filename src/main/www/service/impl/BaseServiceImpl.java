@@ -143,9 +143,10 @@ public class BaseServiceImpl<T> implements BaseService<T> {
      * @return 查找到的对象集合与分页对象
      */
     protected Map<String, Object> findObjectsMethod(List<T> data) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = new HashMap<>(4);
         map.put("data", data);
         map.put("pageInfo", new PageInfo<T>(data));
+        map.put("count", data.size());
         return map;
     }
 }

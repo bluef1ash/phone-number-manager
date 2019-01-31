@@ -1,0 +1,17 @@
+@charset "utf-8";
+@import url(../lib/bootstrap/css/bootstrap.min.css);
+@import url(../lib/flag-icon-css/css/flag-icon.min.css);
+@import url(../css/font-awesome.min.css);
+@import url(../css/simple-line-icons.css);
+@import url(../css/skins/_all-skins.css);
+@import url(../lib/layui/css/layui.css);
+@import url(../lib/layui/css/layui.mobile.css);
+@import url(../lib/pace/pace.min.css);
+@import url(../lib/ztree/css/zTreeStyle/zTreeStyle.css);
+@import url(../css/public.css);
+@import url(../css/error.css);
+@import url(../css/style.min.css);
+
+select {
+    -webkit-appearance: menulist
+}

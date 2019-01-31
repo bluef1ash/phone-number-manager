@@ -133,8 +133,4 @@ src/main/resources/
 src/test/resources/
 git_stats/
 webapp/backup/
-webapp/css/content-search.css.map
-webapp/css/custom.css.map
-webapp/css/error.css.map
-webapp/css/index.css.map
-webapp/css/welcome.css.map
+webapp/javascript/dist/

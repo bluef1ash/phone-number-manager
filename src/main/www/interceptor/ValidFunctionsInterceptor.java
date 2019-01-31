@@ -15,7 +15,13 @@ public class ValidFunctionsInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 将当前控制器的方法名存入session
-        String methodName = ((HandlerMethod) handler).getMethod().getName();
+        HandlerMethod handlerMethod;
+        if (handler instanceof HandlerMethod) {
+            handlerMethod = (HandlerMethod) handler;
+        } else {
+            return true;
+        }
+        String methodName = handlerMethod.getMethod().getName();
         request.getSession().setAttribute("validFunction", methodName);
         return super.preHandle(request, response, handler);
     }

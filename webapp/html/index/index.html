@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+    <head th:replace="layouts/header :: commonHead('首页', ~{}, ~{::script})">
+        <title></title>
+        <script type="text/javascript" th:src="@{'/javascript/dist/index.js'}"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+            </ol>
+            <div class="container-fluid"></div>
+        </th:block>
+    </body>
+</html>

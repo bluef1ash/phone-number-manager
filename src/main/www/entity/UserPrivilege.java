@@ -2,6 +2,7 @@ package www.entity;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 用户权限实体
@@ -19,12 +20,12 @@ public class UserPrivilege implements Serializable {
     private Integer orders = 0;
     private Integer isDisplay;
     private List<UserRole> userRoles;
-    private List<UserPrivilege> subUserPrivileges;
+    private Set<UserPrivilege> subUserPrivileges;
 
     public UserPrivilege() {
     }
 
-    public UserPrivilege(Long privilegeId, String privilegeName, String constraintAuth, String uri, Long higherPrivilege, String iconName, Integer orders, Integer isDisplay, List<UserRole> userRoles, List<UserPrivilege> subUserPrivileges) {
+    public UserPrivilege(Long privilegeId, String privilegeName, String constraintAuth, String uri, Long higherPrivilege, String iconName, Integer orders, Integer isDisplay, List<UserRole> userRoles, Set<UserPrivilege> subUserPrivileges) {
         this.privilegeId = privilegeId;
         this.privilegeName = privilegeName;
         this.constraintAuth = constraintAuth;
@@ -109,11 +110,11 @@ public class UserPrivilege implements Serializable {
         this.userRoles = userRoles;
     }
 
-    public List<UserPrivilege> getSubUserPrivileges() {
+    public Set<UserPrivilege> getSubUserPrivileges() {
         return subUserPrivileges;
     }
 
-    public void setSubUserPrivileges(List<UserPrivilege> subUserPrivileges) {
+    public void setSubUserPrivileges(Set<UserPrivilege> subUserPrivileges) {
         this.subUserPrivileges = subUserPrivileges;
     }
 

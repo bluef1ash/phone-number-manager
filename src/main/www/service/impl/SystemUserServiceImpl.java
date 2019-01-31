@@ -38,30 +38,17 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
             configurationsMap.put(configuration.getKey(), configuration.getValue());
         }
         // 系统用户权限
-        Set<String> privilegeAuth = new HashSet<>();
-        Set<String> privilegeParents = new HashSet<>();
-        Map<String, Set<String>> privilegeMap = new HashMap<>(3);
         Set<UserPrivilege> userPrivileges;
         Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
         if (systemAdministratorId.equals(user.getSystemUserId())) {
-            userPrivileges = new HashSet<>(userPrivilegesDao.selectPrivilegesByHigherPrivilegeAndIsDisplay(0L, 1));
+            userPrivileges = new LinkedHashSet<>(userPrivilegesDao.selectObjectsAll());
         } else {
             userPrivileges = user.getUserRole().getUserPrivileges();
         }
-        for (UserPrivilege userPrivilege : userPrivileges) {
-            Long higherPrivilegeId = userPrivilege.getHigherPrivilege();
-            privilegeAuth.add(userPrivilege.getConstraintAuth());
-            if (higherPrivilegeId != 0) {
-                UserPrivilege privilege = userPrivilegesDao.selectObjectById(higherPrivilegeId);
-                privilegeParents.add(privilege.getConstraintAuth());
-            }
-        }
-        privilegeMap.put("privilegeAuth", privilegeAuth);
-        privilegeMap.put("privilegeParents", privilegeParents);
         map.put("state", 1);
         map.put("message", "登录成功！");
         map.put("systemUser", user);
-        map.put("privilegeMap", privilegeMap);
+        map.put("userPrivileges", userPrivileges);
         map.put("configurationsMap", configurationsMap);
         return map;
     }

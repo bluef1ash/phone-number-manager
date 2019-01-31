@@ -29,7 +29,7 @@ public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements Us
     }
 
     @Override
-    public UserRole findRolesAndPrivileges(Integer roleId) throws Exception {
+    public UserRole findRolesAndPrivileges(Long roleId) throws Exception {
         return userRolesDao.selectRolesAndPrivilegesById(roleId);
     }
 

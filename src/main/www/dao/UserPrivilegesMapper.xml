@@ -4,6 +4,7 @@
     <resultMap type="UserPrivilege" id="userPrivilegeResultMap">
         <id property="privilegeId" column="privilege_id"/>
         <result property="privilegeName" column="name"/>
+        <result property="privilegeName" column="privilege_name"/>
         <result property="constraintAuth" column="constraint_auth"/>
         <result property="uri" column="uri"/>
         <result property="higherPrivilege" column="higher_privilege"/>

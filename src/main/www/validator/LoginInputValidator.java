@@ -5,13 +5,17 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 import utils.CommonUtil;
+import utils.GeetestLibUtil;
 import www.entity.SystemUser;
 import www.service.SystemUserService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 登录表单验证
@@ -20,12 +24,10 @@ import java.util.List;
  */
 public class LoginInputValidator extends BaseInputValidator implements Validator {
     private SystemUserService systemUserService;
-    private String captcha;
 
-    public LoginInputValidator(SystemUserService systemUserService, HttpServletRequest request, String captcha) {
+    public LoginInputValidator(SystemUserService systemUserService, HttpServletRequest request) {
         this.request = request;
         this.systemUserService = systemUserService;
-        this.captcha = captcha;
     }
 
     @Override
@@ -38,15 +40,7 @@ public class LoginInputValidator extends BaseInputValidator implements Validator
         try {
             ValidationUtils.rejectIfEmpty(errors, "username", "systemUser.username.required", "系统用户名称不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "password", "systemUser.password.required", "系统用户密码不能为空！");
-            ValidationUtils.rejectIfEmpty(errors, "captcha", "systemUser.captcha.required", "登录验证码不能为空！");
             SystemUser systemUser = (SystemUser) target;
-            if (!captcha.equalsIgnoreCase(systemUser.getCaptcha())) {
-                // 得到用户输入的验证码匹配失败
-                field = "captcha";
-                errorCode = "systemUser.captcha.error";
-                message = "您输入的验证码错误！";
-                return false;
-            }
             List<SystemUser> systemUsers = systemUserService.findSystemUserByUserName(systemUser.getUsername());
             if (systemUsers.size() == 0) {
                 field = "username";
@@ -55,6 +49,12 @@ public class LoginInputValidator extends BaseInputValidator implements Validator
                 return false;
             }
             SystemUser user = systemUsers.get(0);
+            if (!checkCaptcha(user.getSystemUserId())) {
+                field = "captcha";
+                errorCode = "systemUser.captcha.error";
+                message = "验证失败！";
+                return false;
+            }
             if (!validPassword(systemUser.getPassword(), user.getPassword())) {
                 field = "password";
                 errorCode = "systemUser.password.error";
@@ -78,9 +78,34 @@ public class LoginInputValidator extends BaseInputValidator implements Validator
     }
 
     /**
+     * 检测是否通过验证机制
+     *
+     * @param systemUserId 系统用户编号
+     * @return 是否通过
+     */
+    private boolean checkCaptcha(Long systemUserId) {
+        GeetestLibUtil gtSdk = new GeetestLibUtil(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
+        String challenge = request.getParameter(GeetestLibUtil.FN_GEETEST_CHALLENGE);
+        String validate = request.getParameter(GeetestLibUtil.FN_GEETEST_VALIDATE);
+        String secCode = request.getParameter(GeetestLibUtil.FN_GEETEST_SECCODE);
+        int gtServerStatusCode = (Integer) request.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
+        Map<String, String> param = new HashMap<>(4);
+        param.put("user_id", String.valueOf(systemUserId));
+        param.put("client_type", request.getParameter("browserType"));
+        param.put("ip_address", CommonUtil.getIp(request));
+        int gtResult = 0;
+        if (gtServerStatusCode == 1) {
+            gtResult = gtSdk.enhencedValidateRequest(challenge, validate, secCode, param);
+        } else {
+            gtResult = gtSdk.failbackValidateRequest(challenge, validate, secCode);
+        }
+        return gtResult == 1;
+    }
+
+    /**
      * 验证口令是否合法
      *
-     * @param password 前台表单传递已经加密的密码字符串
+     * @param password     前台表单传递已经加密的密码字符串
      * @param passwordInDb 数据库中的密码字符串
      * @return 验证是否成功
      * @throws Exception 验证异常
@@ -97,7 +122,7 @@ public class LoginInputValidator extends BaseInputValidator implements Validator
         //将盐数据传入消息摘要对象
         md.update(salt);
         //将口令的数据传给消息摘要对象
-        md.update(password.getBytes("UTF-8"));
+        md.update(password.getBytes(StandardCharsets.UTF_8));
         //生成输入口令的消息摘要
         byte[] digest = md.digest();
         //声明一个保存数据库中口令消息摘要的变量

@@ -24,15 +24,38 @@
             </list>
         </property>
     </bean>
+    <!-- 处理静态资源 -->
+    <!-- 上传的图片缓存1个月，其他js，css，img资源缓存一年 -->
+    <mvc:resources mapping="/lib/**" location="/lib/" cache-period="0"/>
+    <mvc:resources mapping="/css/**" location="/css/" cache-period="0"/>
+    <mvc:resources mapping="/javascript/**" location="/javascript/" cache-period="0"/>
+    <mvc:resources mapping="/images/**" location="/images/" cache-period="0"/>
+    <mvc:resources mapping="/fonts/**" location="/fonts/" cache-period="0"/>
     <!-- 扫描所有的controller 但是不扫描service -->
     <context:component-scan base-package="www">
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
     </context:component-scan>
-    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver">
-        <property name="prefix" value="/jsp/"/>
-        <property name="suffix" value=".jsp"/>
-        <property name="viewClass" value="org.springframework.web.servlet.view.InternalResourceView"/>
+    <bean id="templateResolver" class="org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver">
+        <property name="templateMode" value="HTML5"/>
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="prefix" value="/html/"/>
+        <property name="suffix" value=".html"/>
+        <property name="cacheable" value="false"/>
+    </bean>
+    <bean id="templateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
+        <property name="templateResolver" ref="templateResolver"/>
+        <property name="enableSpringELCompiler" value="true"/>
+        <property name="additionalDialects">
+            <set>
+                <bean class="nz.net.ultraq.thymeleaf.LayoutDialect"/>
+            </set>
+        </property>
+    </bean>
+    <bean class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
+        <property name="templateEngine" ref="templateEngine"/>
+        <property name="order" value="1"/>
+        <property name="characterEncoding" value="UTF-8"/>
     </bean>
     <!--异常配置-->
     <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
@@ -40,16 +63,6 @@
         <property name="exceptionAttribute" value="exception"/>
         <!-- 定义默认的异常处理页面，当该异常类型的注册时使用 -->
         <property name="defaultErrorView" value="exception/default"/>
-        <!-- 定义需要特殊处理的异常，用类名或完全路径名作为key，异常也页名作为值 -->
-        <property name="exceptionMappings">
-            <props>
-                <prop key="exception.BusinessException">exception/business</prop>
-                <prop key="exception.ParameterException">exception/parameter</prop>
-                <prop key="exception.PrivilegeException">exception/privilege</prop>
-                <prop key="exception.IllegalOperationException">exception/illegal</prop>
-                <prop key="exception.CsrfException">exception/csrf</prop>
-            </props>
-        </property>
     </bean>
     <!-- 拦截器 -->
     <mvc:interceptors>
@@ -58,6 +71,8 @@
             <!-- 需拦截的地址 -->
             <mvc:mapping path="/**"/>
             <!-- 需排除拦截的地址 -->
+            <mvc:exclude-mapping path="/login/logout"/>
+            <mvc:exclude-mapping path="/lib/**"/>
             <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/javascript/**"/>
             <mvc:exclude-mapping path="/uploads/**"/>
@@ -68,9 +83,10 @@
         <!--登录验证拦截器-->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
-            <mvc:exclude-mapping path="/login"/>
             <mvc:exclude-mapping path="/login/ajax"/>
             <mvc:exclude-mapping path="/login/captcha"/>
+            <mvc:exclude-mapping path="/login/logout"/>
+            <mvc:exclude-mapping path="/lib/**"/>
             <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/javascript/**"/>
             <mvc:exclude-mapping path="/uploads/**"/>
@@ -82,9 +98,9 @@
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
             <mvc:exclude-mapping path="/login"/>
-            <mvc:exclude-mapping path="/login/ajax"/>
-            <mvc:exclude-mapping path="/login/captcha"/>
+            <mvc:exclude-mapping path="/login/**"/>
             <!-- 需排除拦截的地址 -->
+            <mvc:exclude-mapping path="/lib/**"/>
             <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/javascript/**"/>
             <mvc:exclude-mapping path="/uploads/**"/>
@@ -95,6 +111,7 @@
         <!--将当前控制器名称存入session以用于验证的拦截器-->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/lib/**"/>
             <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/javascript/**"/>
             <mvc:exclude-mapping path="/uploads/**"/>
@@ -119,11 +136,6 @@
         <!-- 对资源文件内容缓存时间，单位秒 -->
         <property name="cacheSeconds" value="120"/>
     </bean>
-    <!-- 处理静态资源 -->
-    <!-- 上传的图片缓存1个月，其他js，css，img资源缓存一年 -->
-    <mvc:resources mapping="/css/**" location="/css/" cache-period="86400"/>
-    <mvc:resources mapping="/javascript/**" location="/javascript/" cache-period="86400"/>
-    <mvc:resources mapping="/images/**" location="/images/" cache-period="86400"/>
     <!--上传配置-->
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <!-- 设置上传文件的最大尺寸为10MB -->

@@ -38,7 +38,7 @@ public interface UserRoleService extends BaseService<UserRole> {
      * @return 查找到的系统用户角色对象
      * @throws Exception SERVICE层异常
      */
-    UserRole findRolesAndPrivileges(Integer roleId) throws Exception;
+    UserRole findRolesAndPrivileges(Long roleId) throws Exception;
 
     /**
      * 通过角色名称查找角色

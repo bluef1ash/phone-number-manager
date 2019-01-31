@@ -34,7 +34,7 @@ public interface UserRolesDao extends BaseDao<UserRole> {
      * @return 所有角色与所属权限
      * @throws DataAccessException 数据库操作异常
      */
-    UserRole selectRolesAndPrivilegesById(Integer roleId) throws DataAccessException;
+    UserRole selectRolesAndPrivilegesById(Long roleId) throws DataAccessException;
 
     /**
      * 通过角色ID查询角色名称

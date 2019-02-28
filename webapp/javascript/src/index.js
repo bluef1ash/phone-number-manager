@@ -1,2 +1,0 @@
-require(["sidebar"], function(sidebar) {
-});

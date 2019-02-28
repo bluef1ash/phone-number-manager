@@ -16,7 +16,7 @@
     <resultMap type="Subcontractor" id="subcontractorCorrelationCommunitiesResultMap" extends="AliasResultMap">
         <association property="community" resultMap="www.dao.CommunitiesDao.communityResultMap"/>
     </resultMap>
-    <insert id="insertObject">
+    <insert id="insertObject" useGeneratedKeys="true" keyProperty="subcontractor_id">
         INSERT INTO `pm_subcontractors`(`name`, `telephone`, `community_id`)
         VALUES (#{name}, #{telephone}, #{communityId})
     </insert>

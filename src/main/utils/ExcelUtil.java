@@ -1,17 +1,10 @@
 package utils;
 
-import java.io.*;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFCell;
@@ -21,9 +14,20 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
-import static org.apache.poi.ss.usermodel.CellType.*;
+import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 
 /**
  * Excel工具类
@@ -333,10 +337,11 @@ public class ExcelUtil {
      * @param title    文件标题
      * @param headMap  表头
      * @param data     表内容
+     * @param request  HTTP请求对象
      * @param response HTTP响应对象
      * @throws Exception 文件流异常/字符串转换异常
      */
-    public static void downloadExcelFile(String titleUp, String title, Map<String, String> headMap, JSONArray data, HttpServletResponse response) throws Exception {
+    public static void downloadExcelFile(String titleUp, String title, Map<String, String> headMap, JSONArray data, HttpServletRequest request, HttpServletResponse response) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         exportExcelX(titleUp, title, headMap, data, null, 0, os);
         byte[] content = os.toByteArray();
@@ -344,7 +349,7 @@ public class ExcelUtil {
         // 设置response参数，可以打开下载页面
         response.reset();
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename=" + new String((title + ".xlsx").getBytes(), "iso-8859-1"));
+        response.setHeader("Content-Disposition", "attachment;filename=" + new String((title + ".xlsx").getBytes(), StandardCharsets.ISO_8859_1));
         response.setContentLength(content.length);
         ServletOutputStream outputStream = response.getOutputStream();
         BufferedInputStream bis = new BufferedInputStream(is);
@@ -353,7 +358,16 @@ public class ExcelUtil {
         int bytesRead;
         while (-1 != (bytesRead = bis.read(buff, 0, buff.length))) {
             bos.write(buff, 0, bytesRead);
-
+        }
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            if ("exportExcel".equals(cookie.getName())) {
+                cookie.setValue(null);
+                cookie.setMaxAge(0);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+                break;
+            }
         }
         bis.close();
         bos.close();

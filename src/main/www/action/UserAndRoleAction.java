@@ -6,6 +6,7 @@ import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import exception.BusinessException;
+import exception.JsonException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -99,13 +100,13 @@ public class UserAndRoleAction {
     @ResponseBody
     public Map<String, Integer> systemUserLockedForAjax(HttpSession session, Long systemUserId, Boolean locked) {
         Map<String, Integer> map = new HashMap<>(3);
+        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        SystemUser systemUser = new SystemUser();
+        systemUser.setSystemUserId(systemUserId);
+        systemUser.setIsLocked(locked ? 1 : 0);
         try {
-            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-            Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
             if (!systemUserId.equals(systemAdministratorId)) {
-                SystemUser systemUser = new SystemUser();
-                systemUser.setSystemUserId(systemUserId);
-                systemUser.setIsLocked(locked ? 1 : 0);
                 systemUserService.updateObject(systemUser);
                 map.put("state", 1);
                 SystemUser user = systemUserService.findObject(systemUserId);
@@ -113,10 +114,10 @@ public class UserAndRoleAction {
             } else {
                 map.put("state", 0);
             }
+            return map;
         } catch (Exception e) {
-            map.put("state", 0);
+            throw new JsonException(e);
         }
-        return map;
     }
 
     /**
@@ -212,9 +213,9 @@ public class UserAndRoleAction {
     @ResponseBody
     public Map<String, Object> deleteSystemUserForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
+        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
         try {
-            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-            Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
             if (id.equals(systemAdministratorId)) {
                 map.put("state", 0);
                 map.put("message", "不允许删除超级管理员！");
@@ -223,14 +224,12 @@ public class UserAndRoleAction {
                 map.put("state", 1);
                 map.put("message", "删除系统用户成功！");
             }
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return map;
         } catch (Exception e) {
-            Map<String, String> defaultMessage = new HashMap<>(2);
-            defaultMessage.put("defaultMessage", "删除系统用户失败！");
-            map.put("state", 0);
-            map.put("messageError", defaultMessage);
+            e.printStackTrace();
+            throw new JsonException("删除系统用户失败！", e);
         }
-        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
-        return map;
     }
 
     /**
@@ -259,7 +258,7 @@ public class UserAndRoleAction {
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessException("查找单位失败，请稍后再试！");
+            throw new JsonException("查找单位失败，请稍后再试！", e);
         }
     }
 
@@ -297,7 +296,8 @@ public class UserAndRoleAction {
             }
             return newCompanies;
         } catch (Exception e) {
-            throw new BusinessException("获取单位失败！", e);
+            e.printStackTrace();
+            throw new JsonException("获取单位失败！", e);
         }
     }
 
@@ -316,13 +316,12 @@ public class UserAndRoleAction {
             List<SystemUser> systemUsers = systemUserService.findSystemUsers();
             map.put("state", 1);
             map.put("systemUsers", systemUsers);
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return map;
         } catch (Exception e) {
             e.printStackTrace();
-            map.put("state", 0);
-            map.put("message", "获取系统用户失败！");
+            throw new JsonException("获取系统用户失败！", e);
         }
-        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
-        return map;
     }
 
     /**
@@ -456,12 +455,12 @@ public class UserAndRoleAction {
                 map.put("state", 0);
                 map.put("message", "不允许删除系统用户角色！");
             }
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return map;
         } catch (Exception e) {
-            map.put("state", 0);
-            map.put("message", "删除用户角色失败！");
+            e.printStackTrace();
+            throw new JsonException("删除用户角色失败！", e);
         }
-        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
-        return map;
     }
 
     /**
@@ -577,12 +576,12 @@ public class UserAndRoleAction {
             userPrivilegeService.deleteObjectById(id);
             map.put("state", 1);
             map.put("message", "删除用户权限成功！");
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return map;
         } catch (Exception e) {
-            map.put("state", 0);
-            map.put("message", "删除用户权限失败！");
+            e.printStackTrace();
+            throw new JsonException("删除用户权限失败！", e);
         }
-        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
-        return map;
     }
 
     /**
@@ -604,7 +603,8 @@ public class UserAndRoleAction {
             map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
+            e.printStackTrace();
+            throw new JsonException("系统异常！找不到数据，请稍后再试！", e);
         }
     }
 

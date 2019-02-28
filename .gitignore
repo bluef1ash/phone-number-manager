@@ -127,6 +127,7 @@ fabric.properties
 
 .idea/
 target/
+node_modules/
 webapp/uploads/
 src/main/resources/
 *.iml
@@ -134,3 +135,4 @@ src/test/resources/
 git_stats/
 webapp/backup/
 webapp/javascript/dist/
+webapp/fonts/

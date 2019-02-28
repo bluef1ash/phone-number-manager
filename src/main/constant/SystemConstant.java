@@ -30,4 +30,20 @@ public final class SystemConstant {
      * 极验密钥
      */
     public static final String GEETEST_KEY = "07ee3abbdc56141cdc63b6d4de712505";
+    /**
+     * 社区级机构名称
+     */
+    public static final String COMMUNITY_NAME = "社区";
+    /**
+     * 社区级机构别名
+     */
+    public static final String COMMUNITY_ALIAS_NAME = "居委会";
+    /**
+     * 街道级机构名称
+     */
+    public static final String SUBDISTRICT_NAME = "街道";
+    /**
+     * 街道级机构别名
+     */
+    public static final String SUBDISTRICT_ALIAS_NAME = "办事处";
 }

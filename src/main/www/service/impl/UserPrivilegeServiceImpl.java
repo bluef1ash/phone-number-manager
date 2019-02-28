@@ -43,10 +43,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
     private Set<UserPrivilege> findPrivilegesAndSubPrivileges(Set<UserPrivilege> userPrivileges, Integer isDisplay, Long rootId) {
         Set<UserPrivilege> newUserPrivileges = new LinkedHashSet<>();
         for (UserPrivilege userPrivilege : userPrivileges) {
-            if (rootId.equals(userPrivilege.getHigherPrivilege())) {
-                if (isDisplay != null && !isDisplay.equals(userPrivilege.getIsDisplay())) {
-                    continue;
-                }
+            if (rootId.equals(userPrivilege.getHigherPrivilege()) && isDisplay.equals(userPrivilege.getIsDisplay())) {
                 UserPrivilege newUserPrivilege = new UserPrivilege();
                 newUserPrivilege.setPrivilegeId(userPrivilege.getPrivilegeId());
                 newUserPrivilege.setPrivilegeName(userPrivilege.getPrivilegeName());

@@ -71,7 +71,7 @@ public interface CommunitiesDao extends BaseDao<Community> {
      * @return 社区指标
      * @throws DataAccessException 数据库操作异常
      */
-    Integer selectActualNumberByCommunityId(Long communityId) throws DataAccessException;
+    Long selectActualNumberByCommunityId(Long communityId) throws DataAccessException;
 
     /**
      * 通过所属街道编号求和指标
@@ -80,7 +80,7 @@ public interface CommunitiesDao extends BaseDao<Community> {
      * @return 指标的和
      * @throws DataAccessException 数据库操作异常
      */
-    Integer sumActualNumberBySubdistrictId(Long subdistrictId) throws DataAccessException;
+    Long sumActualNumberBySubdistrictId(Long subdistrictId) throws DataAccessException;
 
     /**
      * 求和所有社区指标

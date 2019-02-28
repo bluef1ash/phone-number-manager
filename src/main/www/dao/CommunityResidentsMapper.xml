@@ -41,20 +41,21 @@
         VALUES (#{communityResidentName}, #{communityResidentAddress}, #{communityResidentPhones},
                 #{communityResidentEditTime}, #{subcontractorId}, #{communityId})
     </insert>
-    <insert id="insertBatchCommunityResidents" parameterType="list" useGeneratedKeys="true"
-            keyProperty="community_resident_id">
+    <insert id="insertBatchCommunityResidents" useGeneratedKeys="true" keyProperty="community_resident_id">
         INSERT INTO `pm_community_residents`(`name`, `address`, `phones`, `subcontractor_id`, `community_id`) VALUES
-        <foreach collection="list" item="item" separator=",">
+        <foreach collection="residents" item="item" separator=",">
             (#{item.communityResidentName}, #{item.communityResidentAddress}, #{item.communityResidentPhones},
             #{item.subcontractorId}, #{item.communityId})
         </foreach>
     </insert>
     <delete id="deleteObjectById">
-        DELETE FROM `pm_community_residents`
+        DELETE
+        FROM `pm_community_residents`
         WHERE `community_resident_id` = #{communityResidentId}
     </delete>
     <delete id="deleteObjectsByName">
-        DELETE FROM `pm_community_residents`
+        DELETE
+        FROM `pm_community_residents`
         WHERE `name` = #{name}
     </delete>
     <update id="updateObject" parameterType="CommunityResident">
@@ -85,8 +86,7 @@
         WHERE `community_resident_id` = #{communityResidentId}
     </update>
     <select id="selectObjectsAll" resultMap="communityResidentResultMap">
-        SELECT
-            `community_resident_id`,
+        SELECT `community_resident_id`,
             `name`,
             `address`,
             `phones`,
@@ -95,8 +95,7 @@
         ORDER BY `community_resident_id`
     </select>
     <select id="selectObjectById" resultMap="communityResidentResultMap">
-        SELECT
-            `community_resident_id`,
+        SELECT `community_resident_id`,
             `name`,
             `address`,
             `phones`,
@@ -105,8 +104,7 @@
         WHERE `community_resident_id` = #{communityResidentId}
     </select>
     <select id="selectObjectsByName" resultMap="communityResidentResultMap">
-        SELECT
-            `community_resident_id`,
+        SELECT `community_resident_id`,
             `name`,
             `address`,
             `phones`,
@@ -135,9 +133,6 @@
             <if test="communityResidentPhones != null and communityResidentPhones != ''">
                 AND `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
             </if>
-            <if test="communityResidentSubcontractor != null and communityResidentSubcontractor != ''">
-                AND `pm_community_residents`.`subcontractor` LIKE CONCAT('%', #{communityResidentSubcontractor}, '%')
-            </if>
             <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
                 AND `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
             </if>
@@ -151,8 +146,7 @@
         ORDER BY `community_resident_id`
     </select>
     <select id="selectCommunityResidentAndCommunityById" resultMap="communityResidentsCorrelationCommunityResultMap">
-        SELECT
-            `pm_community_residents`.`community_resident_id`,
+        SELECT `pm_community_residents`.`community_resident_id`,
             `pm_community_residents`.`name` AS 'community_resident_name',
             `pm_community_residents`.`address`,
             `pm_community_residents`.`phones`,
@@ -162,9 +156,8 @@
             `pm_communities`.`name`,
             `pm_communities`.`telephone`,
             `pm_communities`.`actual_number`
-        FROM
-            `pm_community_residents`
-            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        FROM `pm_community_residents`
+                 LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         WHERE `pm_community_residents`.`community_resident_id` = #{communityResidentId}
     </select>
     <select id="selectCommunityResidentsByCommunityResident"
@@ -189,10 +182,6 @@
             <if test="communityResident.communityResidentPhones != null and communityResident.communityResidentPhones != ''">
                 AND `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResident.communityResidentPhones},
                 '%')
-            </if>
-            <if test="communityResident.communityResidentSubcontractor != null and communityResident.communityResidentSubcontractor != ''">
-                AND `pm_community_residents`.`subcontractor` LIKE CONCAT('%',
-                #{communityResident.communityResidentSubcontractor}, '%')
             </if>
             <if test="communityResident.communityResidentEditTime != null and communityResident.communityResidentEditTime != ''">
                 AND `pm_community_residents`.`edit_time` = #{communityResident.communityResidentEditTime}
@@ -300,8 +289,7 @@
     </select>
     <select id="selectCommunityResidentsAndCommunityByCommunityId"
             resultMap="communityResidentsCorrelationCommunityResultMap">
-        SELECT
-            `pm_community_residents`.`community_resident_id`,
+        SELECT `pm_community_residents`.`community_resident_id`,
             `pm_community_residents`.`name` AS 'community_resident_name',
             `pm_community_residents`.`address`,
             `pm_community_residents`.`phones`,
@@ -309,8 +297,8 @@
             `pm_community_residents`.`community_id`,
             `pm_communities`.`name`
         FROM `pm_community_residents`
-            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
-        WHERE `pm_community_residents`.`community_id` = #{roleLocationId}
+                 LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_community_residents`.`community_id` = #{communityId}
     </select>
     <select id="countCommunityResidentsByCommunityResident" resultType="long">
         SELECT COUNT(`pm_community_residents`.`community_resident_id`) FROM `pm_community_residents`
@@ -379,20 +367,41 @@
     </select>
     <select id="countCommunityResidentsBySubdistrictId" resultType="long">
         SELECT COUNT(`pm_community_residents`.`community_resident_id`)
-        FROM
-            `pm_community_residents`
-            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
-        WHERE
-            `pm_communities`.`subdistrict_id` = #{subdistrictId}
+        FROM `pm_community_residents`
+                 LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
     </select>
     <select id="countCommunityResidents" resultType="long">
         SELECT count(`community_resident_id`)
         FROM `pm_community_residents`
     </select>
+    <select id="countCommunityResidentsForGroupSubdistrict" resultType="map">
+        SELECT `pm_subdistricts`.`name`, count(`pm_community_residents`.`community_resident_id`) 'value'
+        FROM `pm_subdistricts`
+                 LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
+                 LEFT JOIN `pm_community_residents`
+        ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`
+        GROUP BY `pm_subdistricts`.`subdistrict_id`
+    </select>
+    <select id="countCommunityResidentsForGroupCommunity" resultType="map">
+        SELECT `pm_communities`.`name`, count(`pm_community_residents`.`community_resident_id`) 'value'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_community_residents`
+        ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
+        GROUP BY `pm_communities`.`community_id`
+    </select>
+    <select id="countCommunityResidentsGroupByCommunityId" resultType="map">
+        SELECT `pm_communities`.`name`, count(`pm_community_residents`.`community_resident_id`) 'value'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_community_residents`
+        ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`
+        WHERE `pm_communities`.`community_id` = #{communityId}
+    </select>
     <delete id="deleteCommunityResidentsBySubdistrictId">
         DELETE `pm_community_residents`
         FROM `pm_community_residents`
-            LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+                 LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
     </delete>
 </mapper>

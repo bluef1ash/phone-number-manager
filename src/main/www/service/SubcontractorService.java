@@ -34,4 +34,13 @@ public interface SubcontractorService extends BaseService<Subcontractor> {
      * @throws Exception Service异常
      */
     List<Subcontractor> findSubcontractors(Long roleId, Long roleLocationId, Map<String, Object> configurationsMap) throws Exception;
+
+    /**
+     * 通过社区编号查找
+     *
+     * @param communityId 社区编号
+     * @return 社区分包人对象集合
+     * @throws Exception Service异常
+     */
+    List<Subcontractor> findSubcontractors(Long communityId) throws Exception;
 }

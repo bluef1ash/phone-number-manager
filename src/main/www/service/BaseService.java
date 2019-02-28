@@ -17,7 +17,7 @@ public interface BaseService<T> {
      * @return 添加的行数
      * @throws Exception SERVICE层异常
      */
-    int createObject(T obj) throws Exception;
+    long createObject(T obj) throws Exception;
 
     /**
      * 删除对象到DAO层

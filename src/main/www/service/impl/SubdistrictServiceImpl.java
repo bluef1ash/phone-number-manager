@@ -16,14 +16,14 @@ import java.util.Set;
 @Service("subdistrictService")
 public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> implements SubdistrictService {
     @Override
-    public Set<Subdistrict> findCommunitiesAndSubdistrictsByRole(Long roleId, Long roleLocationId) throws Exception {
+    public Set<Subdistrict> findCommunitiesAndSubdistrictsByRole(Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Long roleId, Long roleLocationId) throws Exception {
         Set<Subdistrict> subdistricts;
-        if (roleId == 3L) {
+        if (roleId.equals(communityRoleId)) {
             // 社区角色
             subdistricts = new HashSet<>();
             Subdistrict subdistrict = subdistrictsDao.selectSubdistrictAndCommunityByCommunityId(roleLocationId);
             subdistricts.add(subdistrict);
-        } else if (roleId == 2L) {
+        } else if (roleId.equals(subdistrictRoleId)) {
             // 街道角色
             subdistricts = subdistrictsDao.selectSubdistrictAndCommunityBySubdistrictId(roleLocationId);
         } else {

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
-    <head th:replace="layouts/header :: commonHead('用户列表 - 用户管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户列表 - 系统用户管理', ~{}, ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
             var token = /*[[${_token}]]*/null;
@@ -8,14 +8,23 @@
             var systemUsers = /*[[${systemUsers}]]*/null;
             var deleteUrl = /*[[@{'/system/user_role/user/ajax_delete'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/dist/system_user_list.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/dist/system-user-list-bundle.js'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
             <!-- Breadcrumb-->
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>&nbsp;&gt;&nbsp;<a href="javascript:" title="用户管理">用户管理</a>&nbsp;&gt;&nbsp;<a th:href="@{'/system/user_role/user/list'}">用户列表</a>
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统管理">系统管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统用户管理">系统用户管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/system/user_role/user/list'}" title="系统用户列表">系统用户列表</a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -32,8 +41,8 @@
                                     <thead>
                                         <tr>
                                             <th>序号</th>
-                                            <th>用户名称</th>
-                                            <th>角色</th>
+                                            <th>系统用户名称</th>
+                                            <th>系统角色</th>
                                             <th>登录时间</th>
                                             <th>登录时IP地址</th>
                                             <th>状态</th>
@@ -56,7 +65,7 @@
                                                         <a th:attr="':href'='\'' + @{'/system/user_role/user/edit?id='} + '\' + systemUser.systemUserId'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
-                                                        <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteUser(systemUser.systemUserId, index)">删除</button>
+                                                        <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(systemUser.systemUserId)">删除</button>
                                                     </div>
                                                 </div>
                                             </td>
@@ -64,7 +73,7 @@
                                     </tbody>
                                 </table>
                                 <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
-                                <nav th:replace="layouts/pagination :: pagination(${pageInfo})"></nav>
+                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/user/list', ${pageInfo})"></nav>
                             </div>
                         </div>
                     </div>

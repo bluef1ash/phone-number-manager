@@ -33,6 +33,11 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<Subcontractor> imp
         return findSubcontractorBySystemUserRole(roleId, roleLocationId, communityRoleId, subdistrictRoleId, systemRoleId);
     }
 
+    @Override
+    public List<Subcontractor> findSubcontractors(Long communityId) throws Exception {
+        return subcontractorsDao.selectSubcontractors(communityId);
+    }
+
     /**
      * 通过系统用户角色查找社区分包人
      *

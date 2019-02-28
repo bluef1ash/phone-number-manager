@@ -29,7 +29,7 @@ public interface SystemUserService extends BaseService<SystemUser> {
      * @return 添加数据库影响的行数
      * @throws Exception SERVICE层异常
      */
-    int createSystemUser(SystemUser systemUser) throws Exception;
+    long createSystemUser(SystemUser systemUser) throws Exception;
 
     /**
      * 更新系统用户

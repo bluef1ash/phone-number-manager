@@ -18,7 +18,7 @@ public interface BaseDao<T> {
      * @return 影响的行数
      * @throws DataAccessException 数据库操作异常
      */
-    int insertObject(T obj) throws DataAccessException;
+    long insertObject(T obj) throws DataAccessException;
 
     /**
      * 用主键ID删除对象

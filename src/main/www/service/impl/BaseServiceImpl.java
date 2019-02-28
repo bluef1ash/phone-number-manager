@@ -64,7 +64,7 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     }
 
     @Override
-    public int createObject(T obj) throws Exception {
+    public long createObject(T obj) throws Exception {
         return baseDao.insertObject(obj);
     }
 

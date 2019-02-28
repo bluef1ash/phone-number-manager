@@ -38,12 +38,17 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
             configurationsMap.put(configuration.getKey(), configuration.getValue());
         }
         // 系统用户权限
-        Set<UserPrivilege> userPrivileges;
         Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        Set<UserPrivilege> userPrivilegesAll = new LinkedHashSet<>(userPrivilegesDao.selectObjectsAll());
+        Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
         if (systemAdministratorId.equals(user.getSystemUserId())) {
-            userPrivileges = new LinkedHashSet<>(userPrivilegesDao.selectObjectsAll());
+            userPrivileges = userPrivilegesAll;
         } else {
-            userPrivileges = user.getUserRole().getUserPrivileges();
+            Set<UserPrivilege> privileges = user.getUserRole().getUserPrivileges();
+            for (UserPrivilege privilege : privileges) {
+                userPrivileges.add(privilege);
+                recursionPrivileges(userPrivilegesAll, privilege.getPrivilegeId(), userPrivileges);
+            }
         }
         map.put("state", 1);
         map.put("message", "登录成功！");
@@ -54,7 +59,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
     }
 
     @Override
-    public int createSystemUser(SystemUser systemUser) throws Exception {
+    public long createSystemUser(SystemUser systemUser) throws Exception {
         if (StringUtils.isNotEmpty(systemUser.getPassword())) {
             systemUser.setPassword(CommonUtil.getMd5String(systemUser.getPassword()));
         }
@@ -123,5 +128,21 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
         System.arraycopy(digest, 0, pwd, SystemConstant.SALT_LENGTH, digest.length);
         //将字节数组格式加密后的口令转化为16进制字符串格式的口令
         return CommonUtil.byte2HexString(pwd);
+    }
+
+    /**
+     * 递归系统用户权限
+     *
+     * @param userPrivilegesAll 全部的系统权限
+     * @param privilegeId       上级系统权限编号
+     * @param userPrivileges    处理后的系统权限集合
+     */
+    private void recursionPrivileges(Set<UserPrivilege> userPrivilegesAll, Long privilegeId, Set<UserPrivilege> userPrivileges) {
+        for (UserPrivilege up : userPrivilegesAll) {
+            if (up.getHigherPrivilege().equals(privilegeId)) {
+                userPrivileges.add(up);
+                recursionPrivileges(userPrivilegesAll, up.getPrivilegeId(), userPrivileges);
+            }
+        }
     }
 }

@@ -22,7 +22,7 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @return 查找到的社区居民
      * @throws Exception SERVICE层异常
      */
-    CommunityResident findCommunityResidentAndCommunityById(Integer id) throws Exception;
+    CommunityResident findCommunityResidentAndCommunityById(Long id) throws Exception;
 
     /**
      * 添加社区居民
@@ -36,7 +36,6 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * 更新社区居民
      *
      * @param communityResident 需要更新的社区居民
-     * @return 更新数据库操作的行数
      * @throws Exception SERVICE层异常
      */
     void updateCommunityResident(CommunityResident communityResident) throws Exception;
@@ -44,17 +43,20 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     /**
      * 通过社区居民查找匹配的社区居民
      *
-     * @param systemUser        登录的系统用户对象
-     * @param configurationsMap 系统配置
-     * @param communityResident 需要查找的社区居民
-     * @param companyId         查找的范围单位的编号
-     * @param companyRid        查找的范围单位的类别编号
-     * @param pageNumber           分页页码
+     * @param systemUser            登录的系统用户对象
+     * @param systemRoleId          系统角色编号
+     * @param communityRoleId       社区角色编号
+     * @param subdistrictRoleId     街道角色编号
+     * @param systemAdministratorId 系统超级管理员用户编号
+     * @param communityResident     需要查找的社区居民
+     * @param companyId             查找的范围单位的编号
+     * @param companyLocationId     查找的范围单位的类别编号
+     * @param pageNumber            分页页码
      * @param pageDataSize          每页展示的数量
      * @return 查找到的社区居民集合与分页对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Map<String, Object> configurationsMap, CommunityResident communityResident, Long companyId, Long companyRid, Integer pageNumber, Integer pageDataSize) throws Exception;
+    Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Long systemAdministratorId, CommunityResident communityResident, Long companyId, Long companyLocationId, Integer pageNumber, Integer pageDataSize) throws Exception;
 
     /**
      * 从Excel导入数据
@@ -71,13 +73,15 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * 查找所有社区居民及所属社区
      *
      * @param systemUser        登录的系统用户对象
-     * @param configurationsMap 系统配置
-     * @param pageNumber           分页页码
-     * @param pageDataSize          每页展示的数量
+     * @param systemRoleId      系统角色编号
+     * @param communityRoleId   社区角色编号
+     * @param subdistrictRoleId 街道角色编号
+     * @param pageNumber        分页页码
+     * @param pageDataSize      每页展示的数量
      * @return 查找到的社区居民集合与分页对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Map<String, Object> configurationsMap, Integer pageNumber, Integer pageDataSize) throws Exception;
+    Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Integer pageNumber, Integer pageDataSize) throws Exception;
 
     /**
      * 通过居民姓名与地址查找所属社区
@@ -121,9 +125,15 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     /**
      * 计算并生成图表数据
      *
-     * @param systemUser 系统用户对象
+     * @param systemUser        系统用户对象
+     * @param getType           需要获取的类型，null全部，1基本信息，2柱状图
+     * @param companyId         需要获取的单位编号
+     * @param companyType       需要获取的单位类型
+     * @param systemRoleId      系统用户角色编号
+     * @param communityRoleId   社区级用户角色编号
+     * @param subdistrictRoleId 街道级用户角色编号
      * @return 图表需要的JSON对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> computedCount(SystemUser systemUser) throws Exception;
+    Map<String, Object> computedCount(SystemUser systemUser, Integer getType, Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) throws Exception;
 }

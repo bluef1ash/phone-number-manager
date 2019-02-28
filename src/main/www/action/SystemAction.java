@@ -3,6 +3,7 @@ package www.action;
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
 import exception.BusinessException;
+import exception.JsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -65,10 +66,10 @@ public class SystemAction {
             Map<String, Object> configurationsMap = configurationService.findObjects(page, null);
             model.addAttribute("configurations", configurationsMap.get("data"));
             model.addAttribute("pageInfo", configurationsMap.get("pageInfo"));
+            return "configuration/list";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "configuration/list";
     }
 
     /**
@@ -95,10 +96,10 @@ public class SystemAction {
         try {
             Configuration configuration = configurationService.findConfigurationByKey(key);
             model.addAttribute("configuration", configuration);
+            return "configuration/edit";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "configuration/edit";
     }
 
     /**
@@ -162,12 +163,11 @@ public class SystemAction {
                 map.put("state", 0);
                 map.put("message", "不允许删除内置系统配置");
             }
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return map;
         } catch (Exception e) {
             e.printStackTrace();
-            map.put("state", 0);
-            map.put("message", "删除系统配置失败！");
+            throw new JsonException("删除系统配置失败！", e);
         }
-        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
-        return map;
     }
 }

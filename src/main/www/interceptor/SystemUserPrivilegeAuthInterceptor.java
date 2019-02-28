@@ -3,7 +3,6 @@ package www.interceptor;
 import annotation.SystemUserAuth;
 import exception.PrivilegeException;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import utils.CommonUtil;
 import www.entity.SystemUser;
@@ -60,11 +59,5 @@ public class SystemUserPrivilegeAuthInterceptor extends HandlerInterceptorAdapte
             }
         }
         return super.preHandle(request, response, handler);
-    }
-
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-
-        super.postHandle(request, response, handler, modelAndView);
     }
 }

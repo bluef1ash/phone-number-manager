@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
     <!--/*@thymesVar id="user" type="www.entity.SystemUser"*/-->
-    <head th:replace="layouts/header :: commonHead('用户' + ${user == null ? '添加' : '编辑'} + ' - 用户管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户' + ${user == null ? '添加' : '编辑'} + ' - 系统用户管理', ~{}, ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
             var token = /*[[${_token}]]*/null;
@@ -10,15 +10,25 @@
             var communityRoleId = /*[[${communityRoleId}]]*/null;
             var subdistrictRoleId = /*[[${subdistrictRoleId}]]*/null;
             var systemAdministratorId = /*[[${systemAdministratorId}]]*/null;
+            var loadCompaniesUrl = /*[[@{"/system/user_role/user/ajax_get_companies"}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/dist/system_user_edit.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/dist/system-user-edit-bundle.js'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
             <!-- Breadcrumb-->
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>&nbsp;&gt;&nbsp;<a href="javascript:" title="系统管理">系统管理</a>&nbsp;&gt;&nbsp;<a href="javascript:" title="用户管理">用户管理</a>&nbsp;&gt;&nbsp;<a th:href="@{'/system/user_role/user/' + ${user == null ? 'create' : 'edit?id=' + user.systemUserId}}" th:text="${user} == null ? '用户添加' : '用户编辑'"></a>
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统管理">系统管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统用户管理">系统用户管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/system/user_role/user/' + ${user == null ? 'create' : 'edit?id=' + user.systemUserId}}" th:title="${user} == null ? '用户添加' : '用户编辑'" th:text="${user} == null ? '用户添加' : '用户编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -26,7 +36,7 @@
                     <div class="card-header" th:text="${user} == null ? '用户添加' : '用户' + ${user.username} + '编辑'"></div>
                     <form class="form-horizontal" th:action="@{'/system/user_role/user/handle'}" method="post" @submit="userSubmit">
                         <div class="card-body">
-                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="(messageError, index) in messageErrors" :key="messageError.defaultMessage">
+                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
                                 {{messageError.defaultMessage}}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
@@ -71,10 +81,10 @@
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="subdistrict_id">用户所属街道</label>
                                 <div class="col-md-9">
-                                    <select :class="['form-control', {'is-invalid': errorClasses[4]}]" id="subdistrict_id" name="subdistrictId" v-model="subdistrictId" @change="loadCompanies(communityRoleId, subdistrictId)">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[4]}]" id="subdistrict_id" name="subdistrictId" v-model="subdistrictId" @change="loadCompanies(communityRoleId, subdistrictId, true)">
                                         <option :value="-1">请选择</option>
                                         <option :value="0" :disabled="roleId !== 1">全部街道</option>
-                                        <option :value="subdistrict.subdistrictId" v-for="(subdistrict, index) in subdistricts" v-text="subdistrict.subdistrictName"></option>
+                                        <option :value="subdistrict.subdistrictId" v-for="subdistrict in subdistricts" :key="subdistrict.subdistrictId" v-text="subdistrict.subdistrictName"></option>
                                     </select>
                                     <div class="invalid-feedback" :style="errorClasses[4] && {'display': 'block'}" v-text="errorMessages[4]"></div>
                                 </div>
@@ -84,7 +94,7 @@
                                 <div class="col-md-9">
                                     <select :class="['form-control', {'is-invalid': errorClasses[5]}]" id="community_id" name="communityId" v-model="communityId">
                                         <option :value="0">请选择</option>
-                                        <option :value="community.communityId" v-for="(community, index) in communities" v-text="community.communityName"></option>
+                                        <option :value="community.communityId" v-for="community in communities" :key="community.communityId" v-text="community.communityName"></option>
                                     </select>
                                     <div class="invalid-feedback" :style="errorClasses[5] && {'display': 'block'}" v-text="errorMessages[5]"></div>
                                 </div>

@@ -1,10 +1,12 @@
 package www.dao;
 
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 import www.entity.CommunityResident;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 社区居民DAO接口
@@ -19,7 +21,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 社区居民与所属社区
      * @throws DataAccessException 数据库操作异常
      */
-    CommunityResident selectCommunityResidentAndCommunityById(Integer id) throws DataAccessException;
+    CommunityResident selectCommunityResidentAndCommunityById(Long id) throws DataAccessException;
 
     /**
      * 通过社区居民查询社区居民与所属社区
@@ -37,7 +39,7 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @return 插入行数
      * @throws DataAccessException 数据库操作异常
      */
-    int insertBatchCommunityResidents(List<CommunityResident> residents) throws DataAccessException;
+    int insertBatchCommunityResidents(@Param("residents") List<CommunityResident> residents) throws DataAccessException;
 
     /**
      * 查询所有社区居民与所属社区
@@ -80,11 +82,11 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
     /**
      * 通过社区编号查询所属社区居民
      *
-     * @param roleLocationId 角色定位编号
+     * @param communityId 社区编号
      * @return 查询到的社区居民
      * @throws DataAccessException 数据库操作异常
      */
-    List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityId(Integer roleLocationId) throws DataAccessException;
+    List<CommunityResident> selectCommunityResidentsAndCommunityByCommunityId(Long communityId) throws DataAccessException;
 
     /**
      * 通过社区居民查询社区居民与所属社区的数量
@@ -131,10 +133,39 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
     Long countCommunityResidents() throws DataAccessException;
 
     /**
+     * 街道分组统计居民数量
+     *
+     * @return 社区居民数量Map
+     * @throws DataAccessException 数据库操作异常
+     */
+    @MapKey("name")
+    Map<String, Map<String, Object>> countCommunityResidentsForGroupSubdistrict() throws DataAccessException;
+
+    /**
      * 通过所属街道编号删除
      *
      * @param subdistrictId 需要删除的所属街道编号
      * @throws DataAccessException 数据库操作异常
      */
     void deleteCommunityResidentsBySubdistrictId(Long subdistrictId) throws DataAccessException;
+
+    /**
+     * 社区分组统计居民数量
+     *
+     * @param subdistrictId 街道编号
+     * @return 社区居民数量Map
+     * @throws DataAccessException 数据库操作异常
+     */
+    @MapKey("name")
+    Map<String, Map<String, Object>> countCommunityResidentsForGroupCommunity(Long subdistrictId) throws DataAccessException;
+
+    /**
+     * 统计社区居民
+     *
+     * @param communityId 社区编号
+     * @return 社区居民数量Map
+     * @throws DataAccessException 数据库操作异常
+     */
+    @MapKey("name")
+    Map<String, Map<String, Object>> countCommunityResidentsGroupByCommunityId(Long communityId) throws DataAccessException;
 }

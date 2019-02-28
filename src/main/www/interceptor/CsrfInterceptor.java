@@ -71,7 +71,12 @@ public class CsrfInterceptor extends HandlerInterceptorAdapter {
             CsrfTokenUtil.setTokenForSessionAndModel(session, modelAndView);
         } else {
             // 刷新token
-            HandlerMethod handlerMethod = (HandlerMethod) handler;
+            HandlerMethod handlerMethod;
+            if (handler instanceof HandlerMethod) {
+                handlerMethod = (HandlerMethod) handler;
+            } else {
+                return;
+            }
             Method method = handlerMethod.getMethod();
             RefreshCsrfToken refreshAnnotation = method.getAnnotation(RefreshCsrfToken.class);
             // 跳转到一个新页面 刷新token

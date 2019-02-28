@@ -117,12 +117,12 @@
                  LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
         WHERE `pm_subdistricts`.`name` = #{subdistrictName}
     </select>
-    <select id="selectActualNumberByCommunityId" resultType="int">
+    <select id="selectActualNumberByCommunityId" resultType="long">
         SELECT `actual_number`
         FROM `pm_communities`
         WHERE `community_id` = #{communityId}
     </select>
-    <select id="sumActualNumberBySubdistrictId" resultType="int">
+    <select id="sumActualNumberBySubdistrictId" resultType="long">
         SELECT SUM(`pm_communities`.`actual_number`)
         FROM `pm_communities`
                  LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`

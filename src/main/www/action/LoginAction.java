@@ -5,6 +5,7 @@ import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import constant.SystemConstant;
+import exception.JsonException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
@@ -53,7 +54,7 @@ public class LoginAction {
      *
      * @return 视图页面
      */
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     @RefreshCsrfToken
     public String login() {
         return "login/login";
@@ -87,11 +88,7 @@ public class LoginAction {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                Map<String, String> errorMap = new HashMap<>(2);
-                errorMap.put("defaultMessage", "登录失败，请稍后再试！");
-                map = new HashMap<>(3);
-                map.put("state", 0);
-                map.put("messageErrors", errorMap);
+                throw new JsonException("登录失败，请稍后再试！", e);
             }
         }
         return map;

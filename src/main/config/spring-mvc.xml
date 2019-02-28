@@ -57,13 +57,6 @@
         <property name="order" value="1"/>
         <property name="characterEncoding" value="UTF-8"/>
     </bean>
-    <!--异常配置-->
-    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
-        <!-- 定义异常处理页面用来获取异常信息的变量名，默认名为exception -->
-        <property name="exceptionAttribute" value="exception"/>
-        <!-- 定义默认的异常处理页面，当该异常类型的注册时使用 -->
-        <property name="defaultErrorView" value="exception/default"/>
-    </bean>
     <!-- 拦截器 -->
     <mvc:interceptors>
         <!-- csrf攻击防御 -->

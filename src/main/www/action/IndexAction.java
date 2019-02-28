@@ -2,12 +2,14 @@ package www.action;
 
 import annotation.RefreshCsrfToken;
 import annotation.VerifyCSRFToken;
-import exception.BusinessException;
+import exception.JsonException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import utils.CommonUtil;
+import utils.CsrfTokenUtil;
 import www.entity.SystemUser;
 import www.entity.UserPrivilege;
 import www.service.CommunityResidentService;
@@ -40,31 +42,15 @@ public class IndexAction {
      * @return 视图页面
      */
     @RequestMapping(method = RequestMethod.GET)
+    @RefreshCsrfToken
     public String index(HttpSession session, Model model) {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
         model.addAttribute("systemUser", systemUser);
+        model.addAttribute("systemRoleId", CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id")));
+        model.addAttribute("communityRoleId", CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id")));
+        model.addAttribute("subdistrictRoleId", CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id")));
         return "index/index";
-    }
-
-    /**
-     * 欢迎页
-     *
-     * @return 视图页面
-     */
-    @RequestMapping(value = "/welcome", method = RequestMethod.GET)
-    @RefreshCsrfToken
-    public String welcome() {
-        return "index/welcome";
-    }
-
-    /**
-     * 系统简介
-     *
-     * @return 视图页面
-     */
-    @RequestMapping(value = "/about", method = RequestMethod.GET)
-    public String about() {
-        return "index/about";
     }
 
     /**
@@ -74,33 +60,47 @@ public class IndexAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/getmenu", method = RequestMethod.GET)
-    public @ResponseBody
-    Map<String, Object> getMenu(Integer isDisplay, HttpSession session) {
+    @VerifyCSRFToken
+    @ResponseBody
+    public Map<String, Object> getMenu(Integer isDisplay, HttpSession session) {
         Set<UserPrivilege> userPrivileges = (Set<UserPrivilege>) session.getAttribute("userPrivileges");
         try {
-            Map<String, Object> map = new HashMap<>(2);
-            map.put("userPrivileges", userPrivilegeService.findPrivilegesByIsDisplay(isDisplay, userPrivileges));
-            return map;
+            Map<String, Object> jsonMap = new HashMap<>(4);
+            jsonMap.put("state", 1);
+            jsonMap.put("userPrivileges", userPrivilegeService.findPrivilegesByIsDisplay(isDisplay, userPrivileges));
+            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return jsonMap;
         } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
+            throw new JsonException("系统异常！找不到数据，请稍后再试！", e);
         }
     }
 
     /**
      * 使用AJAX技术获取图表数据
      *
-     * @param session session对象
-     * @return 视图页面
+     * @param session     session对象
+     * @param getType     需要获取的类型，null全部，1基本信息，2柱状图
+     * @param id          需要获取的单位编号
+     * @param companyType 需要获取的单位类型
+     * @return Ajax返回JSON对象
      */
     @RequestMapping(value = "/getcomputedcount", method = RequestMethod.GET)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> getComputedCount(HttpSession session) {
+    @ResponseBody
+    public Map<String, Object> getComputedCount(HttpSession session, Integer getType, Long id, Long companyType) {
         try {
             SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            return communityResidentService.computedCount(systemUser);
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            Long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
+            Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
+            Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
+            Map<String, Object> jsonMap = communityResidentService.computedCount(systemUser, getType, id, companyType, systemRoleId, communityRoleId, subdistrictRoleId);
+            jsonMap.put("state", 1);
+            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return jsonMap;
         } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
+            e.printStackTrace();
+            throw new JsonException("系统异常！找不到数据，请稍后再试！", e);
         }
     }
 }

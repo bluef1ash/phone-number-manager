@@ -4,6 +4,7 @@ import annotation.RefreshCsrfToken;
 import annotation.SystemUserAuth;
 import annotation.VerifyCSRFToken;
 import exception.BusinessException;
+import exception.JsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -67,10 +68,10 @@ public class SubdistrictAction {
             Map<String, Object> subdistricts = subdistrictService.findObjects(page, null);
             model.addAttribute("subdistricts", subdistricts.get("data"));
             model.addAttribute("pageInfo", subdistricts.get("pageInfo"));
+            return "subdistrict/list";
         } catch (Exception e) {
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
         }
-        return "subdistrict/list";
     }
 
     /**
@@ -139,24 +140,25 @@ public class SubdistrictAction {
     /**
      * 使用AJAX技术通过街道编号删除
      *
+     * @param session session对象
      * @param id 对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> deleteSubdistrictForAjax(Long id) {
-        Map<String, Object> map = new HashMap<>(3);
+    @ResponseBody
+    public Map<String, Object> deleteSubdistrictForAjax(HttpSession session, Long id) {
+        Map<String, Object> map = new HashMap<>(4);
         try {
             subdistrictService.deleteObjectById(id);
             map.put("state", 1);
             map.put("message", "删除街道成功！");
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return map;
         } catch (Exception e) {
             e.printStackTrace();
-            map.put("state", 0);
-            map.put("message", "删除街道失败！");
+            throw new BusinessException("删除街道失败！", e);
         }
-        return map;
     }
 
     /**
@@ -167,19 +169,18 @@ public class SubdistrictAction {
      */
     @RequestMapping(value = "/ajax_load", method = RequestMethod.GET)
     @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> getSubdistrictForAjax(HttpSession session) {
+    @ResponseBody
+    public Map<String, Object> getSubdistrictForAjax(HttpSession session) {
         Map<String, Object> map = new HashMap<>(4);
         try {
             List<Subdistrict> subdistricts = subdistrictService.findObjects();
             map.put("state", 1);
             map.put("subdistricts", subdistricts);
+            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            return map;
         } catch (Exception e) {
             e.printStackTrace();
-            map.put("state", 0);
-            map.put("message", "获取街道失败！");
+            throw new JsonException("获取街道失败！", e);
         }
-        map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
-        return map;
     }
 }

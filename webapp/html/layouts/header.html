@@ -2,6 +2,7 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
     <head th:fragment="commonHead(title, css, scripts)">
         <meta charset="utf-8">
+        <meta name="renderer" content="webkit"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title th:text="${title} + ' - 社区居民联系方式管理系统'"></title>
         <meta name="keywords" content="街道, 社区, 居民, 联系方式, 管理系统">
@@ -13,12 +14,12 @@
         <script type="text/javascript" th:inline="javascript">
             alert("您使用的浏览器太陈旧了！！！本系统尚未支持您现在使用的浏览器！");
             location.href = "http://www.onlinedown.net/soft/7993.htm";
-        </script>        <![endif]-->
-        <link rel="stylesheet" type="text/css" th:href="@{'/css/all.css'}">
+        </script><![endif]-->
         <th:block th:replace="${css}"/>
         <!-- basic scripts -->
-        <script type="text/javascript" th:src="@{'/lib/requirejs/require.js'}"></script>
-        <script type="text/javascript" th:src="@{'/lib/requirejs/config.min.js'}"></script>
+        <script type="text/javascript" th:inline="javascript">
+            var getMenuUrl = /*[[@{'/index/getmenu'}]]*/null;
+        </script>
         <th:block th:replace="${scripts}"/>
     </head>
 </html>

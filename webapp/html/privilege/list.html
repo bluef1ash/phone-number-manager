@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
-    <head th:replace="layouts/header :: commonHead('系统用户角色列表 - 系统用户角色管理 - 系统管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户权限列表 - 系统用户管理 - 系统管理', ~{}, ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
             var token = /*[[${_token}]]*/null;
-            var userRoles = /*[[${userRoles}]]*/null;
+            var userPrivileges = /*[[${userPrivileges}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/dist/role-list-bundle.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/dist/privilege-list-bundle.js'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -19,10 +19,10 @@
                     <a href="javascript:" title="系统管理">系统管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="javascript:" title="系统用户角色管理">系统用户角色管理</a>
+                    <a href="javascript:" title="系统用户权限管理">系统用户权限管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/user_role/role/list'}" title="系统用户角色列表">系统用户角色列表</a>
+                    <a th:href="@{'/system/user_role/privilege/list'}" title="系统用户权限列表">系统用户权限列表</a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -31,31 +31,29 @@
                         <div class="card">
                             <div class="card-header">
                                 <div class="col-3 float-right">
-                                    <a th:href="@{'/system/user_role/role/create'}" class="btn btn-block btn-primary" title="添加系统用户角色">添加系统用户角色</a>
+                                    <a th:href="@{'/system/user_role/privilege/create'}" class="btn btn-block btn-primary" title="添加系统用户权限">添加系统用户权限</a>
                                 </div>
                             </div>
                             <div class="card-body">
-                                <table class="table table-bordered table-striped" id="role_table" v-cloak>
+                                <table class="table table-bordered table-striped" id="privilege_table" v-cloak>
                                     <thead>
                                         <tr>
                                             <th>序号</th>
-                                            <th>角色名称</th>
-                                            <th>角色描述</th>
+                                            <th>权限名称</th>
                                             <th>操作</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(userRole, index) in userRoles" :key="userRole.roleId">
+                                        <tr v-for="(userPrivilege, index) in userPrivileges" :key="userPrivilege.privilegeId">
                                             <td v-text="index + 1"></td>
-                                            <td v-text="userRole.roleName"></td>
-                                            <td v-text="userRole.roleDescription"></td>
+                                            <td v-text="userPrivilege.privilegeName"></td>
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <a th:attr="':href'='\'' + @{'/system/user_role/role/edit?id='} + '\' + userRole.roleId'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                        <a th:attr="':href'='\'' + @{'/system/user_role/privilege/edit?id='} + '\' + userPrivilege.privilegeId'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
-                                                        <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(userRole.roleId)">删除</button>
+                                                        <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(userPrivilege.privilegeId)">删除</button>
                                                     </div>
                                                 </div>
                                             </td>
@@ -63,7 +61,7 @@
                                     </tbody>
                                 </table>
                                 <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
-                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/role/list', ${pageInfo})"></nav>
+                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/privilege/list', ${pageInfo})"></nav>
                             </div>
                         </div>
                     </div>

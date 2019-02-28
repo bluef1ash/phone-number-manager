@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+    <!--/*@thymesVar id="subcontractor" type="www.entity.Subcontractor"*/-->
+    <head th:replace="layouts/header :: commonHead('社区分包人' + ${subcontractor == null ? '添加' : '编辑'} + ' - 社区分包人管理 - 社区管理', ~{}, ~{::script})">
+        <title></title>
+        <script type="text/javascript" th:inline="javascript">
+            var token = /*[[${_token}]]*/null;
+            var messageErrors = /*[[${messageErrors}]]*/null;
+            var subcontractor = /*[[${subcontractor}]]*/null;
+        </script>
+        <script type="text/javascript" th:src="@{'/javascript/dist/subcontractor-edit-bundle.js'}"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区管理">社区管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区分包人管理">社区分包人管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/community/subcontractor/' + ${subcontractor == null ? 'create' : 'edit?id=' + subcontractor.subcontractorId}}" th:title="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'"></a>
+                </li>
+            </ol>
+            <div class="container-fluid">
+                <div class="card" id="edit_subcontractor" v-cloak>
+                    <div class="card-header" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人' + ${subcontractor.name} + '编辑'"></div>
+                    <form class="form-horizontal" th:action="@{'/community/subcontractor/handle'}" method="post" @submit="subcontractorSubmit">
+                        <div class="card-body">
+                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
+                                {{messageError.defaultMessage}}
+                                <button class="close" type="button" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="name">社区分包人姓名</label>
+                                <div class="col-md-9">
+                                    <input type="text" name="name" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="name" placeholder="请输入社区分包人姓名" v-model="subcontractor.name">
+                                    <span class="help-block">社区分包人姓名不允许超过10个字符</span>
+                                    <div class="invalid-feedback" :style="errorClasses[0] && {'display': 'block'}" v-text="errorMessages[0]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="telephone">社区分包人联系方式</label>
+                                <div class="col-md-9">
+                                    <input id="telephone" type="text" name="telephone" :class="['form-control', {'is-invalid': errorClasses[1]}]" placeholder="请输入社区分包人联系方式" v-model="subcontractor.telephone">
+                                    <span class="help-block">社区分包人联系方式允许输入移动电话</span>
+                                    <div class="invalid-feedback" :style="errorClasses[1] && {'display': 'block'}" v-text="errorMessages[1]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="community_id">所属社区</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[3]}]" id="community_id" name="communityId" v-model="subcontractor.communityId">
+                                        <option :value="0">请选择</option>
+                                        <!--/*@thymesVar id="communities" type="java.util.List"*/-->
+                                        <!--/*@thymesVar id="community" type="www.entity.Community"*/-->
+                                        <option th:each="community, status : ${communities}" th:attr="':value'=${community.communityId}" th:text="${community.communityName}"></option>
+                                    </select>
+                                    <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <input type="hidden" name="_token" v-model="token">
+                            <input type="hidden" name="subcontractorId" v-model="subcontractor.subcontractorId" th:if="${subcontractor} != null">
+                            <input type="hidden" name="_method" value="PUT" th:if="${subcontractor} != null">
+                            <button class="btn btn-sm btn-primary" type="submit">
+                                <i class="fa fa-dot-circle-o"></i>保存
+                            </button>
+                            <button class="btn btn-sm btn-danger" type="reset" @click="resetClass">
+                                <i class="fa fa-ban"></i>重置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </th:block>
+    </body>
+</html>

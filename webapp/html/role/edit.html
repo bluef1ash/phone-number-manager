@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
     <!--/*@thymesVar id="userRole" type="www.entity.UserRole"*/-->
-    <head th:replace="layouts/header :: commonHead('用户角色' + ${userRole == null ? '添加' : '编辑'} + ' - 用户管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户角色' + ${userRole == null ? '添加' : '编辑'} + ' - 系统用户角色管理 - 系统管理', ~{}, ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
             var token = /*[[${_token}]]*/null;
@@ -10,14 +10,23 @@
             var userRoles = /*[[${userRoles}]]*/null;
             var userPrivileges = /*[[${userPrivileges}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/src/role_edit.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/dist/role-edit-bundle.js'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
             <!-- Breadcrumb-->
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>&nbsp;&gt;&nbsp;<a href="javascript:" title="系统管理">系统管理</a>&nbsp;&gt;&nbsp;<a href="javascript:" title="用户角色管理">用户角色管理</a>&nbsp;&gt;&nbsp;<a th:href="@{'/system/user_role/role/' + ${userRole == null ? 'create' : 'edit?id=' + userRole.roleId}}" th:text="${userRole} == null ? '用户角色添加' : '用户角色编辑'"></a>
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统管理">系统管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统用户角色管理">系统用户角色管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/system/user_role/role/' + ${userRole == null ? 'create' : 'edit?id=' + userRole.roleId}}" th:title="${userRole} == null ? '系统用户角色添加' : '系统用户角色编辑'" th:text="${userRole} == null ? '系统用户角色添加' : '系统用户角色编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -25,7 +34,7 @@
                     <div class="card-header" th:text="${userRole} == null ? '用户角色添加' : '用户角色' + ${userRole.roleName} + '编辑'"></div>
                     <form class="form-horizontal" th:action="@{'/system/user_role/role/handle'}" method="post" @submit="userRoleSubmit">
                         <div class="card-body">
-                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="(messageError, index) in messageErrors" :key="messageError.defaultMessage">
+                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
                                 {{messageError.defaultMessage}}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
@@ -52,10 +61,10 @@
                                 <div class="col-md-9">
                                     <select :class="['form-control', {'is-invalid': errorClasses[3]}]" id="higher_role" name="higherRole" v-model="userRole.higherRole">
                                         <option :value="-1">请选择</option>
-                                        <option value="0">无</option>
+                                        <option :value="0">无</option>
                                         <!--/*@thymesVar id="userRoles" type="java.util.List"*/-->
-                                        <!--/*@thymesVar id="userRole" type="www.entity.UserRole"*/-->
-                                        <option th:each="userRole, status : ${userRoles}" th:attr="':value'=${userRole.roleId}" th:text="${userRole.roleName}"></option>
+                                        <!--/*@thymesVar id="role" type="www.entity.UserRole"*/-->
+                                        <option th:each="role, status : ${userRoles}" th:attr="':value'=${role.roleId}" th:text="${role.roleName}"></option>
                                     </select>
                                     <div class="invalid-feedback" :style="errorClasses[3] && {'display': 'block'}" v-text="errorMessages[3]"></div>
                                 </div>
@@ -63,8 +72,8 @@
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label">用户角色权限</label>
                                 <div class="col-md-9">
-                                    <input type="hidden" name="privilegeIds" v-model="privilegeId.id" v-for="(privilegeId, index) in privilegeIds" :key="privilegeId.id">
-                                    <ul class="ztree" id="user_privileges"></ul>
+                                    <input type="hidden" name="privilegeIds" v-model="privilegeIds">
+                                    <el-tree ref="tree" :data="privilegeTree" node-key="id" show-checkbox :default-checked-keys="checkedList" @check-change="checkChange"></el-tree>
                                 </div>
                                 <div class="invalid-feedback" :style="errorClasses[4] && {'display': 'block'}" v-text="errorMessages[4]"></div>
                             </div>

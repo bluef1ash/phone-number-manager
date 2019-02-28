@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+    <!--/*@thymesVar id="communityResident" type="www.entity.CommunityResident"*/-->
+    <head th:replace="layouts/header :: commonHead('社区居民' + ${communityResident == null ? '添加' : '编辑'} + ' - 社区居民管理', ~{}, ~{::script})">
+        <title></title>
+        <script type="text/javascript" th:inline="javascript">
+            var token = /*[[${_token}]]*/null;
+            var messageErrors = /*[[${messageErrors}]]*/null;
+            var communityResident = /*[[${communityResident}]]*/null;
+            var communities = /*[[${communities}]]*/null;
+            var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/ajax_load'}]]*/null;
+        </script>
+        <script type="text/javascript" th:src="@{'/javascript/dist/resident-edit-bundle.js'}"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区管理">社区管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区分包人管理">社区分包人管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/resident/' + ${communityResident == null ? 'create' : 'edit?id=' + communityResident.communityResidentId}}" th:title="${communityResident} == null ? '社区居民添加' : '社区居民编辑'" th:text="${communityResident} == null ? '社区居民添加' : '社区居民编辑'"></a>
+                </li>
+            </ol>
+            <div class="container-fluid">
+                <div class="card" id="edit_resident" v-cloak>
+                    <div class="card-header" th:text="${communityResident} == null ? '社区居民添加' : '社区居民' + ${communityResident.subdistrictName} + '编辑'"></div>
+                    <form class="form-horizontal" th:action="@{'/resident/handle'}" method="post" @submit="residentSubmit">
+                        <div class="card-body">
+                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
+                                {{messageError.defaultMessage}}
+                                <button class="close" type="button" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="community_resident_name">社区居民姓名</label>
+                                <div class="col-md-9">
+                                    <input type="text" name="communityResidentName" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="community_resident_name" placeholder="请输入社区居民姓名" v-model="communityResident.communityResidentName">
+                                    <span class="help-block">社区居民姓名不允许超过10个字符</span>
+                                    <div class="invalid-feedback" :style="errorClasses[0] && {'display': 'block'}" v-text="errorMessages[0]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="address">社区居民家庭地址</label>
+                                <div class="col-md-9">
+                                    <input id="address" type="text" name="communityResidentAddress" :class="['form-control', {'is-invalid': errorClasses[1]}]" placeholder="请输入社区居民家庭地址" v-model="communityResident.communityResidentAddress">
+                                    <span class="help-block">请按照要求填写社区居民家庭地址</span>
+                                    <div class="invalid-feedback" :style="errorClasses[1] && {'display': 'block'}" v-text="errorMessages[1]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="phone1">社区居民联系方式一</label>
+                                <div class="col-md-9">
+                                    <input id="phone1" type="text" name="communityResidentPhone1" :class="['form-control', {'is-invalid': errorClasses[2]}]" placeholder="请输入社区居民联系方式一" v-model="communityResident.communityResidentPhone1">
+                                    <span class="help-block">社区居民联系方式不允许重复</span>
+                                    <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="phone2">社区居民联系方式二</label>
+                                <div class="col-md-9">
+                                    <input id="phone2" type="text" name="communityResidentPhone2" :class="['form-control', {'is-invalid': errorClasses[3]}]" placeholder="请输入社区居民联系方式二" v-model="communityResident.communityResidentPhone2">
+                                    <span class="help-block">社区居民联系方式不允许重复</span>
+                                    <div class="invalid-feedback" :style="errorClasses[3] && {'display': 'block'}" v-text="errorMessages[3]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="phone3">社区居民联系方式三</label>
+                                <div class="col-md-9">
+                                    <input id="phone3" type="text" name="communityResidentPhone3" :class="['form-control', {'is-invalid': errorClasses[4]}]" placeholder="请输入社区居民联系方式三" v-model="communityResident.communityResidentPhone3">
+                                    <span class="help-block">社区居民联系方式不允许重复</span>
+                                    <div class="invalid-feedback" :style="errorClasses[4] && {'display': 'block'}" v-text="errorMessages[4]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="subdistrict_id">所属街道</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[5]}]" id="subdistrict_id" name="subdistrictId" v-model="subdistrictId" @change="chooseSubdistrict">
+                                        <option :value="0">请选择</option>
+                                        <option :value="subdistrict.subdistrictId" v-for="subdistrict in subdistricts" :key="subdistrict.subdistrictId" v-text="subdistrict.subdistrictName"></option>
+                                    </select>
+                                    <div class="invalid-feedback" :style="errorClasses[5] && {'display': 'block'}" v-text="errorMessages[5]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="community_id">所属社区</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[6]}]" id="community_id" name="communityId" v-model="communityResident.communityId" @change="chooseCommunity">
+                                        <option :value="0">请选择</option>
+                                        <option :value="community.id" v-for="community in newCommunities" :key="community.id" v-text="community.name"></option>
+                                    </select>
+                                    <div class="invalid-feedback" :style="errorClasses[6] && {'display': 'block'}" v-text="errorMessages[6]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="subcontractor_id">社区分包人</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[7]}]" id="subcontractor_id" name="subcontractorId" v-model="communityResident.subcontractorId">
+                                        <option :value="0">请选择</option>
+                                        <option :value="subcontractor.subcontractorId" v-for="subcontractor in subcontractors" :key="subcontractor.subcontractorId" v-text="subcontractor.name"></option>
+                                    </select>
+                                    <div class="invalid-feedback" :style="errorClasses[7] && {'display': 'block'}" v-text="errorMessages[7]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <input type="hidden" name="_token" v-model="token">
+                            <input type="hidden" name="communityResidentId" v-model="communityResident.communityResidentId" th:if="${communityResident} != null">
+                            <input type="hidden" name="_method" value="PUT" th:if="${communityResident} != null">
+                            <button class="btn btn-sm btn-primary" type="submit">
+                                <i class="fa fa-dot-circle-o"></i>保存
+                            </button>
+                            <button class="btn btn-sm btn-danger" type="reset" @click="resetClass">
+                                <i class="fa fa-ban"></i>重置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </th:block>
+    </body>
+</html>

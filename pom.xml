@@ -19,7 +19,7 @@
         <fasterxml.classmate.version>1.4.0</fasterxml.classmate.version>
         <commons-lang.version>3.7</commons-lang.version>
         <mysql-connector-java.version>8.0.11</mysql-connector-java.version>
-        <c3p0.version>0.9.5.2</c3p0.version>
+        <c3p0.version>0.9.5.3</c3p0.version>
         <log4j.version>2.7</log4j.version>
         <springframework.version>5.0.5.RELEASE</springframework.version>
         <mybatis.version>3.4.6</mybatis.version>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.5</version>
+            <version>2.9.8</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>

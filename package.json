@@ -44,7 +44,7 @@
         "style-loader": "^0.23.1",
         "url-loader": "^1.1.2",
         "vue-loader": "^15.6.2",
-        "vue-template-compiler": "^2.6.6",
+        "vue-template-compiler": "^2.6.8",
         "webpack": "^4.29.1",
         "webpack-cli": "^3.2.3",
         "webpack-dev-server": "^3.1.14",
@@ -52,7 +52,7 @@
     },
     "dependencies": {
         "@coreui/coreui": "^2.1.6",
-        "bootstrap": "^4.2.1",
+        "bootstrap": "^4.3.1",
         "echarts": "^4.1.0",
         "element-ui": "^2.5.4",
         "flag-icon-css": "^3.2.1",
@@ -62,7 +62,7 @@
         "sha256": "^0.2.0",
         "simple-line-icons": "^2.4.1",
         "v-charts": "^1.19.0",
-        "vue": "^2.6.6",
+        "vue": "^2.6.8",
         "vue-cookie": "^1.1.4",
         "vue-count-to": "^1.0.13",
         "vue-router": "^3.0.2"

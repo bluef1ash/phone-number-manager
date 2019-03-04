@@ -124,7 +124,7 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-
+.vscode/
 .idea/
 target/
 node_modules/

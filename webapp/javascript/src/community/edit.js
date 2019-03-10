@@ -2,7 +2,7 @@ import "@base/javascript/src/common/public";
 import "@base/javascript/src/common/sidebar";
 import Vue from "vue";
 import {Message} from "element-ui";
-import commonFunction from "@base/lib/common";
+import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;

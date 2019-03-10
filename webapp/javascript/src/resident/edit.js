@@ -2,7 +2,7 @@ import "@base/javascript/src/common/public";
 import "@base/javascript/src/common/sidebar";
 import Vue from "vue";
 import {Message} from "element-ui";
-import commonFunction from "@base/lib/common";
+import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -18,7 +18,9 @@ $(document).ready(() => {
             subcontractors: [],
             subdistrictId: 0,
             subdistricts: [],
-            newCommunities: []
+            newCommunities: [],
+            isShowPhone2: false,
+            isShowPhone3: false
         },
         created() {
             if (this.communityResident === null) {
@@ -26,9 +28,28 @@ $(document).ready(() => {
                     communityId: 0,
                     subcontractorId: 0
                 };
+            } else {
+                this.loadSubcontractors();
+                let isEmptyPhone1 = typeof this.communityResident.communityResidentPhone1 === "undefined" || this.communityResident.communityResidentPhone1 === null || this.communityResident.communityResidentPhone1 === "";
+                let isEmptyPhone2 = typeof this.communityResident.communityResidentPhone2 === "undefined" || this.communityResident.communityResidentPhone2 === null || this.communityResident.communityResidentPhone2 === "";
+                if (!isEmptyPhone1) {
+                    this.isShowPhone2 = true;
+                }
+                if (!isEmptyPhone2) {
+                    this.isShowPhone3 = true;
+                }
             }
             this.subdistricts.push(this.communities[0].subdistrict);
             this.communities.forEach(item => {
+                if (item.communityId === this.communityResident.communityId) {
+                    this.subdistrictId = item.subdistrictId;
+                }
+                if (this.subdistrictId === item.subdistrictId) {
+                    this.newCommunities.push({
+                        id: item.communityId,
+                        name: item.communityName
+                    });
+                }
                 this.subdistricts.forEach(subdistrict => {
                     if (subdistrict.subdistrictId !== item.subdistrict.subdistrictId) {
                         this.subdistricts.push(item.subdistrict);
@@ -62,6 +83,12 @@ $(document).ready(() => {
             chooseCommunity() {
                 this.subcontractors = [];
                 this.communityResident.subcontractorId = 0;
+                this.loadSubcontractors();
+            },
+            /**
+             * 加载社区分包人
+             */
+            loadSubcontractors() {
                 if (this.communityResident.communityId !== 0) {
                     $.ajax({
                         url: loadSubcontractorsUrl,
@@ -120,9 +147,9 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                let isEmptyPhone1 = this.communityResident.communityResidentPhone1 === null || this.communityResident.communityResidentPhone1 === "";
-                let isEmptyPhone2 = this.communityResident.communityResidentPhone2 === null || this.communityResident.communityResidentPhone2 === "";
-                let isEmptyPhone3 = this.communityResident.communityResidentPhone3 === null || this.communityResident.communityResidentPhone3 === "";
+                let isEmptyPhone1 = typeof this.communityResident.communityResidentPhone1 === "undefined" || this.communityResident.communityResidentPhone1 === null || this.communityResident.communityResidentPhone1 === "";
+                let isEmptyPhone2 = typeof this.communityResident.communityResidentPhone2 === "undefined" || this.communityResident.communityResidentPhone2 === null || this.communityResident.communityResidentPhone2 === "";
+                let isEmptyPhone3 = typeof this.communityResident.communityResidentPhone3 === "undefined" || this.communityResident.communityResidentPhone3 === null || this.communityResident.communityResidentPhone3 === "";
                 if (isEmptyPhone1 && isEmptyPhone2 && isEmptyPhone3) {
                     message = "至少填写一个社区居民联系方式！";
                     this.$message({
@@ -138,8 +165,9 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
+                console.log(commonFunction.checkPhoneType(this.communityResident.communityResidentPhone1));
                 if (commonFunction.checkPhoneType(this.communityResident.communityResidentPhone1) === -1) {
-                    message = "社区分包人联系方式一非法！";
+                    message = "社区居民联系方式一非法！";
                     this.$message({
                         message: message,
                         type: "error"
@@ -150,7 +178,7 @@ $(document).ready(() => {
                     return;
                 }
                 if (commonFunction.checkPhoneType(this.communityResident.communityResidentPhone2) === -1) {
-                    message = "社区分包人联系方式二非法！";
+                    message = "社区居民联系方式二非法！";
                     this.$message({
                         message: message,
                         type: "error"
@@ -161,7 +189,7 @@ $(document).ready(() => {
                     return;
                 }
                 if (commonFunction.checkPhoneType(this.communityResident.communityResidentPhone3) === -1) {
-                    message = "社区分包人联系方式三非法！";
+                    message = "社区居民联系方式三非法！";
                     this.$message({
                         message: message,
                         type: "error"
@@ -182,7 +210,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.communityResident.subcontractorId === null || this.communityResident.subcontractorId === "") {
+                if (this.communityResident.subcontractorId === null || this.communityResident.subcontractorId === 0) {
                     message = "请选择社区分包人！";
                     this.$message({
                         message: message,
@@ -204,6 +232,14 @@ $(document).ready(() => {
                 this.subdistrictId = 0;
                 this.errorClasses = [false, false, false, false, false, false, false, false];
                 this.errorMessages = ["", "", "", "", "", "", "", ""];
+            }
+        },
+        watch: {
+            "communityResident.communityResidentPhone1"(value, oldValue) {
+                this.isShowPhone2 = typeof value !== "undefined" && value !== null && value !== "";
+            },
+            "communityResident.communityResidentPhone2"(value, oldValue) {
+                this.isShowPhone3 = typeof value !== "undefined" && value !== null && value !== "";
             }
         }
     });

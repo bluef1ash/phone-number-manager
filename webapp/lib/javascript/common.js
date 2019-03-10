@@ -74,15 +74,14 @@ export default {
      * @returns {number} 联系方式的类型
      */
     checkPhoneType(phoneNumber) {
-        if (phoneNumber === null || phoneNumber === "") {
+        if (phoneNumber === null || typeof phoneNumber === "undefined" || phoneNumber === "") {
             return 0;
         } else if (/^[+86]?1[34578]\d{9}$/.test(phoneNumber)) {
             return 1;
-        } else if (/^([(\d{3,4})]|[\d{3,4}-]|\s)?\d{7,14}$/.test(phoneNumber)) {
+        } else if (/^(\(\d{3,4}\)|\d{3,4}-)?\d{7,8}([-]\d{2,4})?$/.test(phoneNumber)) {
             return 2;
-        } else {
-            return -1;
         }
+        return -1;
     },
     /**
      * 判断用户是否使用PC端打开

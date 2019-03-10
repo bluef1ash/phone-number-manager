@@ -157,6 +157,7 @@ public class CommunityResidentAction {
      * 添加、修改社区居民处理
      *
      * @param httpServletRequest HTTP响应对象
+     * @param session            Session对象
      * @param model              前台模型
      * @param communityResident  前台传递的社区居民对象
      * @param bindingResult      错误信息对象
@@ -164,19 +165,21 @@ public class CommunityResidentAction {
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     @VerifyCSRFToken
-    public String communityResidentCreateOrEditHandle(HttpServletRequest httpServletRequest, Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
-        try {
-            if (bindingResult.hasErrors()) {
-                List<Community> communities = communityService.findObjects();
+    public String communityResidentCreateOrEditHandle(HttpServletRequest httpServletRequest, HttpSession session, Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+            try {
+                List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
                 model.addAttribute("communities", communities);
                 // 输出错误信息
                 List<ObjectError> allErrors = bindingResult.getAllErrors();
                 model.addAttribute("messageErrors", allErrors);
                 return "resident/edit";
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new BusinessException("系统出现错误，请联系管理员！");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统出现错误，请联系管理员！");
         }
         if ("POST".equals(httpServletRequest.getMethod())) {
             try {

@@ -128,7 +128,7 @@
     </div>
 </template>
 <script>
-    import commonFunction from "@base/lib/common";
+    import commonFunction from "@base/lib/javascript/common";
 
     export default {
         data() {

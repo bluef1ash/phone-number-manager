@@ -2,8 +2,8 @@ import "@base/javascript/src/common/public";
 import Vue from "vue";
 import {Loading, Message} from "element-ui";
 import sha256 from "sha256";
-import commonFunction from "@base/lib/common";
-import "@base/lib/gt";
+import commonFunction from "@base/lib/javascript/common";
+import "@base/lib/javascript/gt";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;

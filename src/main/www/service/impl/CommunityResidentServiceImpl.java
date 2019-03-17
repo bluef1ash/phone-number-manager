@@ -3,6 +3,7 @@ package www.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
+import constant.SystemConstant;
 import exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -203,28 +204,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, Long roleId, Long roleLocationId) {
-        List<CommunityResident> communityResidents = null;
-        List<Long> communityIds = new ArrayList<>();
-        Long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
+    public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, List<Map<String, Object>> userData) {
         Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
         Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
-        if (roleId.equals(systemRoleId)) {
-            communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(null);
-        } else if (roleId.equals(communityRoleId)) {
-            communityIds.add(roleLocationId);
-            communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(communityIds);
-        } else if (roleId.equals(subdistrictRoleId)) {
-            List<Community> communities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(roleLocationId);
-            for (Community community : communities) {
-                communityIds.add(community.getCommunityId());
-            }
-            communityResidents = communityResidentsDao.selectCommunityResidentsAndCommunitiesAndSubdistrictByCommunityIds(communityIds);
-        }
+        List<CommunityResident> communityResidents = communityResidentsDao.selectCommunityResidentsByUserData(userData, communityRoleId, subdistrictRoleId);
         if (communityResidents != null) {
             for (CommunityResident communityResident : communityResidents) {
-                String communityName = communityResident.getCommunity().getCommunityName().replaceAll("居委会", "").replaceAll("社区", "");
-                String subdistrictName = communityResident.getCommunity().getSubdistrict().getSubdistrictName().replaceAll("办事处", "").replaceAll("街道", "");
+                String communityName = communityResident.getCommunity().getCommunityName().replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
+                String subdistrictName = communityResident.getCommunity().getSubdistrict().getSubdistrictName().replaceAll(SystemConstant.SUBDISTRICT_ALIAS_NAME, "").replaceAll(SystemConstant.SUBDISTRICT_NAME, "");
                 communityResident.setSubdistrictName(subdistrictName);
                 communityResident.setCommunityName(communityName);
                 // 处理多个联系方式
@@ -243,8 +230,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 }
                 // 处理地址
                 // 处理分包人
-                Subcontractor subcontractor = subcontractorsDao.selectObjectById(communityResident.getSubcontractorId());
-                communityResident.setSubcontractorName(communityName + subcontractor.getName());
+                communityResident.setSubcontractorName(communityName + communityResident.getSubcontractor().getName());
             }
         }
         return (JSONArray) JSON.toJSON(communityResidents);
@@ -260,7 +246,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         tableHead.put("communityResidentPhone1", "电话1");
         tableHead.put("communityResidentPhone2", "电话2");
         tableHead.put("communityResidentPhone3", "电话3");
-        tableHead.put("communityResidentSubcontractor", "分包人");
+        tableHead.put("subcontractorName", "分包人");
         return tableHead;
     }
 

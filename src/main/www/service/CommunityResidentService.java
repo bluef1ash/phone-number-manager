@@ -107,12 +107,11 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * 通过系统用户角色编号与定位角色编号查找社区居民及所属社区
      *
      * @param configurationsMap 系统配置
-     * @param roleId            系统用户角色编号
-     * @param roleLocationId    系统用户角色定位编号
+     * @param userData          用户数据
      * @return 社区居民与所属社区集合转换的JSON对象
      * @throws Exception SERVICE层异常
      */
-    JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, Long roleId, Long roleLocationId) throws Exception;
+    JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, List<Map<String, Object>> userData) throws Exception;
 
     /**
      * 查找Excel表头

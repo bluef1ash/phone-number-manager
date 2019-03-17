@@ -6,17 +6,22 @@
                     <div class="card-header">
                         <div class="row resident-list-buttons">
                             <a href="javascript:" class="btn btn-warning" data-toggle="modal" data-target="#import_as_system_modal" title="从Excel文件导入系统" @click="loadSubdistricts">从Excel文件导入系统</a>
-                            <a href="javascript:" class="btn btn-secondary" title="导出到Excel" @click="exportExcel">导出到Excel</a>
+                            <button @click="exportExcel" class="btn btn-secondary" type="button">导出到Excel</button>
+                            <button aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" id="export_excel" type="button">
+                                <span class="sr-only">选择导出的单位</span>
+                            </button>
+                            <div aria-labelledby="export_excel" class="dropdown-menu" x-placement="bottom-start">
+                                <el-tree :check-strictly="isStrictly" :data="companies2" :highlight-current="true" @check-change="chooseExportExcel" node-key="value" ref="tree" show-checkbox></el-tree>
+                            </div>
+                            <iframe :src="exportExcelUrl" class="hidden" v-if="isDownload"></iframe>
                             <a :href="publicParams.createUrl" class="btn btn-primary" title="添加社区居民">添加社区居民</a>
                         </div>
                         <div class="col-md-12">
                             <div class="row">
                                 <form class="form-inline resident-list-search" action="javascript:" method="get">
                                     <div class="form-group">
-                                        <label for="company_name">单位</label>
-                                        <input class="form-control" id="company_name" type="text" readonly data-toggle="modal" data-target="#search_company_modal" v-model="companyName" @click="loadCompanies">
-                                        <button type="button" class="btn btn-secondary resident-list-company-search" data-toggle="modal" data-target="#search_company_modal" @click="loadCompanies">
-                                            <i class="fa fa-search"></i></button>
+                                        <label>单位</label>
+                                        <el-cascader :change-on-select="true" :options="companies" @change="chooseCompany" placeholder=""></el-cascader>
                                     </div>
                                     <div class="form-group">
                                         <label for="resident_name">社区居民姓名</label>
@@ -103,32 +108,11 @@
             <!-- /.modal-dialog-->
         </div>
         <!-- /.modal-->
-        <div class="modal fade" id="search_company_modal" tabindex="-1" role="dialog" aria-labelledby="search_company_modal_label" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title">选择所在区域</h4>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="关闭" @click="() => this.companyName = ''">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <el-tree ref="tree" :data="companies" node-key="id" :highlight-current="true" @node-click="choseCompany"></el-tree>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" type="button" data-dismiss="modal" @click="() => this.companyName = ''">关闭</button>
-                        <button class="btn btn-primary" type="button" data-dismiss="modal">选择</button>
-                    </div>
-                </div>
-                <!-- /.modal-content-->
-            </div>
-            <!-- /.modal-dialog-->
-        </div>
-        <!-- /.modal-->
     </div>
 </template>
 <script>
     import commonFunction from "@base/lib/javascript/common";
+    import {Base64} from "js-base64";
 
     export default {
         data() {
@@ -137,12 +121,14 @@
                 publicParams: publicPrams,
                 communityResidents: communityResidentData.communityResidents,
                 pageInfo: communityResidentData.pageInfo,
-                roleLocationIds: communityResidentData.roleLocationIds,
+                roleIds: communityResidentData.roleIds,
+                roleId: communityResidentData.roleId,
                 companies: [],
+                companies2: [],
                 subdistricts: [],
                 companyName: null,
                 companyId: null,
-                companyLocationId: null,
+                companyRoleId: null,
                 residentName: null,
                 residentAddress: null,
                 residentPhone: null,
@@ -150,13 +136,19 @@
                 loading: null,
                 isLoading: false,
                 pagination: 1,
-                searchParams: {}
+                searchParams: {},
+                isDownload: false,
+                timeout: new Date().getTime(),
+                exportIds: [],
+                exportExcelUrl: null,
+                isStrictly: false
             };
         },
         created() {
             if (this.pagination !== null && this.pagination > 1) {
                 this.loadResidents();
             }
+            this.loadCompanies();
         },
         methods: {
             /**
@@ -174,7 +166,6 @@
                     $.ajax({
                         url: this.publicParams.companySelectUrl,
                         method: "get",
-                        async: false,
                         data: {
                             _token: this.token
                         }
@@ -183,16 +174,26 @@
                             this.token = data._token;
                         }
                         if (data.state === 1) {
+                            let disabled = false;
+                            this.isStrictly = false;
+                            if (this.roleId === this.roleIds.communityRoleId) {
+                                disabled = true;
+                                this.isStrictly = true;
+                            }
                             data.subdistricts.forEach(item => {
-                                let node = {id: item.subdistrictId, label: item.subdistrictName, roleLocationId: this.roleLocationIds.subdistrictRoleId};
+                                let node = {value: item.subdistrictId, label: item.subdistrictName, roleId: this.roleIds.subdistrictRoleId};
+                                let node2 = {value: item.subdistrictId, label: item.subdistrictName, roleId: this.roleIds.subdistrictRoleId, disabled};
                                 if (item.communities) {
                                     node.children = [];
+                                    node2.children = [];
                                     item.communities.forEach(community => {
-                                        let children = {id: community.communityId, label: community.communityName, roleLocationId: this.roleLocationIds.communityRoleId};
+                                        let children = {value: community.communityId, label: community.communityName, roleId: this.roleIds.communityRoleId};
                                         node.children.push(children);
+                                        node2.children.push(children);
                                     });
                                 }
                                 this.companies.push(node);
+                                this.companies2.push(node2);
                             });
                         }
                     });
@@ -201,29 +202,31 @@
             /**
              * 选择单位
              * @param data
-             * @param node
-             * @param nodeObj
              */
-            choseCompany(data, node, nodeObj) {
-                this.companyId = data.id;
-                this.companyLocationId = data.roleLocationId;
-                this.companyName = data.label;
+            chooseCompany(data) {
+                if (data.length === 1) {
+                    this.companyId = data[0];
+                    this.companyRoleId = this.roleIds.subdistrictRoleId;
+                } else {
+                    this.companyId = data[1];
+                    this.companyRoleId = this.roleIds.communityRoleId;
+                }
             },
             /**
              * 社区居民搜索
              */
             search() {
                 let companyIdBool = this.companyId !== null && this.companyId !== 0;
-                let companyLocationIdBool = this.companyLocationId !== null && this.companyLocationId !== 0;
+                let companyRoleIdBool = this.companyRoleId !== null && this.companyRoleId !== 0;
                 let residentNameBool = this.residentName !== null && this.residentName !== "";
                 let residentAddressBool = this.residentAddress !== null && this.residentAddress !== "";
                 let residentPhoneBool = this.residentPhone !== null && this.residentPhone !== "";
-                if (companyIdBool || companyLocationIdBool || residentNameBool || residentAddressBool || residentPhoneBool) {
+                if (companyIdBool || companyRoleIdBool || residentNameBool || residentAddressBool || residentPhoneBool) {
                     if (companyIdBool) {
                         this.searchParams.companyId = this.companyId;
                     }
-                    if (companyLocationIdBool) {
-                        this.searchParams.companyLocationId = this.companyLocationId;
+                    if (companyRoleIdBool) {
+                        this.searchParams.companyRoleId = this.companyRoleId;
                     }
                     if (residentNameBool) {
                         this.searchParams.residentName = this.residentName;
@@ -247,7 +250,7 @@
             searchClear() {
                 this.companyName = null;
                 this.companyId = null;
-                this.companyLocationId = null;
+                this.companyRoleId = null;
                 this.residentName = null;
                 this.residentAddress = null;
                 this.residentPhone = null;
@@ -389,25 +392,46 @@
              * 导出Excel
              */
             exportExcel() {
-                this.$cookie.set("exportExcel", 1, {expires: "5m", path: "/"});
-                let loading = this.$loading({
+                if (this.exportIds.length === 0) {
+                    this.$message({
+                        message: "请选择导出单位！",
+                        type: "error"
+                    });
+                    return;
+                }
+                this.loading = this.$loading({
                     lock: true,
                     text: "正在生成Excel，请稍后。。。",
                     spinner: "el-icon-loading",
                     background: "rgba(0, 0, 0, 0.8)"
                 });
-                location.href = this.publicParams.downloadExcelUrl;
+                this.exportExcelUrl = this.publicParams.downloadExcelUrl + "?data=" + Base64.encodeURI(JSON.stringify(this.exportIds));
+                this.isDownload = true;
                 let interval = setInterval(() => {
-                    console.log(this.$cookie.get("exportExcel"));
-                    if (this.$cookie.get("exportExcel") === null) {
-                        loading.close();
+                    if (this.isDownload && this.$cookie.get("exportExcel") === null) {
+                        this.loading.close();
                         this.$message({
                             message: "导出Excel文件完成！",
                             type: "success"
                         });
+                        this.isDownload = false;
                         clearInterval(interval);
                     }
                 }, 5000);
+            },
+            /**
+             * 选择导出Excel
+             * @param obj
+             * @param isChecked
+             * @param childrenIsChecked
+             */
+            chooseExportExcel(obj, isChecked, childrenIsChecked) {
+                if (isChecked) {
+                    new Date().getTime() - this.timeout > 5 && this.exportIds.push({roleLocationId: obj.value, roleId: obj.roleId});
+                    this.timeout = new Date().getTime();
+                } else {
+                    this.exportIds.splice(this.exportIds.findIndex(item => item.roleLocationId === obj.value && item.roleId === obj.roleId), 1);
+                }
             }
         },
         watch: {
@@ -424,8 +448,30 @@
         justify-content: flex-end;
         margin-bottom: 2rem;
 
-        a {
+        a, button {
             margin-right: 1.5rem;
+        }
+
+        button {
+            &:first-of-type {
+                margin-right: 0;
+                border-bottom-right-radius: unset;
+                border-top-right-radius: unset;
+            }
+
+            &:last-of-type {
+                border-top-left-radius: unset;
+                border-bottom-left-radius: unset;
+            }
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            will-change: transform;
+            top: 0;
+            left: 0;
+            transform: translate3d(0px, 35px, 0);
+            padding: 0.4rem;
         }
     }
 

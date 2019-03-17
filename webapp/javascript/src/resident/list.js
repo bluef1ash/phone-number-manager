@@ -5,6 +5,7 @@ import VueRouter from "vue-router";
 import VueCookie from "vue-cookie";
 import {
     Button,
+    Cascader,
     Loading,
     Message,
     MessageBox,
@@ -31,6 +32,7 @@ $(document).ready(() => {
     Vue.use(Loading);
     Vue.use(Table);
     Vue.use(TableColumn);
+    Vue.use(Cascader);
     new Vue({
         el: "#resident_list",
         data: {},

@@ -28,7 +28,7 @@ $(document).ready(() => {
             this.privilegeTree = this.setTree(this.userPrivileges, 0);
         },
         mounted() {
-            this.$refs.tree.setCheckedKeys(this.checkedList, true);
+            this.$refs.tree.setCheckedKeys(this.checkedList);
         },
         methods: {
             /**

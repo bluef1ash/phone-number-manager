@@ -31,6 +31,7 @@
                extends="AliasResultMap">
         <association property="community"
                      resultMap="www.dao.CommunitiesDao.communitiesCorrelationSubdistrictResultMap"/>
+        <association property="subcontractor" resultMap="www.dao.SubcontractorsDao.AliasResultMap"/>
     </resultMap>
     <update id="truncateTable">
         TRUNCATE TABLE `pm_community_residents`
@@ -240,20 +241,23 @@
         `pm_community_residents`.`subcontractor_id`,
         `pm_community_residents`.`community_id`,
         `pm_communities`.`name`,
-        `pm_subdistricts`.`name` AS 'subdistrict_name'
+        `pm_subdistricts`.`name` AS 'subdistrict_name',
+        `pm_subcontractors`.`name` AS 'subcontractor_name'
         FROM
         `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
-        ORDER BY `pm_communities`.`name`
+        LEFT JOIN `pm_subcontractors` ON `pm_community_residents`.`subcontractor_id` =
+        `pm_subcontractors`.`subcontractor_id`
         <where>
             <if test="communityIds != null">
                 `pm_community_residents`.`community_id` IN
-                <foreach collection="communityIds" separator="," open="(" close=")" item="cId">
-                    #{cId}
+                <foreach collection="communityIds" separator="," open="(" close=")" item="communityId">
+                    #{communityId}
                 </foreach>
             </if>
         </where>
+        ORDER BY `pm_communities`.`name`
     </select>
     <select id="selectCommunityResidentByNameAndAddress" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
@@ -397,6 +401,32 @@
                  LEFT JOIN `pm_community_residents`
         ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`
         WHERE `pm_communities`.`community_id` = #{communityId}
+    </select>
+    <select id="selectCommunityResidentsByUserData"
+            resultMap="communityResidentsCorrelationCommunitiesCorrelationSubdistrictResultMap">
+        SELECT `pm_communities`.`name`,
+        `pm_subdistricts`.`name` 'subdistrict_name',
+        `pm_community_residents`.`name` 'community_resident_name',
+        `pm_community_residents`.`address`,
+        `pm_community_residents`.`phones`,
+        `pm_subcontractors`.`name` 'subcontractor_name'
+        FROM `pm_community_residents`
+        LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
+        LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
+        LEFT JOIN pm_subcontractors ON `pm_community_residents`.`subcontractor_id` =
+        `pm_subcontractors`.`subcontractor_id`
+        <where>
+            <foreach collection="userData" item="item" separator="OR">
+                <choose>
+                    <when test="item.roleId == subdistrictRoleId">
+                        `pm_subdistricts`.`subdistrict_id` = #{item.roleLocationId}
+                    </when>
+                    <when test="item.roleId == communityRoleId">
+                        `pm_communities`.`community_id` = #{item.roleLocationId}
+                    </when>
+                </choose>
+            </foreach>
+        </where>
     </select>
     <delete id="deleteCommunityResidentsBySubdistrictId">
         DELETE `pm_community_residents`

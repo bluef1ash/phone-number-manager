@@ -168,4 +168,15 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      */
     @MapKey("name")
     Map<String, Map<String, Object>> countCommunityResidentsGroupByCommunityId(Long communityId) throws DataAccessException;
+
+    /**
+     * 通过系统用户数据查询
+     *
+     * @param userData          系统用户数据
+     * @param communityRoleId   社区用户编号
+     * @param subdistrictRoleId 街道用户编号
+     * @return 社区居民集合
+     * @throws DataAccessException 数据库操作异常
+     */
+    List<CommunityResident> selectCommunityResidentsByUserData(@Param("userData") List<Map<String, Object>> userData, @Param("communityRoleId") Long communityRoleId, @Param("subdistrictRoleId") Long subdistrictRoleId) throws DataAccessException;
 }

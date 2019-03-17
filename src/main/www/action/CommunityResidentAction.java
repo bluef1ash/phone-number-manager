@@ -35,13 +35,12 @@ import www.service.SubdistrictService;
 import www.validator.CommunityResidentInputValidator;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 社区居民控制器
@@ -84,7 +83,11 @@ public class CommunityResidentAction {
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @RefreshCsrfToken
-    public String communityResidentList(HttpSession session, Model model) {
+    public String communityResidentList(HttpSession session, Model model, HttpServletResponse response) {
+        Cookie cookie = new Cookie("exportExcel", "1");
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 90);
+        response.addCookie(cookie);
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
         @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
         Long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
@@ -94,11 +97,12 @@ public class CommunityResidentAction {
             Map<String, Object> communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(systemUser, systemRoleId, communityRoleId, subdistrictRoleId, null, null);
             model.addAttribute("communityResidents", communityResidentMap.get("data"));
             model.addAttribute("pageInfo", communityResidentMap.get("pageInfo"));
-            Map<String, Long> roleLocationIdMap = new HashMap<>(4);
-            roleLocationIdMap.put("systemRoleId", systemRoleId);
-            roleLocationIdMap.put("communityRoleId", communityRoleId);
-            roleLocationIdMap.put("subdistrictRoleId", subdistrictRoleId);
-            model.addAttribute("roleLocationIds", roleLocationIdMap);
+            Map<String, Long> roleIdMap = new HashMap<>(4);
+            roleIdMap.put("systemRoleId", systemRoleId);
+            roleIdMap.put("communityRoleId", communityRoleId);
+            roleIdMap.put("subdistrictRoleId", subdistrictRoleId);
+            model.addAttribute("roleIds", roleIdMap);
+            model.addAttribute("roleId", systemUser.getRoleId());
         } catch (Exception e) {
             e.printStackTrace();
             throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
@@ -266,19 +270,25 @@ public class CommunityResidentAction {
      *
      * @param session  session对象
      * @param response 前台响应对象
+     * @param data     传递数据
      */
     @RequestMapping(value = "/save_as_excel", method = RequestMethod.GET)
-    public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response) {
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+    public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response, String data) {
         @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        byte[] jsonDecode = Base64.getDecoder().decode(data);
+        List<Map<String, Object>> userData = new ArrayList<>();
+        JSONArray jsonArray = (JSONArray) JSON.parse(jsonDecode);
+        for (Object obj : jsonArray) {
+            userData.add((Map<String, Object>) obj);
+        }
         try {
             // 获取业务数据集
-            JSONArray data = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(configurationsMap, systemUser.getRoleId(), systemUser.getRoleLocationId());
+            JSONArray dataJson = communityResidentService.findCommunityResidentsAndCommunitiesBySystemUserId(configurationsMap, userData);
             //获取属性-列头
             Map<String, String> headMap = communityResidentService.getPartStatHead();
             String excelTitleUp = CommonUtil.convertConfigurationString(configurationsMap.get("excel_title_up"));
             String excelTitle = CommonUtil.convertConfigurationString(configurationsMap.get("excel_title"));
-            ExcelUtil.downloadExcelFile(excelTitleUp, excelTitle, headMap, data, request, response);
+            ExcelUtil.downloadExcelFile(excelTitleUp, excelTitle, headMap, dataJson, response, request);
         } catch (Exception e) {
             e.printStackTrace();
             throw new BusinessException("导出Excel文件失败！");

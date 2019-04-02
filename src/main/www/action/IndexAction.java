@@ -8,9 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import utils.CommonUtil;
 import utils.CsrfTokenUtil;
-import www.entity.SystemUser;
 import www.entity.UserPrivilege;
 import www.service.CommunityResidentService;
 import www.service.UserPrivilegeService;
@@ -28,7 +26,7 @@ import java.util.Set;
  */
 @Controller
 @RequestMapping("/index")
-public class IndexAction {
+public class IndexAction extends BaseAction {
     @Resource
     private CommunityResidentService communityResidentService;
     @Resource
@@ -44,12 +42,11 @@ public class IndexAction {
     @RequestMapping(method = RequestMethod.GET)
     @RefreshCsrfToken
     public String index(HttpSession session, Model model) {
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        getSessionRoleId(session);
         model.addAttribute("systemUser", systemUser);
-        model.addAttribute("systemRoleId", CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id")));
-        model.addAttribute("communityRoleId", CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id")));
-        model.addAttribute("subdistrictRoleId", CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id")));
+        model.addAttribute("systemRoleId", systemRoleId);
+        model.addAttribute("communityRoleId", communityRoleId);
+        model.addAttribute("subdistrictRoleId", subdistrictRoleId);
         return "index/index";
     }
 
@@ -88,12 +85,8 @@ public class IndexAction {
     @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> getComputedCount(HttpSession session, Integer getType, Long id, Long companyType) {
+        getSessionRoleId(session);
         try {
-            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-            Long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
-            Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
-            Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
             Map<String, Object> jsonMap = communityResidentService.computedCount(systemUser, getType, id, companyType, systemRoleId, communityRoleId, subdistrictRoleId);
             jsonMap.put("state", 1);
             jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));

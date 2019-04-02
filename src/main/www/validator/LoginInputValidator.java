@@ -22,17 +22,12 @@ import java.util.Map;
  *
  * @author 廿二月的天
  */
-public class LoginInputValidator extends BaseInputValidator implements Validator {
+public class LoginInputValidator extends BaseInputValidator<SystemUser> implements Validator {
     private SystemUserService systemUserService;
 
     public LoginInputValidator(SystemUserService systemUserService, HttpServletRequest request) {
         this.request = request;
         this.systemUserService = systemUserService;
-    }
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(SystemUser.class);
     }
 
     @Override

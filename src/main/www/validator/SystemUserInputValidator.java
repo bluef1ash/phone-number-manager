@@ -15,20 +15,12 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class SystemUserInputValidator extends BaseInputValidator implements Validator {
+public class SystemUserInputValidator extends BaseInputValidator<SystemUser> implements Validator {
     private SystemUserService systemUserService;
-
-    public SystemUserInputValidator() {
-    }
 
     public SystemUserInputValidator(SystemUserService systemUserService, HttpServletRequest request) {
         this.systemUserService = systemUserService;
         this.request = request;
-    }
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(SystemUser.class);
     }
 
     @Override

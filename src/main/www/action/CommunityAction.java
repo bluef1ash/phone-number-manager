@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import utils.CommonUtil;
 import utils.CsrfTokenUtil;
 import www.entity.Community;
 import www.entity.Subcontractor;
@@ -45,7 +44,7 @@ import java.util.Set;
 @SystemUserAuth
 @Controller
 @RequestMapping("/community")
-public class CommunityAction {
+public class CommunityAction extends BaseAction {
     @Resource
     private CommunityService communityService;
     @Resource
@@ -243,10 +242,9 @@ public class CommunityAction {
     @RefreshCsrfToken
     @RequestMapping(value = "/subcontractor/edit", method = RequestMethod.GET)
     public String editSubcontractor(HttpSession session, Model model, Long id) {
+        getSessionRoleId(session);
         try {
             Subcontractor subcontractor = subcontractorService.findObject(id);
-            SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-            @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
             List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
             model.addAttribute("communities", JSON.toJSON(communities));
             model.addAttribute("communities", communities);
@@ -271,12 +269,11 @@ public class CommunityAction {
     @RequestMapping(value = "/subcontractor/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     public String subcontractorCreateOrEditHandle(HttpServletRequest request, HttpSession session, Model model, @Validated Subcontractor subcontractor, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            getSessionRoleId(session);
             try {
                 // 输出错误信息
                 List<ObjectError> allErrors = bindingResult.getAllErrors();
                 model.addAttribute("messageErrors", allErrors);
-                SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-                @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
                 List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
                 model.addAttribute("communities", JSON.toJSON(communities));
                 return "subcontractor/edit";
@@ -358,11 +355,7 @@ public class CommunityAction {
     public @ResponseBody
     Map<String, Object> findCommunityForAjax(HttpSession session) {
         Map<String, Object> jsonMap = new HashMap<>(4);
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-        Long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
-        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
-        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
+        getSessionRoleId(session);
         try {
             Long roleId = systemUser.getUserRole().getRoleId();
             Long roleLocationId = systemUser.getRoleLocationId();

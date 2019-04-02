@@ -6,14 +6,14 @@
         <result property="subdistrictName" column="name"/>
         <result property="subdistrictTelephone" column="telephone"/>
     </resultMap>
-    <resultMap type="Subdistrict" id="subdistrictAliasResultMap">
+    <resultMap type="Subdistrict" id="aliasResultMap">
         <id property="subdistrictId" column="subdistrict_id"/>
         <result property="subdistrictName" column="subdistrict_name"/>
         <result property="subdistrictTelephone" column="subdistrict_telephone"/>
     </resultMap>
     <resultMap type="Subdistrict" id="subdistrictCorrelationCommunitiesResultMap" extends="subdistrictResultMap">
         <collection property="communities" column="subdistrict_id"
-                    resultMap="www.dao.CommunitiesDao.communityAliasResultMap"/>
+                    resultMap="www.dao.CommunitiesDao.aliasResultMap"/>
     </resultMap>
     <insert id="insertObject">
         INSERT INTO `pm_subdistricts` (`name`, `telephone`) VALUES (#{subdistrictName}, #{subdistrictTelephone})

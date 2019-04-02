@@ -16,11 +16,8 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class SubcontractorInputValidator extends BaseInputValidator implements Validator {
+public class SubcontractorInputValidator extends BaseInputValidator<Subcontractor> implements Validator {
     private SubcontractorService subcontractorService;
-
-    public SubcontractorInputValidator() {
-    }
 
     public SubcontractorInputValidator(SubcontractorService subcontractorService, HttpServletRequest request) {
         this.subcontractorService = subcontractorService;
@@ -45,11 +42,6 @@ public class SubcontractorInputValidator extends BaseInputValidator implements V
         }
     }
 
-    @Override
-    public boolean supports(Class<?> aClass) {
-        return aClass.equals(Subcontractor.class);
-    }
-
     /**
      * 验证联系方式是否合法
      *
@@ -57,7 +49,7 @@ public class SubcontractorInputValidator extends BaseInputValidator implements V
      * @return 联系方式是否合法
      */
     private boolean checkedPhone(String phone) {
-        if (!StringCheckedRegexUtil.checkPhone(phone)) {
+        if (StringCheckedRegexUtil.checkPhone(phone) == 0) {
             message = "输入的联系方式不合法，请检查后重试！";
             return false;
         }

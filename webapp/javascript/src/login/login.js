@@ -125,6 +125,7 @@ $(document).ready(() => {
                         });
                     }
                 }).then(data => {
+                    this.token = data._token;
                     if (data.state === 1) {
                         this.loading.close();
                         this.$message({

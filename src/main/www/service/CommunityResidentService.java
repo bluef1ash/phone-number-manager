@@ -2,6 +2,7 @@ package www.service;
 
 import com.alibaba.fastjson.JSONArray;
 import org.apache.poi.ss.usermodel.Workbook;
+import utils.ExcelUtil;
 import www.entity.CommunityResident;
 import www.entity.SystemUser;
 
@@ -47,16 +48,15 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @param systemRoleId          系统角色编号
      * @param communityRoleId       社区角色编号
      * @param subdistrictRoleId     街道角色编号
-     * @param systemAdministratorId 系统超级管理员用户编号
      * @param communityResident     需要查找的社区居民
      * @param companyId             查找的范围单位的编号
-     * @param companyLocationId     查找的范围单位的类别编号
+     * @param companyRoleId         查找的范围单位的类别编号
      * @param pageNumber            分页页码
      * @param pageDataSize          每页展示的数量
      * @return 查找到的社区居民集合与分页对象
      * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Long systemAdministratorId, CommunityResident communityResident, Long companyId, Long companyLocationId, Integer pageNumber, Integer pageDataSize) throws Exception;
+    Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, CommunityResident communityResident, Long companyId, Long companyRoleId, Integer pageNumber, Integer pageDataSize) throws Exception;
 
     /**
      * 从Excel导入数据
@@ -84,26 +84,6 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Integer pageNumber, Integer pageDataSize) throws Exception;
 
     /**
-     * 通过居民姓名与地址查找所属社区
-     *
-     * @param nameAddress         社区居民姓名与家庭住址拼接的字符串
-     * @param communityResidentId 社区居民编号
-     * @return 查找到的社区居民
-     * @throws Exception SERVICE层异常
-     */
-    List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Long communityResidentId) throws Exception;
-
-    /**
-     * 通过居民联系方式与地址查找所属社区
-     *
-     * @param phones              社区居民的联系方式集合
-     * @param communityResidentId 社区居民编号
-     * @return 查找到的社区居民
-     * @throws Exception SERVICE层异常
-     */
-    List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Long communityResidentId) throws Exception;
-
-    /**
      * 通过系统用户角色编号与定位角色编号查找社区居民及所属社区
      *
      * @param configurationsMap 系统配置
@@ -117,9 +97,8 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * 查找Excel表头
      *
      * @return 社区居民表字段名称
-     * @throws Exception SERVICE层异常
      */
-    Map<String, String> getPartStatHead() throws Exception;
+    Map<String, String> getPartStatHead();
 
     /**
      * 计算并生成图表数据
@@ -135,4 +114,12 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @throws Exception SERVICE层异常
      */
     Map<String, Object> computedCount(SystemUser systemUser, Integer getType, Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) throws Exception;
+
+    /**
+     * 设置Excel头部
+     *
+     * @param titles 标题数组
+     * @return 设置接口
+     */
+    ExcelUtil.DataHandler setExcelHead(String[] titles);
 }

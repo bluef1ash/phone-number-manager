@@ -15,20 +15,12 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class ConfigurationInputValidator extends BaseInputValidator implements Validator {
+public class ConfigurationInputValidator extends BaseInputValidator<Configuration> implements Validator {
     private ConfigurationService configurationService;
-
-    public ConfigurationInputValidator() {
-    }
 
     public ConfigurationInputValidator(ConfigurationService configurationService, HttpServletRequest request) {
         this.configurationService = configurationService;
         this.request = request;
-    }
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(Configuration.class);
     }
 
     @Override

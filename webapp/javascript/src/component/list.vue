@@ -14,26 +14,34 @@
                                 <el-tree :check-strictly="isStrictly" :data="companies2" :highlight-current="true" @check-change="chooseExportExcel" node-key="value" ref="tree" show-checkbox></el-tree>
                             </div>
                             <iframe :src="exportExcelUrl" class="hidden" v-if="isDownload"></iframe>
-                            <a :href="publicParams.createUrl" class="btn btn-primary" title="添加社区居民">添加社区居民</a>
+                            <a :href="publicParams.createUrl" :title="'添加社区' + dataTypeName" class="btn btn-primary" v-text="'添加社区' + dataTypeName"></a>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-12 d-none d-md-block">
                             <div class="row">
                                 <form class="form-inline resident-list-search" action="javascript:" method="get">
                                     <div class="form-group">
                                         <label>单位</label>
-                                        <el-cascader :change-on-select="true" :options="companies" @change="chooseCompany" placeholder=""></el-cascader>
+                                        <el-cascader :change-on-select="true" :clearable="true" :options="companies" @change="chooseCompany" placeholder="单位搜索"></el-cascader>
                                     </div>
                                     <div class="form-group">
-                                        <label for="resident_name">社区居民姓名</label>
-                                        <input class="form-control" id="resident_name" type="text" placeholder="请输入查找的社区居民姓名" v-model="residentName">
+                                        <label for="name" v-text="'社区' + dataTypeName + '姓名'"></label>
+                                        <input :placeholder="'请输入查找的社区' + dataTypeName + '姓名'" class="form-control" id="name" type="text" v-model="searchParams.name">
+                                    </div>
+                                    <div class="form-group" v-if="dataType === 1">
+                                        <label for="sex">社区楼长性别</label>
+                                        <select class="form-control" id="sex" v-model="searchParams.sex">
+                                            <option :value="-1">请选择</option>
+                                            <option :value="0">男</option>
+                                            <option :value="1">女</option>
+                                        </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="resident_address">家庭住址</label>
-                                        <input class="form-control" id="resident_address" type="text" placeholder="请输入查找的社区居民家庭住址" v-model="residentAddress">
+                                        <label for="address">家庭住址</label>
+                                        <input :placeholder="'请输入查找的社区' + dataTypeName + '家庭住址'" class="form-control" id="address" type="text" v-model="searchParams.address">
                                     </div>
                                     <div class="form-group">
-                                        <label for="resident_phone">社区居民联系方式</label>
-                                        <input class="form-control" id="resident_phone" type="text" placeholder="请输入查找的社区居民联系方式" v-model="residentPhone">
+                                        <label for="phone" v-text="'社区' + dataTypeName + '联系方式'"></label>
+                                        <input :placeholder="'请输入查找的社区' + dataTypeName + '联系方式'" class="form-control" id="phone" type="text" v-model="searchParams.phone">
                                     </div>
                                     <div class="form-group">
                                         <button class="btn btn-sm btn-danger" @click="searchClear">
@@ -48,20 +56,62 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <el-table :data="communityResidents" border v-loading="isLoading">
-                            <el-table-column type="index" :index="index => index + 1" label="序号"></el-table-column>
-                            <el-table-column prop="communityResidentName" label="社区居民姓名"></el-table-column>
-                            <el-table-column prop="communityResidentAddress" label="家庭住址"></el-table-column>
-                            <el-table-column prop="communityResidentPhones" label="联系方式（多个联系方式以英文逗号分隔）"></el-table-column>
-                            <el-table-column prop="community.communityName" label="所属社区居委会"></el-table-column>
+                        <el-table :data="data" border v-loading="isLoading">
+                            <el-table-column :index="index => index + 1" label="序号" type="index">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.$index + 1" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="社区居民姓名" prop="communityResidentName" v-if="dataType === 0">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.communityResidentName" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="社区楼长姓名" prop="name" v-if="dataType === 1">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.name" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="社区楼长性别" prop="sexName" v-if="dataType === 1">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.sexName" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="家庭住址" prop="communityResidentAddress" v-if="dataType === 0">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.communityResidentAddress" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="年龄" prop="age" v-if="dataType === 1">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.age" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="联系方式（多个联系方式以英文逗号分隔）" prop="communityResidentPhones" v-if="dataType === 0">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.communityResidentPhones" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="联系方式（多个联系方式以英文逗号分隔）" prop="telephones" v-if="dataType === 1">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.telephones" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="所属社区居委会" prop="community.communityName">
+                                <template slot-scope="scope">
+                                    <element-table-popover :data="scope.row.community.communityName" :row="scope.row"></element-table-popover>
+                                </template>
+                            </el-table-column>
                             <el-table-column label="操作">
                                 <template slot-scope="scope">
                                     <div class="row">
                                         <div class="col-6">
-                                            <a :href="publicParams.editUrl + scope.row.communityResidentId" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                            <a :href="publicParams.editUrl + scope.row.communityResidentId" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改" v-if="dataType === 0">修改</a>
+                                            <a :href="publicParams.editUrl + scope.row.id" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改" v-if="dataType === 1">修改</a>
                                         </div>
                                         <div class="col-6">
-                                            <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(scope.row.communityResidentId)">删除</button>
+                                            <button @click="deleteObject(scope.row.communityResidentId)" class="btn btn-sm btn-block btn-pill btn-danger" title="点击删除" type="button" v-if="dataType === 0">删除</button>
+                                            <button @click="deleteObject(scope.row.id)" class="btn btn-sm btn-block btn-pill btn-danger" title="点击删除" type="button" v-if="dataType === 1">删除</button>
                                         </div>
                                     </div>
                                 </template>
@@ -92,7 +142,7 @@
                                     <option :value="0">请选择</option>
                                     <option :value="subdistrict.subdistrictId" v-for="subdistrict in subdistricts" v-text="subdistrict.subdistrictName"></option>
                                 </select>
-                                <el-upload class="upload-demo" :action="publicParams.importAsSystemUrl" :show-file-list="false" :data="{_token: token, subdistrictId: subdistrictId}" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" :auto-upload="false" ref="uploadExcel" :before-upload="beforeUploadExcel" :on-progress="uploadProgress" :on-success="uploadSuccess">
+                                <el-upload :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :data="{_token: token, subdistrictId: subdistrictId}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo" ref="uploadExcel">
                                     <el-button size="small" type="primary">浏览文件</el-button>
                                 </el-upload>
                             </div>
@@ -113,30 +163,30 @@
 <script>
     import commonFunction from "@base/lib/javascript/common";
     import {Base64} from "js-base64";
+    import elementTablePopover from "@base/javascript/src/component/element-table-popover";
 
     export default {
         data() {
             return {
                 token: token,
                 publicParams: publicPrams,
-                communityResidents: communityResidentData.communityResidents,
-                pageInfo: communityResidentData.pageInfo,
-                roleIds: communityResidentData.roleIds,
-                roleId: communityResidentData.roleId,
+                data: data.data,
+                dataType: data.dataType,
+                dataTypeName: null,
+                pageInfo: data.pageInfo,
+                roleIds: data.roleIds,
+                roleId: data.roleId,
                 companies: [],
                 companies2: [],
                 subdistricts: [],
-                companyName: null,
-                companyId: null,
-                companyRoleId: null,
-                residentName: null,
-                residentAddress: null,
-                residentPhone: null,
                 subdistrictId: 0,
                 loading: null,
                 isLoading: false,
                 pagination: 1,
-                searchParams: {},
+                searchParams: {
+                    sex: -1
+                },
+                searchCompanyName: null,
                 isDownload: false,
                 timeout: new Date().getTime(),
                 exportIds: [],
@@ -145,14 +195,18 @@
             };
         },
         created() {
+            this.dataTypeName = this.dataType === 0 ? "居民" : "楼长";
             if (this.pagination !== null && this.pagination > 1) {
-                this.loadResidents();
+                this.loadData();
             }
             this.loadCompanies();
         },
+        components: {
+            elementTablePopover
+        },
         methods: {
             /**
-             * 删除社区居民
+             * 删除条目
              * @param id
              */
             deleteObject(id) {
@@ -205,59 +259,33 @@
              */
             chooseCompany(data) {
                 if (data.length === 1) {
-                    this.companyId = data[0];
-                    this.companyRoleId = this.roleIds.subdistrictRoleId;
+                    this.searchParams.companyId = data[0];
+                    this.searchParams.companyRoleId = this.roleIds.subdistrictRoleId;
                 } else {
-                    this.companyId = data[1];
-                    this.companyRoleId = this.roleIds.communityRoleId;
+                    this.searchParams.companyId = data[1];
+                    this.searchParams.companyRoleId = this.roleIds.communityRoleId;
                 }
             },
             /**
-             * 社区居民搜索
+             * 搜索
              */
             search() {
-                let companyIdBool = this.companyId !== null && this.companyId !== 0;
-                let companyRoleIdBool = this.companyRoleId !== null && this.companyRoleId !== 0;
-                let residentNameBool = this.residentName !== null && this.residentName !== "";
-                let residentAddressBool = this.residentAddress !== null && this.residentAddress !== "";
-                let residentPhoneBool = this.residentPhone !== null && this.residentPhone !== "";
-                if (companyIdBool || companyRoleIdBool || residentNameBool || residentAddressBool || residentPhoneBool) {
-                    if (companyIdBool) {
-                        this.searchParams.companyId = this.companyId;
-                    }
-                    if (companyRoleIdBool) {
-                        this.searchParams.companyRoleId = this.companyRoleId;
-                    }
-                    if (residentNameBool) {
-                        this.searchParams.residentName = this.residentName;
-                    }
-                    if (residentAddressBool) {
-                        this.searchParams.residentAddress = this.residentAddress;
-                    }
-                    if (residentPhoneBool) {
-                        this.searchParams.residentPhone = this.residentPhone;
-                    }
-                    this.searchParams.isSearch = true;
-                    this.searchParams.isFrist = true;
-                    this.pagination = 1;
-                    this.$router.push({path: "/"});
-                    this.loadResidents();
-                }
+                this.searchParams.isSearch = true;
+                this.searchParams.isFrist = true;
+                this.pagination = 1;
+                this.$router.push({path: "/"});
+                this.loadData();
             },
             /**
-             * 社区居民搜索重置
+             * 搜索重置
              */
             searchClear() {
-                this.companyName = null;
-                this.companyId = null;
-                this.companyRoleId = null;
-                this.residentName = null;
-                this.residentAddress = null;
-                this.residentPhone = null;
-                this.searchParams = {};
+                this.searchParams = {
+                    sex: -1
+                };
                 this.pagination = 1;
                 this.$router.push("/");
-                this.loadResidents();
+                this.loadData();
             },
             /**
              * 加载街道
@@ -345,12 +373,25 @@
                     message: response.message,
                     type: "success"
                 });
-                this.loadResidents();
+                this.loadData();
             },
             /**
-             * 加载社区居民
+             * 上传Excel失败回调
+             * @param error
+             * @param file
+             * @param fileList
              */
-            loadResidents() {
+            uploadError(error, file, fileList) {
+                this.loading.close();
+                this.$message({
+                    message: "上传Excel文件失败！",
+                    type: "error"
+                });
+            },
+            /**
+             * 加载数据
+             */
+            loadData() {
                 this.pagination = this.$route.path.substring(1) === "" ? 1 : parseInt(this.$route.path.substring(1));
                 let data = {
                     page: this.pagination,
@@ -361,7 +402,7 @@
                     data = Object.assign(data, this.searchParams);
                 }
                 $.ajax({
-                    url: this.publicParams.loadResidentsUrl,
+                    url: this.publicParams.loadDataUrl,
                     method: "get",
                     data: data,
                     beforeSend: xmlHttpRequest => {
@@ -370,7 +411,7 @@
                 }).then(data => {
                     this.isLoading = false;
                     if (data.state === 1) {
-                        this.communityResidents = data.communityResidents;
+                        this.data = data.data;
                         this.pageInfo = data.pageInfo;
                     } else {
                         this.$message({
@@ -399,6 +440,7 @@
                     });
                     return;
                 }
+                this.$cookie.set("exportExcel", "wait", {expires: "5m"});
                 this.loading = this.$loading({
                     lock: true,
                     text: "正在生成Excel，请稍后。。。",
@@ -408,16 +450,28 @@
                 this.exportExcelUrl = this.publicParams.downloadExcelUrl + "?data=" + Base64.encodeURI(JSON.stringify(this.exportIds));
                 this.isDownload = true;
                 let interval = setInterval(() => {
-                    if (this.isDownload && this.$cookie.get("exportExcel") === null) {
-                        this.loading.close();
-                        this.$message({
-                            message: "导出Excel文件完成！",
-                            type: "success"
-                        });
-                        this.isDownload = false;
-                        clearInterval(interval);
+                    if (this.isDownload && this.$cookie.get("exportExcel") === "success") {
+                        this.stopExportExcel(interval, "导出Excel文件完成！", "success");
+                    } else if (this.isDownload && this.$cookie.get("exportExcel") === "error") {
+                        this.stopExportExcel(interval, "导出Excel文件失败！", "error");
                     }
                 }, 5000);
+            },
+            /**
+             * 停止导出Excel页面
+             * @param interval
+             * @param message
+             * @param messageType
+             */
+            stopExportExcel(interval, message, messageType) {
+                this.loading.close();
+                this.$message({
+                    message: message,
+                    type: messageType
+                });
+                this.isDownload = false;
+                this.$cookie.delete("exportExcel");
+                clearInterval(interval);
             },
             /**
              * 选择导出Excel
@@ -437,7 +491,7 @@
         watch: {
             "$route"() {
                 if (!this.searchParams.isFrist) {
-                    this.loadResidents();
+                    this.loadData();
                 }
             }
         }

@@ -4,13 +4,14 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.ParameterizedType;
 
 /**
  * 基础表单验证
  *
  * @author 廿二月的天
  */
-public abstract class BaseInputValidator implements Validator {
+public abstract class BaseInputValidator<T> implements Validator {
     protected String message;
     protected String field;
     protected HttpServletRequest request;
@@ -21,6 +22,13 @@ public abstract class BaseInputValidator implements Validator {
         if (!checkInput(target, errors)) {
             errors.rejectValue(field, errorCode, message);
         }
+    }
+
+    @Override
+    public boolean supports(Class<?> aClass) {
+        ParameterizedType type = (ParameterizedType) this.getClass().getGenericSuperclass();
+        Class<?> clazz = (Class<?>) type.getActualTypeArguments()[0];
+        return clazz.equals(aClass);
     }
 
     /**

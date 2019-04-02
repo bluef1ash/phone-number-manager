@@ -15,7 +15,7 @@ import java.util.Map;
  * @author 廿二月的天
  */
 @Controller
-public class CommonAction {
+public class CommonAction extends BaseAction {
 
     /**
      * 404页面

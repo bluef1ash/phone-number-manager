@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import utils.CommonUtil;
+import utils.CsrfTokenUtil;
 import utils.GeetestLibUtil;
 import www.entity.SystemUser;
 import www.service.SystemUserService;
@@ -35,7 +36,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/login")
-public class LoginAction {
+public class LoginAction extends BaseAction {
     @Resource
     private SystemUserService systemUserService;
     @Resource
@@ -72,26 +73,27 @@ public class LoginAction {
     @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> ajaxLogin(HttpSession session, @Validated SystemUser systemUser, BindingResult bindingResult) {
-        Map<String, Object> map;
+        Map<String, Object> jsonMap;
         if (bindingResult.hasErrors()) {
-            map = new HashMap<>(3);
-            map.put("state", 0);
+            jsonMap = new HashMap<>(3);
+            jsonMap.put("state", 0);
             List<ObjectError> allErrors = bindingResult.getAllErrors();
-            map.put("messageError", allErrors.get(0));
+            jsonMap.put("messageError", allErrors.get(0));
+            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
         } else {
             try {
-                map = systemUserService.login(request, systemUser);
-                if (map.containsKey("systemUser")) {
-                    session.setAttribute("systemUser", map.get("systemUser"));
-                    session.setAttribute("userPrivileges", map.get("userPrivileges"));
-                    session.setAttribute("configurationsMap", map.get("configurationsMap"));
+                jsonMap = systemUserService.login(request, systemUser);
+                if (jsonMap.containsKey("systemUser")) {
+                    session.setAttribute("systemUser", jsonMap.get("systemUser"));
+                    session.setAttribute("userPrivileges", jsonMap.get("userPrivileges"));
+                    session.setAttribute("configurationsMap", jsonMap.get("configurationsMap"));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new JsonException("登录失败，请稍后再试！", e);
             }
         }
-        return map;
+        return jsonMap;
     }
 
     /**

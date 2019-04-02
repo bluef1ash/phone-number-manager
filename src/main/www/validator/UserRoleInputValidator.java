@@ -15,11 +15,8 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class UserRoleInputValidator extends BaseInputValidator implements Validator {
+public class UserRoleInputValidator extends BaseInputValidator<UserRole> implements Validator {
     private UserRoleService userRoleService;
-
-    public UserRoleInputValidator() {
-    }
 
     public UserRoleInputValidator(UserRoleService userRoleService, HttpServletRequest request) {
         this.userRoleService = userRoleService;
@@ -27,22 +24,17 @@ public class UserRoleInputValidator extends BaseInputValidator implements Valida
     }
 
     @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(UserRole.class);
-    }
-
-    @Override
     public boolean checkInput(Object target, Errors errors) {
-        try {
-            ValidationUtils.rejectIfEmpty(errors, "roleName", "role.roleName.required", "系统用户角色名称不能为空！");
-            UserRole userRole = (UserRole) target;
-            if (userRole.getHigherRole() < 0) {
-                field = "higherRole";
-                errorCode = "userRole.higherRole.errorCode";
-                message = "系统用户上级角色错误！";
-                return false;
-            }
-            if ("POST".equals(request.getMethod())) {
+        ValidationUtils.rejectIfEmpty(errors, "roleName", "role.roleName.required", "系统用户角色名称不能为空！");
+        UserRole userRole = (UserRole) target;
+        if (userRole.getHigherRole() < 0) {
+            field = "higherRole";
+            errorCode = "userRole.higherRole.errorCode";
+            message = "系统用户上级角色错误！";
+            return false;
+        }
+        if ("POST".equals(request.getMethod())) {
+            try {
                 List<UserRole> userRoles = userRoleService.findRolesByRoleName(userRole.getRoleName());
                 if (userRoles != null && userRoles.size() > 0) {
                     field = "roleName";
@@ -50,10 +42,10 @@ public class UserRoleInputValidator extends BaseInputValidator implements Valida
                     message = "所填内容已存在！";
                     return false;
                 }
+            } catch (Exception e) {
+                throw new BusinessException("系统用户角色验证失败！");
             }
-            return true;
-        } catch (Exception e) {
-            throw new BusinessException("系统用户角色验证失败！");
         }
+        return true;
     }
 }

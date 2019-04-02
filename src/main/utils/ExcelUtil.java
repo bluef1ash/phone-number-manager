@@ -2,7 +2,6 @@ package utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -17,14 +16,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 
@@ -47,10 +42,6 @@ public class ExcelUtil {
      */
     public static final String NO_DEFINE = "no_define";
     /**
-     * 默认中文日期格式
-     */
-    private static final String DEFAULT_DATE_PATTERN = "yyyy年MM月dd日";
-    /**
      * 默认格式
      */
     private static final String DEFAULT_PATTERN = "General";
@@ -61,21 +52,16 @@ public class ExcelUtil {
     /**
      * 默认英文日期格式
      */
-    private static final String DEFAULT_DATE_PATTERN_EN = "m/d/yy";
+    public static final String DEFAULT_DATE_PATTERN_EN = "m/d/yy";
     /**
      * 作者信息
      */
     private static final String AUTHOR = "廿二月的天";
 
     /**
-     * 表头样式对象
-     */
-    private static CellStyle headerStyle;
-
-    /**
      * 数据单元格样式对象
      */
-    private static CellStyle cellStyle;
+    private static CellStyle contentStyle;
 
     /**
      * 参数
@@ -86,11 +72,10 @@ public class ExcelUtil {
      * 标题数组
      */
     private static String[] headers;
-
     /**
-     * 标题样式对象
+     * 回调接口对象
      */
-    private static CellStyle titleStyle;
+    private static DataHandler dataHandler;
 
     /**
      * 导出Excel 97(.xls)格式 ，少量数据
@@ -99,14 +84,11 @@ public class ExcelUtil {
      * @param title       标题行
      * @param headMap     属性-列名
      * @param jsonArray   数据集
-     * @param datePattern 日期格式，null则用默认日期格式
      * @param colWidth    列宽 默认 至少17个字节
      */
     @Deprecated
-    public static ByteArrayOutputStream exportExcel(String company, String titleUp, String title, Map<String, String> headMap, JSONArray jsonArray, String datePattern, int colWidth) throws IOException {
-        if (datePattern == null) {
-            datePattern = DEFAULT_DATE_PATTERN;
-        }
+    public static ByteArrayOutputStream exportExcel(String company, String title, Map<String, String> headMap, JSONArray jsonArray, int colWidth, DataHandler handler) throws IOException {
+        dataHandler = handler;
         // 声明一个工作薄
         HSSFWorkbook workbook = new HSSFWorkbook();
         workbook.createInformationProperties();
@@ -125,14 +107,12 @@ public class ExcelUtil {
         //填加文件主题信息
         si.setSubject(title);
         si.setCreateDateTime(new Date());
-        // 样式
-        setWorkbookStyle(workbook);
         // 生成一个(带标题)表格
         HSSFSheet sheet = workbook.createSheet();
         //设置列宽至少字节数
         setColumnWidth(headMap, colWidth, sheet);
         // 遍历集合数据，产生数据行
-        setDataColumn(workbook, sheet, false, titleUp, title, headMap, jsonArray, datePattern, colWidth);
+        setDataColumn(workbook, sheet, false, headMap, jsonArray, colWidth);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         workbook.write(byteArrayOutputStream);
         workbook.close();
@@ -142,32 +122,25 @@ public class ExcelUtil {
     /**
      * 导出Excel 2007 OOXML (.xlsx)格式
      *
-     * @param titleUp     标题之上的文字
-     * @param title       标题
      * @param headMap     表头
      * @param data        数据集
-     * @param datePattern 日期格式，传null值则默认 年月日
      * @param colWidth    列宽 默认 至少17个字节
      * @throws IOException IO流异常
      */
-    public static ByteArrayOutputStream exportExcelX(String titleUp, String title, Map<String, String> headMap, JSONArray data, String datePattern, int colWidth) throws IOException {
-        if (datePattern == null) {
-            datePattern = DEFAULT_DATE_PATTERN;
-        }
+    public static ByteArrayOutputStream exportExcelX(Map<String, String> headMap, JSONArray data, int colWidth, DataHandler handler) throws IOException {
+        dataHandler = handler;
         // 声明一个工作薄
         SXSSFWorkbook workbook = new SXSSFWorkbook(100);
         // 文件信息
 
         // 缓存
         workbook.setCompressTempFiles(true);
-        // 样式
-        setWorkbookStyle(workbook);
         // 生成一个(带标题)表格
         SXSSFSheet sheet = workbook.createSheet();
         // 设置列宽
         setColumnWidth(headMap, colWidth, sheet);
         // 遍历集合数据，产生数据行
-        setDataColumn(workbook, sheet, true, titleUp, title, headMap, data, datePattern, colWidth);
+        setDataColumn(workbook, sheet, true, headMap, data, colWidth);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         workbook.write(byteArrayOutputStream);
         workbook.close();
@@ -178,17 +151,14 @@ public class ExcelUtil {
     /**
      * 导出下载excel
      *
-     * @param titleUp  标题上文字
-     * @param title    文件标题
-     * @param headMap  表头
-     * @param data     表内容
-     * @param response HTTP响应对象
-     * @param request  HTTP请求对象
+     * @param response              HTTP响应对象
+     * @param request               HTTP请求对象
+     * @param title                 文件标题
+     * @param byteArrayOutputStream 数据流
      * @throws Exception 文件流异常/字符串转换异常
      */
-    public static void downloadExcelFile(String titleUp, String title, Map<String, String> headMap, JSONArray data, HttpServletResponse response, HttpServletRequest request) throws Exception {
-        ByteArrayOutputStream os = exportExcelX(titleUp, title, headMap, data, null, 0);
-        byte[] content = os.toByteArray();
+    public static void downloadExcelFile(HttpServletResponse response, HttpServletRequest request, String title, ByteArrayOutputStream byteArrayOutputStream) throws Exception {
+        byte[] content = byteArrayOutputStream.toByteArray();
         InputStream is = new ByteArrayInputStream(content);
         // 设置response参数，可以打开下载页面
         response.reset();
@@ -198,9 +168,8 @@ public class ExcelUtil {
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
             if ("exportExcel".equals(cookie.getName())) {
-                cookie.setValue(null);
+                cookie.setValue("success");
                 cookie.setPath("/");
-                cookie.setMaxAge(0);
                 response.addCookie(cookie);
             }
         }
@@ -216,6 +185,53 @@ public class ExcelUtil {
         bos.close();
         outputStream.flush();
         outputStream.close();
+    }
+
+    /**
+     * 描述：对表格中数值进行格式化
+     *
+     * @param cell     单元格对象
+     * @param cellType 单元格类型
+     * @return 单元格数据
+     */
+    public static Object getCellValue(Cell cell, CellType cellType) {
+        Object value = null;
+        if (cell != null) {
+            if (cellType == null) {
+                cellType = cell.getCellTypeEnum();
+            }
+            switch (cellType) {
+                case STRING:
+                    DataFormatter dataFormatter = new DataFormatter();
+                    value = dataFormatter.formatCellValue(cell);
+                    break;
+                case NUMERIC:
+                    //格式化number String字符
+                    DecimalFormat df = new DecimalFormat("0");
+                    //日期格式化
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    //格式化数字
+                    DecimalFormat df2 = new DecimalFormat("0.00");
+                    cell.setCellType(NUMERIC);
+                    if (DEFAULT_PATTERN.equals(cell.getCellStyle().getDataFormatString())) {
+                        value = df.format(cell.getNumericCellValue());
+                    } else if (DEFAULT_DATE_PATTERN_EN.equals(cell.getCellStyle().getDataFormatString())) {
+                        value = sdf.format(cell.getDateCellValue());
+                    } else {
+                        value = df2.format(cell.getNumericCellValue());
+                    }
+                    break;
+                case BOOLEAN:
+                    value = cell.getBooleanCellValue();
+                    break;
+                case BLANK:
+                    value = "";
+                    break;
+                default:
+                    break;
+            }
+        }
+        return value;
     }
 
     /**
@@ -285,50 +301,28 @@ public class ExcelUtil {
     }
 
     /**
-     * 描述：对表格中数值进行格式化
+     * 根据列索引获取列名称
      *
-     * @param cell     单元格对象
-     * @param cellType 单元格类型
-     * @return 单元格数据
+     * @param columnIndex 列索引
+     * @return 列名称
      */
-    public static Object getCellValue(Cell cell, CellType cellType) {
-        Object value = null;
-        if (cell != null) {
-            if (cellType == null) {
-                cellType = cell.getCellTypeEnum();
+    public static String getExcelColumnLabel(int columnIndex) {
+        String columnString;
+        int baseCol = 65 + columnIndex;
+        if (baseCol > 90) {
+            int i2;
+            if ((baseCol - 90) / 26 > 0) {
+                i2 = 65 + (baseCol - 90 - 1) / 26;
+            } else {
+                i2 = 65;
             }
-            switch (cellType) {
-                case STRING:
-                    DataFormatter dataFormatter = new DataFormatter();
-                    value = dataFormatter.formatCellValue(cell);
-                    break;
-                case NUMERIC:
-                    //格式化number String字符
-                    DecimalFormat df = new DecimalFormat("0");
-                    //日期格式化
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd");
-                    //格式化数字
-                    DecimalFormat df2 = new DecimalFormat("0.00");
-                    cell.setCellType(NUMERIC);
-                    if (DEFAULT_PATTERN.equals(cell.getCellStyle().getDataFormatString())) {
-                        value = df.format(cell.getNumericCellValue());
-                    } else if (DEFAULT_DATE_PATTERN_EN.equals(cell.getCellStyle().getDataFormatString())) {
-                        value = sdf.format(cell.getDateCellValue());
-                    } else {
-                        value = df2.format(cell.getNumericCellValue());
-                    }
-                    break;
-                case BOOLEAN:
-                    value = cell.getBooleanCellValue();
-                    break;
-                case BLANK:
-                    value = "";
-                    break;
-                default:
-                    break;
-            }
+            int i1 = (baseCol - 90 - 1) % 26;
+            i1 = 65 + i1;
+            columnString = String.valueOf((char) i2) + (char) i1;
+        } else {
+            columnString = String.valueOf((char) baseCol);
         }
-        return value;
+        return columnString;
     }
 
     /**
@@ -357,31 +351,17 @@ public class ExcelUtil {
     }
 
     /**
-     * 设置工作簿样式
-     *
-     * @param workbook 工作簿对象
-     */
-    private static void setWorkbookStyle(Workbook workbook) {
-        titleStyle = workbook.createCellStyle();
-        setCellStyle(workbook, titleStyle, "黑体", (short) 20, true, false);
-        headerStyle = workbook.createCellStyle();
-        setCellStyle(workbook, headerStyle, "宋体", (short) 12, true, true);
-        // 单元格样式
-        cellStyle = workbook.createCellStyle();
-        setCellStyle(workbook, cellStyle, "宋体", (short) 12, false, true);
-    }
-
-    /**
      * 设置单元格样式
      *
      * @param workbook   工作簿对象
-     * @param cellStyle  单元格样式对象
      * @param fontName   字体名称
      * @param fontHeight 字体大小
      * @param isBold     是否加粗
      * @param isBorder   是否有边框
+     * @param isWrapText 是否自动换行
      */
-    private static void setCellStyle(Workbook workbook, CellStyle cellStyle, String fontName, short fontHeight, boolean isBold, boolean isBorder) {
+    public static CellStyle setCellStyle(Workbook workbook, String fontName, short fontHeight, boolean isBold, boolean isBorder, boolean isWrapText) {
+        CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setFillPattern(FillPatternType.NO_FILL);
         if (isBorder) {
             cellStyle.setBorderBottom(BorderStyle.THIN);
@@ -396,6 +376,81 @@ public class ExcelUtil {
         font.setFontHeightInPoints(fontHeight);
         font.setBold(isBold);
         cellStyle.setFont(font);
+        cellStyle.setWrapText(isWrapText);
+        return cellStyle;
+    }
+
+    /**
+     * 设置数据
+     *
+     * @param workbook    工作簿对象
+     * @param sheet       工作表对象
+     * @param isExcelX    是否为2007以上版本
+     * @param headMap     表头
+     * @param data        数据集
+     * @param colWidth    列宽 默认 至少17个字节
+     */
+    private static void setDataColumn(Workbook workbook, Sheet sheet, boolean isExcelX, Map<String, String> headMap, JSONArray data, int colWidth) {
+        int rowIndex = 0;
+        Map<String, Object> params = new HashMap<>(3);
+        for (Object obj : data) {
+            // 标题和表头
+            if (rowIndex == 65535 || rowIndex == 0) {
+                if (rowIndex != 0) {
+                    //如果数据超过了，则在第二页显示
+                    sheet = workbook.createSheet();
+                    setColumnWidth(headMap, colWidth, sheet);
+                }
+                params.put("workbook", workbook);
+                params.put("sheet", sheet);
+                params.put("rowIndex", rowIndex);
+                params.put("contentStyle", contentStyle);
+                dataHandler.headHandler(params, headers);
+                workbook = (Workbook) params.get("workbook");
+                sheet = (Sheet) params.get("sheet");
+                rowIndex = (int) params.get("rowIndex");
+                contentStyle = (CellStyle) params.get("contentStyle");
+            }
+            // 数据内容
+            JSONObject jsonObject = (JSONObject) JSONObject.toJSON(obj);
+            Row dataRow = sheet.createRow(rowIndex);
+            for (int i = 0; i < properties.length; i++) {
+                Cell newCell = dataRow.createCell(i);
+                Object object = jsonObject.get(properties[i]);
+                if (object == null) {
+                    newCell.setCellType(CellType.STRING);
+                    newCell.setCellValue("");
+                } else if (object instanceof Date) {
+                    newCell.setCellType(NUMERIC);
+                    newCell.setCellValue((Date) object);
+                } else if (object instanceof Double) {
+                    newCell.setCellType(CellType.NUMERIC);
+                    newCell.setCellValue((Double) object);
+                } else if (object instanceof Float) {
+                    newCell.setCellType(CellType.NUMERIC);
+                    newCell.setCellValue((Float) object);
+                } else if (object instanceof Integer) {
+                    newCell.setCellType(CellType.NUMERIC);
+                    newCell.setCellValue((Integer) object);
+                } else if (object instanceof Long) {
+                    newCell.setCellType(CellType.NUMERIC);
+                    newCell.setCellValue((Long) object);
+                } else {
+                    newCell.setCellType(CellType.STRING);
+                    newCell.setCellValue(object.toString());
+                }
+                newCell.setCellStyle(contentStyle);
+            }
+            rowIndex++;
+        }
+        if (isExcelX) {
+            ((SXSSFSheet) sheet).trackAllColumnsForAutoSizing();
+        }
+        // 自动调整宽度
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+            // sheet.setColumnWidth(i, headers[i].getBytes().length * 2 * 256);
+        }
     }
 
     /**
@@ -424,80 +479,15 @@ public class ExcelUtil {
     }
 
     /**
-     * 设置数据
-     *
-     * @param workbook    工作簿对象
-     * @param sheet       工作表对象
-     * @param isExcelX    是否为2007以上版本
-     * @param titleUp     标题之上的文字
-     * @param title       标题
-     * @param headMap     表头
-     * @param data        数据集
-     * @param datePattern 日期格式，传null值则默认 年月日
-     * @param colWidth    列宽 默认 至少17个字节
+     * 回调接口
      */
-    private static void setDataColumn(Workbook workbook, Sheet sheet, boolean isExcelX, String titleUp, String title, Map<String, String> headMap, JSONArray data, String datePattern, int colWidth) {
-        int rowIndex = 0;
-        for (Object obj : data) {
-            if (rowIndex == 65535 || rowIndex == 0) {
-                if (rowIndex != 0) {
-                    //如果数据超过了，则在第二页显示
-                    sheet = workbook.createSheet();
-                    setColumnWidth(headMap, colWidth, sheet);
-                }
-                // 附件格式
-                if (StringUtils.isNotEmpty(titleUp)) {
-                    Row attachTitle = sheet.createRow(rowIndex);
-                    attachTitle.createCell(0).setCellValue(titleUp);
-                    rowIndex++;
-                }
-                // 表头
-                Row titleRow = sheet.createRow(rowIndex);
-                titleRow.createCell(0).setCellValue(title);
-                titleRow.getCell(0).setCellStyle(titleStyle);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, headMap.size() - 1));
-                rowIndex++;
-                // 日期
-                Row dateRow = sheet.createRow(rowIndex);
-                dateRow.createCell(6).setCellValue("时间：" + DateUtil.date2Str("yyyy年MM月dd日", new Date()));
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 6, 7));
-                rowIndex++;
-                // 列头
-                Row headerRow = sheet.createRow(rowIndex);
-                for (int i = 0; i < headers.length; i++) {
-                    headerRow.createCell(i).setCellValue(headers[i]);
-                    headerRow.getCell(i).setCellStyle(headerStyle);
-                }
-                // 数据内容
-                rowIndex++;
-            }
-            JSONObject jo = (JSONObject) JSONObject.toJSON(obj);
-            Row dataRow = sheet.createRow(rowIndex);
-            for (int i = 0; i < properties.length; i++) {
-                Cell newCell = dataRow.createCell(i);
-                Object o = jo.get(properties[i]);
-                String cellValue;
-                if (o == null) {
-                    cellValue = "";
-                } else if (o instanceof Date) {
-                    cellValue = new SimpleDateFormat(datePattern).format(o);
-                } else if (o instanceof Float || o instanceof Double) {
-                    cellValue = new BigDecimal(o.toString()).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
-                } else {
-                    cellValue = o.toString();
-                }
-                newCell.setCellValue(cellValue);
-                newCell.setCellStyle(cellStyle);
-            }
-            rowIndex++;
-        }
-        if (isExcelX) {
-            ((SXSSFSheet) sheet).trackAllColumnsForAutoSizing();
-        }
-        // 自动调整宽度
-        for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
-            sheet.setColumnWidth(i, headers[i].getBytes().length * 2 * 256);
-        }
+    public interface DataHandler {
+        /**
+         * 处理标题与表头
+         *
+         * @param params  传参集合
+         * @param headers 表头数组
+         */
+        void headHandler(Map<String, Object> params, String[] headers);
     }
 }

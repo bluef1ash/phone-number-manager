@@ -36,7 +36,7 @@ $(document).ready(() => {
     Vue.use(Cascader);
     Vue.use(Popover);
     new Vue({
-        el: "#resident_list",
+        el: "#dormitory_list",
         data: {},
         router: new VueRouter([
             {name: "home", path: "/:page", component: listComponent}

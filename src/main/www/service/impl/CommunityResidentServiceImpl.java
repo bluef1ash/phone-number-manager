@@ -7,21 +7,15 @@ import constant.SystemConstant;
 import exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import utils.CommonUtil;
 import utils.DateUtil;
 import utils.ExcelUtil;
-import www.entity.Community;
 import www.entity.CommunityResident;
-import www.entity.Subcontractor;
 import www.entity.SystemUser;
 import www.service.CommunityResidentService;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,12 +30,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     private Pattern communityPattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
 
-    @Resource(name = "transactionManager")
-    private DataSourceTransactionManager transactionManager;
-
     @Override
     public CommunityResident findCommunityResidentAndCommunityById(Long id) {
-        CommunityResident communityResident = communityResidentsDao.selectCommunityResidentAndCommunityById(id);
+        CommunityResident communityResident = communityResidentsDao.selectObjectAndCommunityById(id);
         String[] residentPhones = communityResident.getCommunityResidentPhones().split(",");
         switch (residentPhones.length) {
             case 1:
@@ -73,19 +64,22 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Long systemAdministratorId, CommunityResident communityResident, Long companyId, Long companyLocationId, Integer pageNumber, Integer pageDataSize) {
+    public Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, CommunityResident communityResident, Long companyId, Long companyRoleId, Integer pageNumber, Integer pageDataSize) {
         pageNumber = pageNumber == null ? 1 : pageNumber;
         pageDataSize = pageDataSize == null ? 10 : pageDataSize;
         List<CommunityResident> communityResidents = null;
-        if (companyLocationId != null && companyLocationId.equals(communityRoleId)) {
+        if (companyRoleId != null && companyRoleId.equals(communityRoleId)) {
+            // 社区级别
             communityResident.setCommunityId(companyId);
             PageHelper.startPage(pageNumber, pageDataSize);
             communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
-        } else if (companyLocationId != null && companyLocationId.equals(subdistrictRoleId)) {
+        } else if (companyRoleId != null && companyRoleId.equals(subdistrictRoleId)) {
+            // 街道级别
             PageHelper.startPage(pageNumber, pageDataSize);
             communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResident(communityResident);
         } else {
-            if (systemUser.getRoleId().equals(systemAdministratorId)) {
+            // 未输入单位类型
+            if (systemUser.getRoleId().equals(systemRoleId)) {
                 PageHelper.startPage(pageNumber, pageDataSize);
                 communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
             } else if (systemUser.getRoleId().equals(subdistrictRoleId)) {
@@ -102,34 +96,28 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Override
     public int addCommunityResidentFromExcel(Workbook workbook, Long subdistrictId, Map<String, Object> configurationsMap) {
-        Sheet sheet;
-        Row row;
         List<CommunityResident> residents = new ArrayList<>();
-        Long readExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_excel_start_row_number"));
-        Integer excelCommunityResidentNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_community_resident_name_cell_number"));
-        Integer excelAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_address_cell_number"));
-        Integer excelPhone1CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone1_cell_number"));
-        Integer excelPhone2CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone2_cell_number"));
-        Integer excelPhone3CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_phone3_cell_number"));
-        Integer excelCommunityCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_community_cell_number"));
-        Integer excelSubcontractorCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_subcontractor_cell_number"));
-        Set<Subcontractor> subcontractorSet = new HashSet<>();
-        List<Subcontractor> subcontractors = subcontractorsDao.selectObjectsAll();
-        List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(subdistrictId);
-        Map<String, Long> communityMap = new HashMap<>(communities.size() + 1);
+        Long readResidentExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_resident_excel_start_row_number"));
+        Integer excelCommunityCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_community_name_cell_number"));
+        Integer excelCommunityResidentNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_name_cell_number"));
+        Integer excelResidentAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_address_cell_number"));
+        Integer excelPhone1CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_phone1_cell_number"));
+        Integer excelPhone2CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_phone2_cell_number"));
+        Integer excelPhone3CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_phone3_cell_number"));
+        Integer excelSubcontractorCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
+        setCommunityVariables(subdistrictId);
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-            sheet = workbook.getSheetAt(i);
+            Sheet sheet = workbook.getSheetAt(i);
             if (sheet != null) {
-                // 遍历当前sheet中的所有行
                 for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
-                    row = sheet.getRow(j);
-                    if (row != null && j >= sheet.getFirstRowNum() + readExcelStartRowNumber) {
+                    Row row = sheet.getRow(j);
+                    if (row != null && j >= sheet.getFirstRowNum() + readResidentExcelStartRowNumber) {
                         CommunityResident resident = new CommunityResident();
                         // 居民姓名
                         resident.setCommunityResidentName(convertCellString(row.getCell(excelCommunityResidentNameCellNumber)));
                         // 居民地址
                         // 处理地址和社区名称
-                        String address = convertCellString(row.getCell(excelAddressCellNumber));
+                        String address = convertCellString(row.getCell(excelResidentAddressCellNumber));
                         Matcher matcher = communityPattern.matcher(address);
                         String realAddress = null;
                         while (matcher.find()) {
@@ -144,19 +132,10 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                         resident.setCommunityResidentPhones(phones);
                         // 社区名称
                         String communityName = convertCellString(row.getCell(excelCommunityCellNumber));
-                        Long communityId;
-                        if (!communityMap.containsKey(communityName)) {
-                            communityId = communitiesDao.selectCommunityIdByCommunityName(communityName);
-                            if (communityId == null) {
-                                throw new BusinessException("找不到社区名称为“" + communityName + "”的社区，请创建此社区后，重新导入！");
-                            }
-                            communityMap.put(communityName, communityId);
-                        } else {
-                            communityId = communityMap.get(communityName);
-                        }
+                        Long communityId = getCommunityId(communityMap, communityName);
                         // 分包人
                         String subcontractorName = convertCellString(row.getCell(excelSubcontractorCellNumber)).replaceAll(communityName, "");
-                        Long subcontractorId = addSubcontractorHandler(subcontractorName, subcontractors, communityId, subcontractorSet);
+                        Long subcontractorId = addSubcontractorHandler(subcontractorName, "", subcontractors, communityId);
                         resident.setSubcontractorId(subcontractorId);
                         resident.setCommunityId(communityId);
                         residents.add(resident);
@@ -165,49 +144,22 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             }
         }
         if (residents.size() > 0) {
-            communityResidentsDao.deleteCommunityResidentsBySubdistrictId(subdistrictId);
-            return communityResidentsDao.insertBatchCommunityResidents(residents);
+            communityResidentsDao.deleteBySubdistrictId(subdistrictId);
+            return communityResidentsDao.insertBatch(residents);
         }
         return 0;
     }
 
     @Override
     public Map<String, Object> findCommunityResidentsAndCommunity(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Integer pageNumber, Integer pageDataSize) {
-        pageNumber = pageNumber == null ? 1 : pageNumber;
-        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        Long roleId = systemUser.getRoleId();
-        Long roleLocationId = systemUser.getRoleLocationId();
-        List<Long> roleLocationIds = new ArrayList<>();
-        if (roleId.equals(communityRoleId)) {
-            roleLocationIds.add(roleLocationId);
-        } else if (roleId.equals(subdistrictRoleId)) {
-            List<Community> communities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(roleLocationId);
-            for (Community community : communities) {
-                roleLocationIds.add(community.getCommunityId());
-            }
-        } else {
-            roleLocationIds = null;
-        }
-        PageHelper.startPage(pageNumber, pageDataSize);
-        List<CommunityResident> data = communityResidentsDao.selectCommunityResidentsAndCommunityByCommunityIds(roleLocationIds);
+        List<Long> roleLocationIds = findCommunityIds(systemUser, systemRoleId, communityRoleId, subdistrictRoleId, pageNumber, pageDataSize);
+        List<CommunityResident> data = communityResidentsDao.selectObjectsAndCommunityByCommunityIds(roleLocationIds);
         return findObjectsMethod(data);
     }
 
     @Override
-    public List<CommunityResident> findCommunityResidentByNameAndAddress(String nameAddress, Long communityResidentId) {
-        return communityResidentsDao.selectCommunityResidentByNameAndAddress(nameAddress, communityResidentId);
-    }
-
-    @Override
-    public List<CommunityResident> findCommunityResidentByPhones(List<String> phones, Long communityResidentId) {
-        return communityResidentsDao.selectCommunityResidentByPhones(phones, communityResidentId);
-    }
-
-    @Override
     public JSONArray findCommunityResidentsAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, List<Map<String, Object>> userData) {
-        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
-        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
-        List<CommunityResident> communityResidents = communityResidentsDao.selectCommunityResidentsByUserData(userData, communityRoleId, subdistrictRoleId);
+        List<CommunityResident> communityResidents = communityResidentsDao.selectByUserData(userData, CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id")), CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id")));
         if (communityResidents != null) {
             for (CommunityResident communityResident : communityResidents) {
                 String communityName = communityResident.getCommunity().getCommunityName().replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
@@ -264,6 +216,56 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return computed;
     }
 
+    @Override
+    public ExcelUtil.DataHandler setExcelHead(String[] titles) {
+        return (params, headers) -> {
+            Integer rowIndex = (Integer) params.get("rowIndex");
+            Workbook workbook = (Workbook) params.get("workbook");
+            Sheet sheet = (Sheet) params.get("sheet");
+            // 附件格式
+            if (StringUtils.isNotEmpty(titles[0])) {
+                Row attachTitle = sheet.createRow(rowIndex);
+                CellStyle attachStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 12, false, false, false);
+                int attachCellIndex = 0;
+                attachTitle.createCell(attachCellIndex).setCellValue(titles[0]);
+                attachTitle.getCell(attachCellIndex).setCellStyle(attachStyle);
+                rowIndex++;
+            }
+            // 表头
+            Row titleRow = sheet.createRow(rowIndex);
+            int titleCellIndex = 0;
+            titleRow.createCell(titleCellIndex).setCellValue(titles[1]);
+            CellStyle titleStyle = ExcelUtil.setCellStyle(workbook, "方正小标宋简体", (short) 16, false, false, false);
+            titleRow.getCell(titleCellIndex).setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, getPartStatHead().size() - 1));
+            sheet.getRow(rowIndex).setHeight((short) (27.8 * 20));
+            rowIndex++;
+            // 日期
+            Row dateRow = sheet.createRow(rowIndex);
+            int dateCellIndex = 6;
+            dateRow.createCell(dateCellIndex).setCellValue("时间：" + DateUtil.date2Str("yyyy年MM月dd日", new Date()));
+            CellStyle dateStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 11, false, false, true);
+            dateRow.getCell(dateCellIndex).setCellStyle(dateStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 6, 7));
+            sheet.getRow(rowIndex).setHeight((short) (27.8 * 20));
+            rowIndex++;
+            // 列头
+            Row headerRow = sheet.createRow(rowIndex);
+            CellStyle headerStyle = ExcelUtil.setCellStyle(workbook, "黑体", (short) 12, false, true, true);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+                headerRow.getCell(i).setCellStyle(headerStyle);
+            }
+            sheet.setAutoFilter(new CellRangeAddress(rowIndex, rowIndex, 0, headers.length - 1));
+            headerRow.setHeight((short) (21.8 * 20));
+            CellStyle contentStyle = ExcelUtil.setCellStyle(workbook, "仿宋_GB2312", (short) 10, false, true, true);
+            params.put("rowIndex", rowIndex + 2);
+            params.put("workbook", workbook);
+            params.put("sheet", sheet);
+            params.put("contentStyle", contentStyle);
+        };
+    }
+
     /**
      * 添加、修改到数据库前处理
      *
@@ -318,55 +320,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     /**
-     * 分包人处理
-     *
-     * @param subcontractorName 分包人姓名
-     * @param subcontractors    从数据库查询的分包人集合对象
-     * @param communityId       所属社区编号
-     * @param subcontractorSet  分包人集合
-     * @return 分包人编号
-     */
-    private Long addSubcontractorHandler(String subcontractorName, List<Subcontractor> subcontractors, Long communityId, Set<Subcontractor> subcontractorSet) {
-        Long subcontractorId = null;
-        for (Subcontractor subcontractor : subcontractors) {
-            if (subcontractorName.equals(subcontractor.getName())) {
-                subcontractorId = subcontractor.getSubcontractorId();
-            }
-        }
-        if (subcontractorId == null && subcontractorSet.size() > 0) {
-            for (Subcontractor subcontractor : subcontractorSet) {
-                if (subcontractorName.equals(subcontractor.getName())) {
-                    subcontractorId = subcontractor.getSubcontractorId();
-                }
-            }
-        }
-        if (subcontractorId == null) {
-            Subcontractor newSubcontractor = new Subcontractor();
-            newSubcontractor.setName(subcontractorName);
-            newSubcontractor.setTelephone("");
-            newSubcontractor.setCommunityId(communityId);
-            DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-            def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-            TransactionStatus status = transactionManager.getTransaction(def);
-            subcontractorId = subcontractorsDao.insertObject(newSubcontractor);
-            transactionManager.commit(status);
-            newSubcontractor.setSubcontractorId(subcontractorId);
-            subcontractorSet.add(newSubcontractor);
-        }
-        return subcontractorId;
-    }
-
-    /**
-     * 转换单元格字符串
-     *
-     * @param cell 需要转换的字符串的单元格对象
-     * @return 转换成功的字符串
-     */
-    private String convertCellString(Cell cell) {
-        return CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(cell, CellType.STRING))));
-    }
-
-    /**
      * 获取录入统计信息
      *
      * @param companyId         单位编号
@@ -385,7 +338,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             addCount = communityResidentsDao.countCommunityResidents();
             haveToCount = communitiesDao.sumActualNumber();
         } else if (companyType.equals(communityRoleId)) {
-            addCount = communityResidentsDao.countCommunityResidentsByCommunityId(companyId);
+            addCount = communityResidentsDao.countObjectByCommunityId(companyId);
             haveToCount = communitiesDao.selectActualNumberByCommunityId(companyId);
         } else if (companyType.equals(subdistrictRoleId)) {
             addCount = communityResidentsDao.countCommunityResidentsBySubdistrictId(companyId);

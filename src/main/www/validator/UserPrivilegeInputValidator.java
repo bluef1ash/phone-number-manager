@@ -15,20 +15,12 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class UserPrivilegeInputValidator extends BaseInputValidator implements Validator {
+public class UserPrivilegeInputValidator extends BaseInputValidator<UserPrivilege> implements Validator {
     private UserPrivilegeService userPrivilegeService;
-
-    public UserPrivilegeInputValidator() {
-    }
 
     public UserPrivilegeInputValidator(UserPrivilegeService userPrivilegeService, HttpServletRequest request) {
         this.userPrivilegeService = userPrivilegeService;
         this.request = request;
-    }
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(UserPrivilege.class);
     }
 
     @Override

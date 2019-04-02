@@ -36,7 +36,7 @@ import java.util.Map;
 @Controller
 @SystemUserAuth
 @RequestMapping("/subdistrict")
-public class SubdistrictAction {
+public class SubdistrictAction extends BaseAction {
     @Resource
     private SubdistrictService subdistrictService;
     private final HttpServletRequest request;

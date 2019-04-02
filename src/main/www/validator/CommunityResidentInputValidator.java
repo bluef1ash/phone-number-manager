@@ -19,7 +19,7 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class CommunityResidentInputValidator extends BaseInputValidator implements Validator {
+public class CommunityResidentInputValidator extends BaseInputValidator<CommunityResident> implements Validator {
     private CommunityResidentService communityResidentService;
 
     public CommunityResidentInputValidator(CommunityResidentService communityResidentService, HttpServletRequest request) {
@@ -28,58 +28,54 @@ public class CommunityResidentInputValidator extends BaseInputValidator implemen
     }
 
     @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(CommunityResident.class);
-    }
-
-    @Override
     protected boolean checkInput(Object target, Errors errors) {
+        ValidationUtils.rejectIfEmpty(errors, "communityResidentName", "communityResident.communityResidentName.required", "社区居民姓名不能为空！");
+        ValidationUtils.rejectIfEmpty(errors, "communityResidentAddress", "communityResident.communityResidentAddress.required", "社区居民地址不能为空！");
+        ValidationUtils.rejectIfEmpty(errors, "subcontractorId", "communityResident.subcontractorId.required", "社区分包人不能为空！");
+        CommunityResident communityResident = (CommunityResident) target;
+        String communityResidentName = CommonUtil.replaceBlank(communityResident.getCommunityResidentName()).replaceAll("—", "-");
+        if (communityResidentName.length() > 10) {
+            message = "社区居民姓名不能超过10个字符！";
+            return false;
+        }
+        String communityResidentAddress = CommonUtil.replaceBlank(communityResident.getCommunityResidentAddress()).replaceAll("—", "-");
+        if (communityResidentAddress.length() > 255) {
+            message = "社区居民地址不能超过255个字符！";
+            return false;
+        }
+        if (communityResident.getSubcontractorId() == null || communityResident.getSubcontractorId() == 0) {
+            message = "未选择社区分包人！";
+            return false;
+        }
+        Long communityResidentId = communityResident.getCommunityResidentId();
+        // 验证姓名+地址重复
+        String nameAddress = communityResidentName + communityResidentAddress;
+        List<String> phones = new ArrayList<>();
+        if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone1())) {
+            phones.add(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone1()).replaceAll("—", "-")));
+        }
+        if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone2())) {
+            phones.add(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone2()).replaceAll("—", "-")));
+        }
+        if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone3())) {
+            phones.add(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone3()).replaceAll("—", "-")));
+        }
+        field = "communityResidentPhones";
+        // 联系方式合法
+        if (!checkedPhone(phones)) {
+            return false;
+        }
+        Long subdistrictId = Long.valueOf(request.getParameter("subdistrictId"));
         try {
-            ValidationUtils.rejectIfEmpty(errors, "communityResidentName", "communityResident.communityResidentName.required", "社区居民姓名不能为空！");
-            ValidationUtils.rejectIfEmpty(errors, "communityResidentAddress", "communityResident.communityResidentAddress.required", "社区居民地址不能为空！");
-            ValidationUtils.rejectIfEmpty(errors, "subcontractorId", "communityResident.subcontractorId.required", "社区分包人不能为空！");
-            CommunityResident communityResident = (CommunityResident) target;
-            String communityResidentName = CommonUtil.replaceBlank(communityResident.getCommunityResidentName()).replaceAll("—", "-");
-            if (communityResidentName.length() > 10) {
-                message = "社区居民姓名不能超过10个字符！";
-                return false;
-            }
-            String communityResidentAddress = CommonUtil.replaceBlank(communityResident.getCommunityResidentAddress()).replaceAll("—", "-");
-            if (communityResidentAddress.length() > 255) {
-                message = "社区居民地址不能超过255个字符！";
-                return false;
-            }
-            if (communityResident.getSubcontractorId() == null || communityResident.getSubcontractorId() == 0) {
-                message = "未选择社区分包人！";
-                return false;
-            }
-            Long communityResidentId = communityResident.getCommunityResidentId();
-            // 验证姓名+地址重复
-            String nameAddress = communityResidentName + communityResidentAddress;
-            List<CommunityResident> isNameAndAddressRepeat = communityResidentService.findCommunityResidentByNameAndAddress(nameAddress, communityResidentId);
+            List<CommunityResident> isNameAndAddressRepeat = communityResidentService.findByNameAndAddress(nameAddress, communityResidentId, subdistrictId);
             if (!checkedListData(isNameAndAddressRepeat, false, null)) {
                 return false;
             }
-            List<String> phones = new ArrayList<>();
-            if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone1())) {
-                phones.add(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone1()).replaceAll("—", "-")));
-            }
-            if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone2())) {
-                phones.add(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone2()).replaceAll("—", "-")));
-            }
-            if (StringUtils.isNotEmpty(communityResident.getCommunityResidentPhone3())) {
-                phones.add(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getCommunityResidentPhone3()).replaceAll("—", "-")));
-            }
-            field = "communityResidentPhones";
-            // 联系方式合法
-            if (!checkedPhone(phones)) {
-                return false;
-            }
             // 联系方式重复
-            List<CommunityResident> isPhonesRepeat = communityResidentService.findCommunityResidentByPhones(phones, communityResidentId);
+            List<CommunityResident> isPhonesRepeat = communityResidentService.findByPhones(phones, communityResidentId, subdistrictId);
             return checkedListData(isPhonesRepeat, true, communityResident);
         } catch (Exception e) {
-            throw new BusinessException("社区验证失败！", e);
+            throw new BusinessException("社区居民验证失败！", e);
         }
     }
 
@@ -97,7 +93,7 @@ public class CommunityResidentInputValidator extends BaseInputValidator implemen
                 return false;
             }
             // 验证固定电话与手机
-            if (!StringCheckedRegexUtil.checkPhone(residentPhone)) {
+            if (StringCheckedRegexUtil.checkPhone(residentPhone) == 0) {
                 message = "输入的联系方式不合法，请检查后重试！";
                 return false;
             }

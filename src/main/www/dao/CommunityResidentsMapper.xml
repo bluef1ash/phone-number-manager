@@ -11,7 +11,7 @@
         <result property="communityId" column="community_id"/>
         <collection property="communityIds" column="community_id" ofType="java.lang.Long"/>
     </resultMap>
-    <resultMap type="CommunityResident" id="AliasResultMap">
+    <resultMap type="CommunityResident" id="aliasResultMap">
         <id property="communityResidentId" column="community_resident_id"/>
         <result property="communityResidentName" column="community_resident_name"/>
         <result property="communityResidentAddress" column="address"/>
@@ -21,17 +21,17 @@
         <result property="communityId" column="community_id"/>
     </resultMap>
     <resultMap type="CommunityResident" id="communityResidentsCorrelationSubcontractorResultMap"
-               extends="AliasResultMap">
+               extends="aliasResultMap">
         <association property="subcontractor" resultMap="www.dao.SubcontractorsDao.subcontractorResultMap"/>
     </resultMap>
-    <resultMap type="CommunityResident" id="communityResidentsCorrelationCommunityResultMap" extends="AliasResultMap">
-        <association property="community" resultMap="www.dao.CommunitiesDao.communityResultMap"/>
+    <resultMap type="CommunityResident" id="communityResidentsCorrelationCommunityResultMap" extends="aliasResultMap">
+        <association property="community" resultMap="www.dao.CommunitiesDao.aliasResultMap"/>
     </resultMap>
     <resultMap type="CommunityResident" id="communityResidentsCorrelationCommunitiesCorrelationSubdistrictResultMap"
-               extends="AliasResultMap">
+               extends="aliasResultMap">
         <association property="community"
                      resultMap="www.dao.CommunitiesDao.communitiesCorrelationSubdistrictResultMap"/>
-        <association property="subcontractor" resultMap="www.dao.SubcontractorsDao.AliasResultMap"/>
+        <association property="subcontractor" resultMap="www.dao.SubcontractorsDao.aliasResultMap"/>
     </resultMap>
     <update id="truncateTable">
         TRUNCATE TABLE `pm_community_residents`
@@ -42,9 +42,9 @@
         VALUES (#{communityResidentName}, #{communityResidentAddress}, #{communityResidentPhones},
                 #{communityResidentEditTime}, #{subcontractorId}, #{communityId})
     </insert>
-    <insert id="insertBatchCommunityResidents" useGeneratedKeys="true" keyProperty="community_resident_id">
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="community_resident_id">
         INSERT INTO `pm_community_residents`(`name`, `address`, `phones`, `subcontractor_id`, `community_id`) VALUES
-        <foreach collection="residents" item="item" separator=",">
+        <foreach collection="objects" item="item" separator=",">
             (#{item.communityResidentName}, #{item.communityResidentAddress}, #{item.communityResidentPhones},
             #{item.subcontractorId}, #{item.communityId})
         </foreach>
@@ -119,7 +119,7 @@
         'community_resident_name', `pm_community_residents`.`address`, `pm_community_residents`.`phones`,
         `pm_community_residents`.`subcontractor_id`, `pm_community_residents`.`edit_time`,
         `pm_communities`.`community_id`,
-        `pm_communities`.`name` FROM `pm_community_residents`
+        `pm_communities`.`name` AS 'community_name' FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
             <if test="communityResidentId != null and communityResidentId != ''">
@@ -146,7 +146,7 @@
         </where>
         ORDER BY `community_resident_id`
     </select>
-    <select id="selectCommunityResidentAndCommunityById" resultMap="communityResidentsCorrelationCommunityResultMap">
+    <select id="selectObjectAndCommunityById" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT `pm_community_residents`.`community_resident_id`,
             `pm_community_residents`.`name` AS 'community_resident_name',
             `pm_community_residents`.`address`,
@@ -154,8 +154,8 @@
             `pm_community_residents`.`edit_time`,
             `pm_community_residents`.`subcontractor_id`,
             `pm_community_residents`.`community_id`,
-            `pm_communities`.`name`,
-            `pm_communities`.`telephone`,
+            `pm_communities`.`name` AS 'community_name',
+            `pm_communities`.`telephone` AS 'community_telephone',
             `pm_communities`.`actual_number`
         FROM `pm_community_residents`
                  LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
@@ -167,7 +167,7 @@
         'community_resident_name', `pm_community_residents`.`address`, `pm_community_residents`.`phones`,
         `pm_community_residents`.`subcontractor_id`, `pm_community_residents`.`edit_time`,
         `pm_communities`.`community_id`,
-        `pm_communities`.`name` FROM `pm_community_residents`
+        `pm_communities`.`name` AS 'community_name' FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
             <if test="communityResident.communityResidentId != null and communityResident.communityResidentId != ''">
@@ -199,7 +199,7 @@
         </where>
         ORDER BY `pm_community_residents`.`community_resident_id`
     </select>
-    <select id="selectCommunityResidentsAndCommunityByCommunityIds"
+    <select id="selectObjectsAndCommunityByCommunityIds"
             resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
         `pm_community_residents`.`community_resident_id`,
@@ -209,7 +209,7 @@
         `pm_community_residents`.`subcontractor_id`,
         `pm_community_residents`.`edit_time`,
         `pm_community_residents`.`community_id`,
-        `pm_communities`.`name`
+        `pm_communities`.`name` AS 'community_name'
         FROM
         `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
@@ -240,7 +240,7 @@
         `pm_community_residents`.`phones`,
         `pm_community_residents`.`subcontractor_id`,
         `pm_community_residents`.`community_id`,
-        `pm_communities`.`name`,
+        `pm_communities`.`name` AS 'community_name',
         `pm_subdistricts`.`name` AS 'subdistrict_name',
         `pm_subcontractors`.`name` AS 'subcontractor_name'
         FROM
@@ -259,39 +259,41 @@
         </where>
         ORDER BY `pm_communities`.`name`
     </select>
-    <select id="selectCommunityResidentByNameAndAddress" resultMap="communityResidentsCorrelationCommunityResultMap">
+    <select id="selectByNameAndAddress" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
         `pm_community_residents`.`name` AS 'community_resident_name',
         `pm_community_residents`.`community_id`,
-        `pm_communities`.`name`
+        `pm_communities`.`name` AS 'community_name'
         FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
             CONCAT(`pm_community_residents`.`name`, `pm_community_residents`.`address`) = #{nameAddress}
             <if test="communityResidentId != null">
-                AND `pm_community_residents`.`community_resident_id` != #{communityResidentId}
+                AND `pm_community_residents`.`community_resident_id` != #{id}
             </if>
+            AND `pm_communities`.`subdistrict_id` = #{subdistrictId}
         </where>
     </select>
-    <select id="selectCommunityResidentByPhones" resultMap="communityResidentsCorrelationCommunityResultMap">
+    <select id="selectByPhones" resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT
         `pm_community_residents`.`community_resident_id`,
         `pm_community_residents`.`name` AS 'community_resident_name',
         `pm_community_residents`.`phones`,
         `pm_community_residents`.`community_id`,
-        `pm_communities`.`name`
+        `pm_communities`.`name` AS 'community_name'
         FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         <where>
-            <foreach collection="residentPhones" item="phone" separator="OR">
-                `phones` LIKE CONCAT('%', #{phone}, '%')
+            <foreach collection="phones" item="phone" separator="OR">
+                `pm_community_residents`.`phones` LIKE CONCAT('%', #{phone}, '%')
             </foreach>
             <if test="communityResidentId != null">
-                AND `pm_community_residents`.`community_resident_id` != #{communityResidentId}
+                AND `pm_community_residents`.`community_resident_id` != #{id}
             </if>
+            AND `pm_communities`.`subdistrict_id` = #{subdistrictId}
         </where>
     </select>
-    <select id="selectCommunityResidentsAndCommunityByCommunityId"
+    <select id="selectObjectsAndCommunityByCommunityId"
             resultMap="communityResidentsCorrelationCommunityResultMap">
         SELECT `pm_community_residents`.`community_resident_id`,
             `pm_community_residents`.`name` AS 'community_resident_name',
@@ -299,7 +301,7 @@
             `pm_community_residents`.`phones`,
             `pm_community_residents`.`subcontractor_id`,
             `pm_community_residents`.`community_id`,
-            `pm_communities`.`name`
+            `pm_communities`.`name` AS 'community_name'
         FROM `pm_community_residents`
                  LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         WHERE `pm_community_residents`.`community_id` = #{communityId}
@@ -333,7 +335,7 @@
                 AND `pm_community_residents`.`community_id` = #{communityResident.communityId}
             </if>
             <if test="communityResident.community != null and communityResident.community.communityName != null">
-                and `pm_communities`.`name` = #{communityResident.community.communityName}
+                AND `pm_communities`.`name` = #{communityResident.community.communityName}
             </if>
             <if test="communityResident.communityIds != null and communityResident.communityIds.size > 0">
                 AND `pm_community_residents`.`community_id` IN
@@ -364,7 +366,7 @@
             </if>
         </where>
     </select>
-    <select id="countCommunityResidentsByCommunityId" resultType="long">
+    <select id="countObjectByCommunityId" resultType="long">
         SELECT COUNT(`community_resident_id`)
         FROM `pm_community_residents`
         WHERE `community_id` = #{communityId}
@@ -402,14 +404,14 @@
         ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`
         WHERE `pm_communities`.`community_id` = #{communityId}
     </select>
-    <select id="selectCommunityResidentsByUserData"
+    <select id="selectByUserData"
             resultMap="communityResidentsCorrelationCommunitiesCorrelationSubdistrictResultMap">
-        SELECT `pm_communities`.`name`,
-        `pm_subdistricts`.`name` 'subdistrict_name',
-        `pm_community_residents`.`name` 'community_resident_name',
+        SELECT `pm_communities`.`name` AS 'community_name',
+        `pm_subdistricts`.`name` AS 'subdistrict_name',
+        `pm_community_residents`.`name` AS 'community_resident_name',
         `pm_community_residents`.`address`,
         `pm_community_residents`.`phones`,
-        `pm_subcontractors`.`name` 'subcontractor_name'
+        `pm_subcontractors`.`name` AS 'subcontractor_name'
         FROM `pm_community_residents`
         LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`
         LEFT JOIN `pm_subdistricts` ON `pm_communities`.`subdistrict_id` = `pm_subdistricts`.`subdistrict_id`
@@ -428,7 +430,7 @@
             </foreach>
         </where>
     </select>
-    <delete id="deleteCommunityResidentsBySubdistrictId">
+    <delete id="deleteBySubdistrictId">
         DELETE `pm_community_residents`
         FROM `pm_community_residents`
                  LEFT JOIN `pm_communities` ON `pm_community_residents`.`community_id` = `pm_communities`.`community_id`

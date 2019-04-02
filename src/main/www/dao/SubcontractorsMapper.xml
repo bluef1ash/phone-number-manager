@@ -7,14 +7,14 @@
         <result property="telephone" column="telephone"/>
         <result property="communityId" column="community_id"/>
     </resultMap>
-    <resultMap type="Subcontractor" id="AliasResultMap">
+    <resultMap type="Subcontractor" id="aliasResultMap">
         <id property="subcontractorId" column="subcontractor_id"/>
         <result property="name" column="subcontractor_name"/>
         <result property="telephone" column="subcontractor_telephone"/>
         <result property="communityId" column="community_id"/>
     </resultMap>
-    <resultMap type="Subcontractor" id="subcontractorCorrelationCommunitiesResultMap" extends="AliasResultMap">
-        <association property="community" resultMap="www.dao.CommunitiesDao.communityResultMap"/>
+    <resultMap type="Subcontractor" id="subcontractorCorrelationCommunitiesResultMap" extends="aliasResultMap">
+        <association property="community" resultMap="www.dao.CommunitiesDao.aliasResultMap"/>
     </resultMap>
     <insert id="insertObject" useGeneratedKeys="true" keyProperty="subcontractor_id">
         INSERT INTO `pm_subcontractors`(`name`, `telephone`, `community_id`)
@@ -76,7 +76,7 @@
     <select id="selectObjectsByObject" resultMap="subcontractorCorrelationCommunitiesResultMap">
         SELECT `pm_subcontractors`.`subcontractor_id`, `pm_subcontractors`.`name` AS
         'subcontractor_name', `pm_subcontractors`.`telephone`, `pm_communities`.`community_id`,
-        `pm_communities`.`name` FROM `pm_subcontractors`
+        `pm_communities`.`name` AS 'community_name' FROM `pm_subcontractors`
         LEFT JOIN `pm_communities` ON `pm_subcontractors`.`community_id` = `pm_communities`.`community_id`
         <where>
             <if test="subcontractorId != null and subcontractorId != ''">
@@ -100,7 +100,7 @@
     <select id="selectSubcontractors" resultMap="subcontractorCorrelationCommunitiesResultMap">
         SELECT `pm_subcontractors`.`subcontractor_id`, `pm_subcontractors`.`name` AS 'subcontractor_name',
             `pm_subcontractors`.`telephone` AS 'subcontractor_telephone', `pm_communities`.`community_id`,
-            `pm_communities`.`name`
+            `pm_communities`.`name` AS 'community_name'
         FROM `pm_subcontractors`
                  LEFT JOIN `pm_communities` on `pm_subcontractors`.`community_id` = `pm_communities`.`community_id`
         WHERE `pm_subcontractors`.`community_id` = #{communityId}
@@ -108,7 +108,7 @@
     <select id="selectSubcontractorsBySubdistrictId" resultMap="subcontractorCorrelationCommunitiesResultMap">
         SELECT `pm_subcontractors`.`subcontractor_id`, `pm_subcontractors`.`name` AS 'subcontractor_name',
             `pm_subcontractors`.`telephone` AS 'subcontractor_telephone', `pm_communities`.`community_id`,
-            `pm_communities`.`name`
+            `pm_communities`.`name` AS 'community_name'
         FROM `pm_subcontractors`
                  LEFT JOIN `pm_communities` on `pm_subcontractors`.`community_id` = `pm_communities`.`community_id`
         WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
@@ -116,7 +116,7 @@
     <select id="selectSubcontractorsAll" resultMap="subcontractorCorrelationCommunitiesResultMap">
         SELECT `pm_subcontractors`.`subcontractor_id`, `pm_subcontractors`.`name` AS 'subcontractor_name',
             `pm_subcontractors`.`telephone` AS 'subcontractor_telephone', `pm_communities`.`community_id`,
-            `pm_communities`.`name`
+            `pm_communities`.`name` AS 'community_name'
         FROM `pm_subcontractors`
                  LEFT JOIN `pm_communities` on `pm_subcontractors`.`community_id` = `pm_communities`.`community_id`
     </select>

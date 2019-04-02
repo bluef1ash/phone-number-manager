@@ -169,7 +169,7 @@ $(document).ready(() => {
                         if (data.baseMessage) {
                             this.addCount = data.baseMessage.addCount;
                             this.haveToCount = data.baseMessage.haveToCount;
-                            this.remnantCount = this.haveToCount - this.addCount;
+                            this.remnantCount = (this.haveToCount - this.addCount) * 0.8;
                             this.percentCount = this.addCount / this.haveToCount * 100;
                             if (this.percentCount < 80) {
                                 this.percentCountTitle = "录入与核定比例不能低于80%！";

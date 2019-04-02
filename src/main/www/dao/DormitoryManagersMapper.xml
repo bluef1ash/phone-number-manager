@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="www.dao.DormitoryManagersDao">
+    <resultMap type="DormitoryManager" id="dormitoryManagerResultMap">
+        <id property="id" column="dormitory_manager_id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <result property="sexName" column="sex_name"/>
+        <result property="birth" column="birth"/>
+        <result property="age" column="age"/>
+        <result property="politicalStatus" column="political_status"/>
+        <result property="workStatus" column="work_status"/>
+        <result property="education" column="education"/>
+        <result property="address" column="address"/>
+        <result property="managerAddress" column="manager_address"/>
+        <result property="managerCount" column="manager_count"/>
+        <result property="telephones" column="telephones"/>
+        <result property="editTime" column="edit_time"/>
+        <result property="subcontractorId" column="subcontractor_id"/>
+        <result property="communityId" column="community_id"/>
+    </resultMap>
+    <resultMap type="DormitoryManager" id="aliasResultMap">
+        <id property="id" column="dormitory_manager_id"/>
+        <result property="name" column="dormitory_manager_name"/>
+        <result property="sex" column="sex"/>
+        <result property="sexName" column="sex_name"/>
+        <result property="birth" column="birth"/>
+        <result property="age" column="age"/>
+        <result property="politicalStatus" column="political_status"/>
+        <result property="workStatus" column="work_status"/>
+        <result property="education" column="education"/>
+        <result property="address" column="address"/>
+        <result property="managerAddress" column="manager_address"/>
+        <result property="managerCount" column="manager_count"/>
+        <result property="telephones" column="telephones"/>
+        <result property="editTime" column="edit_time"/>
+        <result property="subcontractorId" column="subcontractor_id"/>
+        <result property="communityId" column="community_id"/>
+    </resultMap>
+    <resultMap type="DormitoryManager" id="dormitoryManagerCorrelationCommunityResultMap" extends="aliasResultMap">
+        <association property="community" column="community_id"
+                     resultMap="www.dao.CommunitiesDao.communitiesCorrelationSubdistrictResultMap"/>
+        <association property="subcontractor" column="subcontractor_id"
+                     resultMap="www.dao.SubcontractorsDao.aliasResultMap"/>
+    </resultMap>
+    <insert id="insertObject">
+        INSERT INTO `pm_dormitory_managers`(`dormitory_manager_id`, `name`, `sex`, `birth`, `political_status`,
+                                            `work_status`, `education`, `address`, `manager_address`, `manager_count`,
+                                            `telephones`, `edit_time`, `subcontractor_id`, `community_id`)
+        VALUES (#{id}, #{name}, #{sex}, #{birth}, #{politicalStatus}, #{workStatus}, #{education}, #{address},
+                #{managerAddress}, #{managerCount}, #{telephones}, #{editTime}, #{subcontractorId}, #{communityId})
+    </insert>
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="dormitory_manager_id">
+        INSERT INTO `pm_dormitory_managers`(`dormitory_manager_id`, `name`, `sex`, `birth`, `political_status`,
+        `work_status`, `education`,
+        `address`, `manager_address`, `manager_count`, `telephones`, `edit_time`, `subcontractor_id`, `community_id`)
+        VALUES
+        <foreach collection="objects" item="dormitoryManager" separator=",">
+            (#{dormitoryManager.id}, #{dormitoryManager.name}, #{dormitoryManager.sex}, #{dormitoryManager.birth},
+            #{dormitoryManager.politicalStatus}, #{dormitoryManager.workStatus}, #{dormitoryManager.education},
+            #{dormitoryManager.address}, #{dormitoryManager.managerAddress}, #{dormitoryManager.managerCount},
+            #{dormitoryManager.telephones}, #{dormitoryManager.editTime}, #{dormitoryManager.subcontractorId},
+            #{dormitoryManager.communityId})
+        </foreach>
+    </insert>
+    <delete id="deleteObjectById">
+        DELETE
+        FROM `pm_dormitory_managers`
+        WHERE `dormitory_manager_id` = #{id}
+    </delete>
+    <delete id="deleteObjectsByName">
+        DELETE
+        FROM `pm_dormitory_managers`
+        WHERE `name` = #{name}
+    </delete>
+    <delete id="deleteBySubdistrictId">
+        DELETE `pm_dormitory_managers`
+        FROM `pm_dormitory_managers`
+                 LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
+    </delete>
+    <update id="updateObject">
+        UPDATE `pm_dormitory_managers`
+        <set>
+            <if test="id != null">
+                `dormitory_manager_id` = #{id},
+            </if>
+            <if test="name != null">
+                `name` = #{name},
+            </if>
+            <if test="sex != null">
+                `sex` = #{sex},
+            </if>
+            <if test="birth != null">
+                `birth` = #{birth},
+            </if>
+            <if test="politicalStatus != null">
+                `political_status` = #{politicalStatus},
+            </if>
+            <if test="workStatus != null">
+                `work_status` = #{workStatus},
+            </if>
+            <if test="education != null">
+                `education` = #{education},
+            </if>
+            <if test="address != null">
+                `address` = #{address},
+            </if>
+            <if test="managerAddress != null">
+                `manager_address` = #{managerAddress},
+            </if>
+            <if test="managerCount != null">
+                `manager_count` = #{managerCount},
+            </if>
+            <if test="telephones != null">
+                `telephones` = #{telephones},
+            </if>
+            <if test="subcontractorId != null">
+                `subcontractor_id` = #{subcontractorId},
+            </if>
+            <if test="editTime != null">
+                `edit_time` = #{editTime},
+            </if>
+            <if test="communityId != null">
+                `community_id` = #{communityId}
+            </if>
+        </set>
+        WHERE `dormitory_manager_id` = #{id}
+    </update>
+    <select id="selectObjectsAll" resultMap="dormitoryManagerResultMap">
+        SELECT `dormitory_manager_id`, `name`, `sex`, `birth`, `political_status`, `work_status`, `education`,
+            `address`, `manager_address`, `manager_count`, `telephones`, edit_time, `subcontractor_id`, `community_id`
+        FROM `pm_dormitory_managers`
+    </select>
+    <select id="selectObjectById" resultMap="dormitoryManagerResultMap">
+        SELECT `dormitory_manager_id`, `name`, `sex`, `birth`, `political_status`, `work_status`, `education`,
+            `address`, `manager_address`, `manager_count`, `telephones`, `edit_time`, `subcontractor_id`, `community_id`
+        FROM `pm_dormitory_managers`
+        WHERE `dormitory_manager_id` = #{id}
+    </select>
+    <select id="selectObjectsByName" resultMap="dormitoryManagerResultMap">
+        SELECT `dormitory_manager_id`, `name`, `sex`, `birth`, `political_status`, `work_status`, `education`,
+            `address`, `manager_address`, `manager_count`, `telephones`, `edit_time`, `subcontractor_id`, `community_id`
+        FROM `pm_dormitory_managers`
+        WHERE `name` = #{name}
+    </select>
+    <select id="selectObjectsAndCommunityByCommunityIds"
+            resultMap="dormitoryManagerCorrelationCommunityResultMap">
+        SELECT
+        `pm_dormitory_managers`.`dormitory_manager_id`,
+        `pm_dormitory_managers`.`name` AS 'dormitory_manager_name',
+        CASE `pm_dormitory_managers`.`sex` WHEN 0 THEN '男' WHEN 1 THEN '女' ELSE '未知' END AS 'sex_name',
+        TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) AS 'age',
+        `pm_dormitory_managers`.`work_status`,
+        `pm_dormitory_managers`.`telephones`,
+        `pm_dormitory_managers`.`edit_time`,
+        `pm_dormitory_managers`.`community_id`,
+        `pm_communities`.`name` AS 'community_name'
+        FROM
+        `pm_dormitory_managers`
+        LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            <if test="communityIds != null">
+                `pm_dormitory_managers`.`community_id`
+                <choose>
+                    <when test="communityIds.size eq 1">
+                        = #{communityIds[0]}
+                    </when>
+                    <otherwise>
+                        IN
+                        <foreach collection="communityIds" separator="," open="(" close=")" item="communityId">
+                            #{communityId}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        ORDER BY `pm_dormitory_managers`.`dormitory_manager_id`
+    </select>
+    <select id="selectObjectAndCommunityById" resultMap="dormitoryManagerCorrelationCommunityResultMap">
+        SELECT `pm_dormitory_managers`.`dormitory_manager_id`,
+            `pm_dormitory_managers`.`name` AS 'dormitory_manager_name',
+            `pm_dormitory_managers`.`sex`,
+            `pm_dormitory_managers`.`birth`,
+            `pm_dormitory_managers`.`political_status`,
+            `pm_dormitory_managers`.`work_status`,
+            `pm_dormitory_managers`.`education`,
+            `pm_dormitory_managers`.`address`,
+            `pm_dormitory_managers`.`manager_address`,
+            `pm_dormitory_managers`.`manager_count`,
+            `pm_dormitory_managers`.`telephones`,
+            `pm_dormitory_managers`.`subcontractor_id`,
+            `pm_dormitory_managers`.`community_id`,
+            `pm_communities`.`name` AS 'community_name'
+        FROM `pm_dormitory_managers`
+                 LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_dormitory_managers`.`dormitory_manager_id` = #{id}
+    </select>
+    <select id="selectByUserData" resultMap="dormitoryManagerCorrelationCommunityResultMap">
+        SELECT `pm_communities`.`name` AS 'community_name',
+        `pm_dormitory_managers`.`dormitory_manager_id`,
+        `pm_dormitory_managers`.`name` AS 'dormitory_manager_name',
+        `pm_dormitory_managers`.`sex`,
+        `pm_dormitory_managers`.`birth`,
+        `pm_dormitory_managers`.`political_status`,
+        `pm_dormitory_managers`.`work_status`,
+        `pm_dormitory_managers`.`education`,
+        `pm_dormitory_managers`.`address`,
+        `pm_dormitory_managers`.`manager_address`,
+        `pm_dormitory_managers`.`manager_count`,
+        `pm_dormitory_managers`.`telephones`,
+        `pm_subcontractors`.`name` AS 'subcontractor_name',
+        `pm_subcontractors`.`telephone` AS 'subcontractor_telephone',
+        `pm_communities`.`subdistrict_id`
+        FROM `pm_dormitory_managers`
+        LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        LEFT JOIN pm_subcontractors ON `pm_dormitory_managers`.`subcontractor_id` =
+        `pm_subcontractors`.`subcontractor_id`
+        <where>
+            <foreach collection="userData" item="item" separator="OR">
+                <choose>
+                    <when test="item.roleId == subdistrictRoleId">
+                        `pm_communities`.`subdistrict_id` = #{item.roleLocationId}
+                    </when>
+                    <when test="item.roleId == communityRoleId">
+                        `pm_communities`.`community_id` = #{item.roleLocationId}
+                    </when>
+                </choose>
+            </foreach>
+        </where>
+    </select>
+    <select id="selectByUserRole" resultMap="dormitoryManagerCorrelationCommunityResultMap">
+        SELECT
+        `pm_dormitory_managers`.`dormitory_manager_id`,
+        `pm_dormitory_managers`.`name` AS 'dormitory_manager_name',
+        CASE `pm_dormitory_managers`.`sex` WHEN 0 THEN '男' WHEN 1 THEN '女' ELSE '未知' END AS 'sex_name',
+        TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) AS 'age',
+        `pm_dormitory_managers`.`work_status`,
+        `pm_dormitory_managers`.`telephones`,
+        `pm_dormitory_managers`.`community_id`,
+        `pm_communities`.`name` AS 'community_name'
+        FROM
+        `pm_dormitory_managers`
+        LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            <if test="object.name != null">
+                `pm_dormitory_managers`.`name` LIKE CONCAT('%', #{object.name}, '%')
+            </if>
+            <if test="object.sex != null and object.sex != -1">
+                AND `pm_dormitory_managers`.`sex` = #{object.sex}
+            </if>
+            <if test="object.address != null">
+                AND `pm_dormitory_managers`.`address` LIKE CONCAT('%', #{object.address}, '%')
+            </if>
+            <if test="object.telephones != null">
+                AND `pm_dormitory_managers`.`telephones` LIKE CONCAT('%', #{object.telephones}, '%')
+            </if>
+            <choose>
+                <when test="userRoleId == communityRoleId">
+                    AND `pm_dormitory_managers`.`community_id` = #{userRoleLocationId}
+                </when>
+                <when test="userRoleId == subdistrictRoleId">
+                    AND `pm_communities`.`subdistrict_id` = #{userRoleLocationId}
+                </when>
+            </choose>
+        </where>
+        ORDER BY `pm_dormitory_managers`.`dormitory_manager_id`
+    </select>
+    <select id="countObjectByCommunityId" resultType="long">
+        SELECT COUNT(`dormitory_manager_id`)
+        FROM `pm_dormitory_managers`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="selectLastIdByCommunityId" resultType="string">
+        SELECT `dormitory_manager_id`
+        FROM `pm_dormitory_managers`
+        WHERE `community_id` = #{communityId}
+        ORDER BY `dormitory_manager_id` DESC
+        LIMIT 1
+    </select>
+    <select id="selectByNameAndAddress" resultMap="dormitoryManagerCorrelationCommunityResultMap">
+        SELECT
+        `pm_dormitory_managers`.`name` AS 'dormitory_manager_name',
+        `pm_dormitory_managers`.`community_id`,
+        `pm_communities`.`name` AS 'community_name'
+        FROM `pm_dormitory_managers`
+        LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            CONCAT(`pm_dormitory_managers`.`name`, `pm_dormitory_managers`.`address`) = #{nameAddress}
+            <if test="id != null">
+                AND `pm_dormitory_managers`.`dormitory_manager_id` != #{id}
+            </if>
+            AND `pm_communities`.`subdistrict_id` = #{subdistrictId}
+        </where>
+    </select>
+    <select id="selectByPhones" resultMap="dormitoryManagerCorrelationCommunityResultMap">
+        SELECT
+        `pm_dormitory_managers`.`dormitory_manager_id`,
+        `pm_dormitory_managers`.`name` AS 'dormitory_manager_name',
+        `pm_dormitory_managers`.`telephones`,
+        `pm_dormitory_managers`.`community_id`,
+        `pm_communities`.`name` AS 'community_name'
+        FROM `pm_dormitory_managers`
+        LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        <where>
+            <foreach collection="phones" item="phone" separator="OR">
+                `pm_dormitory_managers`.`telephones` LIKE CONCAT('%', #{phone}, '%')
+            </foreach>
+            <if test="id != null">
+                AND `pm_dormitory_managers`.`dormitory_manager_id` != #{id}
+            </if>
+            AND `pm_communities`.`subdistrict_id` = #{subdistrictId}
+        </where>
+    </select>
+</mapper>

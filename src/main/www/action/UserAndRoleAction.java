@@ -36,7 +36,7 @@ import java.util.*;
 @Controller
 @SystemUserAuth
 @RequestMapping("/system/user_role")
-public class UserAndRoleAction {
+public class UserAndRoleAction extends BaseAction {
     @Resource
     private SystemUserService systemUserService;
     @Resource
@@ -99,23 +99,23 @@ public class UserAndRoleAction {
     @VerifyCSRFToken
     @ResponseBody
     public Map<String, Integer> systemUserLockedForAjax(HttpSession session, Long systemUserId, Boolean locked) {
-        Map<String, Integer> map = new HashMap<>(3);
-        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        Map<String, Integer> jsonMap = new HashMap<>(3);
+        getSessionRoleId(session);
         SystemUser systemUser = new SystemUser();
         systemUser.setSystemUserId(systemUserId);
         systemUser.setIsLocked(locked ? 1 : 0);
         try {
             if (!systemUserId.equals(systemAdministratorId)) {
                 systemUserService.updateObject(systemUser);
-                map.put("state", 1);
+                jsonMap.put("state", 1);
                 SystemUser user = systemUserService.findObject(systemUserId);
-                map.put("isLocked", user.getIsLocked());
+                jsonMap.put("isLocked", user.getIsLocked());
             } else {
-                map.put("state", 0);
+                jsonMap.put("state", 0);
             }
-            return map;
+            return jsonMap;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new JsonException(e);
         }
     }

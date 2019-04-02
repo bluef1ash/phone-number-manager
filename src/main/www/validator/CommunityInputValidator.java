@@ -16,20 +16,12 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-public class CommunityInputValidator extends BaseInputValidator implements Validator {
+public class CommunityInputValidator extends BaseInputValidator<Community> implements Validator {
     private CommunityService communityService;
-
-    public CommunityInputValidator() {
-    }
 
     public CommunityInputValidator(CommunityService communityService, HttpServletRequest request) {
         this.communityService = communityService;
         this.request = request;
-    }
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(Community.class);
     }
 
     @Override
@@ -58,7 +50,7 @@ public class CommunityInputValidator extends BaseInputValidator implements Valid
      * @return 联系方式是否合法
      */
     private boolean checkedPhone(String phone) {
-        if (!StringCheckedRegexUtil.checkPhone(phone)) {
+        if (StringCheckedRegexUtil.checkPhone(phone) == 0) {
             message = "输入的联系方式不合法，请检查后重试！";
             return false;
         }

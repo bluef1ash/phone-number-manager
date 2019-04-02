@@ -23,7 +23,7 @@
                     <a href="javascript:" title="社区管理">社区管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="javascript:" title="社区分包人管理">社区分包人管理</a>
+                    <a href="javascript:" title="社区居民管理">社区居民管理</a>
                 </li>
                 <li class="breadcrumb-item">
                     <a th:href="@{'/resident/' + ${communityResident == null ? 'create' : 'edit?id=' + communityResident.communityResidentId}}" th:title="${communityResident} == null ? '社区居民添加' : '社区居民编辑'" th:text="${communityResident} == null ? '社区居民添加' : '社区居民编辑'"></a>

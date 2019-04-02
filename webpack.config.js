@@ -29,7 +29,9 @@ module.exports = {
         "subcontractor-list": path.join(__dirname, "webapp/javascript/src/subcontractor/list.js"),
         "subcontractor-edit": path.join(__dirname, "webapp/javascript/src/subcontractor/edit.js"),
         "resident-list": path.join(__dirname, "webapp/javascript/src/resident/list.js"),
-        "resident-edit": path.join(__dirname, "webapp/javascript/src/resident/edit.js")
+        "resident-edit": path.join(__dirname, "webapp/javascript/src/resident/edit.js"),
+        "dormitory-list": path.join(__dirname, "webapp/javascript/src/dormitory/list.js"),
+        "dormitory-edit": path.join(__dirname, "webapp/javascript/src/dormitory/edit.js")
     },
     output: {
         path: jsDistPath,

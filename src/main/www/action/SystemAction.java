@@ -34,7 +34,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/system")
-public class SystemAction {
+public class SystemAction extends BaseAction {
     @Resource
     private ConfigurationService configurationService;
     private final HttpServletRequest request;

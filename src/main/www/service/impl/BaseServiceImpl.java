@@ -2,13 +2,28 @@ package www.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import exception.BusinessException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import utils.CommonUtil;
+import utils.ExcelUtil;
 import www.dao.*;
+import www.entity.Community;
+import www.entity.Subcontractor;
+import www.entity.SystemUser;
 import www.service.BaseService;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +36,8 @@ import java.util.Map;
  */
 public class BaseServiceImpl<T> implements BaseService<T> {
     BaseDao<T> baseDao;
+    @Resource
+    protected DormitoryManagersDao dormitoryManagersDao;
     @Resource
     protected SystemUsersDao systemUsersDao;
     @Resource
@@ -39,6 +56,10 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     protected ConfigurationsDao configurationsDao;
     @Resource
     protected SubcontractorsDao subcontractorsDao;
+    List<Subcontractor> subcontractors;
+    Map<String, Long> communityMap;
+    @Resource(name = "transactionManager")
+    private DataSourceTransactionManager transactionManager;
 
     /**
      * 最先运行的方法，自动加载对应类型的DAO
@@ -69,7 +90,7 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     }
 
     @Override
-    public int deleteObjectById(Long id) throws Exception {
+    public int deleteObjectById(Serializable id) throws Exception {
         return baseDao.deleteObjectById(id);
     }
 
@@ -96,7 +117,7 @@ public class BaseServiceImpl<T> implements BaseService<T> {
     }
 
     @Override
-    public T findObject(Long id) throws Exception {
+    public T findObject(Serializable id) throws Exception {
         return baseDao.selectObjectById(id);
     }
 
@@ -124,13 +145,23 @@ public class BaseServiceImpl<T> implements BaseService<T> {
         return baseDao.selectObjectsByObject(object);
     }
 
+    @Override
+    public List<T> findByNameAndAddress(String nameAddress, Serializable id, Long subdistrictId) throws Exception {
+        return baseDao.selectByNameAndAddress(nameAddress, id, subdistrictId);
+    }
+
+    @Override
+    public List<T> findByPhones(List<String> phones, Serializable id, Long subdistrictId) throws Exception {
+        return baseDao.selectByPhones(phones, id, subdistrictId);
+    }
+
     /**
      * 配置PageHelper
      *
-     * @param pageNumber  分页页码
+     * @param pageNumber   分页页码
      * @param pageDataSize 每页显示数量
      */
-    protected void setPageHelper(Integer pageNumber, Integer pageDataSize) {
+    void setPageHelper(Integer pageNumber, Integer pageDataSize) {
         pageNumber = pageNumber == null ? 1 : pageNumber;
         pageDataSize = pageDataSize == null ? 10 : pageDataSize;
         PageHelper.startPage(pageNumber, pageDataSize);
@@ -142,11 +173,133 @@ public class BaseServiceImpl<T> implements BaseService<T> {
      * @param data 对象集合
      * @return 查找到的对象集合与分页对象
      */
-    protected Map<String, Object> findObjectsMethod(List<T> data) {
-        Map<String, Object> map = new HashMap<>(4);
+    Map<String, Object> findObjectsMethod(List<T> data) {
+        Map<String, Object> map = new HashMap<>(3);
         map.put("data", data);
         map.put("pageInfo", new PageInfo<T>(data));
-        map.put("count", data.size());
         return map;
+    }
+
+    /**
+     * 查找社区编号
+     *
+     * @param systemUser        系统用户对象
+     * @param systemRoleId      系统角色编号
+     * @param communityRoleId   社区角色编号
+     * @param subdistrictRoleId 街道级角色编号
+     * @param pageNumber        页面页码
+     * @param pageDataSize      页面展示数据数量
+     * @return 社区编号数组
+     */
+    List<Long> findCommunityIds(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Integer pageNumber, Integer pageDataSize) {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+        Long roleId = systemUser.getRoleId();
+        Long roleLocationId = systemUser.getRoleLocationId();
+        List<Long> communityIds = new ArrayList<>();
+        if (roleId.equals(communityRoleId)) {
+            communityIds.add(roleLocationId);
+        } else if (roleId.equals(subdistrictRoleId)) {
+            List<Community> communities = communitiesDao.selectCommunitiesCorrelationBySubdistrictId(roleLocationId);
+            for (Community community : communities) {
+                communityIds.add(community.getCommunityId());
+            }
+        } else {
+            communityIds = null;
+        }
+        PageHelper.startPage(pageNumber, pageDataSize);
+        return communityIds;
+    }
+
+    /**
+     * 转换单元格字符串
+     *
+     * @param cell 需要转换的字符串的单元格对象
+     * @return 转换成功的字符串
+     */
+    String convertCellString(Cell cell) {
+        return CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(cell, CellType.STRING))));
+    }
+
+    /**
+     * 转换单元格数字类型
+     *
+     * @param cell 需要转换的字符串的单元格对象
+     * @return 转换成功的字符串
+     */
+    Integer convertCell(Cell cell) {
+        return Integer.parseInt(String.valueOf(ExcelUtil.getCellValue(cell, CellType.NUMERIC)));
+    }
+
+    /**
+     * 分包人处理
+     *
+     * @param subcontractorName      分包人姓名
+     * @param subcontractorTelephone 分包人联系方式
+     * @param subcontractors         从数据库查询的分包人集合对象
+     * @param communityId            所属社区编号
+     * @return 分包人编号
+     */
+    Long addSubcontractorHandler(String subcontractorName, String subcontractorTelephone, List<Subcontractor> subcontractors, Long communityId) {
+        Long subcontractorId = null;
+        for (Subcontractor subcontractor : subcontractors) {
+            if (subcontractorName.equals(subcontractor.getName())) {
+                subcontractorId = subcontractor.getSubcontractorId();
+                if (StringUtils.isEmpty(subcontractor.getTelephone())) {
+                    subcontractor.setTelephone(subcontractorTelephone);
+                    DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+                    def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                    TransactionStatus status = transactionManager.getTransaction(def);
+                    subcontractorsDao.updateObject(subcontractor);
+                    transactionManager.commit(status);
+                }
+                break;
+            }
+        }
+        if (subcontractorId == null) {
+            Subcontractor newSubcontractor = new Subcontractor();
+            newSubcontractor.setName(subcontractorName);
+            newSubcontractor.setTelephone(subcontractorTelephone);
+            newSubcontractor.setCommunityId(communityId);
+            DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+            def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+            TransactionStatus status = transactionManager.getTransaction(def);
+            subcontractorsDao.insertObject(newSubcontractor);
+            transactionManager.commit(status);
+            subcontractors.add(newSubcontractor);
+        }
+        return subcontractorId;
+    }
+
+    /**
+     * 获取社区编号
+     *
+     * @param communityMap  社区集合
+     * @param communityName 社区名称
+     * @return 社区编号
+     */
+    Long getCommunityId(Map<String, Long> communityMap, String communityName) {
+        Long communityId;
+        if (!communityMap.containsKey(communityName)) {
+            communityId = communitiesDao.selectCommunityIdByCommunityName(communityName);
+            if (communityId == null) {
+                throw new BusinessException("找不到社区名称为“" + communityName + "”的社区，请创建此社区后，重新导入！");
+            }
+            communityMap.put(communityName, communityId);
+        } else {
+            communityId = communityMap.get(communityName);
+        }
+        return communityId;
+    }
+
+    /**
+     * 设置社区变量
+     *
+     * @param subdistrictId 街道编号
+     */
+    void setCommunityVariables(Long subdistrictId) {
+        subcontractors = subcontractorsDao.selectObjectsAll();
+        List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(subdistrictId);
+        communityMap = new HashMap<>(communities.size() + 1);
     }
 }

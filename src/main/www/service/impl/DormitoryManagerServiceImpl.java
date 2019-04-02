@@ -1,0 +1,402 @@
+package www.service.impl;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.github.pagehelper.PageHelper;
+import com.github.promeg.pinyinhelper.Pinyin;
+import constant.SystemConstant;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.springframework.stereotype.Service;
+import utils.CommonUtil;
+import utils.DateUtil;
+import utils.ExcelUtil;
+import utils.StringCheckedRegexUtil;
+import www.entity.DormitoryManager;
+import www.entity.Subdistrict;
+import www.entity.SystemUser;
+import www.service.DormitoryManagerService;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * 社区楼长Service实现
+ *
+ * @author 廿二月的天
+ */
+@Service("dormitoryManagerService")
+public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManager> implements DormitoryManagerService {
+
+    private static final String SUBDISTRICT_NAME_PLACEHOLDER = "${subdistrictName}";
+    private static final String SUBDISTRICT_NAME_REGEX = "(?Us)[${]{2}subdistrictName[}]";
+    private Integer excelDormitoryCommunityNameCellNumber;
+    private Integer excelDormitoryIdCellNumber;
+    private Integer excelDormitoryNameCellNumber;
+    private Integer excelDormitorySexCellNumber;
+    private Integer excelDormitoryBirthCellNumber;
+    private Integer excelDormitoryPoliticalStatusCellNumber;
+    private Integer excelDormitoryWorkStatusCellNumber;
+    private Integer excelDormitoryEducationCellNumber;
+    private Integer excelDormitoryAddressCellNumber;
+    private Integer excelDormitoryManagerAddressCellNumber;
+    private Integer excelDormitoryManagerCountCellNumber;
+    private Integer excelDormitoryTelephoneCellNumber;
+    private Integer excelDormitoryLandlineCellNumber;
+    private Integer excelDormitorySubcontractorNameCellNumber;
+    private Integer excelDormitorySubcontractorTelephoneCellNumber;
+    private String fileTitle = "XX";
+    private String[] titles;
+    private Pattern idPatten = Pattern.compile("(?iUs)([A-Za-z]+)(\\d+)");
+
+    @Override
+    public Map<String, Object> findDormitoryManagersAndCommunity(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, Integer pageNumber, Integer pageDataSize) {
+        List<Long> roleLocationIds = findCommunityIds(systemUser, systemRoleId, communityRoleId, subdistrictRoleId, pageNumber, pageDataSize);
+        List<DormitoryManager> data = dormitoryManagersDao.selectObjectsAndCommunityByCommunityIds(roleLocationIds);
+        return findObjectsMethod(data);
+    }
+
+    @Override
+    public DormitoryManager findDormitoryManagerAndCommunityById(String id) {
+        DormitoryManager dormitoryManager = dormitoryManagersDao.selectObjectAndCommunityById(id);
+        String[] phones = dormitoryManager.getTelephones().split(",");
+        if (phones.length == 1) {
+            setPhoneForPhoneType(phones[0], dormitoryManager);
+        } else if (phones.length == 2) {
+            setPhoneForPhoneType(phones[0], dormitoryManager);
+            setPhoneForPhoneType(phones[1], dormitoryManager);
+        }
+        return dormitoryManager;
+    }
+
+    @Override
+    public void createDormitoryManager(DormitoryManager dormitoryManager) throws Exception {
+
+    }
+
+    @Override
+    public void updateDormitoryManager(DormitoryManager dormitoryManager) throws Exception {
+
+    }
+
+    @Override
+    public int addDormitoryManagerFromExcel(Workbook workbook, Long subdistrictId, Map<String, Object> configurationsMap) throws Exception {
+        List<DormitoryManager> dormitoryManagers = new ArrayList<>();
+        Long readDormitoryExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_dormitory_excel_start_row_number"));
+        excelDormitoryCommunityNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_community_name_cell_number"));
+        excelDormitoryIdCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_id_cell_number"));
+        excelDormitoryNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_name_cell_number"));
+        excelDormitorySexCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_sex_cell_number"));
+        excelDormitoryBirthCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_birth_cell_number"));
+        excelDormitoryPoliticalStatusCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_political_status_cell_number"));
+        excelDormitoryWorkStatusCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_work_status_cell_number"));
+        excelDormitoryEducationCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_education_cell_number"));
+        excelDormitoryAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_address_cell_number"));
+        excelDormitoryManagerAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_address_cell_number"));
+        excelDormitoryManagerCountCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_count_cell_number"));
+        excelDormitoryTelephoneCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_telephone_cell_number"));
+        excelDormitoryLandlineCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_landline_cell_number"));
+        excelDormitorySubcontractorNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_name_cell_number"));
+        excelDormitorySubcontractorTelephoneCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_telephone_cell_number"));
+        setCommunityVariables(subdistrictId);
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+            Sheet sheet = workbook.getSheetAt(i);
+            if (sheet != null) {
+                for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
+                    Row row = sheet.getRow(j);
+                    if (row != null && j >= sheet.getFirstRowNum() + readDormitoryExcelStartRowNumber - 1) {
+                        dormitoryManagers.add(importExcelHandler(row));
+                    }
+                }
+            }
+        }
+        if (dormitoryManagers.size() > 0) {
+            dormitoryManagersDao.deleteBySubdistrictId(subdistrictId);
+            return dormitoryManagersDao.insertBatch(dormitoryManagers);
+        }
+        return 0;
+    }
+
+    @Override
+    public Map<String, String> getPartStatHead() {
+        Map<String, String> tableHead = new LinkedHashMap<>();
+        tableHead.put("sequenceNumber", "序号");
+        tableHead.put("communityName", "社区名称");
+        tableHead.put("id", "编号");
+        tableHead.put("name", "姓名");
+        tableHead.put("sexName", "性别");
+        tableHead.put("birthString", "出生年月");
+        tableHead.put("politicalStatusName", "政治面貌");
+        tableHead.put("workStatusName", "工作状况");
+        tableHead.put("educationName", "文化程度");
+        tableHead.put("address", "家庭住址（具体到单元号、楼号）");
+        tableHead.put("managerAddress", "分包楼栋（具体到单元号、楼号）");
+        tableHead.put("managerCount", "联系户数");
+        tableHead.put("telephone", "手机");
+        tableHead.put("landline", "座机");
+        tableHead.put("subcontractorName", "姓名");
+        tableHead.put("subcontractorTelephone", "手机");
+        return tableHead;
+    }
+
+    @Override
+    public JSONArray findDormitoryManagersAndCommunitiesBySystemUserId(Map<String, Object> configurationsMap, List<Map<String, Object>> userData, String[] titles) {
+        this.titles = titles;
+        List<DormitoryManager> dormitoryManagers = dormitoryManagersDao.selectByUserData(userData, CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id")), CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id")));
+        if (dormitoryManagers != null) {
+            long index = 1L;
+            Subdistrict subdistrict = subdistrictsDao.selectObjectById(dormitoryManagers.get(0).getCommunity().getSubdistrictId());
+            if (titles[1].contains(SUBDISTRICT_NAME_PLACEHOLDER) && StringUtils.isNotEmpty(subdistrict.getSubdistrictName())) {
+                String subdistrictName = subdistrict.getSubdistrictName();
+                fileTitle = titles[1].replaceAll(SUBDISTRICT_NAME_REGEX, subdistrictName.replaceAll("(?iUs)[街道办事处]", ""));
+            }
+            for (DormitoryManager dormitoryManager : dormitoryManagers) {
+                // 序号
+                dormitoryManager.setSequenceNumber(index);
+                // 处理社区名称
+                String communityName = dormitoryManager.getCommunity().getCommunityName().replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
+                dormitoryManager.setCommunityName(communityName);
+                // 性别处理
+                dormitoryManager.setSexName(DormitoryManager.SEXES[dormitoryManager.getSex()]);
+                // 出生年月
+                DateFormat dateFormat = new SimpleDateFormat("yyyy.MM");
+                dormitoryManager.setBirthString(dateFormat.format(dormitoryManager.getBirth()));
+                // 政治面貌
+                dormitoryManager.setPoliticalStatusName(DormitoryManager.POLITICAL_STATUSES[dormitoryManager.getPoliticalStatus()]);
+                // 工作状况
+                dormitoryManager.setWorkStatusName(DormitoryManager.WORK_STATUSES[dormitoryManager.getWorkStatus()]);
+                // 文化程度
+                dormitoryManager.setEducationName(DormitoryManager.EDUCATIONS[dormitoryManager.getEducation()]);
+                // 处理多个联系方式
+                if (dormitoryManager.getTelephones().contains(",")) {
+                    String[] phones = dormitoryManager.getTelephones().split(",");
+                    if (phones.length == 2) {
+                        setPhoneForPhoneType(phones[0], dormitoryManager);
+                        setPhoneForPhoneType(phones[1], dormitoryManager);
+                    } else {
+                        setPhoneForPhoneType(phones[0], dormitoryManager);
+                    }
+                } else {
+                    setPhoneForPhoneType(dormitoryManager.getTelephones(), dormitoryManager);
+                }
+                // 处理分包人
+                dormitoryManager.setSubcontractorName(dormitoryManager.getSubcontractor().getName());
+                dormitoryManager.setSubcontractorTelephone(dormitoryManager.getSubcontractor().getTelephone());
+                index++;
+            }
+        }
+        return (JSONArray) JSON.toJSON(dormitoryManagers);
+    }
+
+    @Override
+    public Map<String, Object> findDormitoryManagerByDormitoryManager(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, DormitoryManager dormitoryManager, Long companyId, Long companyRoleId, Integer pageNumber, Integer pageDataSize) {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+        if (companyRoleId == null || companyId == null) {
+            companyRoleId = systemUser.getRoleId();
+            companyId = systemUser.getRoleLocationId();
+        }
+        PageHelper.startPage(pageNumber, pageDataSize);
+        List<DormitoryManager> dormitoryManagers = dormitoryManagersDao.selectByUserRole(companyRoleId, companyId, systemRoleId, communityRoleId, subdistrictRoleId, dormitoryManager);
+        return findObjectsMethod(dormitoryManagers);
+    }
+
+    @Override
+    public Map<String, Object> setExcelHead() {
+        ExcelUtil.DataHandler handler = (params, headers) -> {
+            Integer rowIndex = (Integer) params.get("rowIndex");
+            Workbook workbook = (Workbook) params.get("workbook");
+            Sheet sheet = (Sheet) params.get("sheet");
+            // 附件格式
+            if (StringUtils.isNotEmpty(titles[0])) {
+                CellStyle attachStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 12, false, false, false);
+                Row attachTitle = sheet.createRow(rowIndex);
+                attachTitle.createCell(0).setCellValue(titles[0]);
+                attachTitle.getCell(0).setCellStyle(attachStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 1));
+                sheet.getRow(rowIndex).setHeight((short) (15.6 * 20));
+                rowIndex++;
+            }
+            // 表头
+            Row titleRow = sheet.createRow(rowIndex);
+            CellStyle titleStyle = ExcelUtil.setCellStyle(workbook, "方正小标宋简体", (short) 18, false, false, false);
+            titleRow.createCell(0).setCellValue(fileTitle);
+            titleRow.getCell(0).setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, getPartStatHead().size() - 1));
+            sheet.getRow(rowIndex).setHeight((short) (48 * 20));
+            rowIndex++;
+            CellStyle dateStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 11, false, false, false);
+            // 单位、日期
+            Row dateRow = sheet.createRow(rowIndex);
+            int unitCellIndex = 10;
+            int dateCellIndex = 12;
+            dateRow.createCell(unitCellIndex).setCellValue("单位：户");
+            dateRow.getCell(unitCellIndex).setCellStyle(dateStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, unitCellIndex, unitCellIndex + 1));
+            dateRow.createCell(dateCellIndex).setCellValue("时间：" + DateUtil.date2Str("yyyy年MM月dd日", new Date()));
+            dateRow.getCell(dateCellIndex).setCellStyle(dateStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, dateCellIndex, dateCellIndex + 3));
+            sheet.getRow(rowIndex).setHeight((short) (26.1 * 20));
+            rowIndex++;
+            // 列头
+            Row headerRow = sheet.createRow(rowIndex);
+            CellStyle headerStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 11, false, true, false);
+            Row subcontractorRow = sheet.createRow(rowIndex + 1);
+            int subcontractorStartCellIndex = headers.length - 2;
+            for (int i = 0; i < headers.length; i++) {
+                if (i < subcontractorStartCellIndex) {
+                    headerRow.createCell(i).setCellValue(headers[i]);
+                    headerRow.getCell(i).setCellStyle(headerStyle);
+                    sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex + 1, i, i));
+                    subcontractorRow.createCell(i).setCellStyle(headerStyle);
+                } else {
+                    if (i == subcontractorStartCellIndex) {
+                        headerRow.createCell(i + 1).setCellStyle(headerStyle);
+                        headerRow.createCell(i).setCellValue("分包社区工作者");
+                        headerRow.getCell(i).setCellStyle(headerStyle);
+                        sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, i, i + 1));
+                    }
+                    subcontractorRow.createCell(i).setCellValue(headers[i]);
+                    subcontractorRow.getCell(i).setCellStyle(headerStyle);
+                }
+            }
+            sheet.setAutoFilter(new CellRangeAddress(rowIndex, rowIndex, 0, headers.length - 1));
+            CellStyle contentStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 9, false, true, true);
+            params.put("rowIndex", rowIndex + 2);
+            params.put("workbook", workbook);
+            params.put("sheet", sheet);
+            params.put("contentStyle", contentStyle);
+        };
+        Map<String, Object> map = new HashMap<>(3);
+        map.put("fileName", fileTitle);
+        map.put("handler", handler);
+        return map;
+    }
+
+    /**
+     * 根据联系方式类型设置
+     *
+     * @param phone            联系方式
+     * @param dormitoryManager 楼长对象
+     */
+    private void setPhoneForPhoneType(String phone, DormitoryManager dormitoryManager) {
+        int phoneType = StringCheckedRegexUtil.checkPhone(phone);
+        if (phoneType == 1) {
+            dormitoryManager.setTelephone(phone);
+        } else if (phoneType == 2) {
+            dormitoryManager.setLandline(phone);
+        }
+    }
+
+    /**
+     * 导入Excel数据处理
+     *
+     * @param row Excel行对象
+     * @return 处理完成的楼片长对象
+     * @throws ParseException 日期转换异常
+     */
+    private DormitoryManager importExcelHandler(Row row) throws ParseException {
+        DormitoryManager dormitoryManager = new DormitoryManager();
+        dormitoryManager.setId(convertCellString(row.getCell(excelDormitoryIdCellNumber)));
+        String communityName = convertCellString(row.getCell(excelDormitoryCommunityNameCellNumber));
+        Long communityId = getCommunityId(communityMap, communityName);
+        dormitoryManager.setCommunityId(communityId);
+        dormitoryManager.setName(convertCellString(row.getCell(excelDormitoryNameCellNumber)));
+        int sex = 0;
+        String sexName = convertCellString(row.getCell(excelDormitorySexCellNumber));
+        if (DormitoryManager.SEXES[1].equals(sexName)) {
+            sex = 1;
+        } else if (!DormitoryManager.SEXES[0].equals(sexName)) {
+            sex = 2;
+        }
+        dormitoryManager.setSex(sex);
+        Cell birthCell = row.getCell(excelDormitoryBirthCellNumber);
+        Date birth;
+        if (ExcelUtil.DEFAULT_DATE_PATTERN_EN.equals(birthCell.getCellStyle().getDataFormatString())) {
+            birth = birthCell.getDateCellValue();
+        } else {
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+            String birthString = convertCellString(birthCell).replaceAll("(?iUs)^(\\d{4})[.-/年]?(\\d{1,2})[.-/月]?(?:\\d{1,2})?[日]?$", "$1-$2");
+            birth = dateFormat.parse(birthString);
+        }
+        dormitoryManager.setBirth(birth);
+        String political = convertCellString(row.getCell(excelDormitoryPoliticalStatusCellNumber));
+        for (int k = 0; k < DormitoryManager.POLITICAL_STATUSES.length; k++) {
+            if (DormitoryManager.POLITICAL_STATUSES[k].contains(political)) {
+                dormitoryManager.setPoliticalStatus(k);
+                break;
+            }
+        }
+        String workStatus = convertCellString(row.getCell(excelDormitoryWorkStatusCellNumber));
+        for (int k = 0; k < DormitoryManager.WORK_STATUSES.length; k++) {
+            if (DormitoryManager.WORK_STATUSES[k].contains(workStatus)) {
+                dormitoryManager.setWorkStatus(k);
+                break;
+            }
+        }
+        String education = convertCellString(row.getCell(excelDormitoryEducationCellNumber));
+        for (int k = 0; k < DormitoryManager.EDUCATIONS.length; k++) {
+            if (DormitoryManager.EDUCATIONS[k].contains(education)) {
+                dormitoryManager.setEducation(k);
+                break;
+            }
+        }
+        dormitoryManager.setAddress(convertCellString(row.getCell(excelDormitoryAddressCellNumber)));
+        dormitoryManager.setManagerAddress(convertCellString(row.getCell(excelDormitoryManagerAddressCellNumber)));
+        dormitoryManager.setManagerCount(convertCell(row.getCell(excelDormitoryManagerCountCellNumber)));
+        String telephone = convertCellString(row.getCell(excelDormitoryTelephoneCellNumber));
+        String landline = convertCellString(row.getCell(excelDormitoryLandlineCellNumber));
+        StringBuilder phones = new StringBuilder();
+        if (StringUtils.isNotEmpty(telephone)) {
+            phones.append(telephone);
+        }
+        if (StringUtils.isNotEmpty(landline)) {
+            if (phones.length() > 0) {
+                phones.append(",");
+            }
+            phones.append(landline);
+        }
+        dormitoryManager.setTelephones(phones.toString());
+        dormitoryManager.setEditTime(DateUtil.getTimestamp(new Date()));
+        String subcontractorName = convertCellString(row.getCell(excelDormitorySubcontractorNameCellNumber));
+        String subcontractorPhone = convertCellString(row.getCell(excelDormitorySubcontractorTelephoneCellNumber));
+        Long subcontractorId = addSubcontractorHandler(subcontractorName, subcontractorPhone, subcontractors, communityId);
+        dormitoryManager.setSubcontractorId(subcontractorId);
+        return dormitoryManager;
+    }
+
+    @Override
+    public String findLastId(Long communityId, String communityName, String subdistrictName) throws Exception {
+        StringBuilder stringBuilder = new StringBuilder();
+        String id = dormitoryManagersDao.selectLastIdByCommunityId(communityId);
+        long idNumber = 0L;
+        if (StringUtils.isNotEmpty(id)) {
+            Matcher matcher = idPatten.matcher(id);
+            while (matcher.find()) {
+                stringBuilder.append(matcher.group(1).toUpperCase());
+                idNumber = Long.parseLong(matcher.group(2));
+            }
+        } else {
+            String sn = subdistrictName.replaceAll("(?iUs)[街道办事处]", "");
+            String cn = communityName.replaceAll("(?iUs)[社区居委会]", "");
+            String regex = ",";
+            String subdistrictNamePY = Pinyin.toPinyin(sn, regex);
+            String communityNamePY = Pinyin.toPinyin(cn, regex);
+            String[] subdistrictNamePYSplit = subdistrictNamePY.split(regex);
+            String[] communityNamePYSplit = communityNamePY.split(regex);
+            for (String split : subdistrictNamePYSplit) {
+                stringBuilder.append(split.toUpperCase(), 0, 1);
+            }
+            for (String split : communityNamePYSplit) {
+                stringBuilder.append(split.toUpperCase(), 0, 1);
+            }
+        }
+        stringBuilder.append(String.format("%04d", idNumber + 1));
+        return stringBuilder.toString();
+    }
+}

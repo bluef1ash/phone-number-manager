@@ -1,14 +1,25 @@
 package www.entity;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 系统用户实体
  *
  * @author 廿二月的天
  */
-public class SystemUser implements Serializable {
+public class SystemUser implements Serializable, UserDetails {
+    public static final int LOCKED = 1;
+    public static final int NON_LOCKED = 0;
+
     private static final long serialVersionUID = -5035917619026010434L;
     private Long systemUserId;
     private String username;
@@ -49,14 +60,44 @@ public class SystemUser implements Serializable {
         this.systemUserId = systemUserId;
     }
 
+    @Override
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return isLocked == SystemUser.NON_LOCKED;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
     public void setUsername(String username) {
         this.username = username;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(String.valueOf(userRole.getRoleId()));
+        grantedAuthorities.add(grantedAuthority);
+        return grantedAuthorities;
+    }
+
+    @Override
     public String getPassword() {
         return password;
     }
@@ -132,7 +173,35 @@ public class SystemUser implements Serializable {
 
         SystemUser that = (SystemUser) o;
 
-        return (systemUserId != null ? systemUserId.equals(that.systemUserId) : that.systemUserId == null) && (username != null ? username.equals(that.username) : that.username == null) && (password != null ? password.equals(that.password) : that.password == null) && (loginTime != null ? loginTime.equals(that.loginTime) : that.loginTime == null) && (loginIp != null ? loginIp.equals(that.loginIp) : that.loginIp == null) && (isLocked != null ? isLocked.equals(that.isLocked) : that.isLocked == null) && (roleId != null ? roleId.equals(that.roleId) : that.roleId == null) && (roleLocationId != null ? roleLocationId.equals(that.roleLocationId) : that.roleLocationId == null) && (captcha != null ? captcha.equals(that.captcha) : that.captcha == null) && (userRole != null ? userRole.equals(that.userRole) : that.userRole == null);
+        if (!Objects.equals(systemUserId, that.systemUserId)) {
+            return false;
+        }
+        if (!Objects.equals(username, that.username)) {
+            return false;
+        }
+        if (!Objects.equals(password, that.password)) {
+            return false;
+        }
+        if (!Objects.equals(loginTime, that.loginTime)) {
+            return false;
+        }
+        if (!Objects.equals(loginIp, that.loginIp)) {
+            return false;
+        }
+        if (!Objects.equals(isLocked, that.isLocked)) {
+            return false;
+        }
+        if (!Objects.equals(roleId, that.roleId)) {
+            return false;
+        }
+        if (!Objects.equals(roleLocationId, that.roleLocationId)) {
+            return false;
+        }
+        if (!Objects.equals(captcha, that.captcha)) {
+            return false;
+        }
+        return Objects.equals(userRole, that.userRole);
+
     }
 
     @Override

@@ -11,7 +11,7 @@ $(document).ready(() => {
     new Vue({
         el: "#role_table",
         data: {
-            token: token,
+            csrf: csrf,
             userRoles: userRoles
         },
         methods: {

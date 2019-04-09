@@ -11,16 +11,12 @@ import www.service.ConfigurationService;
  */
 @Service("configurationService")
 public class ConfigurationServiceImpl extends BaseServiceImpl<Configuration> implements ConfigurationService {
-    @Override
-    public Configuration findConfigurationByKey(String key) throws Exception {
-        return configurationsDao.selectConfigurationByKey(key);
-    }
 
     @Override
     public boolean deleteConfigurationByKey(String key) throws Exception {
-        Configuration configuration = configurationsDao.selectConfigurationByKey(key);
+        Configuration configuration = configurationsDao.selectObjectById(key);
         if (configuration.getKeyIsChanged() != 0) {
-            configurationsDao.deleteConfigurationByKey(key);
+            configurationsDao.deleteObjectById(key);
             return true;
         }
         return false;

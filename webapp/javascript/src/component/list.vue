@@ -142,7 +142,7 @@
                                     <option :value="0">请选择</option>
                                     <option :value="subdistrict.subdistrictId" v-for="subdistrict in subdistricts" v-text="subdistrict.subdistrictName"></option>
                                 </select>
-                                <el-upload :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :data="{_token: token, subdistrictId: subdistrictId}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo" ref="uploadExcel">
+                                <el-upload :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :data="{_csrf: csrf, subdistrictId: subdistrictId}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo" ref="uploadExcel">
                                     <el-button size="small" type="primary">浏览文件</el-button>
                                 </el-upload>
                             </div>
@@ -168,7 +168,7 @@
     export default {
         data() {
             return {
-                token: token,
+                csrf: csrf,
                 publicParams: publicPrams,
                 data: data.data,
                 dataType: data.dataType,
@@ -221,12 +221,9 @@
                         url: this.publicParams.companySelectUrl,
                         method: "get",
                         data: {
-                            _token: this.token
+                            _csrf: this.csrf
                         }
                     }).then(data => {
-                        if (data._token) {
-                            this.token = data._token;
-                        }
                         if (data.state === 1) {
                             let disabled = false;
                             this.isStrictly = false;
@@ -296,12 +293,9 @@
                         url: this.publicParams.loadSubdistrictsUrl,
                         method: "get",
                         data: {
-                            _token: this.token
+                            _csrf: this.csrf
                         }
                     }).then(data => {
-                        if (data._token) {
-                            this.token = data._token;
-                        }
                         if (data.state === 1) {
                             this.subdistricts = data.subdistricts;
                         }
@@ -395,7 +389,7 @@
                 this.pagination = this.$route.path.substring(1) === "" ? 1 : parseInt(this.$route.path.substring(1));
                 let data = {
                     page: this.pagination,
-                    _token: this.token
+                    _csrf: this.csrf
                 };
                 if (Object.keys(this.searchParams).length > 0 && this.searchParams.isSearch) {
                     this.searchParams.isFrist = false;

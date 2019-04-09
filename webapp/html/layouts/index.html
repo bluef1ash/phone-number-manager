@@ -19,7 +19,10 @@
                         </div>
                         <a class="dropdown-item" href="javascript:" title="个人中心"><i class="fa fa-bell-o"></i>个人中心</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" th:href="@{'/login/logout'}" title="退出系统"><i class="fa fa-lock"></i>退出系统</a>
+                        <form method="post" name="logout" th:action="@{'/login/logout'}">
+                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                            <a class="dropdown-item" href="javascript:document.logout.submit();" title="退出系统"><i class="fa fa-lock"></i>退出系统</a>
+                        </form>
                     </div>
                 </li>
             </ul>

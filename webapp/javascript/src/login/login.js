@@ -1,20 +1,24 @@
 import "@base/javascript/src/common/public";
 import Vue from "vue";
-import {Loading, Message} from "element-ui";
+import {Loading, Message, MessageBox} from "element-ui";
 import sha256 from "sha256";
+import VueCookie from "vue-cookie";
 import commonFunction from "@base/lib/javascript/common";
 import "@base/lib/javascript/gt";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
+    Vue.prototype.$alert = MessageBox.alert;
     Vue.prototype.$loading = Loading;
     Vue.use(Loading);
+    Vue.prototype.$cookie = VueCookie;
+    Vue.use(VueCookie);
     new Vue({
         el: "#login",
         data: {
             username: "",
             password: "",
-            token: token,
+            csrf: csrf,
             isInvalids: [false, false, false, false],
             messages: ["", "", "正在加载验证码，请稍后。。。"],
             captchaObj: null,
@@ -58,6 +62,13 @@ $(document).ready(() => {
                     });
                 });
             });
+            if (this.$cookie.get("sessionExpired") !== null) {
+                this.$cookie.delete("sessionExpired");
+                this.$alert("不允许同一台设备同时登录该系统！", "警告", {
+                    center: true,
+                    confirmButtonText: "知道了"
+                });
+            }
         },
         methods: {
             /**
@@ -110,13 +121,13 @@ $(document).ready(() => {
                     data: {
                         username: this.username,
                         password: sha256(this.password),
-                        _token: this.token,
+                        _csrf: this.csrf,
                         geetest_challenge: captchaValid.geetest_challenge,
                         geetest_validate: captchaValid.geetest_validate,
                         geetest_seccode: captchaValid.geetest_seccode,
                         browserType: this.browserType
                     },
-                    beforeSend: (xmlHttpRequest) => {
+                    beforeSend: xmlHttpRequest => {
                         this.loading = this.$loading({
                             lock: true,
                             text: "正在登录，请稍等。。。",
@@ -125,7 +136,6 @@ $(document).ready(() => {
                         });
                     }
                 }).then(data => {
-                    this.token = data._token;
                     if (data.state === 1) {
                         this.loading.close();
                         this.$message({

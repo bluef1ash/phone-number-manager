@@ -1,8 +1,5 @@
 package www.action;
 
-import annotation.RefreshCsrfToken;
-import annotation.SystemUserAuth;
-import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import exception.BusinessException;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import utils.CommonUtil;
-import utils.CsrfTokenUtil;
 import utils.ExcelUtil;
 import www.entity.Community;
 import www.entity.DormitoryManager;
@@ -41,7 +37,6 @@ import java.util.Map;
  *
  * @author 廿二月的天
  */
-@SystemUserAuth
 @Controller
 @RequestMapping("/dormitory")
 public class DormitoryManagerAction extends BaseAction {
@@ -72,7 +67,6 @@ public class DormitoryManagerAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String dormitoryManagerList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
@@ -94,7 +88,6 @@ public class DormitoryManagerAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String createDormitoryManager(HttpSession session, Model model) {
         getSessionRoleId(session);
@@ -116,7 +109,6 @@ public class DormitoryManagerAction extends BaseAction {
      * @param id      需要编辑的社区楼长的编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public String editDormitoryManager(HttpSession session, Model model, String id) {
         getSessionRoleId(session);
@@ -143,7 +135,6 @@ public class DormitoryManagerAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    @VerifyCSRFToken
     public String dormitoryManagerCreateOrEditHandle(HttpServletRequest httpServletRequest, HttpSession session, Model model, @Validated DormitoryManager dormitoryManager, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
@@ -176,20 +167,17 @@ public class DormitoryManagerAction extends BaseAction {
     /**
      * 使用AJAX技术通过社区楼长编号删除
      *
-     * @param session session对象
-     * @param id      对应编号
+     * @param id 对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> deleteDormitoryManagerForAjax(HttpSession session, String id) {
+    public Map<String, Object> deleteDormitoryManagerForAjax(String id) {
         try {
-            Map<String, Object> jsonMap = new HashMap<>(4);
+            Map<String, Object> jsonMap = new HashMap<>(3);
             dormitoryManagerService.deleteObjectById(id);
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除社区楼长成功！");
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,16 +193,13 @@ public class DormitoryManagerAction extends BaseAction {
      * @param subdistrictId 导入的街道编号
      * @return Ajax信息
      */
-    @SystemUserAuth(enforce = true)
     @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> dormitoryManagerImportAsSystem(HttpSession session, HttpServletRequest request, Long subdistrictId) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(2);
         try {
             Workbook workbook = uploadExcel(request, session, "excel_dormitory_title");
             jsonMap.put("state", dormitoryManagerService.addDormitoryManagerFromExcel(workbook, subdistrictId, configurationsMap));
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
@@ -240,7 +225,7 @@ public class DormitoryManagerAction extends BaseAction {
             // 获取业务数据集
             JSONArray dataJson = dormitoryManagerService.findDormitoryManagersAndCommunitiesBySystemUserId(configurationsMap, userData, new String[]{excelDormitoryTitleUp, excelDormitoryTitle});
             Map<String, Object> dataHandler = dormitoryManagerService.setExcelHead();
-            ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(headMap, dataJson, 0, (ExcelUtil.DataHandler) dataHandler.get("handler"));
+            ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(headMap, dataJson, 0, (ExcelUtil.DataHandler) dataHandler.get("security/handler"));
             ExcelUtil.downloadExcelFile(response, request, (String) dataHandler.get("fileName"), byteArrayOutputStream);
         } catch (Exception e) {
             setCookieError(request, response);
@@ -264,7 +249,6 @@ public class DormitoryManagerAction extends BaseAction {
      * @return Ajax消息
      */
     @RequestMapping(value = "/ajax_list", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> findDormitoryManagersForAjax(HttpSession session, Integer page, Boolean isSearch, Long companyId, Long companyRoleId, String name, Integer sex, String address, String phone) {
         getSessionRoleId(session);
@@ -280,7 +264,7 @@ public class DormitoryManagerAction extends BaseAction {
             } else {
                 dormitoryManagerMap = dormitoryManagerService.findDormitoryManagersAndCommunity(systemUser, systemRoleId, communityRoleId, subdistrictRoleId, page, null);
             }
-            return setJsonMap(session, dormitoryManagerMap);
+            return setJsonMap(dormitoryManagerMap);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("查找社区楼长失败！", e);
@@ -290,22 +274,19 @@ public class DormitoryManagerAction extends BaseAction {
     /**
      * 通过社区编号加载最后一个编号
      *
-     * @param session         Session对象
      * @param communityId     社区编号
      * @param communityName   社区名称
      * @param subdistrictName 街道办事处名称
      * @return JSON数据
      */
     @RequestMapping(value = "/ajax_id", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> loadDormitoryManagerLastIdForAjax(HttpSession session, Long communityId, String communityName, String subdistrictName) {
-        Map<String, Object> jsonMap = new HashMap<>(5);
+    public Map<String, Object> loadDormitoryManagerLastIdForAjax(Long communityId, String communityName, String subdistrictName) {
+        Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             String lastId = dormitoryManagerService.findLastId(communityId, communityName, subdistrictName);
             jsonMap.put("state", 1);
             jsonMap.put("id", lastId);
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();

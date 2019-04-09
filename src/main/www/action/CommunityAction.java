@@ -1,8 +1,5 @@
 package www.action;
 
-import annotation.RefreshCsrfToken;
-import annotation.SystemUserAuth;
-import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSON;
 import exception.BusinessException;
 import exception.JsonException;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import utils.CsrfTokenUtil;
 import www.entity.Community;
 import www.entity.Subcontractor;
 import www.entity.Subdistrict;
@@ -41,7 +37,6 @@ import java.util.Set;
  *
  * @author 廿二月的天
  */
-@SystemUserAuth
 @Controller
 @RequestMapping("/community")
 public class CommunityAction extends BaseAction {
@@ -76,7 +71,6 @@ public class CommunityAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String communityList(Model model, Integer page) {
         try {
             Map<String, Object> communityMap = communityService.findCommunitiesAndSubdistrict(page, null);
@@ -94,7 +88,6 @@ public class CommunityAction extends BaseAction {
      * @param model 前台模型
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String createCommunity(Model model) {
         try {
@@ -113,7 +106,6 @@ public class CommunityAction extends BaseAction {
      * @param id    编辑的对应编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public String editCommunity(Model model, Long id) {
         try {
@@ -136,7 +128,6 @@ public class CommunityAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @VerifyCSRFToken
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     public String communityCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Community community, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -174,7 +165,6 @@ public class CommunityAction extends BaseAction {
      * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> deleteCommunityForAjax(Long id) {
         Map<String, Object> map = new HashMap<>(3);
@@ -198,7 +188,6 @@ public class CommunityAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/subcontractor/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String subcontractorList(HttpSession session, Model model, Integer page) {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
         @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
@@ -218,7 +207,6 @@ public class CommunityAction extends BaseAction {
      * @param model 前台模型
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/subcontractor/create", method = RequestMethod.GET)
     public String createSubcontractor(Model model, HttpSession session) {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
@@ -239,7 +227,6 @@ public class CommunityAction extends BaseAction {
      * @param id    编辑的对应编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/subcontractor/edit", method = RequestMethod.GET)
     public String editSubcontractor(HttpSession session, Model model, Long id) {
         getSessionRoleId(session);
@@ -265,7 +252,6 @@ public class CommunityAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @VerifyCSRFToken
     @RequestMapping(value = "/subcontractor/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     public String subcontractorCreateOrEditHandle(HttpServletRequest request, HttpSession session, Model model, @Validated Subcontractor subcontractor, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -300,20 +286,17 @@ public class CommunityAction extends BaseAction {
     /**
      * 使用AJAX技术通过社区分包人编号删除社区分包人
      *
-     * @param session Session对象
      * @param id      对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/subcontractor/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> deleteSubcontractorForAjax(HttpSession session, Long id) {
+    public Map<String, Object> deleteSubcontractorForAjax(Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             subcontractorService.deleteObjectById(id);
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除社区分包人成功！");
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
@@ -324,20 +307,17 @@ public class CommunityAction extends BaseAction {
     /**
      * 使用Ajax技术通过社区编号加载社区分包人
      *
-     * @param session     session对象
      * @param communityId 社区编号
      * @return 社区分包人对象集合
      */
     @RequestMapping(value = "/subcontractor/ajax_load", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> loadSubcontractorForAjax(HttpSession session, Long communityId) {
+    public Map<String, Object> loadSubcontractorForAjax(Long communityId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             List<Subcontractor> subcontractors = subcontractorService.findSubcontractors(communityId);
             jsonMap.put("state", 1);
             jsonMap.put("subcontractors", subcontractors);
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
@@ -348,13 +328,13 @@ public class CommunityAction extends BaseAction {
     /**
      * 使用AJAX技术列出社区居委会
      *
+     * @param session Session对象
      * @return Ajax消息
      */
     @RequestMapping(value = "/ajax_select", method = RequestMethod.GET)
-    @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> findCommunityForAjax(HttpSession session) {
-        Map<String, Object> jsonMap = new HashMap<>(4);
+    @ResponseBody
+    public Map<String, Object> findCommunityForAjax(HttpSession session) {
+        Map<String, Object> jsonMap = new HashMap<>(3);
         getSessionRoleId(session);
         try {
             Long roleId = systemUser.getUserRole().getRoleId();
@@ -362,7 +342,6 @@ public class CommunityAction extends BaseAction {
             Set<Subdistrict> subdistricts = subdistrictService.findCommunitiesAndSubdistrictsByRole(systemRoleId, communityRoleId, subdistrictRoleId, roleId, roleLocationId);
             jsonMap.put("state", 1);
             jsonMap.put("subdistricts", subdistricts);
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();

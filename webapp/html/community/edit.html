@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
     <!--/*@thymesVar id="community" type="www.entity.Community"*/-->
-    <head th:replace="layouts/header :: commonHead('社区' + ${community == null ? '添加' : '编辑'} + ' - 社区管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('社区' + ${community == null ? '添加' : '编辑'} + ' - 社区管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var messageErrors = /*[[${messageErrors}]]*/null;
             var community = /*[[${community}]]*/null;
         </script>
@@ -72,7 +71,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input type="hidden" name="_token" v-model="token">
+                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
                             <input type="hidden" name="communityId" v-model="community.communityId" th:if="${community} != null">
                             <input type="hidden" name="_method" value="PUT" th:if="${community} != null">
                             <button class="btn btn-sm btn-primary" type="submit">

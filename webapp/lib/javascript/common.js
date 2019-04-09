@@ -38,10 +38,9 @@ export default {
                     method: "delete",
                     data: {
                         [idField]: id,
-                        _token: vueObj.token
+                        _csrf: vueObj.csrf
                     }
-                }).then((data) => {
-                    vueObj.token = data._token;
+                }).then(data => {
                     if (data.state) {
                         vueObj.$message({
                             message: data.message,

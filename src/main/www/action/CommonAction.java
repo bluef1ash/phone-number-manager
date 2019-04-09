@@ -28,7 +28,23 @@ public class CommonAction extends BaseAction {
     public String noHandlerFound(Model model) {
         Map<String, String> exception = new HashMap<>(2);
         exception.put("message", "找不到此页面！");
-        model.addAttribute("status", 404);
+        model.addAttribute("status", HttpStatus.NOT_FOUND);
+        model.addAttribute("exception", exception);
+        return "exception/default";
+    }
+
+    /**
+     * 权限拒绝异常页面
+     *
+     * @param model 前台模型
+     * @return 异常页面
+     */
+    @RequestMapping("/permissiondenied")
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String permissionDenied(Model model) {
+        Map<String, String> exception = new HashMap<>(2);
+        exception.put("message", "您没有该权限，请联系上级管理用户！");
+        model.addAttribute("status", HttpStatus.BAD_REQUEST.value());
         model.addAttribute("exception", exception);
         return "exception/default";
     }

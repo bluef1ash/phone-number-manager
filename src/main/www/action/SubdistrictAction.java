@@ -1,8 +1,5 @@
 package www.action;
 
-import annotation.RefreshCsrfToken;
-import annotation.SystemUserAuth;
-import annotation.VerifyCSRFToken;
 import exception.BusinessException;
 import exception.JsonException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +13,12 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import utils.CsrfTokenUtil;
 import www.entity.Subdistrict;
 import www.service.SubdistrictService;
 import www.validator.SubdistrictInputValidator;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +29,6 @@ import java.util.Map;
  * @author 廿二月的天
  */
 @Controller
-@SystemUserAuth
 @RequestMapping("/subdistrict")
 public class SubdistrictAction extends BaseAction {
     @Resource
@@ -62,7 +56,6 @@ public class SubdistrictAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String subdistrictList(Model model, Integer page) {
         try {
             Map<String, Object> subdistricts = subdistrictService.findObjects(page, null);
@@ -79,7 +72,6 @@ public class SubdistrictAction extends BaseAction {
      *
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String createSubdistrict() {
         return "subdistrict/edit";
@@ -92,7 +84,6 @@ public class SubdistrictAction extends BaseAction {
      * @param id    编辑的对应编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public String editSubdistrict(Model model, Long id) {
         try {
@@ -113,7 +104,6 @@ public class SubdistrictAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    @VerifyCSRFToken
     public String subdistrictCreateOrEditHandle(Model model, @Validated Subdistrict subdistrict, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
@@ -140,20 +130,17 @@ public class SubdistrictAction extends BaseAction {
     /**
      * 使用AJAX技术通过街道编号删除
      *
-     * @param session session对象
      * @param id 对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> deleteSubdistrictForAjax(HttpSession session, Long id) {
-        Map<String, Object> map = new HashMap<>(4);
+    public Map<String, Object> deleteSubdistrictForAjax(Long id) {
+        Map<String, Object> map = new HashMap<>(3);
         try {
             subdistrictService.deleteObjectById(id);
             map.put("state", 1);
             map.put("message", "删除街道成功！");
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,19 +151,16 @@ public class SubdistrictAction extends BaseAction {
     /**
      * 通过Ajax技术获取街道信息
      *
-     * @param session session对象
      * @return 街道信息
      */
     @RequestMapping(value = "/ajax_load", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> getSubdistrictForAjax(HttpSession session) {
-        Map<String, Object> map = new HashMap<>(4);
+    public Map<String, Object> getSubdistrictForAjax() {
+        Map<String, Object> map = new HashMap<>(3);
         try {
             List<Subdistrict> subdistricts = subdistrictService.findObjects();
             map.put("state", 1);
             map.put("subdistricts", subdistricts);
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();

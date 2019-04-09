@@ -9,7 +9,7 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_subdistrict",
         data: {
-            token: token,
+            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false],
             errorMessages: ["", ""],
@@ -29,7 +29,7 @@ $(document).ready(() => {
              */
             subdistrictSubmit(event) {
                 let message = null;
-                if (this.token === null || this.token === "") {
+                if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
                 if (this.subdistrict.subdistrictName === "" || this.subdistrict.subdistrictName === null) {

@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
-    <head th:replace="layouts/header :: commonHead('系统用户角色列表 - 系统用户角色管理 - 系统管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户角色列表 - 系统用户角色管理 - 系统管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var userRoles = /*[[${userRoles}]]*/null;
         </script>
         <script type="text/javascript" th:src="@{'/javascript/dist/role-list-bundle.js'}"></script>

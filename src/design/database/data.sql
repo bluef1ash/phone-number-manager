@@ -87,7 +87,7 @@ VALUES (1, '系统管理员', '系统管理员', 0),
 -- 添加基础系统用户
 INSERT INTO `phone_number`.`pm_system_users`
     (`system_user_id`, `username`, `password`, `role_id`)
-VALUES (1, 'admin', md5('123456'), 1);
+VALUES (1, 'admin', '$2a$10$m/bor9vovQB6TfYACe9mbOaRaYJyl4.YMeOQQujRXBaSGKGpTuiba', 1);
 -- 添加系统配置
 INSERT INTO `phone_number`.`pm_configurations`
     (`key`, `type`, `value`, `description`, `key_is_changed`)

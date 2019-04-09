@@ -11,7 +11,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import utils.CommonUtil;
-import utils.CsrfTokenUtil;
 import utils.ExcelUtil;
 import www.entity.Community;
 import www.entity.SystemUser;
@@ -132,16 +131,14 @@ abstract class BaseAction {
     /**
      * 设置返回JSON数据
      *
-     * @param session session对象
      * @param dataMap 数据对象集合
      * @return JSON数据
      */
-    Map<String, Object> setJsonMap(HttpSession session, Map<String, Object> dataMap) {
-        Map<String, Object> jsonMap = new HashMap<>(5);
+    Map<String, Object> setJsonMap(Map<String, Object> dataMap) {
+        Map<String, Object> jsonMap = new HashMap<>(4);
         jsonMap.put("state", 1);
         jsonMap.put("data", dataMap.get("data"));
         jsonMap.put("pageInfo", dataMap.get("pageInfo"));
-        jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
         return jsonMap;
     }
 

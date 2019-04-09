@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import utils.CsrfTokenUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -65,13 +64,12 @@ public class ControllerAdvisor {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public Map<String, Object> json(JsonException exception) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(4);
         Map<String, String> messageError = new HashMap<>(2);
         messageError.put("defaultMessage", exception.getMessage());
         jsonMap.put("state", 0);
         jsonMap.put("messageError", messageError);
         jsonMap.put("status", HttpStatus.BAD_REQUEST.value());
-        jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
         return jsonMap;
     }
 }

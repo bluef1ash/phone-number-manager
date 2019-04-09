@@ -1,11 +1,10 @@
 package utils;
 
-import java.security.MessageDigest;
-
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
 
 /**
  * 加解密工具类

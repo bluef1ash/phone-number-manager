@@ -9,7 +9,7 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_resident",
         data: {
-            token: token,
+            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", "", "", ""],
@@ -94,11 +94,10 @@ $(document).ready(() => {
                         url: loadSubcontractorsUrl,
                         method: "get",
                         data: {
-                            _token: this.token,
+                            _csrf: this.csrf,
                             communityId: this.communityResident.communityId
                         }
                     }).then(item => {
-                        this.token = item._token;
                         if (item.state) {
                             this.subcontractors = item.subcontractors;
                         }
@@ -111,7 +110,7 @@ $(document).ready(() => {
              */
             residentSubmit(event) {
                 let message = null;
-                if (this.token === null || this.token === "") {
+                if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
                 if (this.communityResident.communityResidentName === "" || this.communityResident.communityResidentName === null) {

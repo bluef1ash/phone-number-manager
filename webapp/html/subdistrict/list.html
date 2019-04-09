@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
-    <head th:replace="layouts/header :: commonHead('街道办事处列表 - 街道办事处管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('街道办事处列表 - 街道办事处管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var subdistricts = /*[[${subdistricts}]]*/null;
             var deleteUrl = /*[[@{'/subdistrict/ajax_delete'}]]*/null;
         </script>

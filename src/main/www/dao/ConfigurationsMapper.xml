@@ -16,7 +16,7 @@
             `key_is_changed`
         FROM `pm_configurations`
     </select>
-    <select id="selectConfigurationByKey" resultMap="configurationResultMap">
+    <select id="selectObjectById" resultMap="configurationResultMap">
         SELECT
             `key`,
             `type`,
@@ -51,7 +51,7 @@
         </set>
         WHERE `key` = #{key}
     </update>
-    <delete id="deleteConfigurationByKey">
+    <delete id="deleteObjectById">
         DELETE FROM `pm_configurations`
         WHERE `key` = #{key}
     </delete>

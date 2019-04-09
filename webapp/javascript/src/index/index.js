@@ -10,7 +10,7 @@ $(document).ready(() => {
     new Vue({
         el: "#index",
         data: {
-            token: token,
+            csrf: csrf,
             systemUser: systemUser,
             systemRoleId: systemRoleId,
             communityRoleId: communityRoleId,
@@ -77,10 +77,9 @@ $(document).ready(() => {
                 url: companySelectUrl,
                 method: "get",
                 data: {
-                    _token: this.token
+                    _csrf: this.csrf
                 }
             }).then(data => {
-                this.token = data._token;
                 if (data.state === 1) {
                     this.allSubdistricts = data.subdistricts;
                     data.subdistricts.forEach(item => {
@@ -156,16 +155,14 @@ $(document).ready(() => {
                     method: "get",
                     async: false,
                     data: {
-                        _token: this.token,
+                        _csrf: this.csrf,
                         getType,
                         companyType,
                         id
                     }
                 }).then(data => {
-                    this.token = data._token;
                     this.percentCountTitle = "";
                     if (data.state === 1) {
-                        console.log(data);
                         if (data.baseMessage) {
                             this.addCount = data.baseMessage.addCount;
                             this.haveToCount = data.baseMessage.haveToCount;

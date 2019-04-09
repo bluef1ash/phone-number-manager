@@ -8,7 +8,7 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_privilege",
         data: {
-            token: token,
+            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false],
             errorMessages: ["", "", "", "", ""],
@@ -27,7 +27,7 @@ $(document).ready(() => {
              */
             userPrivilegeSubmit(event) {
                 let message = null;
-                if (this.token === null || this.token === "") {
+                if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
                 if (this.userPrivilege.privilegeName === "" || this.userPrivilege.privilegeName === null) {

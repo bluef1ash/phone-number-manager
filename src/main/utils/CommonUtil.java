@@ -1,7 +1,6 @@
 package utils;
 
 
-import constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,6 +62,15 @@ public class CommonUtil {
      * 半角空格的值，在ASCII中为32(Decimal)半角空格
      */
     private static final char DBC_SPACE = ' ';
+
+    /**
+     * 字符串因子
+     */
+    public static final String HEX_NUMBER_STRING = "0123456789ABCDEF";
+    /**
+     * 密码加盐数量
+     */
+    public static final Integer SALT_LENGTH = 12;
 
     /**
      * 私有构造方法，防止类的实例化，因为工具类不需要实例化。
@@ -803,7 +811,7 @@ public class CommonUtil {
         char[] hexChars = hex.toCharArray();
         for (int i = 0; i < len; i++) {
             int pos = i * 2;
-            result[i] = (byte) (SystemConstant.HEX_NUMBER_STRING.indexOf(hexChars[pos]) << 4 | SystemConstant.HEX_NUMBER_STRING.indexOf(hexChars[pos + 1]));
+            result[i] = (byte) (HEX_NUMBER_STRING.indexOf(hexChars[pos]) << 4 | HEX_NUMBER_STRING.indexOf(hexChars[pos + 1]));
         }
         return result;
     }

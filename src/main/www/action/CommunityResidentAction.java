@@ -1,8 +1,5 @@
 package www.action;
 
-import annotation.RefreshCsrfToken;
-import annotation.SystemUserAuth;
-import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import exception.BusinessException;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import utils.CommonUtil;
-import utils.CsrfTokenUtil;
 import utils.ExcelUtil;
 import www.entity.Community;
 import www.entity.CommunityResident;
@@ -42,7 +38,6 @@ import java.util.Map;
  *
  * @author 廿二月的天
  */
-@SystemUserAuth
 @Controller
 @RequestMapping("/resident")
 public class CommunityResidentAction extends BaseAction {
@@ -73,7 +68,6 @@ public class CommunityResidentAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String communityResidentList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
@@ -95,7 +89,6 @@ public class CommunityResidentAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String createCommunityResident(HttpSession session, Model model) {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
@@ -118,7 +111,6 @@ public class CommunityResidentAction extends BaseAction {
      * @param id      需要编辑的社区居民的编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public String editCommunityResident(HttpSession session, Model model, Long id) {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
@@ -146,7 +138,6 @@ public class CommunityResidentAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    @VerifyCSRFToken
     public String communityResidentCreateOrEditHandle(HttpServletRequest httpServletRequest, HttpSession session, Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
@@ -177,22 +168,19 @@ public class CommunityResidentAction extends BaseAction {
     }
 
     /**
-     * 使用AJAX技术通过社区居民ID删除社区居民
+     * 使用AJAX技术通过社区居民编号删除社区居民
      *
-     * @param session session对象
      * @param id      对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> deleteCommunityResidentForAjax(HttpSession session, Long id) {
-        Map<String, Object> jsonMap = new HashMap<>(4);
+    public Map<String, Object> deleteCommunityResidentForAjax(Long id) {
+        Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             communityResidentService.deleteObjectById(id);
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除社区居民成功！");
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
@@ -208,16 +196,13 @@ public class CommunityResidentAction extends BaseAction {
      * @param subdistrictId 导入的街道编号
      * @return Ajax信息
      */
-    @SystemUserAuth(enforce = true)
     @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> communityResidentImportAsSystem(HttpSession session, HttpServletRequest request, Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             Workbook workbook = uploadExcel(request, session, "excel_resident_title");
             jsonMap.put("state", communityResidentService.addCommunityResidentFromExcel(workbook, subdistrictId, configurationsMap));
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
@@ -266,7 +251,6 @@ public class CommunityResidentAction extends BaseAction {
      * @return Ajax消息
      */
     @RequestMapping(value = "/ajax_list", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> findCommunityResidentsForAjax(HttpSession session, Integer page, Long companyId, Long companyRoleId, String name, String address, String phone, Boolean isSearch) {
         getSessionRoleId(session);
@@ -281,7 +265,7 @@ public class CommunityResidentAction extends BaseAction {
             } else {
                 communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(systemUser, systemRoleId, communityRoleId, subdistrictRoleId, page, null);
             }
-            return setJsonMap(session, communityResidentMap);
+            return setJsonMap(communityResidentMap);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("查找社区居民失败！", e);

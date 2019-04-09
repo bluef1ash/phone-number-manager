@@ -1,8 +1,5 @@
 package www.action;
 
-import annotation.RefreshCsrfToken;
-import annotation.SystemUserAuth;
-import annotation.VerifyCSRFToken;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import exception.BusinessException;
@@ -15,7 +12,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import utils.CommonUtil;
-import utils.CsrfTokenUtil;
 import www.entity.*;
 import www.service.*;
 import www.validator.SystemUserInputValidator;
@@ -34,7 +30,6 @@ import java.util.*;
  * @author 廿二月的天
  */
 @Controller
-@SystemUserAuth
 @RequestMapping("/system/user_role")
 public class UserAndRoleAction extends BaseAction {
     @Resource
@@ -72,7 +67,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/user/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String systemUserList(HttpSession session, Model model, Integer page) {
         try {
             Map<String, Object> systemUsers = systemUserService.findSystemUsersAndRoles(page, null);
@@ -96,7 +90,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return Ajax信息
      */
     @RequestMapping(value = "/user/ajax_user_lock", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Integer> systemUserLockedForAjax(HttpSession session, Long systemUserId, Boolean locked) {
         Map<String, Integer> jsonMap = new HashMap<>(3);
@@ -127,7 +120,6 @@ public class UserAndRoleAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/user/create", method = RequestMethod.GET)
     public String createSystemUser(HttpSession session, Model model) {
         setRoleId(session, model);
@@ -148,7 +140,6 @@ public class UserAndRoleAction extends BaseAction {
      * @param id      编辑的对应编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/user/edit", method = RequestMethod.GET)
     public String editSystemUser(HttpSession session, Model model, Integer id) {
         setRoleId(session, model);
@@ -174,7 +165,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/user/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    @VerifyCSRFToken
     public String systemUserAddOrEditHandle(HttpSession session, HttpServletRequest request, Model model, @Validated SystemUser systemUser, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             setRoleId(session, model);
@@ -186,14 +176,14 @@ public class UserAndRoleAction extends BaseAction {
         if ("POST".equals(request.getMethod())) {
             // 添加
             try {
-                systemUserService.createSystemUser(systemUser);
+                systemUserService.createObject(systemUser);
             } catch (Exception e) {
                 throw new BusinessException("添加用户失败！", e);
             }
         } else {
             // 修改
             try {
-                systemUserService.updateSystemUser(systemUser);
+                systemUserService.createObject(systemUser);
             } catch (Exception e) {
                 throw new BusinessException("修改用户失败！", e);
             }
@@ -209,7 +199,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return Ajax信息
      */
     @RequestMapping(value = "/user/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> deleteSystemUserForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
@@ -224,7 +213,6 @@ public class UserAndRoleAction extends BaseAction {
                 map.put("state", 1);
                 map.put("message", "删除系统用户成功！");
             }
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();
@@ -240,7 +228,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 单位信息
      */
     @RequestMapping(value = "/user/ajax_get_companies", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> getCompanyForAjax(HttpSession session, Long roleId, Long roleLocationId) {
         @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
@@ -253,7 +240,7 @@ public class UserAndRoleAction extends BaseAction {
                 jsonArray = (JSONArray) JSON.toJSON(subdistrictService.findObjectsForIdAndName());
             }
             Map<String, Object> jsonMap = new HashMap<>(3);
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
+            jsonMap.put("state", 1);
             jsonMap.put("data", jsonArray);
             return jsonMap;
         } catch (Exception e) {
@@ -269,7 +256,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 单位信息
      */
     @RequestMapping(value = "/user/ajax_get_company", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
     public List<?> getCompanyIdForAjax(String roleId) {
         try {
@@ -304,19 +290,16 @@ public class UserAndRoleAction extends BaseAction {
     /**
      * 使用Ajax技术获取所有系统用户
      *
-     * @param session session对象
      * @return Ajax信息
      */
     @RequestMapping(value = "/user/ajax_get", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> getSystemUsersForAjax(HttpSession session) {
-        Map<String, Object> map = new HashMap<>(4);
+    public Map<String, Object> getSystemUsersForAjax() {
+        Map<String, Object> map = new HashMap<>(3);
         try {
             List<SystemUser> systemUsers = systemUserService.findSystemUsers();
             map.put("state", 1);
             map.put("systemUsers", systemUsers);
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();
@@ -332,7 +315,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/role/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String systemUserRoleList(Model model, Integer page) {
         try {
             Map<String, Object> userRoles = userRoleService.findObjects(page, null);
@@ -350,7 +332,6 @@ public class UserAndRoleAction extends BaseAction {
      * @param model 前台模型
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/role/create", method = RequestMethod.GET)
     public String createSystemUserRole(Model model) {
         try {
@@ -371,7 +352,6 @@ public class UserAndRoleAction extends BaseAction {
      * @param id    角色编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/role/edit", method = RequestMethod.GET)
     public String editSystemUserRole(Model model, Long id) {
         try {
@@ -398,7 +378,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/role/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    @VerifyCSRFToken
     public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserRole userRole, @RequestParam Long[] privilegeIds, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
@@ -437,7 +416,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return Ajax信息
      */
     @RequestMapping(value = "/role/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, Long id) {
         Map<String, Object> map = new HashMap<>(3);
@@ -455,7 +433,6 @@ public class UserAndRoleAction extends BaseAction {
                 map.put("state", 0);
                 map.put("message", "不允许删除系统用户角色！");
             }
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();
@@ -471,7 +448,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/privilege/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String systemUserPrivilegeList(Model model, Integer page) {
         try {
             Map<String, Object> userPrivileges = userPrivilegeService.findObjects(page, null);
@@ -489,7 +465,6 @@ public class UserAndRoleAction extends BaseAction {
      * @param model 前台模型对象
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/privilege/create", method = RequestMethod.GET)
     public String createSystemUserPrivilege(Model model) {
         List<UserPrivilege> userPrivileges;
@@ -509,7 +484,6 @@ public class UserAndRoleAction extends BaseAction {
      * @param id    权限编号
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/privilege/edit", method = RequestMethod.GET)
     public String editSystemUserPrivilege(Model model, Long id) {
         try {
@@ -534,7 +508,6 @@ public class UserAndRoleAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/privilege/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    @VerifyCSRFToken
     public String systemUserPrivilegeCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserPrivilege userPrivilege, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
@@ -563,20 +536,17 @@ public class UserAndRoleAction extends BaseAction {
     /**
      * 使用AJAX技术通过系统用户权限编号删除系统用户权限
      *
-     * @param session Session对象
-     * @param id      系统用户权限编号
+     * @param id 系统用户权限编号
      * @return Ajax消息
      */
     @RequestMapping(value = "/privilege/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> deleteSystemUserPrivilegeForAjax(HttpSession session, Long id) {
+    public Map<String, Object> deleteSystemUserPrivilegeForAjax(Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             userPrivilegeService.deleteObjectById(id);
             map.put("state", 1);
             map.put("message", "删除用户权限成功！");
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();
@@ -587,20 +557,16 @@ public class UserAndRoleAction extends BaseAction {
     /**
      * 通过AJAX技术获取系统用户角色拥有的权限
      *
-     * @param session session对象
-     * @param roleId  系统用户角色编号
+     * @param roleId 系统用户角色编号
      * @return Ajax消息
      */
-    @SystemUserAuth(unAuth = true)
     @RequestMapping(value = "/privilege/ajax_get_privileges", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
-    public Map<String, Object> getPrivilegesByRoleIdForAjax(HttpSession session, Long roleId) {
+    public Map<String, Object> getPrivilegesByRoleIdForAjax(Long roleId) {
         try {
             Set<UserPrivilege> privileges = userPrivilegeService.findPrivilegesByRoleId(roleId);
-            Map<String, Object> map = new HashMap<>(3);
+            Map<String, Object> map = new HashMap<>(2);
             map.put("privileges", privileges);
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();

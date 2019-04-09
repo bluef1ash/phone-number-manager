@@ -11,7 +11,7 @@ $(document).ready(() => {
     new Vue({
         el: "#privilege_table",
         data: {
-            token: token,
+            csrf: csrf,
             userPrivileges: userPrivileges
         },
         methods: {

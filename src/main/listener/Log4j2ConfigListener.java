@@ -1,11 +1,10 @@
 package listener;
 
-import java.util.Enumeration;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-
-import org.apache.logging.log4j.core.config.Configurator;
+import java.util.Enumeration;
 
 public class Log4j2ConfigListener implements ServletContextListener {
     private static final String KEY = "log4j.configurationFile";

@@ -11,7 +11,7 @@ $(document).ready(() => {
     new Vue({
         el: "#subdistrict_list",
         data: {
-            token: token,
+            csrf: csrf,
             subdistricts: subdistricts
         },
         methods: {

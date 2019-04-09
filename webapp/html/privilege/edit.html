@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
     <!--/*@thymesVar id="userPrivilege" type="www.entity.UserPrivilege"*/-->
-    <head th:replace="layouts/header :: commonHead('系统用户权限' + ${userPrivilege == null ? '添加' : '编辑'} + ' - 系统用户权限管理 - 系统管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户权限' + ${userPrivilege == null ? '添加' : '编辑'} + ' - 系统用户权限管理 - 系统管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var messageErrors = /*[[${messageErrors}]]*/null;
             var userPrivilege = /*[[${userPrivilege}]]*/null;
             var userPrivileges = /*[[${userPrivileges}]]*/null;
@@ -94,7 +93,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input type="hidden" name="_token" v-model="token">
+                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
                             <input type="hidden" name="privilegeId" v-model="userPrivilege.privilegeId" th:if="${userPrivilege} != null">
                             <input type="hidden" name="_method" value="PUT" th:if="${userPrivilege} != null">
                             <button class="btn btn-sm btn-primary" type="submit">

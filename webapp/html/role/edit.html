@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
     <!--/*@thymesVar id="userRole" type="www.entity.UserRole"*/-->
-    <head th:replace="layouts/header :: commonHead('系统用户角色' + ${userRole == null ? '添加' : '编辑'} + ' - 系统用户角色管理 - 系统管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户角色' + ${userRole == null ? '添加' : '编辑'} + ' - 系统用户角色管理 - 系统管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var messageErrors = /*[[${messageErrors}]]*/null;
             var userRole = /*[[${userRole}]]*/null;
             var userRoles = /*[[${userRoles}]]*/null;
@@ -79,7 +78,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input type="hidden" name="_token" v-model="token">
+                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
                             <input type="hidden" name="roleId" v-model="userRole.roleId" th:if="${userRole} != null">
                             <input type="hidden" name="_method" value="PUT" th:if="${userRole} != null">
                             <button class="btn btn-sm btn-primary" type="submit">

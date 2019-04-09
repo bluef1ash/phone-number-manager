@@ -11,7 +11,7 @@ $(document).ready(() => {
     new Vue({
         el: "#user_list",
         data: {
-            token: token,
+            csrf: csrf,
             systemAdministratorId: systemAdministratorId,
             systemUsers: systemUsers
         },
@@ -31,14 +31,14 @@ $(document).ready(() => {
                     return;
                 }
                 $.ajax({
-                    url: "/system/user_role/user/ajax_user_lock",
+                    url: userLockUrl,
                     method: "get",
                     data: {
-                        _token: this.token,
+                        _csrf: this.csrf,
                         systemUserId: systemUserId,
                         locked: isLocked
                     }
-                }).then((data) => {
+                }).then(data => {
                     let message = null;
                     let messageType = "success";
                     if (data.state === 1) {

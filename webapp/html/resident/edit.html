@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
     <!--/*@thymesVar id="communityResident" type="www.entity.CommunityResident"*/-->
-    <head th:replace="layouts/header :: commonHead('社区居民' + ${communityResident == null ? '添加' : '编辑'} + ' - 社区居民管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('社区居民' + ${communityResident == null ? '添加' : '编辑'} + ' - 社区居民管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var messageErrors = /*[[${messageErrors}]]*/null;
             var communityResident = /*[[${communityResident}]]*/null;
             var communities = /*[[${communities}]]*/null;
@@ -112,7 +111,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input type="hidden" name="_token" v-model="token">
+                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
                             <input type="hidden" name="communityResidentId" v-model="communityResident.communityResidentId" th:if="${communityResident} != null">
                             <input type="hidden" name="_method" value="PUT" th:if="${communityResident} != null">
                             <button class="btn btn-sm btn-primary" type="submit">

@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
-    <head th:replace="layouts/header :: commonHead('系统用户列表 - 系统用户管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('系统用户列表 - 系统用户管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var systemAdministratorId = /*[[${systemAdministratorId}]]*/null;
             var systemUsers = /*[[${systemUsers}]]*/null;
             var deleteUrl = /*[[@{'/system/user_role/user/ajax_delete'}]]*/null;
+            var userLockUrl = /*[[@{'/system/user_role/user/ajax_user_lock'}]]*/null;
         </script>
         <script type="text/javascript" th:src="@{'/javascript/dist/system-user-list-bundle.js'}"></script>
     </head>

@@ -11,7 +11,7 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_configuration",
         data: {
-            token: token,
+            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", ""],
@@ -26,11 +26,10 @@ $(document).ready(() => {
                 if (this.configuration.type === 4 && this.users.length === 0) {
                     this.configuration.value = 0;
                     $.ajax({
-                        url: "/system/user_role/user/ajax_get",
+                        url: loadUsersUrl,
                         method: "get",
-                        async: false,
                         data: {
-                            _token: this.token
+                            _csrf: this.csrf
                         }
                     }).then(data => {
                         this.users = data.systemUsers.map(item => ({id: item.systemUserId, name: item.username}));
@@ -45,7 +44,7 @@ $(document).ready(() => {
              */
             configurationSubmit(event) {
                 let message = null;
-                if (this.token === null || this.token === "") {
+                if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
                 if (this.configuration.key === "" || this.configuration.key === null) {

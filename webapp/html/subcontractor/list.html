@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
-    <head th:replace="layouts/header :: commonHead('社区分包人列表 - 社区管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('社区分包人列表 - 社区管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var subcontractors = /*[[${subcontractors}]]*/null;
             var deleteUrl = /*[[@{'/community/subcontractor/ajax_delete'}]]*/null;
         </script>

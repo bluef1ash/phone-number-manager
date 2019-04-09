@@ -1,7 +1,5 @@
 package www.action;
 
-import annotation.RefreshCsrfToken;
-import annotation.VerifyCSRFToken;
 import exception.BusinessException;
 import exception.JsonException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +13,12 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import utils.CsrfTokenUtil;
 import www.entity.Configuration;
 import www.service.ConfigurationService;
 import www.validator.ConfigurationInputValidator;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +56,6 @@ public class SystemAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/configuration/list", method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String configurationList(Model model, Integer page) {
         try {
             Map<String, Object> configurationsMap = configurationService.findObjects(page, null);
@@ -77,7 +72,6 @@ public class SystemAction extends BaseAction {
      *
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/configuration/create", method = RequestMethod.GET)
     public String createConfiguration() {
         return "configuration/edit";
@@ -90,11 +84,10 @@ public class SystemAction extends BaseAction {
      * @param key   编辑的对应系统配置项关键字名称
      * @return 视图页面
      */
-    @RefreshCsrfToken
     @RequestMapping(value = "/configuration/edit", method = RequestMethod.GET)
     public String editConfiguration(Model model, String key) {
         try {
-            Configuration configuration = configurationService.findConfigurationByKey(key);
+            Configuration configuration = configurationService.findObject(key);
             model.addAttribute("configuration", configuration);
             return "configuration/edit";
         } catch (Exception e) {
@@ -111,7 +104,6 @@ public class SystemAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @VerifyCSRFToken
     @RequestMapping(value = "/configuration/handle", method = {RequestMethod.POST, RequestMethod.PUT})
     public String configurationCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Configuration configuration, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -146,15 +138,13 @@ public class SystemAction extends BaseAction {
     /**
      * 使用AJAX技术通过系统配置编号删除
      *
-     * @param session session对象
      * @param id 对应系统配置项关键字名称
      * @return Ajax信息
      */
     @RequestMapping(value = "/configuration/ajax_delete", method = RequestMethod.DELETE)
-    @VerifyCSRFToken
-    public @ResponseBody
-    Map<String, Object> deleteConfigurationForAjax(HttpSession session, String id) {
-        Map<String, Object> map = new HashMap<>(4);
+    @ResponseBody
+    public Map<String, Object> deleteConfigurationForAjax(String id) {
+        Map<String, Object> map = new HashMap<>(3);
         try {
             if (configurationService.deleteConfigurationByKey(id)) {
                 map.put("state", 1);
@@ -163,7 +153,6 @@ public class SystemAction extends BaseAction {
                 map.put("state", 0);
                 map.put("message", "不允许删除内置系统配置");
             }
-            map.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return map;
         } catch (Exception e) {
             e.printStackTrace();

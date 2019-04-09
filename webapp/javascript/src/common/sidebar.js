@@ -4,13 +4,13 @@ $(document).ready(() => {
     new Vue({
         el: "#sidebar",
         data: {
-            token: token,
+            csrf: csrf,
             getMenuUrl: getMenuUrl,
             userPrivileges: [],
             currentUri: null
         },
         created() {
-            let arrUrl = document.location.toString().split("//");
+            let arrUrl = location.toString().split("//");
             this.currentUri = arrUrl[1].substring(arrUrl[1].indexOf("/"));
             if (this.currentUri.indexOf("?") !== -1) {
                 this.currentUri = this.currentUri.split("?")[0];
@@ -19,7 +19,7 @@ $(document).ready(() => {
                 url: this.getMenuUrl,
                 method: "get",
                 data: {
-                    _token: this.token,
+                    _csrf: this.csrf,
                     isDisplay: 1
                 }
             }).then(data => {

@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="layouts/header :: commonHead('登录', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('登录', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var captchaUrl = /*[[@{'/login/captcha'}]]*/null;
         </script>
         <script type="text/javascript" th:src="@{'/javascript/dist/login-bundle.js'}"></script>

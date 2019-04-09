@@ -21,7 +21,7 @@ $(document).ready(() => {
             roleId: user.roleId,
             roleLocationId: user.roleLocationId,
             isLocked: user.isLocked,
-            token: token,
+            csrf: csrf,
             subdistricts: [],
             subdistrictId: -1,
             communities: [],
@@ -51,17 +51,16 @@ $(document).ready(() => {
                 }
                 if (this.roleId !== null && this.roleId !== 0 && this.roleId !== 1) {
                     $.ajax({
-                        url: "/system/user_role/user/ajax_get_companies",
+                        url: loadCompaniesUrl,
                         method: "get",
                         async: false,
                         data: {
                             roleId: roleId,
                             roleLocationId: roleLocationId,
-                            _token: this.token
+                            _csrf: this.csrf
                         }
-                    }).then((data) => {
+                    }).then(data => {
                         if (data) {
-                            this.token = data._token;
                             if (roleLocationId === null) {
                                 this.subdistricts = data.data;
                             } else {
@@ -87,7 +86,7 @@ $(document).ready(() => {
              */
             userSubmit(event) {
                 let message = null;
-                if (this.token === null || this.token === "") {
+                if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
                 if (this.username === "" || this.username === null) {

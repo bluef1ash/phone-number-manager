@@ -9,7 +9,7 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_role",
         data: {
-            token: token,
+            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false],
             errorMessages: ["", "", "", "", ""],
@@ -77,7 +77,7 @@ $(document).ready(() => {
              */
             userRoleSubmit(event) {
                 let message = null;
-                if (this.token === null || this.token === "") {
+                if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
                 if (this.userRole.roleName === "" || this.userRole.roleName === null) {

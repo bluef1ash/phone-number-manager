@@ -1,19 +1,20 @@
 package www.service.impl;
 
-import constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import utils.CommonUtil;
-import utils.DateUtil;
 import www.entity.Configuration;
 import www.entity.SystemUser;
 import www.entity.UserPrivilege;
 import www.service.SystemUserService;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
+import javax.servlet.http.HttpSession;
 import java.util.*;
 
 /**
@@ -22,16 +23,14 @@ import java.util.*;
  * @author 廿二月的天
  */
 @Service("systemUserService")
-public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implements SystemUserService {
+public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implements SystemUserService, UserDetailsService {
+
+    @Resource
+    private HttpServletRequest request;
 
     @Override
-    public Map<String, Object> login(HttpServletRequest request, SystemUser systemUser) throws Exception {
-        Map<String, Object> map = new HashMap<>(6);
-        SystemUser user = systemUsersDao.selectSystemUserAndRoleAndPrivilegesByName(systemUser.getUsername());
-        user.setLoginTime(DateUtil.getTimestamp(new Date()));
-        user.setLoginIp(CommonUtil.getIp(request));
-        systemUsersDao.updateObject(user);
-        user.setPassword(null);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        SystemUser systemUser = systemUsersDao.selectSystemUserAndRoleAndPrivilegesByName(username);
         List<Configuration> configurations = configurationsDao.selectObjectsAll();
         Map<String, Object> configurationsMap = new HashMap<>(configurations.size() + 1);
         for (Configuration configuration : configurations) {
@@ -41,35 +40,33 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
         Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
         Set<UserPrivilege> userPrivilegesAll = new LinkedHashSet<>(userPrivilegesDao.selectObjectsAll());
         Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
-        if (systemAdministratorId.equals(user.getSystemUserId())) {
+        if (systemAdministratorId.equals(systemUser.getSystemUserId())) {
             userPrivileges = userPrivilegesAll;
         } else {
-            Set<UserPrivilege> privileges = user.getUserRole().getUserPrivileges();
+            Set<UserPrivilege> privileges = systemUser.getUserRole().getUserPrivileges();
             for (UserPrivilege privilege : privileges) {
                 userPrivileges.add(privilege);
-                recursionPrivileges(userPrivilegesAll, privilege.getPrivilegeId(), userPrivileges);
+                userPrivileges.addAll(recursionPrivileges(userPrivilegesAll, privilege.getPrivilegeId()));
             }
+            systemUser.getUserRole().setUserPrivileges(userPrivileges);
         }
-        map.put("state", 1);
-        map.put("message", "登录成功！");
-        map.put("systemUser", user);
-        map.put("userPrivileges", userPrivileges);
-        map.put("configurationsMap", configurationsMap);
-        return map;
+        HttpSession session = request.getSession();
+        session.setAttribute("systemUser", systemUser);
+        session.setAttribute("userPrivileges", userPrivileges);
+        session.setAttribute("configurationsMap", configurationsMap);
+        return systemUser;
     }
 
     @Override
-    public long createSystemUser(SystemUser systemUser) throws Exception {
-        if (StringUtils.isNotEmpty(systemUser.getPassword())) {
-            systemUser.setPassword(CommonUtil.getMd5String(systemUser.getPassword()));
-        }
+    public long createObject(SystemUser systemUser) throws Exception {
         return baseDao.insertObject(systemUser);
     }
 
     @Override
-    public int updateSystemUser(SystemUser systemUser) throws Exception {
+    public int updateObject(SystemUser systemUser) throws Exception {
         if (StringUtils.isNotEmpty(systemUser.getPassword())) {
-            systemUser.setPassword(getEncryptedPassword(systemUser.getPassword()));
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+            systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
         }
         return systemUsersDao.updateObject(systemUser);
     }
@@ -97,52 +94,20 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
     }
 
     /**
-     * 获得加密后的16进制形式口令
-     *
-     * @param password 需要加密的密码字符串
-     * @return 加密完成的字符串
-     * @throws Exception 加密异常
-     */
-    private String getEncryptedPassword(String password) throws Exception {
-        //声明加密后的口令数组变量
-        byte[] pwd;
-        //随机数生成器
-        SecureRandom random = new SecureRandom();
-        //声明盐数组变量   12
-        byte[] salt = new byte[SystemConstant.SALT_LENGTH];
-        //将随机数放入盐变量中
-        random.nextBytes(salt);
-        //创建消息摘要
-        MessageDigest md = MessageDigest.getInstance(SystemConstant.PASSWORD_MODE);
-        //将盐数据传入消息摘要对象
-        md.update(salt);
-        //将口令的数据传给消息摘要对象
-        md.update(password.getBytes(StandardCharsets.UTF_8));
-        //获得消息摘要的字节数组
-        byte[] digest = md.digest();
-        //因为要在口令的字节数组中存放盐，所以加上盐的字节长度
-        pwd = new byte[digest.length + SystemConstant.SALT_LENGTH];
-        //将盐的字节拷贝到生成的加密口令字节数组的前12个字节，以便在验证口令时取出盐
-        System.arraycopy(salt, 0, pwd, 0, SystemConstant.SALT_LENGTH);
-        //将消息摘要拷贝到加密口令字节数组从第13个字节开始的字节
-        System.arraycopy(digest, 0, pwd, SystemConstant.SALT_LENGTH, digest.length);
-        //将字节数组格式加密后的口令转化为16进制字符串格式的口令
-        return CommonUtil.byte2HexString(pwd);
-    }
-
-    /**
      * 递归系统用户权限
      *
      * @param userPrivilegesAll 全部的系统权限
      * @param privilegeId       上级系统权限编号
-     * @param userPrivileges    处理后的系统权限集合
+     * @return 处理后的系统权限集合
      */
-    private void recursionPrivileges(Set<UserPrivilege> userPrivilegesAll, Long privilegeId, Set<UserPrivilege> userPrivileges) {
-        for (UserPrivilege up : userPrivilegesAll) {
-            if (up.getHigherPrivilege().equals(privilegeId)) {
-                userPrivileges.add(up);
-                recursionPrivileges(userPrivilegesAll, up.getPrivilegeId(), userPrivileges);
+    private Set<UserPrivilege> recursionPrivileges(Set<UserPrivilege> userPrivilegesAll, Long privilegeId) {
+        Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
+        for (UserPrivilege userPrivilege : userPrivilegesAll) {
+            if (userPrivilege.getHigherPrivilege().equals(privilegeId)) {
+                userPrivileges.add(userPrivilege);
+                userPrivileges.addAll(recursionPrivileges(userPrivilegesAll, userPrivilege.getPrivilegeId()));
             }
         }
+        return userPrivileges;
     }
 }

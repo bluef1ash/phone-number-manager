@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
-    <head th:replace="layouts/header :: commonHead('首页', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('首页', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var token = /*[[${_token}]]*/null;
             var systemUser = /*[[${systemUser}]]*/null;
             var systemRoleId = /*[[${systemRoleId}]]*/null;
             var communityRoleId = /*[[${communityRoleId}]]*/null;

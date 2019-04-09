@@ -9,7 +9,7 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_dormitory",
         data: {
-            token: token,
+            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false, false, false, false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
@@ -91,7 +91,7 @@ $(document).ready(() => {
                         url: loadDormitoryManagerLastIdUrl,
                         method: "get",
                         data: {
-                            _token: this.token,
+                            _csrf: this.csrf,
                             communityId: this.dormitoryManager.communityId,
                             subdistrictName: this.subdistrictName,
                             communityName: this.communityName
@@ -112,11 +112,10 @@ $(document).ready(() => {
                         url: loadSubcontractorsUrl,
                         method: "get",
                         data: {
-                            _token: this.token,
+                            _csrf: this.csrf,
                             communityId: this.dormitoryManager.communityId
                         }
                     }).then(item => {
-                        this.token = item._token;
                         if (item.state) {
                             this.subcontractors = item.subcontractors;
                         }
@@ -128,7 +127,7 @@ $(document).ready(() => {
              * @param event
              */
             dormitorySubmit(event) {
-                if (this.token === null || this.token === "") {
+                if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
                 if (this.dormitoryManager.communityId === null || this.dormitoryManager.communityId === 0) {

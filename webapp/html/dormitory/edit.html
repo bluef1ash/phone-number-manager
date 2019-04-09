@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <!--/*@thymesVar id="dormitoryManager" type="www.entity.DormitoryManager"*/-->
-    <head th:replace="layouts/header :: commonHead('社区楼长' + ${dormitoryManager == null ? '添加' : '编辑'} + ' - 社区楼长管理', ~{}, ~{::script})">
+    <head th:replace="layouts/header :: commonHead('社区楼长' + ${dormitoryManager == null ? '添加' : '编辑'} + ' - 社区楼长管理', ~{::script})">
         <title></title>
         <script th:inline="javascript" type="text/javascript">
-            var token = /*[[${_token}]]*/null;
             var messageErrors = /*[[${messageErrors}]]*/null;
             var dormitoryManager = /*[[${dormitoryManager}]]*/null;
             var communities = /*[[${communities}]]*/null;
@@ -202,7 +201,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input name="_token" type="hidden" v-model="token">
+                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
                             <input name="id" th:if="${dormitoryManager} != null" type="hidden" v-model="dormitoryManager.id">
                             <input name="_method" th:if="${dormitoryManager} != null" type="hidden" value="PUT">
                             <button class="btn btn-sm btn-primary" type="submit">

@@ -1,14 +1,11 @@
 package www.action;
 
-import annotation.RefreshCsrfToken;
-import annotation.VerifyCSRFToken;
 import exception.JsonException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import utils.CsrfTokenUtil;
 import www.entity.UserPrivilege;
 import www.service.CommunityResidentService;
 import www.service.UserPrivilegeService;
@@ -40,7 +37,6 @@ public class IndexAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(method = RequestMethod.GET)
-    @RefreshCsrfToken
     public String index(HttpSession session, Model model) {
         getSessionRoleId(session);
         model.addAttribute("systemUser", systemUser);
@@ -57,15 +53,13 @@ public class IndexAction extends BaseAction {
      * @return 视图页面
      */
     @RequestMapping(value = "/getmenu", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> getMenu(Integer isDisplay, HttpSession session) {
         Set<UserPrivilege> userPrivileges = (Set<UserPrivilege>) session.getAttribute("userPrivileges");
         try {
-            Map<String, Object> jsonMap = new HashMap<>(4);
+            Map<String, Object> jsonMap = new HashMap<>(3);
             jsonMap.put("state", 1);
             jsonMap.put("userPrivileges", userPrivilegeService.findPrivilegesByIsDisplay(isDisplay, userPrivileges));
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             throw new JsonException("系统异常！找不到数据，请稍后再试！", e);
@@ -82,14 +76,12 @@ public class IndexAction extends BaseAction {
      * @return Ajax返回JSON对象
      */
     @RequestMapping(value = "/getcomputedcount", method = RequestMethod.GET)
-    @VerifyCSRFToken
     @ResponseBody
     public Map<String, Object> getComputedCount(HttpSession session, Integer getType, Long id, Long companyType) {
         getSessionRoleId(session);
         try {
             Map<String, Object> jsonMap = communityResidentService.computedCount(systemUser, getType, id, companyType, systemRoleId, communityRoleId, subdistrictRoleId);
             jsonMap.put("state", 1);
-            jsonMap.put("_token", CsrfTokenUtil.getTokenForSession(session, null));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();

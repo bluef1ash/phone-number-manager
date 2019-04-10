@@ -34,4 +34,8 @@ public final class SystemConstant {
      * 街道级机构别名
      */
     public static final String SUBDISTRICT_ALIAS_NAME = "办事处";
+    /**
+     * 数据库中开始的时间戳字符串
+     */
+    public static final String DATABASE_START_TIMESTAMP_STRING = "1970-01-01 08:00:01";
 }

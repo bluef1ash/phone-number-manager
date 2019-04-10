@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
-	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
 	http://www.springframework.org/schema/context
-	http://www.springframework.org/schema/context/spring-context-4.3.xsd">
-	<context:property-placeholder location="classpath*:resources/database.properties" />
-	<!-- C3P0连接池 -->
-	<bean id="c3p0DataSource" abstract="true">
-		<!--初始化时获取的连接数，取值应在minPoolSize与maxPoolSize之间。Default: 3 -->
-        <property name="initialPoolSize" value="1" />
+	http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:property-placeholder location="classpath*:resources/database.properties"/>
+    <!-- C3P0连接池 -->
+    <bean id="c3p0DataSource" abstract="true">
+        <!--初始化时获取的连接数，取值应在minPoolSize与maxPoolSize之间。Default: 3 -->
+        <property name="initialPoolSize" value="1"/>
         <!--连接池中保留的最小连接数。-->
-        <property name="minPoolSize" value="1" />
+        <property name="minPoolSize" value="1"/>
         <!--连接池中保留的最大连接数。Default: 15 -->
-        <property name="maxPoolSize" value="300" />
+        <property name="maxPoolSize" value="300"/>
         <!--最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃。Default: 0 -->
-        <property name="maxIdleTime" value="60" />
-		<!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
-        <property name="acquireIncrement" value="5" />
+        <property name="maxIdleTime" value="60"/>
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
+        <property name="acquireIncrement" value="5"/>
         <!--每60秒检查所有连接池中的空闲连接。Default: 0 -->
-        <property name="idleConnectionTestPeriod" value="60" />
+        <property name="idleConnectionTestPeriod" value="60"/>
     </bean>
-	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close" parent="c3p0DataSource">
-		<property name="driverClass" value="${jdbc.mysql.driverClass}" />
-		<property name="jdbcUrl" value="${jdbc.mysql.jdbcUrl}" />
-		<property name="user" value="${jdbc.mysql.user}" />
-		<property name="password" value="${jdbc.mysql.password}" />
-	</bean>
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close"
+          parent="c3p0DataSource">
+        <property name="driverClass" value="${jdbc.mysql.driverClass}"/>
+        <property name="jdbcUrl" value="${jdbc.mysql.jdbcUrl}"/>
+        <property name="user" value="${jdbc.mysql.user}"/>
+        <property name="password" value="${jdbc.mysql.password}"/>
+    </bean>
 </beans>

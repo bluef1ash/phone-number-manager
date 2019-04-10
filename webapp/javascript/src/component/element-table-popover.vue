@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-popover placement="top" trigger="hover">
-            <p>最新一次更改时间: {{moment(row.editTime).format("LLLL")}}</p>
+            <p>最新一次修改时间: {{row.editTime === "1970-01-01 08:00:01" ? "从未修改" : moment(row.editTime).format("LLLL")}}</p>
             <div class="name-wrapper" slot="reference" v-text="data"></div>
         </el-popover>
     </div>

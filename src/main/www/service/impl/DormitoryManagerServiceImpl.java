@@ -18,6 +18,7 @@ import www.entity.Subdistrict;
 import www.entity.SystemUser;
 import www.service.DormitoryManagerService;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -293,6 +294,36 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         }
     }
 
+    @Override
+    public String findLastId(Long communityId, String communityName, String subdistrictName) throws Exception {
+        StringBuilder stringBuilder = new StringBuilder();
+        String id = dormitoryManagersDao.selectLastIdByCommunityId(communityId);
+        long idNumber = 0L;
+        if (StringUtils.isNotEmpty(id)) {
+            Matcher matcher = idPatten.matcher(id);
+            while (matcher.find()) {
+                stringBuilder.append(matcher.group(1).toUpperCase());
+                idNumber = Long.parseLong(matcher.group(2));
+            }
+        } else {
+            String sn = subdistrictName.replaceAll("(?iUs)[街道办事处]", "");
+            String cn = communityName.replaceAll("(?iUs)[社区居委会]", "");
+            String regex = ",";
+            String subdistrictNamePY = Pinyin.toPinyin(sn, regex);
+            String communityNamePY = Pinyin.toPinyin(cn, regex);
+            String[] subdistrictNamePYSplit = subdistrictNamePY.split(regex);
+            String[] communityNamePYSplit = communityNamePY.split(regex);
+            for (String split : subdistrictNamePYSplit) {
+                stringBuilder.append(split.toUpperCase(), 0, 1);
+            }
+            for (String split : communityNamePYSplit) {
+                stringBuilder.append(split.toUpperCase(), 0, 1);
+            }
+        }
+        stringBuilder.append(String.format("%04d", idNumber + 1));
+        return stringBuilder.toString();
+    }
+
     /**
      * 导入Excel数据处理
      *
@@ -362,41 +393,12 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             phones.append(landline);
         }
         dormitoryManager.setTelephones(phones.toString());
-        dormitoryManager.setEditTime(DateUtil.getTimestamp(new Date()));
+        Timestamp editTime = DateUtil.getTimestamp(DateUtil.convertStringToDate(SystemConstant.DATABASE_START_TIMESTAMP_STRING));
+        dormitoryManager.setEditTime(editTime);
         String subcontractorName = convertCellString(row.getCell(excelDormitorySubcontractorNameCellNumber));
         String subcontractorPhone = convertCellString(row.getCell(excelDormitorySubcontractorTelephoneCellNumber));
         Long subcontractorId = addSubcontractorHandler(subcontractorName, subcontractorPhone, subcontractors, communityId);
         dormitoryManager.setSubcontractorId(subcontractorId);
         return dormitoryManager;
-    }
-
-    @Override
-    public String findLastId(Long communityId, String communityName, String subdistrictName) throws Exception {
-        StringBuilder stringBuilder = new StringBuilder();
-        String id = dormitoryManagersDao.selectLastIdByCommunityId(communityId);
-        long idNumber = 0L;
-        if (StringUtils.isNotEmpty(id)) {
-            Matcher matcher = idPatten.matcher(id);
-            while (matcher.find()) {
-                stringBuilder.append(matcher.group(1).toUpperCase());
-                idNumber = Long.parseLong(matcher.group(2));
-            }
-        } else {
-            String sn = subdistrictName.replaceAll("(?iUs)[街道办事处]", "");
-            String cn = communityName.replaceAll("(?iUs)[社区居委会]", "");
-            String regex = ",";
-            String subdistrictNamePY = Pinyin.toPinyin(sn, regex);
-            String communityNamePY = Pinyin.toPinyin(cn, regex);
-            String[] subdistrictNamePYSplit = subdistrictNamePY.split(regex);
-            String[] communityNamePYSplit = communityNamePY.split(regex);
-            for (String split : subdistrictNamePYSplit) {
-                stringBuilder.append(split.toUpperCase(), 0, 1);
-            }
-            for (String split : communityNamePYSplit) {
-                stringBuilder.append(split.toUpperCase(), 0, 1);
-            }
-        }
-        stringBuilder.append(String.format("%04d", idNumber + 1));
-        return stringBuilder.toString();
     }
 }

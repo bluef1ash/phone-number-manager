@@ -3,6 +3,7 @@ package www.entity;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 社区居民实体
@@ -18,7 +19,7 @@ public class CommunityResident implements Serializable {
     private String communityResidentName;
     private String communityResidentAddress;
     private String communityResidentPhones;
-    private Timestamp communityResidentEditTime;
+    private Timestamp editTime;
     private Long subcontractorId;
     private Long communityId;
     private Subcontractor subcontractor;
@@ -32,7 +33,7 @@ public class CommunityResident implements Serializable {
     public CommunityResident() {
     }
 
-    public CommunityResident(Long communityResidentId, Integer indexId, String subdistrictName, String communityName, String communityResidentName, String communityResidentAddress, String communityResidentPhones, Timestamp communityResidentEditTime, Long subcontractorId, Long communityId, Subcontractor subcontractor, String subcontractorName, List<Long> communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
+    public CommunityResident(Long communityResidentId, Integer indexId, String subdistrictName, String communityName, String communityResidentName, String communityResidentAddress, String communityResidentPhones, Timestamp editTime, Long subcontractorId, Long communityId, Subcontractor subcontractor, String subcontractorName, List<Long> communityIds, Community community, String communityResidentPhone1, String communityResidentPhone2, String communityResidentPhone3) {
         this.communityResidentId = communityResidentId;
         this.indexId = indexId;
         this.subdistrictName = subdistrictName;
@@ -40,7 +41,7 @@ public class CommunityResident implements Serializable {
         this.communityResidentName = communityResidentName;
         this.communityResidentAddress = communityResidentAddress;
         this.communityResidentPhones = communityResidentPhones;
-        this.communityResidentEditTime = communityResidentEditTime;
+        this.editTime = editTime;
         this.subcontractorId = subcontractorId;
         this.communityId = communityId;
         this.subcontractor = subcontractor;
@@ -112,12 +113,12 @@ public class CommunityResident implements Serializable {
         this.communityResidentPhones = communityResidentPhones;
     }
 
-    public Timestamp getCommunityResidentEditTime() {
-        return communityResidentEditTime;
+    public Timestamp getEditTime() {
+        return editTime;
     }
 
-    public void setCommunityResidentEditTime(Timestamp communityResidentEditTime) {
-        this.communityResidentEditTime = communityResidentEditTime;
+    public void setEditTime(Timestamp editTime) {
+        this.editTime = editTime;
     }
 
     public Long getSubcontractorId() {
@@ -203,55 +204,55 @@ public class CommunityResident implements Serializable {
 
         CommunityResident that = (CommunityResident) o;
 
-        if (communityResidentId != null ? !communityResidentId.equals(that.communityResidentId) : that.communityResidentId != null) {
+        if (!Objects.equals(communityResidentId, that.communityResidentId)) {
             return false;
         }
-        if (indexId != null ? !indexId.equals(that.indexId) : that.indexId != null) {
+        if (!Objects.equals(indexId, that.indexId)) {
             return false;
         }
-        if (subdistrictName != null ? !subdistrictName.equals(that.subdistrictName) : that.subdistrictName != null) {
+        if (!Objects.equals(subdistrictName, that.subdistrictName)) {
             return false;
         }
-        if (communityName != null ? !communityName.equals(that.communityName) : that.communityName != null) {
+        if (!Objects.equals(communityName, that.communityName)) {
             return false;
         }
-        if (communityResidentName != null ? !communityResidentName.equals(that.communityResidentName) : that.communityResidentName != null) {
+        if (!Objects.equals(communityResidentName, that.communityResidentName)) {
             return false;
         }
-        if (communityResidentAddress != null ? !communityResidentAddress.equals(that.communityResidentAddress) : that.communityResidentAddress != null) {
+        if (!Objects.equals(communityResidentAddress, that.communityResidentAddress)) {
             return false;
         }
-        if (communityResidentPhones != null ? !communityResidentPhones.equals(that.communityResidentPhones) : that.communityResidentPhones != null) {
+        if (!Objects.equals(communityResidentPhones, that.communityResidentPhones)) {
             return false;
         }
-        if (communityResidentEditTime != null ? !communityResidentEditTime.equals(that.communityResidentEditTime) : that.communityResidentEditTime != null) {
+        if (!Objects.equals(editTime, that.editTime)) {
             return false;
         }
-        if (subcontractorId != null ? !subcontractorId.equals(that.subcontractorId) : that.subcontractorId != null) {
+        if (!Objects.equals(subcontractorId, that.subcontractorId)) {
             return false;
         }
-        if (communityId != null ? !communityId.equals(that.communityId) : that.communityId != null) {
+        if (!Objects.equals(communityId, that.communityId)) {
             return false;
         }
-        if (subcontractor != null ? !subcontractor.equals(that.subcontractor) : that.subcontractor != null) {
+        if (!Objects.equals(subcontractor, that.subcontractor)) {
             return false;
         }
-        if (subcontractorName != null ? !subcontractorName.equals(that.subcontractorName) : that.subcontractorName != null) {
+        if (!Objects.equals(subcontractorName, that.subcontractorName)) {
             return false;
         }
-        if (communityIds != null ? !communityIds.equals(that.communityIds) : that.communityIds != null) {
+        if (!Objects.equals(communityIds, that.communityIds)) {
             return false;
         }
-        if (community != null ? !community.equals(that.community) : that.community != null) {
+        if (!Objects.equals(community, that.community)) {
             return false;
         }
-        if (communityResidentPhone1 != null ? !communityResidentPhone1.equals(that.communityResidentPhone1) : that.communityResidentPhone1 != null) {
+        if (!Objects.equals(communityResidentPhone1, that.communityResidentPhone1)) {
             return false;
         }
-        if (communityResidentPhone2 != null ? !communityResidentPhone2.equals(that.communityResidentPhone2) : that.communityResidentPhone2 != null) {
+        if (!Objects.equals(communityResidentPhone2, that.communityResidentPhone2)) {
             return false;
         }
-        return communityResidentPhone3 != null ? communityResidentPhone3.equals(that.communityResidentPhone3) : that.communityResidentPhone3 == null;
+        return Objects.equals(communityResidentPhone3, that.communityResidentPhone3);
     }
 
     @Override
@@ -263,7 +264,7 @@ public class CommunityResident implements Serializable {
         result = 31 * result + (communityResidentName != null ? communityResidentName.hashCode() : 0);
         result = 31 * result + (communityResidentAddress != null ? communityResidentAddress.hashCode() : 0);
         result = 31 * result + (communityResidentPhones != null ? communityResidentPhones.hashCode() : 0);
-        result = 31 * result + (communityResidentEditTime != null ? communityResidentEditTime.hashCode() : 0);
+        result = 31 * result + (editTime != null ? editTime.hashCode() : 0);
         result = 31 * result + (subcontractorId != null ? subcontractorId.hashCode() : 0);
         result = 31 * result + (communityId != null ? communityId.hashCode() : 0);
         result = 31 * result + (subcontractor != null ? subcontractor.hashCode() : 0);
@@ -278,6 +279,6 @@ public class CommunityResident implements Serializable {
 
     @Override
     public String toString() {
-        return "CommunityResident{" + "communityResidentId=" + communityResidentId + ", indexId=" + indexId + ", subdistrictName='" + subdistrictName + '\'' + ", communityName='" + communityName + '\'' + ", communityResidentName='" + communityResidentName + '\'' + ", communityResidentAddress='" + communityResidentAddress + '\'' + ", communityResidentPhones='" + communityResidentPhones + '\'' + ", communityResidentEditTime=" + communityResidentEditTime + ", subcontractorId=" + subcontractorId + ", communityId=" + communityId + ", subcontractor=" + subcontractor + ", subcontractorName='" + subcontractorName + '\'' + ", communityIds=" + communityIds + ", community=" + community + ", communityResidentPhone1='" + communityResidentPhone1 + '\'' + ", communityResidentPhone2='" + communityResidentPhone2 + '\'' + ", communityResidentPhone3='" + communityResidentPhone3 + '\'' + '}';
+        return "CommunityResident{" + "communityResidentId=" + communityResidentId + ", indexId=" + indexId + ", subdistrictName='" + subdistrictName + '\'' + ", communityName='" + communityName + '\'' + ", communityResidentName='" + communityResidentName + '\'' + ", communityResidentAddress='" + communityResidentAddress + '\'' + ", communityResidentPhones='" + communityResidentPhones + '\'' + ", editTime=" + editTime + ", subcontractorId=" + subcontractorId + ", communityId=" + communityId + ", subcontractor=" + subcontractor + ", subcontractorName='" + subcontractorName + '\'' + ", communityIds=" + communityIds + ", community=" + community + ", communityResidentPhone1='" + communityResidentPhone1 + '\'' + ", communityResidentPhone2='" + communityResidentPhone2 + '\'' + ", communityResidentPhone3='" + communityResidentPhone3 + '\'' + '}';
     }
 }

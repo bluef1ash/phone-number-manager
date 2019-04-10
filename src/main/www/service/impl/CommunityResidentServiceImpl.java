@@ -16,6 +16,8 @@ import www.entity.CommunityResident;
 import www.entity.SystemUser;
 import www.service.CommunityResidentService;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,7 +97,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public int addCommunityResidentFromExcel(Workbook workbook, Long subdistrictId, Map<String, Object> configurationsMap) {
+    public int addCommunityResidentFromExcel(Workbook workbook, Long subdistrictId, Map<String, Object> configurationsMap) throws ParseException {
         List<CommunityResident> residents = new ArrayList<>();
         Long readResidentExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_resident_excel_start_row_number"));
         Integer excelCommunityCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_community_name_cell_number"));
@@ -138,6 +140,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                         Long subcontractorId = addSubcontractorHandler(subcontractorName, "", subcontractors, communityId);
                         resident.setSubcontractorId(subcontractorId);
                         resident.setCommunityId(communityId);
+                        Timestamp editTime = DateUtil.getTimestamp(DateUtil.convertStringToDate(SystemConstant.DATABASE_START_TIMESTAMP_STRING));
+                        resident.setEditTime(editTime);
                         residents.add(resident);
                     }
                 }
@@ -290,7 +294,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         }
         communityResident.setCommunityResidentPhones(tempPhone.toString().substring(0, tempPhone.length() - 1));
         // 编辑时间
-        communityResident.setCommunityResidentEditTime(DateUtil.getTimestamp(new Date()));
+        communityResident.setEditTime(DateUtil.getTimestamp(new Date()));
         return communityResident;
     }
 

@@ -6,7 +6,7 @@
         <result property="communityResidentName" column="name"/>
         <result property="communityResidentAddress" column="address"/>
         <result property="communityResidentPhones" column="phones"/>
-        <result property="communityResidentEditTime" column="edit_time"/>
+        <result property="editTime" column="edit_time"/>
         <result property="subcontractorId" column="subcontractor_id"/>
         <result property="communityId" column="community_id"/>
         <collection property="communityIds" column="community_id" ofType="java.lang.Long"/>
@@ -16,7 +16,7 @@
         <result property="communityResidentName" column="community_resident_name"/>
         <result property="communityResidentAddress" column="address"/>
         <result property="communityResidentPhones" column="phones"/>
-        <result property="communityResidentEditTime" column="edit_time"/>
+        <result property="editTime" column="edit_time"/>
         <result property="subcontractorId" column="subcontractor_id"/>
         <result property="communityId" column="community_id"/>
     </resultMap>
@@ -40,12 +40,14 @@
         INSERT INTO `pm_community_residents` (`name`, `address`, `phones`, `edit_time`, `subcontractor_id`,
                                               `community_id`)
         VALUES (#{communityResidentName}, #{communityResidentAddress}, #{communityResidentPhones},
-                #{communityResidentEditTime}, #{subcontractorId}, #{communityId})
+                #{editTime}, #{subcontractorId}, #{communityId})
     </insert>
     <insert id="insertBatch" useGeneratedKeys="true" keyProperty="community_resident_id">
-        INSERT INTO `pm_community_residents`(`name`, `address`, `phones`, `subcontractor_id`, `community_id`) VALUES
+        INSERT INTO `pm_community_residents`(`name`, `address`, `phones`, `edit_time`, `subcontractor_id`,
+        `community_id`) VALUES
         <foreach collection="objects" item="item" separator=",">
-            (#{item.communityResidentName}, #{item.communityResidentAddress}, #{item.communityResidentPhones},
+            (#{item.communityResidentName}, #{item.communityResidentAddress}, #{item.editTime},
+            #{item.communityResidentPhones},
             #{item.subcontractorId}, #{item.communityId})
         </foreach>
     </insert>
@@ -74,8 +76,8 @@
             <if test="communityResidentPhones != null">
                 , `phones` = #{communityResidentPhones}
             </if>
-            <if test="communityResidentEditTime != null">
-                , `edit_time` = #{communityResidentEditTime}
+            <if test="editTime != null">
+                , `edit_time` = #{editTime}
             </if>
             <if test="subcontractorId != null">
                 , `subcontractor_id` = #{subcontractorId}
@@ -134,8 +136,8 @@
             <if test="communityResidentPhones != null and communityResidentPhones != ''">
                 AND `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResidentPhones}, '%')
             </if>
-            <if test="communityResidentEditTime != null and communityResidentEditTime != ''">
-                AND `pm_community_residents`.`edit_time` = #{communityResidentEditTime}
+            <if test="editTime != null and editTime != ''">
+                AND `pm_community_residents`.`edit_time` = #{editTime}
             </if>
             <if test="communityId != null and communityId != ''">
                 AND `pm_community_residents`.`community_id` = #{communityId}
@@ -184,8 +186,8 @@
                 AND `pm_community_residents`.`phones` LIKE CONCAT('%', #{communityResident.communityResidentPhones},
                 '%')
             </if>
-            <if test="communityResident.communityResidentEditTime != null and communityResident.communityResidentEditTime != ''">
-                AND `pm_community_residents`.`edit_time` = #{communityResident.communityResidentEditTime}
+            <if test="communityResident.editTime != null and communityResident.editTime != ''">
+                AND `pm_community_residents`.`edit_time` = #{communityResident.editTime}
             </if>
             <if test="communityResident.communityId != null and communityResident.communityId != ''">
                 AND `pm_community_residents`.`community_id` = #{communityResident.communityId}
@@ -328,8 +330,8 @@
                 AND `pm_community_residents`.`subcontractor` LIKE CONCAT('%',
                 #{communityResident.communityResidentSubcontractor}, '%')
             </if>
-            <if test="communityResident.communityResidentEditTime != null and communityResident.communityResidentEditTime != ''">
-                AND `pm_community_residents`.`edit_time` = #{communityResident.communityResidentEditTime}
+            <if test="communityResident.editTime != null and communityResident.editTime != ''">
+                AND `pm_community_residents`.`edit_time` = #{communityResident.editTime}
             </if>
             <if test="communityResident.communityId != null and communityResident.communityId != 0">
                 AND `pm_community_residents`.`community_id` = #{communityResident.communityId}

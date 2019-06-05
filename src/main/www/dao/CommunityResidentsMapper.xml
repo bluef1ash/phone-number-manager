@@ -383,24 +383,24 @@
         SELECT count(`community_resident_id`)
         FROM `pm_community_residents`
     </select>
-    <select id="countCommunityResidentsForGroupSubdistrict" resultType="map">
-        SELECT `pm_subdistricts`.`name`, count(`pm_community_residents`.`community_resident_id`) 'value'
+    <select id="countForGroupSubdistrict" resultType="map">
+        SELECT `pm_subdistricts`.`name`, count(`pm_community_residents`.`community_resident_id`) AS 'value'
         FROM `pm_subdistricts`
                  LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
                  LEFT JOIN `pm_community_residents`
         ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`
         GROUP BY `pm_subdistricts`.`subdistrict_id`
     </select>
-    <select id="countCommunityResidentsForGroupCommunity" resultType="map">
-        SELECT `pm_communities`.`name`, count(`pm_community_residents`.`community_resident_id`) 'value'
+    <select id="countForGroupCommunity" resultType="map">
+        SELECT `pm_communities`.`name`, count(`pm_community_residents`.`community_resident_id`) AS 'value'
         FROM `pm_communities`
                  LEFT JOIN `pm_community_residents`
         ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`
         WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
         GROUP BY `pm_communities`.`community_id`
     </select>
-    <select id="countCommunityResidentsGroupByCommunityId" resultType="map">
-        SELECT `pm_communities`.`name`, count(`pm_community_residents`.`community_resident_id`) 'value'
+    <select id="countForGroupByCommunityId" resultType="map">
+        SELECT `pm_communities`.`name`, count(`pm_community_residents`.`community_resident_id`) AS 'value'
         FROM `pm_communities`
                  LEFT JOIN `pm_community_residents`
         ON `pm_communities`.`community_id` = `pm_community_residents`.`community_id`

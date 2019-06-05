@@ -4,10 +4,8 @@
        xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
     <security:http security="none" pattern="/javascript/**"/>
-    <security:http security="none" pattern="/css/**"/>
     <security:http security="none" pattern="/fonts/**"/>
     <security:http security="none" pattern="/images/**"/>
-    <security:http security="none" pattern="/lib/**"/>
     <security:http security="none" pattern="/uploads/**"/>
     <security:http auto-config="false" use-expressions="true" entry-point-ref="authenticationEntryPoint">
         <security:form-login login-page="/login"
@@ -20,14 +18,15 @@
                          logout-url="/login/logout"
                          invalidate-session="true"
                          delete-cookies="JSESSIONID"/>
-        <!-- 指定登陆认证成功后，用户访问未授权的 URL 将跳转的 URL -->
         <security:access-denied-handler error-page="/permissiondenied"/>
         <security:session-management session-authentication-strategy-ref="sessionAuthenticationStrategy"/>
         <security:csrf/>
         <security:intercept-url pattern="/login/**" access="permitAll"/>
         <security:intercept-url pattern="/**" access="isAuthenticated()"/>
         <security:custom-filter ref="concurrencyFilter" position="CONCURRENT_SESSION_FILTER"/>
+        <security:custom-filter ref="captchaValidInterceptor" before="FORM_LOGIN_FILTER"/>
         <security:custom-filter ref="securityFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
+        <security:request-cache ref="httpSessionRequestCache"/>
     </security:http>
     <!-- 登录认证 -->
     <security:authentication-manager>
@@ -40,6 +39,7 @@
     <bean id="authenticationSuccessHandler" class="security.handler.AuthenticationSuccessHandler">
         <property name="systemUserService" ref="systemUserServiceImpl"/>
     </bean>
+    <bean id="captchaValidInterceptor" class="security.interceptor.CaptchaValidInterceptor"/>
     <bean id="authenticationFailureHandler" class="security.handler.AuthenticationFailureHandler"/>
     <bean id="accessDecisionManager" class="security.manager.AccessDecisionManager"/>
     <bean id="securityMetadataSource" class="security.FilterInvocationSecurityMetadataSource"/>
@@ -69,6 +69,7 @@
                     class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
                     <constructor-arg ref="sessionRegistry"/>
                     <property name="maximumSessions" value="1"/>
+                    <property name="exceptionIfMaximumExceeded" value="false"/>
                 </bean>
                 <bean
                     class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy"/>
@@ -80,4 +81,6 @@
         </constructor-arg>
     </bean>
     <bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl"/>
+    <bean id="httpSessionRequestCache" class="org.springframework.security.web.savedrequest.HttpSessionRequestCache">
+    </bean>
 </beans>

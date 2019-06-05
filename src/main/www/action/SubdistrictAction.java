@@ -98,20 +98,21 @@ public class SubdistrictAction extends BaseAction {
     /**
      * 添加、修改街道处理
      *
+     * @param request       HTTP请求对象
      * @param model         前台模型
      * @param subdistrict   街道对象
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
     @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
-    public String subdistrictCreateOrEditHandle(Model model, @Validated Subdistrict subdistrict, BindingResult bindingResult) {
+    public String subdistrictCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Subdistrict subdistrict, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
             List<ObjectError> allErrors = bindingResult.getAllErrors();
             model.addAttribute("messageErrors", allErrors);
             return "subdistrict/edit";
         }
-        if (subdistrict.getSubdistrictId() == null) {
+        if (RequestMethod.POST.toString().equals(request.getMethod())) {
             try {
                 subdistrictService.createObject(subdistrict);
             } catch (Exception e) {

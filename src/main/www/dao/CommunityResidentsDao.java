@@ -1,12 +1,10 @@
 package www.dao;
 
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 import www.entity.CommunityResident;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 社区居民DAO接口
@@ -68,33 +66,4 @@ public interface CommunityResidentsDao extends BaseDao<CommunityResident> {
      * @throws DataAccessException 数据库操作异常
      */
     Long countCommunityResidents() throws DataAccessException;
-
-    /**
-     * 街道分组统计居民数量
-     *
-     * @return 社区居民数量Map
-     * @throws DataAccessException 数据库操作异常
-     */
-    @MapKey("name")
-    Map<String, Map<String, Object>> countCommunityResidentsForGroupSubdistrict() throws DataAccessException;
-
-    /**
-     * 社区分组统计居民数量
-     *
-     * @param subdistrictId 街道编号
-     * @return 社区居民数量Map
-     * @throws DataAccessException 数据库操作异常
-     */
-    @MapKey("name")
-    Map<String, Map<String, Object>> countCommunityResidentsForGroupCommunity(Long subdistrictId) throws DataAccessException;
-
-    /**
-     * 统计社区居民
-     *
-     * @param communityId 社区编号
-     * @return 社区居民数量Map
-     * @throws DataAccessException 数据库操作异常
-     */
-    @MapKey("name")
-    Map<String, Map<String, Object>> countCommunityResidentsGroupByCommunityId(Long communityId) throws DataAccessException;
 }

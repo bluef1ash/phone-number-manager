@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
  */
 @Service("communityResidentService")
 public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResident> implements CommunityResidentService {
-
     private Pattern communityPattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
 
     @Override
@@ -207,20 +206,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> computedCount(SystemUser systemUser, Integer getType, Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) {
-        Map<String, Object> computed = new HashMap<>(3);
-        if (getType == null || getType == 0) {
-            computed.put("baseMessage", getBaseMessage(companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
-            computed.put("barChart", getChartBar(systemUser, companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
-        } else if (getType == 1) {
-            computed.put("baseMessage", getBaseMessage(companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
-        } else {
-            computed.put("barChart", getChartBar(systemUser, companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
-        }
-        return computed;
-    }
-
-    @Override
     public ExcelUtil.DataHandler setExcelHead(String[] titles) {
         return (params, headers) -> {
             Integer rowIndex = (Integer) params.get("rowIndex");
@@ -268,6 +253,46 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             params.put("sheet", sheet);
             params.put("contentStyle", contentStyle);
         };
+    }
+
+
+    @Override
+    public Map<String, Object> getBaseMessage(Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) {
+        Map<String, Object> baseMessage = new HashMap<>(3);
+        Long addCount = null;
+        Long haveToCount = null;
+        boolean isSystemRole = companyType == null || companyId == null || companyType.equals(systemRoleId);
+        if (isSystemRole) {
+            addCount = communityResidentsDao.countCommunityResidents();
+            haveToCount = communitiesDao.sumActualNumber();
+        } else if (companyType.equals(communityRoleId)) {
+            addCount = communityResidentsDao.countObjectByCommunityId(companyId);
+            haveToCount = communitiesDao.selectActualNumberByCommunityId(companyId);
+        } else if (companyType.equals(subdistrictRoleId)) {
+            addCount = communityResidentsDao.countCommunityResidentsBySubdistrictId(companyId);
+            haveToCount = communitiesDao.sumActualNumberBySubdistrictId(companyId);
+        }
+        baseMessage.put("addCount", addCount);
+        baseMessage.put("haveToCount", haveToCount);
+        return baseMessage;
+    }
+
+    @Override
+    public Map<String, Object> getChartBar(SystemUser systemUser, Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) {
+        String companyLabel = "社区";
+        LinkedList<Map<String, Object>> communityResidents;
+        boolean isSystemRoleCount = subdistrictRoleId.equals(systemUser.getRoleId()) || (systemRoleId.equals(systemUser.getRoleId()) && subdistrictRoleId.equals(companyType));
+        if (companyType == null || companyType.equals(systemRoleId)) {
+            companyLabel = "街道";
+            communityResidents = communityResidentsDao.countForGroupSubdistrict();
+        } else if (isSystemRoleCount) {
+            communityResidents = communityResidentsDao.countForGroupCommunity(companyId);
+        } else if (communityRoleId.equals(systemUser.getRoleId())) {
+            communityResidents = communityResidentsDao.countForGroupByCommunityId(companyId);
+        } else {
+            communityResidents = new LinkedList<>();
+        }
+        return barChartDataHandler("社区居民总人数", companyLabel, communityResidents);
     }
 
     /**
@@ -321,81 +346,5 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             phones.append(",").append(phone3);
         }
         return phones.toString();
-    }
-
-    /**
-     * 获取录入统计信息
-     *
-     * @param companyId         单位编号
-     * @param companyType       单位类型
-     * @param systemRoleId      系统用户角色编号
-     * @param communityRoleId   社区级用户角色编号
-     * @param subdistrictRoleId 街道级用户角色编号
-     * @return 统计信息对象
-     */
-    private Map<String, Object> getBaseMessage(Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) {
-        Map<String, Object> baseMessage = new HashMap<>(3);
-        Long addCount = null;
-        Long haveToCount = null;
-        boolean isSystemRole = companyType == null || companyId == null || companyType.equals(systemRoleId);
-        if (isSystemRole) {
-            addCount = communityResidentsDao.countCommunityResidents();
-            haveToCount = communitiesDao.sumActualNumber();
-        } else if (companyType.equals(communityRoleId)) {
-            addCount = communityResidentsDao.countObjectByCommunityId(companyId);
-            haveToCount = communitiesDao.selectActualNumberByCommunityId(companyId);
-        } else if (companyType.equals(subdistrictRoleId)) {
-            addCount = communityResidentsDao.countCommunityResidentsBySubdistrictId(companyId);
-            haveToCount = communitiesDao.sumActualNumberBySubdistrictId(companyId);
-        }
-        baseMessage.put("addCount", addCount);
-        baseMessage.put("haveToCount", haveToCount);
-        return baseMessage;
-    }
-
-    /**
-     * 获取柱状图数据
-     *
-     * @param systemUser        正在登录中的系统用户对象
-     * @param companyId         单位编号
-     * @param companyType       单位类型
-     * @param systemRoleId      系统用户角色编号
-     * @param communityRoleId   社区级用户角色编号
-     * @param subdistrictRoleId 街道级用户角色编号
-     * @return 柱状图数据
-     */
-    private Map<String, Object> getChartBar(SystemUser systemUser, Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) {
-        Map<String, Object> barChartMap = new HashMap<>(3);
-        List<String> columns = new ArrayList<>();
-        String companyLabel;
-        String label = "社区居民人数";
-        Map<String, Map<String, Object>> communityResidents;
-        List<Map<String, Object>> rows = new ArrayList<>();
-        Map<String, Object> data = new HashMap<>(3);
-        List<String> titleLabel = new ArrayList<>();
-        if (companyType == null || companyType.equals(systemRoleId)) {
-            companyLabel = "街道";
-            communityResidents = communityResidentsDao.countCommunityResidentsForGroupSubdistrict();
-        } else if (communityRoleId.equals(systemUser.getRoleId())) {
-            companyLabel = "社区";
-            communityResidents = communityResidentsDao.countCommunityResidentsGroupByCommunityId(companyId);
-        } else {
-            companyLabel = "社区";
-            communityResidents = communityResidentsDao.countCommunityResidentsForGroupCommunity(companyId);
-        }
-        for (Map<String, Object> residentCount : communityResidents.values()) {
-            Map<String, Object> row = new HashMap<>(3);
-            row.put(companyLabel, residentCount.get("name"));
-            titleLabel.add((String) residentCount.get("name"));
-            row.put(label, residentCount.get("value"));
-            rows.add(row);
-        }
-        columns.add(companyLabel);
-        columns.add(label);
-        barChartMap.put("columns", columns);
-        barChartMap.put("rows", rows);
-        data.put("data", barChartMap);
-        data.put("titleLabel", titleLabel);
-        return data;
     }
 }

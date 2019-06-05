@@ -52,11 +52,19 @@ public interface CommunityService extends BaseService<Community> {
      * 通过系统用户查找
      *
      * @param systemUser        系统用户对象
-     * @param configurationsMap 系统配置
+     * @param communityRoleId   社区级角色编号
+     * @param subdistrictRoleId 街道级角色编号
      * @return 查找到的社区对象的集合
      * @throws Exception SERVICE层异常
      */
-    List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Map<String, Object> configurationsMap) throws Exception;
+    List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Long communityRoleId, Long subdistrictRoleId) throws Exception;
 
+    /**
+     * 通过街道编号查找
+     *
+     * @param subdistrictId 街道编号
+     * @return 查找到的社区对象的集合
+     * @throws Exception SERVICE层异常
+     */
     List<Community> findCommunityBySubdistrictId(Long subdistrictId) throws Exception;
 }

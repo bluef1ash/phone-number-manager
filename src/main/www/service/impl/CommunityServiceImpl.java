@@ -2,7 +2,6 @@ package www.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
-import utils.CommonUtil;
 import www.entity.Community;
 import www.entity.SystemUser;
 import www.service.CommunityService;
@@ -43,10 +42,8 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
     }
 
     @Override
-    public List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Map<String, Object> configurationsMap) throws Exception {
+    public List<Community> findCommunitiesBySystemUser(SystemUser systemUser, Long communityRoleId, Long subdistrictRoleId) throws Exception {
         List<Community> communities;
-        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
-        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
         if (systemUser.getRoleId().equals(communityRoleId)) {
             communities = new ArrayList<>();
             Community community = communitiesDao.selectCommunityCorrelationById(systemUser.getRoleLocationId());

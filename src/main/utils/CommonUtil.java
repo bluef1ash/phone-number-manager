@@ -776,7 +776,7 @@ public class CommonUtil {
      * @return 转换完成
      */
     public static Integer convertConfigurationInteger(Object object) {
-        return Integer.parseInt(String.valueOf(object));
+        return Integer.parseInt(convertConfigurationString(object));
     }
 
     /**
@@ -786,7 +786,7 @@ public class CommonUtil {
      * @return 转换完成
      */
     public static Long convertConfigurationLong(Object object) {
-        return Long.parseLong(String.valueOf(object));
+        return Long.parseLong(convertConfigurationString(object));
     }
 
     /**
@@ -797,6 +797,16 @@ public class CommonUtil {
      */
     public static String convertConfigurationString(Object object) {
         return String.valueOf(object);
+    }
+
+    /**
+     * 转换系统配置项布尔类型
+     *
+     * @param object 系统配置项
+     * @return 转换完成
+     */
+    public static Boolean convertConfigurationBoolean(Object object) {
+        return Boolean.valueOf(convertConfigurationString(object));
     }
 
     /**

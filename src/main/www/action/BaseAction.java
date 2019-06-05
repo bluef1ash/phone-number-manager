@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import exception.JsonException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -42,7 +43,7 @@ abstract class BaseAction {
      * @param session Session对象
      */
     void getSessionRoleId(HttpSession session) {
-        systemUser = (SystemUser) session.getAttribute("systemUser");
+        systemUser = (SystemUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
         systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
         communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
@@ -75,7 +76,7 @@ abstract class BaseAction {
      * @throws Exception SERVICE层异常
      */
     void throwsError(CommunityService communityService, Model model, BindingResult bindingResult) throws Exception {
-        List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+        List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
         model.addAttribute("communities", communities);
         // 输出错误信息
         List<ObjectError> allErrors = bindingResult.getAllErrors();

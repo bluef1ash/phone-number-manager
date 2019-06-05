@@ -19,7 +19,6 @@ import utils.CommonUtil;
 import utils.ExcelUtil;
 import www.entity.Community;
 import www.entity.CommunityResident;
-import www.entity.SystemUser;
 import www.service.CommunityResidentService;
 import www.service.CommunityService;
 import www.validator.CommunityResidentInputValidator;
@@ -91,10 +90,9 @@ public class CommunityResidentAction extends BaseAction {
      */
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String createCommunityResident(HttpSession session, Model model) {
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        getSessionRoleId(session);
         try {
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
             model.addAttribute("communities", JSON.toJSON(communities));
             return "resident/edit";
         } catch (Exception e) {
@@ -113,12 +111,11 @@ public class CommunityResidentAction extends BaseAction {
      */
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public String editCommunityResident(HttpSession session, Model model, Long id) {
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        getSessionRoleId(session);
         try {
             CommunityResident communityResident = communityResidentService.findCommunityResidentAndCommunityById(id);
             model.addAttribute("communityResident", communityResident);
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
             model.addAttribute("communities", communities);
             return "resident/edit";
         } catch (Exception e) {
@@ -130,7 +127,7 @@ public class CommunityResidentAction extends BaseAction {
     /**
      * 添加、修改社区居民处理
      *
-     * @param httpServletRequest HTTP响应对象
+     * @param httpServletRequest HTTP请求对象
      * @param session            Session对象
      * @param model              前台模型
      * @param communityResident  前台传递的社区居民对象
@@ -149,7 +146,7 @@ public class CommunityResidentAction extends BaseAction {
                 throw new BusinessException("系统出现错误，请联系管理员！");
             }
         }
-        if ("POST".equals(httpServletRequest.getMethod())) {
+        if (RequestMethod.POST.toString().equals(httpServletRequest.getMethod())) {
             try {
                 communityResidentService.createCommunityResident(communityResident);
             } catch (Exception e) {

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
+    <!--/*@thymesVar id="dormitoryManager" type="www.entity.DormitoryManager"*/-->
+    <head th:replace="layouts/header :: commonHead('社区楼长' + ${dormitoryManager == null ? '添加' : '编辑'} + ' - 社区楼长管理', ~{::script})">
+        <title></title>
+        <script th:inline="javascript" type="text/javascript">
+            var messageErrors = /*[[${messageErrors}]]*/null;
+            var dormitoryManager = /*[[${dormitoryManager}]]*/null;
+            var communities = /*[[${communities}]]*/null;
+            var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/ajax_load'}]]*/null;
+            var loadDormitoryManagerLastIdUrl = /*[[@{'/dormitory/ajax_id'}]]*/null;
+        </script>
+        <script th:src="@{'/javascript/dormitory-edit-bundle.js'}" type="text/javascript"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区管理">社区管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区楼长管理">社区楼长管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/dormitory/' + ${dormitoryManager == null ? 'create' : 'edit?id=' + dormitoryManager.id}}" th:text="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长编辑'" th:title="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长编辑'"></a>
+                </li>
+            </ol>
+            <div class="container-fluid">
+                <div class="card" id="edit_dormitory" v-cloak>
+                    <div class="card-header" th:text="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长' + ${dormitoryManager.name} + '编辑'"></div>
+                    <form @submit="dormitorySubmit" class="form-horizontal" method="post" th:action="@{'/dormitory/handle'}">
+                        <div class="card-body">
+                            <div :key="messageError.defaultMessage" class="alert alert-danger" role="alert" v-for="messageError in messageErrors" v-if="messageErrors !== null">
+                                {{messageError.defaultMessage}}
+                                <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="subdistrict_id">所属街道</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[12]}]" @change="chooseSubdistrict" id="subdistrict_id" name="subdistrictId" v-model="subdistrictId">
+                                        <option :value="0">请选择</option>
+                                        <option :key="subdistrict.subdistrictId" :value="subdistrict.subdistrictId" v-for="subdistrict in subdistricts" v-text="subdistrict.subdistrictName"></option>
+                                    </select> <span class="help-block">必填项</span>
+                                    <div :style="errorClasses[12] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[12]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="community_id">所属社区</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[13]}]" @change="chooseCommunity" id="community_id" name="communityId" v-model="dormitoryManager.communityId">
+                                        <option :value="0">请选择</option>
+                                        <option :key="community.id" :value="community.id" v-for="community in newCommunities" v-text="community.name"></option>
+                                    </select> <span class="help-block">必填项</span>
+                                    <div :style="errorClasses[13] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[13]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="id">社区楼长编号</label>
+                                <div class="col-md-9">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[0]}]" id="id" name="id" placeholder="请输入社区楼长编号" readonly type="text" v-model="dormitoryManager.id">
+                                    <span class="help-block">必填项，社区编号一般系统会自动生成，无需更改</span>
+                                    <div :style="errorClasses[0] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[0]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="name">社区楼长姓名</label>
+                                <div class="col-md-9">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[1]}]" id="name" name="name" placeholder="请输入社区楼长姓名" type="text" v-model="dormitoryManager.name">
+                                    <span class="help-block">必填项，社区楼长姓名不允许超过10个字符</span>
+                                    <div :style="errorClasses[1] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[1]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label">社区楼长性别</label>
+                                <div class="col-md-9 col-form-label">
+                                    <div class="form-check form-check-inline mr-1">
+                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="sex_male" name="sex" type="radio" v-model="dormitoryManager.sex" value="0">
+                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="sex_male">男性</label>
+                                    </div>
+                                    <div class="form-check form-check-inline mr-1">
+                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="sex_female" name="sex" type="radio" v-model="dormitoryManager.sex" value="1">
+                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="sex_female">女性</label>
+                                    </div>
+                                    <div class="form-check form-check-inline mr-1">
+                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="sex_other" name="sex" type="radio" v-model="dormitoryManager.sex" value="2">
+                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="sex_other">未知</label>
+                                    </div>
+                                    <br> <br> <span class="help-block">必填项，请选择楼长性别</span>
+                                    <div :style="errorClasses[2] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[2]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="political_status">出生年月</label>
+                                <div class="col-md-9">
+                                    <el-date-picker placeholder="选择出生年月" type="month" v-model="dormitoryManager.birth"></el-date-picker>
+                                    <input name="birth" type="hidden" v-model="dormitoryManager.birth"> <br>
+                                    <span class="help-block">必填项</span>
+                                    <div :style="errorClasses[3] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[3]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="political_status">政治面貌</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[4]}]" id="political_status" name="politicalStatus" v-model="dormitoryManager.politicalStatus">
+                                        <option :value="-1">请选择</option>
+                                        <option :value="0">群众</option>
+                                        <option :value="1">共产党员</option>
+                                        <option :value="2">预备共产党员</option>
+                                        <option :value="3">共青团员</option>
+                                        <option :value="4">预备共青团员</option>
+                                        <option :value="5">其它</option>
+                                    </select> <span class="help-block">必填项</span>
+                                    <div :style="errorClasses[4] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[4]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="work_status">工作状况</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[5]}]" id="work_status" name="workStatus" v-model="dormitoryManager.workStatus">
+                                        <option :value="-1">请选择</option>
+                                        <option :value="0">在职</option>
+                                        <option :value="1">退休</option>
+                                        <option :value="2">无业</option>
+                                    </select> <span class="help-block">必填项</span>
+                                    <div :style="errorClasses[5] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[5]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="education">文化程度</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[6]}]" id="education" name="education" v-model="dormitoryManager.education">
+                                        <option :value="-1">请选择</option>
+                                        <option :value="0">文盲</option>
+                                        <option :value="1">小学</option>
+                                        <option :value="2">初中</option>
+                                        <option :value="3">中专</option>
+                                        <option :value="4">高中</option>
+                                        <option :value="5">大专</option>
+                                        <option :value="6">本科</option>
+                                        <option :value="7">硕士研究生</option>
+                                        <option :value="8">博士研究生</option>
+                                    </select> <span class="help-block">必填项</span>
+                                    <div :style="errorClasses[6] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[6]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="address">社区楼长家庭地址</label>
+                                <div class="col-md-9">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[7]}]" id="address" name="address" placeholder="请输入社区楼长家庭地址" type="text" v-model="dormitoryManager.address">
+                                    <span class="help-block">必填项，具体到单元号、楼号</span>
+                                    <div :style="errorClasses[7] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[7]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="manager_address">社区楼长分包楼栋</label>
+                                <div class="col-md-9">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[8]}]" id="manager_address" name="managerAddress" placeholder="请输入社区楼长分包楼栋" type="text" v-model="dormitoryManager.managerAddress">
+                                    <span class="help-block">必填项，具体到单元号、楼号</span>
+                                    <div :style="errorClasses[8] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[8]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="manager_count">社区楼长联系户数</label>
+                                <div class="col-md-9">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[9]}]" id="manager_count" min="0" name="managerCount" placeholder="请输入社区楼长联系户数" type="number" v-model="dormitoryManager.managerCount">
+                                    <span class="help-block">必填项，社区楼长联系户数只允许填写数字</span>
+                                    <div :style="errorClasses[9] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[9]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="telephone">社区楼长移动联系方式</label>
+                                <div class="col-md-9">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[10]}]" id="telephone" name="telephone" placeholder="请输入社区楼长移动联系方式" type="text" v-model="dormitoryManager.telephone">
+                                    <span class="help-block">社区楼长移动联系方式不允许重复，允许移动联系方式与固定联系方式填写一项</span>
+                                    <div :style="errorClasses[10] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[10]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="landline">社区楼长固定联系方式</label>
+                                <div class="col-md-9">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[11]}]" id="landline" name="landline" placeholder="请输入社区楼长固定联系方式" type="text" v-model="dormitoryManager.landline">
+                                    <span class="help-block">社区楼长固定联系方式不允许重复，允许移动联系方式与固定联系方式填写一项</span>
+                                    <div :style="errorClasses[11] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[11]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="subcontractor_id">社区分包人</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[14]}]" id="subcontractor_id" name="subcontractorId" v-model="dormitoryManager.subcontractorId">
+                                        <option :value="0">请选择</option>
+                                        <option :key="subcontractor.subcontractorId" :value="subcontractor.subcontractorId" v-for="subcontractor in subcontractors" v-text="subcontractor.name"></option>
+                                    </select> <span class="help-block">必填项</span>
+                                    <div :style="errorClasses[14] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[14]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
+                            <input name="id" th:if="${dormitoryManager} != null" type="hidden" v-model="dormitoryManager.id">
+                            <input name="_method" th:if="${dormitoryManager} != null" type="hidden" value="PUT">
+                            <button class="btn btn-sm btn-primary" type="submit">
+                                <i class="fa fa-dot-circle-o"></i>保存
+                            </button>
+                            <button @click="resetClass" class="btn btn-sm btn-danger" type="reset">
+                                <i class="fa fa-ban"></i>重置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </th:block>
+    </body>
+</html>

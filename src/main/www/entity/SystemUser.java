@@ -1,22 +1,22 @@
 package www.entity;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 系统用户实体
  *
  * @author 廿二月的天
  */
-public class SystemUser implements Serializable, UserDetails {
+public class SystemUser implements UserDetails {
     public static final int LOCKED = 1;
     public static final int NON_LOCKED = 0;
 
@@ -29,13 +29,12 @@ public class SystemUser implements Serializable, UserDetails {
     private Integer isLocked;
     private Long roleId;
     private Long roleLocationId;
-    private String captcha;
     private UserRole userRole;
 
     public SystemUser() {
     }
 
-    public SystemUser(Long systemUserId, String username, String password, Timestamp loginTime, String loginIp, Integer isLocked, Long roleId, Long roleLocationId, String captcha, UserRole userRole) {
+    public SystemUser(Long systemUserId, String username, String password, Timestamp loginTime, String loginIp, Integer isLocked, Long roleId, Long roleLocationId, UserRole userRole) {
         this.systemUserId = systemUserId;
         this.username = username;
         this.password = password;
@@ -44,7 +43,6 @@ public class SystemUser implements Serializable, UserDetails {
         this.isLocked = isLocked;
         this.roleId = roleId;
         this.roleLocationId = roleLocationId;
-        this.captcha = captcha;
         this.userRole = userRole;
     }
 
@@ -146,14 +144,6 @@ public class SystemUser implements Serializable, UserDetails {
         this.roleLocationId = roleLocationId;
     }
 
-    public String getCaptcha() {
-        return captcha;
-    }
-
-    public void setCaptcha(String captcha) {
-        this.captcha = captcha;
-    }
-
     public UserRole getUserRole() {
         return userRole;
     }
@@ -163,64 +153,23 @@ public class SystemUser implements Serializable, UserDetails {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public boolean equals(Object object) {
+        boolean isEqual = false;
+        if (object != null && SystemUser.class.isAssignableFrom(object.getClass())) {
+            SystemUser systemUser = (SystemUser) object;
+            isEqual = new EqualsBuilder().append(getRoleId(), systemUser.getRoleId()).append(getRoleLocationId(), systemUser.getRoleLocationId()).append(getSystemUserId(), systemUser.getSystemUserId()).append(getUsername(), systemUser.getUsername()).isEquals();
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        SystemUser that = (SystemUser) o;
-
-        if (!Objects.equals(systemUserId, that.systemUserId)) {
-            return false;
-        }
-        if (!Objects.equals(username, that.username)) {
-            return false;
-        }
-        if (!Objects.equals(password, that.password)) {
-            return false;
-        }
-        if (!Objects.equals(loginTime, that.loginTime)) {
-            return false;
-        }
-        if (!Objects.equals(loginIp, that.loginIp)) {
-            return false;
-        }
-        if (!Objects.equals(isLocked, that.isLocked)) {
-            return false;
-        }
-        if (!Objects.equals(roleId, that.roleId)) {
-            return false;
-        }
-        if (!Objects.equals(roleLocationId, that.roleLocationId)) {
-            return false;
-        }
-        if (!Objects.equals(captcha, that.captcha)) {
-            return false;
-        }
-        return Objects.equals(userRole, that.userRole);
+        return isEqual;
 
     }
 
     @Override
     public int hashCode() {
-        int result = systemUserId != null ? systemUserId.hashCode() : 0;
-        result = 31 * result + (username != null ? username.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (loginTime != null ? loginTime.hashCode() : 0);
-        result = 31 * result + (loginIp != null ? loginIp.hashCode() : 0);
-        result = 31 * result + (isLocked != null ? isLocked.hashCode() : 0);
-        result = 31 * result + (roleId != null ? roleId.hashCode() : 0);
-        result = 31 * result + (roleLocationId != null ? roleLocationId.hashCode() : 0);
-        result = 31 * result + (captcha != null ? captcha.hashCode() : 0);
-        result = 31 * result + (userRole != null ? userRole.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder(17, 37).append(getRoleId()).append(getRoleLocationId()).append(getSystemUserId()).append(getUsername()).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "SystemUser{" + "systemUserId=" + systemUserId + ", username='" + username + '\'' + ", password='" + password + '\'' + ", loginTime=" + loginTime + ", loginIp='" + loginIp + '\'' + ", isLocked=" + isLocked + ", roleId=" + roleId + ", roleLocationId=" + roleLocationId + ", captcha='" + captcha + '\'' + ", userRole=" + userRole + '}';
+        return "SystemUser{" + "systemUserId=" + systemUserId + ", username='" + username + '\'' + ", password='" + password + '\'' + ", loginTime=" + loginTime + ", loginIp='" + loginIp + '\'' + ", isLocked=" + isLocked + ", roleId=" + roleId + ", roleLocationId=" + roleLocationId + '\'' + ", userRole=" + userRole + '}';
     }
 }

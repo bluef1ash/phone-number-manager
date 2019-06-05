@@ -158,7 +158,7 @@ public class UserAndRoleAction extends BaseAction {
      * 添加与修改处理系统用户
      *
      * @param session       Session对象
-     * @param request       HTTP响应对象
+     * @param request       HTTP请求对象
      * @param model         前台模型
      * @param systemUser    系统用户对象
      * @param bindingResult 错误信息对象
@@ -173,7 +173,7 @@ public class UserAndRoleAction extends BaseAction {
             model.addAttribute("messageErrors", allErrors);
             return "user/edit";
         }
-        if ("POST".equals(request.getMethod())) {
+        if (RequestMethod.POST.toString().equals(request.getMethod())) {
             // 添加
             try {
                 systemUserService.createObject(systemUser);
@@ -370,7 +370,7 @@ public class UserAndRoleAction extends BaseAction {
     /**
      * 添加与修改处理系统角色
      *
-     * @param request       HTTP响应对象
+     * @param request       HTTP请求对象
      * @param model         前台模型
      * @param userRole      系统角色对象
      * @param privilegeIds  系统权限编号数组
@@ -385,7 +385,7 @@ public class UserAndRoleAction extends BaseAction {
             model.addAttribute("messageErrors", allErrors);
             return "role/edit";
         }
-        if ("POST".equals(request.getMethod())) {
+        if (RequestMethod.POST.toString().equals(request.getMethod())) {
             // 添加
             try {
                 userRoleService.createObject(userRole);
@@ -501,7 +501,7 @@ public class UserAndRoleAction extends BaseAction {
     /**
      * 添加与修改处理系统权限
      *
-     * @param request       HTTP响应对象
+     * @param request       HTTP请求对象
      * @param model         前台模型
      * @param userPrivilege 系统用户权限对象
      * @param bindingResult 错误信息对象
@@ -515,7 +515,7 @@ public class UserAndRoleAction extends BaseAction {
             model.addAttribute("messageErrors", allErrors);
             return "privilege/edit";
         }
-        if ("POST".equals(request.getMethod())) {
+        if (RequestMethod.POST.toString().equals(request.getMethod())) {
             // 添加
             try {
                 userPrivilegeService.createObject(userPrivilege);

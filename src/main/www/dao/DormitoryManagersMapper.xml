@@ -312,4 +312,300 @@
             AND `pm_communities`.`subdistrict_id` = #{subdistrictId}
         </where>
     </select>
+    <select id="countSexAll" resultType="map">
+        SELECT SUM(CASE WHEN `sex` = 0 THEN 1 ELSE 0 END) AS 'male',
+            SUM(CASE WHEN `sex` = 1 THEN 1 ELSE 0 END) AS 'female'
+        FROM `pm_dormitory_managers`
+    </select>
+    <select id="countSexByCommunityId" resultType="map">
+        SELECT SUM(CASE WHEN `sex` = 0 THEN 1 ELSE 0 END) AS 'male',
+            SUM(CASE WHEN `sex` = 1 THEN 1 ELSE 0 END) AS 'female'
+        FROM `pm_dormitory_managers`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countSexBySubdistrictId" resultType="map">
+        SELECT SUM(CASE WHEN `pm_dormitory_managers`.`sex` = 0 THEN 1 ELSE 0 END) AS 'male',
+            SUM(CASE WHEN `pm_dormitory_managers`.`sex` = 1 THEN 1 ELSE 0 END) AS 'female'
+        FROM `pm_dormitory_managers`
+                 LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countAgeRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+            &lt;
+            20
+                            THEN 1
+                        ELSE 0 END) AS '20岁以下',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    30
+                         THEN 1
+                     ELSE 0 END) AS '21岁~30岁', SUM(
+            CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 31
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    40
+                     THEN 1
+                 ELSE 0 END) AS '31岁~40岁', SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 41
+            AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                &lt;
+                50
+                                                        THEN 1
+                                                    ELSE 0 END) AS '41岁~50岁', SUM(
+            CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    60
+                     THEN 1
+                 ELSE 0 END) AS '51岁~60岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    70
+                         THEN 1
+                     ELSE 0 END) AS '61岁~70岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) > 71
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    80
+                         THEN 1
+                     ELSE 0 END) AS '71岁~80岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 81
+                         THEN 1
+                     ELSE 0 END) AS '81岁以上'
+        FROM `pm_dormitory_managers`
+    </select>
+    <select id="countAgeRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+            &lt;
+            20
+                            THEN 1
+                        ELSE 0 END) AS '20岁以下',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    30
+                         THEN 1
+                     ELSE 0 END) AS '21岁~30岁', SUM(
+            CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 31
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    40
+                     THEN 1
+                 ELSE 0 END) AS '31岁~40岁', SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 41
+            AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                &lt;
+                50
+                                                        THEN 1
+                                                    ELSE 0 END) AS '41岁~50岁', SUM(
+            CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    60
+                     THEN 1
+                 ELSE 0 END) AS '51岁~60岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    70
+                         THEN 1
+                     ELSE 0 END) AS '61岁~70岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) > 71
+                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                    &lt;
+                    80
+                         THEN 1
+                     ELSE 0 END) AS '71岁~80岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 81
+                         THEN 1
+                     ELSE 0 END) AS '81岁以上'
+        FROM `pm_dormitory_managers`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countAgeRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE())
+            &lt;
+            20
+                            THEN 1
+                        ELSE 0 END) AS '20岁以下',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) &gt; 21
+                AND TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE())
+                    &lt;
+                    30
+                         THEN 1
+                     ELSE 0 END) AS '21岁~30岁', SUM(
+            CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) &gt; 31
+                AND TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE())
+                    &lt;
+                    40
+                     THEN 1
+                 ELSE 0 END) AS '31岁~40岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) &gt; 41
+                AND TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE())
+                    &lt;
+                    50
+                         THEN 1
+                     ELSE 0 END) AS '41岁~50岁', SUM(
+            CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) &gt; 51
+                AND TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE())
+                    &lt;
+                    60
+                     THEN 1
+                 ELSE 0 END) AS '51岁~60岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) &gt; 61
+                AND TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE())
+                    &lt;
+                    70
+                         THEN 1
+                     ELSE 0 END) AS '61岁~70岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) > 71
+                AND TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE())
+                    &lt;
+                    80
+                         THEN 1
+                     ELSE 0 END) AS '71岁~80岁',
+            SUM(CASE WHEN TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) &gt; 81
+                         THEN 1
+                     ELSE 0 END) AS '81岁以上'
+        FROM `pm_dormitory_managers`
+                 LEFT JOIN `pm_communities` ON pm_dormitory_managers.community_id = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countEducationRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `education` = 0 THEN 1 ELSE 0 END) AS '文盲',
+            SUM(CASE WHEN `education` = 1 THEN 1 ELSE 0 END) AS '小学',
+            SUM(CASE WHEN `education` = 2 THEN 1 ELSE 0 END) AS '初中',
+            SUM(CASE WHEN `education` = 3 THEN 1 ELSE 0 END) AS '中专',
+            SUM(CASE WHEN `education` = 4 THEN 1 ELSE 0 END) AS '高中',
+            SUM(CASE WHEN `education` = 5 THEN 1 ELSE 0 END) AS '大专',
+            SUM(CASE WHEN `education` = 6 THEN 1 ELSE 0 END) AS '本科',
+            SUM(CASE WHEN `education` = 7 THEN 1 ELSE 0 END) AS '硕士研究生',
+            SUM(CASE WHEN `education` = 8 THEN 1 ELSE 0 END) AS '博士研究生'
+        FROM `pm_dormitory_managers`
+    </select>
+    <select id="countEducationRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `education` = 0 THEN 1 ELSE 0 END) AS '文盲',
+            SUM(CASE WHEN `education` = 1 THEN 1 ELSE 0 END) AS '小学',
+            SUM(CASE WHEN `education` = 2 THEN 1 ELSE 0 END) AS '初中',
+            SUM(CASE WHEN `education` = 3 THEN 1 ELSE 0 END) AS '中专',
+            SUM(CASE WHEN `education` = 4 THEN 1 ELSE 0 END) AS '高中',
+            SUM(CASE WHEN `education` = 5 THEN 1 ELSE 0 END) AS '大专',
+            SUM(CASE WHEN `education` = 6 THEN 1 ELSE 0 END) AS '本科',
+            SUM(CASE WHEN `education` = 7 THEN 1 ELSE 0 END) AS '硕士研究生',
+            SUM(CASE WHEN `education` = 8 THEN 1 ELSE 0 END) AS '博士研究生'
+        FROM `pm_dormitory_managers`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countEducationRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `pm_dormitory_managers`.`education` = 0 THEN 1 ELSE 0 END) AS '文盲',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 1 THEN 1 ELSE 0 END) AS '小学',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 2 THEN 1 ELSE 0 END) AS '初中',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 3 THEN 1 ELSE 0 END) AS '中专',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 4 THEN 1 ELSE 0 END) AS '高中',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 5 THEN 1 ELSE 0 END) AS '大专',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 6 THEN 1 ELSE 0 END) AS '本科',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 7 THEN 1 ELSE 0 END) AS '硕士研究生',
+            SUM(CASE WHEN `pm_dormitory_managers`.`education` = 8 THEN 1 ELSE 0 END) AS '博士研究生'
+        FROM `pm_dormitory_managers`
+                 LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countPoliticalStatusRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `political_status` = 0 THEN 1 ELSE 0 END) AS '群众',
+            SUM(CASE WHEN `political_status` = 1 THEN 1 ELSE 0 END) AS '共产党员',
+            SUM(CASE WHEN `political_status` = 2 THEN 1 ELSE 0 END) AS '预备共产党员',
+            SUM(CASE WHEN `political_status` = 3 THEN 1 ELSE 0 END) AS '共青团员',
+            SUM(CASE WHEN `political_status` = 4 THEN 1 ELSE 0 END) AS '预备共青团员',
+            SUM(CASE WHEN `political_status` = 5 THEN 1 ELSE 0 END) AS '其它'
+        FROM `pm_dormitory_managers`
+    </select>
+    <select id="countPoliticalStatusRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `political_status` = 0 THEN 1 ELSE 0 END) AS '群众',
+            SUM(CASE WHEN `political_status` = 1 THEN 1 ELSE 0 END) AS '共产党员',
+            SUM(CASE WHEN `political_status` = 2 THEN 1 ELSE 0 END) AS '预备共产党员',
+            SUM(CASE WHEN `political_status` = 3 THEN 1 ELSE 0 END) AS '共青团员',
+            SUM(CASE WHEN `political_status` = 4 THEN 1 ELSE 0 END) AS '预备共青团员',
+            SUM(CASE WHEN `political_status` = 5 THEN 1 ELSE 0 END) AS '其它'
+        FROM `pm_dormitory_managers`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countPoliticalStatusRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `pm_dormitory_managers`.`political_status` = 0 THEN 1 ELSE 0 END) AS '群众',
+            SUM(CASE WHEN `pm_dormitory_managers`.`political_status` = 1 THEN 1 ELSE 0 END) AS '共产党员',
+            SUM(CASE WHEN `pm_dormitory_managers`.`political_status` = 2 THEN 1 ELSE 0 END) AS '预备共产党员',
+            SUM(CASE WHEN `pm_dormitory_managers`.`political_status` = 3 THEN 1 ELSE 0 END) AS '共青团员',
+            SUM(CASE WHEN `pm_dormitory_managers`.`political_status` = 4 THEN 1 ELSE 0 END) AS '预备共青团员',
+            SUM(CASE WHEN `pm_dormitory_managers`.`political_status` = 5 THEN 1 ELSE 0 END) AS '其它'
+        FROM `pm_dormitory_managers`
+                 LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countWorkStatusRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `work_status` = 0 THEN 1 ELSE 0 END) AS '在职',
+            SUM(CASE WHEN `work_status` = 1 THEN 1 ELSE 0 END) AS '退休',
+            SUM(CASE WHEN `work_status` = 2 THEN 1 ELSE 0 END) AS '无业'
+        FROM `pm_dormitory_managers`
+    </select>
+    <select id="countWorkStatusRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `work_status` = 0 THEN 1 ELSE 0 END) AS '在职',
+            SUM(CASE WHEN `work_status` = 1 THEN 1 ELSE 0 END) AS '退休',
+            SUM(CASE WHEN `work_status` = 2 THEN 1 ELSE 0 END) AS '无业'
+        FROM `pm_dormitory_managers`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countWorkStatusRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT SUM(CASE WHEN `pm_dormitory_managers`.`work_status` = 0 THEN 1 ELSE 0 END) AS '在职',
+            SUM(CASE WHEN `pm_dormitory_managers`.`work_status` = 1 THEN 1 ELSE 0 END) AS '退休',
+            SUM(CASE WHEN `pm_dormitory_managers`.`work_status` = 2 THEN 1 ELSE 0 END) AS '无业'
+        FROM `pm_dormitory_managers`
+                 LEFT JOIN `pm_communities` ON `pm_dormitory_managers`.`community_id` = `pm_communities`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countForGroupSubdistrict" resultType="map">
+        SELECT `pm_subdistricts`.`name`, COUNT(`pm_dormitory_managers`.`dormitory_manager_id`) AS 'value'
+        FROM `pm_subdistricts`
+                 LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
+                 LEFT JOIN `pm_dormitory_managers`
+        ON `pm_communities`.`community_id` = `pm_dormitory_managers`.`community_id`
+        GROUP BY `pm_subdistricts`.`subdistrict_id`
+    </select>
+    <select id="countForGroupCommunity" resultType="map">
+        SELECT `pm_communities`.`name`, COUNT(`pm_dormitory_managers`.`dormitory_manager_id`) AS 'value'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_dormitory_managers`
+        ON `pm_communities`.`community_id` = `pm_dormitory_managers`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
+        GROUP BY `pm_communities`.`community_id`
+    </select>
+    <select id="countForGroupByCommunityId" resultType="map">
+        SELECT `pm_communities`.`name`, COUNT(`pm_dormitory_managers`.`dormitory_manager_id`) AS 'value'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_dormitory_managers`
+        ON `pm_communities`.`community_id` = `pm_dormitory_managers`.`community_id`
+        WHERE `pm_communities`.`community_id` = #{communityId}
+    </select>
+    <select id="sumManagerCountForGroupSubdistrict" resultType="map">
+        SELECT `pm_subdistricts`.`name`, SUM(`pm_dormitory_managers`.`manager_count`) AS 'value'
+        FROM `pm_subdistricts`
+                 LEFT JOIN `pm_communities` ON `pm_subdistricts`.`subdistrict_id` = `pm_communities`.`subdistrict_id`
+                 LEFT JOIN `pm_dormitory_managers`
+        ON `pm_communities`.`community_id` = `pm_dormitory_managers`.`community_id`
+        GROUP BY `pm_subdistricts`.`subdistrict_id`
+    </select>
+    <select id="sumManagerCountForGroupByCommunityId" resultType="map">
+        SELECT `pm_communities`.`name`, SUM(`pm_dormitory_managers`.`manager_count`) AS 'value'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_dormitory_managers`
+        ON `pm_communities`.`community_id` = `pm_dormitory_managers`.`community_id`
+        WHERE `pm_communities`.`community_id` = #{communityId}
+    </select>
+    <select id="sumManagerCountForGroupCommunity" resultType="map">
+        SELECT `pm_communities`.`name`, SUM(`pm_dormitory_managers`.`manager_count`) AS 'value'
+        FROM `pm_communities`
+                 LEFT JOIN `pm_dormitory_managers`
+        ON `pm_communities`.`community_id` = `pm_dormitory_managers`.`community_id`
+        WHERE `pm_communities`.`subdistrict_id` = #{subdistrictId}
+        GROUP BY `pm_communities`.`community_id`
+    </select>
 </mapper>

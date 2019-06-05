@@ -134,5 +134,5 @@ src/main/resources/
 src/test/resources/
 git_stats/
 webapp/backup/
-webapp/javascript/dist/
+webapp/javascript/
 webapp/fonts/

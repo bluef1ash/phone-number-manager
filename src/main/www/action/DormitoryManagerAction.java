@@ -92,7 +92,7 @@ public class DormitoryManagerAction extends BaseAction {
     public String createDormitoryManager(HttpSession session, Model model) {
         getSessionRoleId(session);
         try {
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
             model.addAttribute("communities", JSON.toJSON(communities));
             return "dormitory/edit";
         } catch (Exception e) {
@@ -115,7 +115,7 @@ public class DormitoryManagerAction extends BaseAction {
         try {
             DormitoryManager dormitoryManager = dormitoryManagerService.findDormitoryManagerAndCommunityById(id);
             model.addAttribute("dormitoryManager", dormitoryManager);
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
             model.addAttribute("communities", communities);
             return "dormitory/edit";
         } catch (Exception e) {
@@ -127,7 +127,7 @@ public class DormitoryManagerAction extends BaseAction {
     /**
      * 添加、修改社区楼长处理
      *
-     * @param httpServletRequest HTTP响应对象
+     * @param httpServletRequest HTTP请求对象
      * @param session            Session对象
      * @param model              前台模型
      * @param dormitoryManager   前台传递的社区楼长对象
@@ -146,7 +146,7 @@ public class DormitoryManagerAction extends BaseAction {
                 throw new BusinessException("系统出现错误，请联系管理员！");
             }
         }
-        if ("POST".equals(httpServletRequest.getMethod())) {
+        if (RequestMethod.POST.toString().equals(httpServletRequest.getMethod())) {
             try {
                 dormitoryManagerService.createDormitoryManager(dormitoryManager);
             } catch (Exception e) {

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import www.entity.Community;
 import www.entity.Subcontractor;
 import www.entity.Subdistrict;
-import www.entity.SystemUser;
 import www.service.CommunityService;
 import www.service.SubcontractorService;
 import www.service.SubdistrictService;
@@ -122,7 +121,7 @@ public class CommunityAction extends BaseAction {
     /**
      * 添加、修改社区处理
      *
-     * @param request       HTTP响应对象
+     * @param request       HTTP请求对象
      * @param model         前台模型
      * @param community     社区对象
      * @param bindingResult 错误信息对象
@@ -142,7 +141,7 @@ public class CommunityAction extends BaseAction {
                 throw new BusinessException("展示社区失败！", e);
             }
         }
-        if ("POST".equals(request.getMethod())) {
+        if (RequestMethod.POST.toString().equals(request.getMethod())) {
             try {
                 communityService.createObject(community);
             } catch (Exception e) {
@@ -189,10 +188,9 @@ public class CommunityAction extends BaseAction {
      */
     @RequestMapping(value = "/subcontractor/list", method = RequestMethod.GET)
     public String subcontractorList(HttpSession session, Model model, Integer page) {
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        getSessionRoleId(session);
         try {
-            Map<String, Object> subcontractorMap = subcontractorService.findSubcontractors(page, null, systemUser.getRoleId(), systemUser.getRoleLocationId(), configurationsMap);
+            Map<String, Object> subcontractorMap = subcontractorService.findSubcontractors(page, null, systemUser.getRoleId(), systemUser.getRoleLocationId(), communityRoleId, subdistrictRoleId, systemRoleId);
             model.addAttribute("subcontractors", subcontractorMap.get("data"));
             model.addAttribute("pageInfo", subcontractorMap.get("pageInfo"));
             return "subcontractor/list";
@@ -209,10 +207,9 @@ public class CommunityAction extends BaseAction {
      */
     @RequestMapping(value = "/subcontractor/create", method = RequestMethod.GET)
     public String createSubcontractor(Model model, HttpSession session) {
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
-        @SuppressWarnings("unchecked") Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
+        getSessionRoleId(session);
         try {
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
             model.addAttribute("communities", JSON.toJSON(communities));
             return "subcontractor/edit";
         } catch (Exception e) {
@@ -232,7 +229,7 @@ public class CommunityAction extends BaseAction {
         getSessionRoleId(session);
         try {
             Subcontractor subcontractor = subcontractorService.findObject(id);
-            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+            List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
             model.addAttribute("communities", JSON.toJSON(communities));
             model.addAttribute("communities", communities);
             model.addAttribute("subcontractor", subcontractor);
@@ -245,7 +242,7 @@ public class CommunityAction extends BaseAction {
     /**
      * 添加、修改社区分包人处理
      *
-     * @param request       HTTP响应对象
+     * @param request       HTTP请求对象
      * @param session       Session对象
      * @param model         前台模型
      * @param subcontractor 社区分包人对象
@@ -260,14 +257,14 @@ public class CommunityAction extends BaseAction {
                 // 输出错误信息
                 List<ObjectError> allErrors = bindingResult.getAllErrors();
                 model.addAttribute("messageErrors", allErrors);
-                List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, configurationsMap);
+                List<Community> communities = communityService.findCommunitiesBySystemUser(systemUser, communityRoleId, subdistrictRoleId);
                 model.addAttribute("communities", JSON.toJSON(communities));
                 return "subcontractor/edit";
             } catch (Exception e) {
                 throw new BusinessException("展示社区分包人失败！", e);
             }
         }
-        if ("POST".equals(request.getMethod())) {
+        if (RequestMethod.POST.toString().equals(request.getMethod())) {
             try {
                 subcontractorService.createObject(subcontractor);
             } catch (Exception e) {
@@ -286,7 +283,7 @@ public class CommunityAction extends BaseAction {
     /**
      * 使用AJAX技术通过社区分包人编号删除社区分包人
      *
-     * @param id      对应编号
+     * @param id 对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/subcontractor/ajax_delete", method = RequestMethod.DELETE)

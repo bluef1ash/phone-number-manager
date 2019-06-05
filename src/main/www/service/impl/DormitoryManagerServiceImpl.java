@@ -36,6 +36,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
 
     private static final String SUBDISTRICT_NAME_PLACEHOLDER = "${subdistrictName}";
     private static final String SUBDISTRICT_NAME_REGEX = "(?Us)[${]{2}subdistrictName[}]";
+    private static final String DATA_COLUMN_NAME = "人数";
     private Integer excelDormitoryCommunityNameCellNumber;
     private Integer excelDormitoryIdCellNumber;
     private Integer excelDormitoryNameCellNumber;
@@ -76,13 +77,13 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public void createDormitoryManager(DormitoryManager dormitoryManager) throws Exception {
-
+    public void createDormitoryManager(DormitoryManager dormitoryManager) {
+        dormitoryManagersDao.insertObject(dormitoryManager);
     }
 
     @Override
-    public void updateDormitoryManager(DormitoryManager dormitoryManager) throws Exception {
-
+    public void updateDormitoryManager(DormitoryManager dormitoryManager) {
+        dormitoryManagersDao.updateObject(dormitoryManager);
     }
 
     @Override
@@ -279,23 +280,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         return map;
     }
 
-    /**
-     * 根据联系方式类型设置
-     *
-     * @param phone            联系方式
-     * @param dormitoryManager 楼长对象
-     */
-    private void setPhoneForPhoneType(String phone, DormitoryManager dormitoryManager) {
-        int phoneType = StringCheckedRegexUtil.checkPhone(phone);
-        if (phoneType == 1) {
-            dormitoryManager.setTelephone(phone);
-        } else if (phoneType == 2) {
-            dormitoryManager.setLandline(phone);
-        }
-    }
 
     @Override
-    public String findLastId(Long communityId, String communityName, String subdistrictName) throws Exception {
+    public String findLastId(Long communityId, String communityName, String subdistrictName) {
         StringBuilder stringBuilder = new StringBuilder();
         String id = dormitoryManagersDao.selectLastIdByCommunityId(communityId);
         long idNumber = 0L;
@@ -322,6 +309,115 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         }
         stringBuilder.append(String.format("%04d", idNumber + 1));
         return stringBuilder.toString();
+    }
+
+    @Override
+    public Map<String, Object> getBaseMessage(Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) {
+        Map<String, Object> baseMessage = new HashMap<>(3);
+        Map<String, Long> sexCount;
+        Map<String, Long> ageData = null;
+        Map<String, Long> educationData = null;
+        Map<String, Long> politicalStatusData = null;
+        Map<String, Long> workStatusData = null;
+        boolean isSystemRole = companyType == null || companyId == null || companyType.equals(systemRoleId);
+        if (isSystemRole) {
+            sexCount = dormitoryManagersDao.countSexAll();
+            ageData = dormitoryManagersDao.countAgeRangeAll();
+            educationData = dormitoryManagersDao.countEducationRangeAll();
+            politicalStatusData = dormitoryManagersDao.countPoliticalStatusRangeAll();
+            workStatusData = dormitoryManagersDao.countWorkStatusRangeAll();
+        } else if (companyType.equals(communityRoleId)) {
+            sexCount = dormitoryManagersDao.countSexByCommunityId(companyId);
+            ageData = dormitoryManagersDao.countAgeRangeCommunityId(companyId);
+            educationData = dormitoryManagersDao.countEducationRangeCommunityId(companyId);
+            politicalStatusData = dormitoryManagersDao.countPoliticalStatusRangeCommunityId(companyId);
+            workStatusData = dormitoryManagersDao.countWorkStatusRangeCommunityId(companyId);
+        } else if (companyType.equals(subdistrictRoleId)) {
+            sexCount = dormitoryManagersDao.countSexBySubdistrictId(companyId);
+            ageData = dormitoryManagersDao.countAgeRangeSubdistrictId(companyId);
+            educationData = dormitoryManagersDao.countEducationRangeSubdistrictId(companyId);
+            politicalStatusData = dormitoryManagersDao.countPoliticalStatusRangeSubdistrictId(companyId);
+            workStatusData = dormitoryManagersDao.countWorkStatusRangeSubdistrictId(companyId);
+        } else {
+            sexCount = new HashMap<>(3);
+            sexCount.put("male", 0L);
+            sexCount.put("female", 0L);
+        }
+        baseMessage.put("sex", sexCount);
+        if (ageData != null) {
+            Map<String, Object> agePieData = getPieData(ageData, "年龄范围");
+            baseMessage.put("age", agePieData);
+        }
+        if (educationData != null) {
+            Map<String, Object> educationPieData = getPieData(educationData, "教育程度");
+            baseMessage.put("education", educationPieData);
+        }
+        if (politicalStatusData != null) {
+            Map<String, Object> politicalStatusPieData = getPieData(politicalStatusData, "政治面貌");
+            baseMessage.put("politicalStatus", politicalStatusPieData);
+        }
+        if (workStatusData != null) {
+            Map<String, Object> workStatusPieData = getPieData(workStatusData, "工作状况");
+            baseMessage.put("workStatus", workStatusPieData);
+        }
+        return baseMessage;
+    }
+
+    @Override
+    public Map<String, Object> getChartBar(SystemUser systemUser, Long companyId, Long companyType, Boolean typeParam, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) {
+        String label = "社区楼长分包总户数";
+        String companyLabel = null;
+        LinkedList<Map<String, Object>> dormitoryManager;
+        boolean isSystemRoleCount = subdistrictRoleId.equals(systemUser.getRoleId()) || (systemRoleId.equals(systemUser.getRoleId()) && subdistrictRoleId.equals(companyType));
+        if (companyType == null || companyType.equals(systemRoleId)) {
+            companyLabel = "街道";
+            if (typeParam) {
+                label = "社区楼长总人数";
+                dormitoryManager = dormitoryManagersDao.countForGroupSubdistrict();
+            } else {
+                dormitoryManager = dormitoryManagersDao.sumManagerCountForGroupSubdistrict();
+            }
+        } else if (isSystemRoleCount) {
+            companyLabel = "社区";
+            if (typeParam) {
+                label = "社区楼长总人数";
+                dormitoryManager = dormitoryManagersDao.countForGroupCommunity(companyId);
+            } else {
+                dormitoryManager = dormitoryManagersDao.sumManagerCountForGroupCommunity(companyId);
+            }
+        } else if (communityRoleId.equals(systemUser.getRoleId())) {
+            companyLabel = "社区";
+            if (typeParam) {
+                label = "社区楼长总人数";
+                dormitoryManager = dormitoryManagersDao.countForGroupByCommunityId(companyId);
+            } else {
+                dormitoryManager = dormitoryManagersDao.sumManagerCountForGroupByCommunityId(companyId);
+            }
+        } else {
+            dormitoryManager = new LinkedList<>();
+        }
+        return barChartDataHandler(label, companyLabel, dormitoryManager);
+    }
+
+    /**
+     * 获取饼图数据
+     *
+     * @param data   需要设置的数据
+     * @param column 饼图的图例
+     * @return 饼图需要的数据
+     */
+    private Map<String, Object> getPieData(Map<String, Long> data, String column) {
+        Map<String, Object> pieData = new HashMap<>(3);
+        List<LinkedHashMap<String, Object>> rows = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : data.entrySet()) {
+            LinkedHashMap<String, Object> row = new LinkedHashMap<>(3);
+            row.put(column, entry.getKey());
+            row.put(DATA_COLUMN_NAME, entry.getValue());
+            rows.add(row);
+        }
+        pieData.put("columns", new String[]{column, DATA_COLUMN_NAME});
+        pieData.put("rows", rows);
+        return pieData;
     }
 
     /**
@@ -400,5 +496,20 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         Long subcontractorId = addSubcontractorHandler(subcontractorName, subcontractorPhone, subcontractors, communityId);
         dormitoryManager.setSubcontractorId(subcontractorId);
         return dormitoryManager;
+    }
+
+    /**
+     * 根据联系方式类型设置
+     *
+     * @param phone            联系方式
+     * @param dormitoryManager 楼长对象
+     */
+    private void setPhoneForPhoneType(String phone, DormitoryManager dormitoryManager) {
+        int phoneType = StringCheckedRegexUtil.checkPhone(phone);
+        if (phoneType == 1) {
+            dormitoryManager.setTelephone(phone);
+        } else if (phoneType == 2) {
+            dormitoryManager.setLandline(phone);
+        }
     }
 }

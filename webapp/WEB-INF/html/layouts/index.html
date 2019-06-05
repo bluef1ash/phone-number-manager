@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+    <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
+        <header class="app-header navbar">
+            <button class="navbar-toggler sidebar-toggler d-lg-none mr-auto" type="button" data-toggle="sidebar-show">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" th:href="@{'/'}" title="社区居民联系方式管理系统">社区居民联系方式管理系统</a>
+            <button class="navbar-toggler sidebar-toggler d-md-down-none" type="button" data-toggle="sidebar-lg-show">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a href="javascript:" class="nav-link" data-toggle="dropdown" data-target="#nav_toggle" role="button" aria-haspopup="true" aria-expanded="false" title="用户菜单">
+                        <img alt="用户菜单" class="img-avatar" src="" th:src="@{'/images/user.png'}"> </a>
+                    <div class="dropdown-menu dropdown-menu-right" id="nav_toggle">
+                        <div class="dropdown-header text-center">
+                            <strong>用户管理</strong>
+                        </div>
+                        <a class="dropdown-item" href="javascript:" title="个人中心"><i class="fa fa-bell-o"></i>个人中心</a>
+                        <div class="dropdown-divider"></div>
+                        <form method="post" name="logout" th:action="@{'/login/logout'}">
+                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                            <a class="dropdown-item" href="javascript:document.logout.submit();" title="退出系统"><i class="fa fa-lock"></i>退出系统</a>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </header>
+        <div class="app-body">
+            <div class="sidebar" id="sidebar" v-cloak>
+                <nav class="sidebar-nav">
+                    <ul class="nav">
+                        <li :class="['nav-item', {'open': currentUri.indexOf('index') > -1 || currentUri.length < 3}]">
+                            <a :class="['nav-link', {'active': currentUri.indexOf('index') > -1 || currentUri.length < 3}]" th:href="@{'/'}" title="欢迎来到管理系统首页"><i class="nav-icon icon-speedometer"></i>管理系统首页</a>
+                        </li>
+                        <li :class="userPrivilege.constraintAuth.slice(-5) === 'Title' ? 'nav-title' : ['nav-item', {'nav-dropdown': userPrivilege.subUserPrivileges !== null}, 'cursor-pointer', setClassOpen(userPrivilege)]" v-for="userPrivilege in userPrivileges" :key="userPrivilege.privilegeId">{{userPrivilege.constraintAuth.slice(-5) === "Title" ? userPrivilege.privilegeName : ""}}
+                            <a class="nav-link nav-dropdown-toggle" :href="userPrivilege.uri === '' ? 'javascript:;' : userPrivilege.uri" :title="userPrivilege.privilegeName" v-if="userPrivilege.constraintAuth.slice(-5) !== 'Title'">
+                                <i :class="['nav-icon', userPrivilege.iconName]"></i>{{userPrivilege.privilegeName}}
+                            </a>
+                            <ul class="nav-dropdown-items" v-if="userPrivilege.constraintAuth.slice(-5) !== 'Title' && userPrivilege.subUserPrivileges !== null">
+                                <li class="nav-item" v-for="(privilege, j) in userPrivilege.subUserPrivileges">
+                                    <a :class="['nav-link', {'active': currentUri.indexOf(privilege.uri) > -1}]" :href="privilege.uri" :title="privilege.privilegeName">
+                                        <i :class="['nav-icon', privilege.iconName]"></i> {{privilege.privilegeName}}
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+                <button class="sidebar-minimizer brand-minimizer" type="button"></button>
+            </div>
+            <main class="main">
+                <th:block layout:fragment="content"></th:block>
+            </main>
+        </div>
+        <footer class="app-footer">
+            <div>
+                <a href="mailto:liangtian666@gmail.com" title="联系我">廿二月的天</a>&nbsp;<span>&copy; 2018.</span>
+            </div>
+            <div class="ml-auto">
+                <span>Powered by</span>&nbsp;<a href="mailto:liangtian666@gmail.com" title="联系我">廿二月的天</a>
+            </div>
+        </footer>
+    </body>
+</html>

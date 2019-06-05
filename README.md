@@ -1,6 +1,6 @@
 # 社区居民联系电话管理系统
 
-此系统使用Spring + Mybatis + Spring Security Spring MVC + Webpack + Vue.js架构编写。数据库采用MySQL，提供强大的、安全的和完整的管理社区的功能。
+此系统使用Spring + Mybatis + Spring Security + Spring MVC + Webpack + Vue.js架构编写。数据库采用MySQL，提供**强大的**、**安全的**和**完整的**管理社区的功能。
 
 ## 安全性
 
@@ -38,10 +38,10 @@
 
 ## 系统截图
 
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/src/design/screenshot/login.png)
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/src/design/screenshot/index.png)
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/src/design/screenshot/list.png)
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/src/design/screenshot/create.png)
+![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/login.png)
+![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/index.png)
+![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/list.png)
+![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/create.png)
 
 ## Author: Bluef1ash（廿二月的天）
 

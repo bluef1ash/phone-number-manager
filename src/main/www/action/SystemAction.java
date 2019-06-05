@@ -98,7 +98,7 @@ public class SystemAction extends BaseAction {
     /**
      * 添加、修改系统配置处理
      *
-     * @param request       HTTP响应对象
+     * @param request       HTTP请求对象
      * @param model         前台模型
      * @param configuration 系统配置对象
      * @param bindingResult 错误信息对象
@@ -117,7 +117,7 @@ public class SystemAction extends BaseAction {
                 throw new BusinessException("展示系统配置失败！", e);
             }
         }
-        if ("POST".equals(request.getMethod())) {
+        if (RequestMethod.POST.toString().equals(request.getMethod())) {
             try {
                 configurationService.createObject(configuration);
             } catch (Exception e) {

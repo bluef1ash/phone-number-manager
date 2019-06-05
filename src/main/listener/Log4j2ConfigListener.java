@@ -6,6 +6,11 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.util.Enumeration;
 
+/**
+ * LOG4J配置监听器
+ *
+ * @author 廿二月的天
+ */
 public class Log4j2ConfigListener implements ServletContextListener {
     private static final String KEY = "log4j.configurationFile";
 
@@ -19,7 +24,6 @@ public class Log4j2ConfigListener implements ServletContextListener {
         Configurator.initialize("Log4j2", getContextParam(sce));
     }
 
-    @SuppressWarnings("unchecked")
     private String getContextParam(ServletContextEvent event) {
         Enumeration<String> names = event.getServletContext().getInitParameterNames();
         while (names.hasMoreElements()) {

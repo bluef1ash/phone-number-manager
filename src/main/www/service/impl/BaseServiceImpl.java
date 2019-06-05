@@ -23,10 +23,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 基础Service实现
@@ -301,5 +298,35 @@ public class BaseServiceImpl<T> implements BaseService<T> {
         subcontractors = subcontractorsDao.selectObjectsAll();
         List<Community> communities = communitiesDao.selectCommunitiesBySubdistrictId(subdistrictId);
         communityMap = new HashMap<>(communities.size() + 1);
+    }
+
+    /**
+     * 柱状图数据处理
+     *
+     * @param label        饼图图例
+     * @param companyLabel 柱状图横坐标文字
+     * @param object       饼图数据内容
+     * @return 处理后的对象
+     */
+    Map<String, Object> barChartDataHandler(String label, String companyLabel, LinkedList<Map<String, Object>> object) {
+        Map<String, Object> barChartMap = new HashMap<>(3);
+        List<String> columns = new ArrayList<>();
+        List<Map<String, Object>> rows = new ArrayList<>();
+        Map<String, Object> data = new HashMap<>(3);
+        List<String> titleLabel = new ArrayList<>();
+        for (Map<String, Object> residentCount : object) {
+            Map<String, Object> row = new HashMap<>(3);
+            row.put(companyLabel, residentCount.get("name"));
+            titleLabel.add((String) residentCount.get("name"));
+            row.put(label, residentCount.get("value"));
+            rows.add(row);
+        }
+        columns.add(companyLabel);
+        columns.add(label);
+        barChartMap.put("columns", columns);
+        barChartMap.put("rows", rows);
+        data.put("data", barChartMap);
+        data.put("titleLabel", titleLabel);
+        return data;
     }
 }

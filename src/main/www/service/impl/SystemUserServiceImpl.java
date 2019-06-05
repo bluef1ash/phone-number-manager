@@ -31,13 +31,20 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         SystemUser systemUser = systemUsersDao.selectSystemUserAndRoleAndPrivilegesByName(username);
+        if (systemUser == null) {
+            throw new UsernameNotFoundException(username + "系统用户不存在！");
+        }
         List<Configuration> configurations = configurationsDao.selectObjectsAll();
         Map<String, Object> configurationsMap = new HashMap<>(configurations.size() + 1);
         for (Configuration configuration : configurations) {
             configurationsMap.put(configuration.getKey(), configuration.getValue());
         }
-        // 系统用户权限
+        Integer systemIsActive = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_is_active"));
         Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        if (systemIsActive == 0 && !systemAdministratorId.equals(systemUser.getSystemUserId())) {
+            throw new UsernameNotFoundException("该系统已经禁止登录，请联系管理员！");
+        }
+        // 系统用户权限
         Set<UserPrivilege> userPrivilegesAll = new LinkedHashSet<>(userPrivilegesDao.selectObjectsAll());
         Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
         if (systemAdministratorId.equals(systemUser.getSystemUserId())) {

@@ -116,4 +116,32 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      * @throws Exception SERVICE层异常
      */
     String findLastId(Long communityId, String communityName, String subdistrictName) throws Exception;
+
+    /**
+     * 获取社区楼长录入统计信息
+     *
+     * @param companyId         单位编号
+     * @param companyType       单位类型
+     * @param systemRoleId      系统用户角色编号
+     * @param communityRoleId   社区级用户角色编号
+     * @param subdistrictRoleId 街道级用户角色编号
+     * @return 统计信息对象
+     * @throws Exception SERVICE层异常
+     */
+    Map<String, Object> getBaseMessage(Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) throws Exception;
+
+    /**
+     * 获取社区楼长柱状图数据
+     *
+     * @param systemUser        正在登录中的系统用户对象
+     * @param companyId         单位编号
+     * @param companyType       单位类型
+     * @param typeParam         类型参数
+     * @param systemRoleId      系统用户角色编号
+     * @param communityRoleId   社区级用户角色编号
+     * @param subdistrictRoleId 街道级用户角色编号
+     * @return 柱状图数据
+     * @throws Exception SERVICE层异常
+     */
+    Map<String, Object> getChartBar(SystemUser systemUser, Long companyId, Long companyType, Boolean typeParam, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) throws Exception;
 }

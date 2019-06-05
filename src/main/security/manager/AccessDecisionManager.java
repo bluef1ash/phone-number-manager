@@ -4,6 +4,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.FilterInvocation;
 import utils.CommonUtil;
 import www.entity.SystemUser;
@@ -29,7 +30,7 @@ public class AccessDecisionManager implements org.springframework.security.acces
         Object principal = authentication.getPrincipal();
         HttpSession session = filterInvocation.getRequest().getSession();
         Map<String, Object> configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-        if (!(principal instanceof SystemUser) || configurationsMap == null) {
+        if (!(principal instanceof UserDetails) || configurationsMap == null) {
             return;
         }
         SystemUser systemUser = (SystemUser) principal;

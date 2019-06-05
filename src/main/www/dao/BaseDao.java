@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -201,4 +202,30 @@ public interface BaseDao<T> {
      * @throws DataAccessException 数据库操作异常
      */
     List<T> selectByPhones(@Param("phones") List<String> phones, @Param("id") Serializable id, @Param("subdistrictId") Long subdistrictId) throws DataAccessException;
+
+    /**
+     * 街道分组统计数量
+     *
+     * @return 社区数量对象
+     * @throws DataAccessException 数据库操作异常
+     */
+    LinkedList<Map<String, Object>> countForGroupSubdistrict() throws DataAccessException;
+
+    /**
+     * 通过街道单位编号社区分组统计数量
+     *
+     * @param subdistrictId 街道编号
+     * @return 社区数量对象
+     * @throws DataAccessException 数据库操作异常
+     */
+    LinkedList<Map<String, Object>> countForGroupCommunity(Long subdistrictId) throws DataAccessException;
+
+    /**
+     * 统计社区
+     *
+     * @param communityId 社区编号
+     * @return 社区数量对象
+     * @throws DataAccessException 数据库操作异常
+     */
+    LinkedList<Map<String, Object>> countForGroupByCommunityId(Long communityId) throws DataAccessException;
 }

@@ -6,9 +6,6 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.session.SessionInformationExpiredEvent;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -31,12 +28,7 @@ public class SimpleRedirectSessionInformationExpiredStrategy implements SessionI
     }
 
     @Override
-    public void onExpiredSessionDetected(SessionInformationExpiredEvent sessionInformationExpiredEvent) throws IOException, ServletException {
-        Cookie cookie = new Cookie("sessionExpired", "1");
-        cookie.setPath("/");
-        cookie.setMaxAge(60);
-        HttpServletResponse response = sessionInformationExpiredEvent.getResponse();
-        response.addCookie(cookie);
+    public void onExpiredSessionDetected(SessionInformationExpiredEvent sessionInformationExpiredEvent) throws IOException {
         redirectStrategy.sendRedirect(sessionInformationExpiredEvent.getRequest(), sessionInformationExpiredEvent.getResponse(), destinationUrl);
     }
 }

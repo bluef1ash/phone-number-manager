@@ -16,11 +16,8 @@ import java.util.Map;
 @Service("subcontractorService")
 public class SubcontractorServiceImpl extends BaseServiceImpl<Subcontractor> implements SubcontractorService {
     @Override
-    public Map<String, Object> findSubcontractors(Integer pageNumber, Integer pageDataSize, Long roleId, Long roleLocationId, Map<String, Object> configurationsMap) throws Exception {
+    public Map<String, Object> findSubcontractors(Integer pageNumber, Integer pageDataSize, Long roleId, Long roleLocationId, Long communityRoleId, Long subdistrictRoleId, Long systemRoleId) throws Exception {
         setPageHelper(pageNumber, pageDataSize);
-        Long communityRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("community_role_id"));
-        Long subdistrictRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("subdistrict_role_id"));
-        Long systemRoleId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_role_id"));
         List<Subcontractor> subcontractors = findSubcontractorBySystemUserRole(roleId, roleLocationId, communityRoleId, subdistrictRoleId, systemRoleId);
         return findObjectsMethod(subcontractors);
     }

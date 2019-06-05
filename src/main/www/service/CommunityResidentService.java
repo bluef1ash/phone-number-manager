@@ -44,15 +44,15 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
     /**
      * 通过社区居民查找匹配的社区居民
      *
-     * @param systemUser            登录的系统用户对象
-     * @param systemRoleId          系统角色编号
-     * @param communityRoleId       社区角色编号
-     * @param subdistrictRoleId     街道角色编号
-     * @param communityResident     需要查找的社区居民
-     * @param companyId             查找的范围单位的编号
-     * @param companyRoleId         查找的范围单位的类别编号
-     * @param pageNumber            分页页码
-     * @param pageDataSize          每页展示的数量
+     * @param systemUser        登录的系统用户对象
+     * @param systemRoleId      系统角色编号
+     * @param communityRoleId   社区角色编号
+     * @param subdistrictRoleId 街道角色编号
+     * @param communityResident 需要查找的社区居民
+     * @param companyId         查找的范围单位的编号
+     * @param companyRoleId     查找的范围单位的类别编号
+     * @param pageNumber        分页页码
+     * @param pageDataSize      每页展示的数量
      * @return 查找到的社区居民集合与分页对象
      * @throws Exception SERVICE层异常
      */
@@ -100,26 +100,40 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      */
     Map<String, String> getPartStatHead();
 
-    /**
-     * 计算并生成图表数据
-     *
-     * @param systemUser        系统用户对象
-     * @param getType           需要获取的类型，null全部，1基本信息，2柱状图
-     * @param companyId         需要获取的单位编号
-     * @param companyType       需要获取的单位类型
-     * @param systemRoleId      系统用户角色编号
-     * @param communityRoleId   社区级用户角色编号
-     * @param subdistrictRoleId 街道级用户角色编号
-     * @return 图表需要的JSON对象
-     * @throws Exception SERVICE层异常
-     */
-    Map<String, Object> computedCount(SystemUser systemUser, Integer getType, Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) throws Exception;
 
     /**
      * 设置Excel头部
      *
      * @param titles 标题数组
      * @return 设置接口
+     * @throws Exception SERVICE层异常
      */
-    ExcelUtil.DataHandler setExcelHead(String[] titles);
+    ExcelUtil.DataHandler setExcelHead(String[] titles) throws Exception;
+
+    /**
+     * 获取社区居民录入统计信息
+     *
+     * @param companyId         单位编号
+     * @param companyType       单位类型
+     * @param systemRoleId      系统用户角色编号
+     * @param communityRoleId   社区级用户角色编号
+     * @param subdistrictRoleId 街道级用户角色编号
+     * @return 统计信息对象
+     * @throws Exception SERVICE层异常
+     */
+    Map<String, Object> getBaseMessage(Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) throws Exception;
+
+    /**
+     * 获取社区居民柱状图数据
+     *
+     * @param systemUser        正在登录中的系统用户对象
+     * @param companyId         单位编号
+     * @param companyType       单位类型
+     * @param systemRoleId      系统用户角色编号
+     * @param communityRoleId   社区级用户角色编号
+     * @param subdistrictRoleId 街道级用户角色编号
+     * @return 柱状图数据
+     * @throws Exception SERVICE层异常
+     */
+    Map<String, Object> getChartBar(SystemUser systemUser, Long companyId, Long companyType, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId) throws Exception;
 }

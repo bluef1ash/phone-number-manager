@@ -25,12 +25,9 @@
         </property>
     </bean>
     <!-- 处理静态资源 -->
-    <!-- 上传的图片缓存1个月，其他js，css，img资源缓存一年 -->
-    <mvc:resources mapping="/lib/**" location="/lib/" cache-period="0"/>
-    <mvc:resources mapping="/css/**" location="/css/" cache-period="0"/>
-    <mvc:resources mapping="/javascript/**" location="/javascript/" cache-period="0"/>
-    <mvc:resources mapping="/images/**" location="/images/" cache-period="0"/>
-    <mvc:resources mapping="/fonts/**" location="/fonts/" cache-period="0"/>
+    <mvc:resources mapping="/javascript/**" location="/javascript/" cache-period="10080"/>
+    <mvc:resources mapping="/images/**" location="/images/" cache-period="10080"/>
+    <mvc:resources mapping="/fonts/**" location="/fonts/" cache-period="10080"/>
     <!-- 扫描所有的controller 但是不扫描service -->
     <context:component-scan base-package="www">
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
@@ -39,9 +36,9 @@
     <bean id="templateResolver" class="org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver">
         <property name="templateMode" value="HTML5"/>
         <property name="characterEncoding" value="UTF-8"/>
-        <property name="prefix" value="/html/"/>
+        <property name="prefix" value="/WEB-INF/html/"/>
         <property name="suffix" value=".html"/>
-        <property name="cacheable" value="false"/>
+        <property name="cacheable" value="true"/>
     </bean>
     <bean id="templateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
         <property name="templateResolver" ref="templateResolver"/>
@@ -62,8 +59,6 @@
         <!--将当前控制器名称存入session以用于验证的拦截器-->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
-            <mvc:exclude-mapping path="/lib/**"/>
-            <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/javascript/**"/>
             <mvc:exclude-mapping path="/uploads/**"/>
             <mvc:exclude-mapping path="/images/**"/>
@@ -78,7 +73,6 @@
     </bean>
     <!-- 校验错误信息配置文件 -->
     <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
-        <property name="basenames" value="config.validationMessages"/>
         <property name="fileEncodings" value="utf-8"/>
         <property name="cacheSeconds" value="120"/>
     </bean>

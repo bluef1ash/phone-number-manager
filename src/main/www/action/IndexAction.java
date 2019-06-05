@@ -1,5 +1,6 @@
 package www.action;
 
+import constant.ComputedDataTypes;
 import exception.JsonException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import www.entity.UserPrivilege;
 import www.service.CommunityResidentService;
+import www.service.DormitoryManagerService;
 import www.service.UserPrivilegeService;
 
 import javax.annotation.Resource;
@@ -26,6 +28,8 @@ import java.util.Set;
 public class IndexAction extends BaseAction {
     @Resource
     private CommunityResidentService communityResidentService;
+    @Resource
+    private DormitoryManagerService dormitoryManagerService;
     @Resource
     private UserPrivilegeService userPrivilegeService;
 
@@ -69,19 +73,38 @@ public class IndexAction extends BaseAction {
     /**
      * 使用AJAX技术获取图表数据
      *
-     * @param session     session对象
-     * @param getType     需要获取的类型，null全部，1基本信息，2柱状图
-     * @param id          需要获取的单位编号
-     * @param companyType 需要获取的单位类型
+     * @param session           session对象
+     * @param getType           需要获取的类型，null全部，1基本信息，2柱状图
+     * @param companyId         需要获取的单位编号
+     * @param companyType       需要获取的单位类型
+     * @param barChartTypeParam 柱状图表类型参数
      * @return Ajax返回JSON对象
      */
     @RequestMapping(value = "/getcomputedcount", method = RequestMethod.GET)
     @ResponseBody
-    public Map<String, Object> getComputedCount(HttpSession session, Integer getType, Long id, Long companyType) {
+    public Map<String, Object> getComputedCount(HttpSession session, Integer getType, Long companyId, Long companyType, Boolean barChartTypeParam) {
         getSessionRoleId(session);
+        Map<String, Object> jsonMap = new HashMap<>(3);
+        Map<String, Object> resident = new HashMap<>(3);
+        Map<String, Object> dormitory = new HashMap<>(3);
         try {
-            Map<String, Object> jsonMap = communityResidentService.computedCount(systemUser, getType, id, companyType, systemRoleId, communityRoleId, subdistrictRoleId);
+            if (getType == null || getType == 0) {
+                resident.put("baseMessage", communityResidentService.getBaseMessage(companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
+                resident.put("barChart", communityResidentService.getChartBar(systemUser, companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
+                dormitory.put("baseMessage", dormitoryManagerService.getBaseMessage(companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
+                dormitory.put("barChart", dormitoryManagerService.getChartBar(systemUser, companyId, companyType, barChartTypeParam, systemRoleId, communityRoleId, subdistrictRoleId));
+            } else if (getType == ComputedDataTypes.RESIDENT_BASE_MESSAGE.getCode()) {
+                resident.put("baseMessage", communityResidentService.getBaseMessage(companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
+            } else if (getType == ComputedDataTypes.RESIDENT_BAR_CHART.getCode()) {
+                resident.put("barChart", communityResidentService.getChartBar(systemUser, companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
+            } else if (getType == ComputedDataTypes.DORMITORY_BASE_MESSAGE.getCode()) {
+                dormitory.put("baseMessage", dormitoryManagerService.getBaseMessage(companyId, companyType, systemRoleId, communityRoleId, subdistrictRoleId));
+            } else if (getType == ComputedDataTypes.DORMITORY_BAR_CHART.getCode()) {
+                dormitory.put("barChart", dormitoryManagerService.getChartBar(systemUser, companyId, companyType, barChartTypeParam, systemRoleId, communityRoleId, subdistrictRoleId));
+            }
             jsonMap.put("state", 1);
+            jsonMap.put("resident", resident);
+            jsonMap.put("dormitory", dormitory);
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();

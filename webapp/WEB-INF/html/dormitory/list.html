@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="layouts/header :: commonHead('社区楼长列表 - 社区居民管理', ~{::script})">
+        <title></title>
+        <script th:inline="javascript" type="text/javascript">
+            var publicPrams = {createUrl: /*[[@{'/dormitory/create'}]]*/null, editUrl: /*[[@{'/dormitory/edit?id='}]]*/null, deleteUrl: /*[[@{'/dormitory/ajax_delete'}]]*/null, companySelectUrl: /*[[@{'/community/ajax_select'}]]*/null, importAsSystemUrl: /*[[@{'/dormitory/import_as_system'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/ajax_load'}]]*/null, loadDataUrl: /*[[@{'/dormitory/ajax_list'}]]*/null, downloadExcelUrl: /*[[@{'/dormitory/save_as_excel'}]]*/null};
+            var data = {data: /*[[${dormitoryManagers}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, roleIds: /*[[${roleIds}]]*/null, roleId: /*[[${roleId}]]*/null};
+        </script>
+        <script th:src="@{'/javascript/dormitory-list-bundle.js'}" type="text/javascript"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区居民管理">社区居民管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="社区居民管理">社区居民管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/dormitory/list'}" title="社区楼长列表">社区楼长列表</a>
+                </li>
+            </ol>
+            <div id="dormitory_list" v-cloak></div>
+        </th:block>
+    </body>
+</html>

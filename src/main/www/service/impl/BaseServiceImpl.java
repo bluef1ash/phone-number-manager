@@ -329,4 +329,28 @@ public class BaseServiceImpl<T> implements BaseService<T> {
         data.put("titleLabel", titleLabel);
         return data;
     }
+
+    /**
+     * 获取单位类型和单位编号
+     *
+     * @param systemUser    登录的系统用户对象
+     * @param companyId     查找的范围单位的编号
+     * @param companyRoleId 查找的范围单位的类别编号
+     * @param pageNumber    分页页码
+     * @param pageDataSize  每页展示的数量
+     * @return 单位类型和单位编号集合
+     */
+    Map<String, Long> getCompany(SystemUser systemUser, Long companyId, Long companyRoleId, Integer pageNumber, Integer pageDataSize) {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+        if (companyRoleId == null || companyId == null) {
+            companyRoleId = systemUser.getRoleId();
+            companyId = systemUser.getRoleLocationId();
+        }
+        Map<String, Long> company = new HashMap<>(3);
+        company.put("companyId", companyId);
+        company.put("companyRoleId", companyRoleId);
+        PageHelper.startPage(pageNumber, pageDataSize);
+        return company;
+    }
 }

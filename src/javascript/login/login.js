@@ -45,11 +45,10 @@ $(document).ready(() => {
                 initGeetest({
                     gt: data.gt,
                     challenge: data.challenge,
-                    product: "float",
+                    product: "bind",
                     offline: !data.success,
-                    new_captcha: true,
-                    width: "2rem"
-                }, (captchaObj) => {
+                    new_captcha: true
+                }, captchaObj => {
                     this.captchaObj = captchaObj;
                     this.captchaObj.bindForm("#login_form");
                     this.captchaObj.appendTo("#captcha");
@@ -108,11 +107,8 @@ $(document).ready(() => {
                 }
                 let captchaValid = this.captchaObj.getValidate();
                 if (typeof captchaValid === "undefined" || !captchaValid) {
-                    this.$set(this.messages, 2, "必须进行验证身份！");
-                    this.isCaptcha = "block";
-                    return false;
-                } else {
-                    this.$set(this.isInvalids, 0, false);
+                    this.captchaObj.verify();
+                    captchaValid = this.captchaObj.getValidate();
                 }
                 $.ajax({
                     url: this.$refs.loginForm.action,

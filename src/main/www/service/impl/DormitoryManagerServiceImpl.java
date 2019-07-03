@@ -2,7 +2,6 @@ package www.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.github.pagehelper.PageHelper;
 import com.github.promeg.pinyinhelper.Pinyin;
 import constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
@@ -197,14 +196,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
 
     @Override
     public Map<String, Object> findDormitoryManagerByDormitoryManager(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, DormitoryManager dormitoryManager, Long companyId, Long companyRoleId, Integer pageNumber, Integer pageDataSize) {
-        pageNumber = pageNumber == null ? 1 : pageNumber;
-        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        if (companyRoleId == null || companyId == null) {
-            companyRoleId = systemUser.getRoleId();
-            companyId = systemUser.getRoleLocationId();
-        }
-        PageHelper.startPage(pageNumber, pageDataSize);
-        List<DormitoryManager> dormitoryManagers = dormitoryManagersDao.selectByUserRole(companyRoleId, companyId, systemRoleId, communityRoleId, subdistrictRoleId, dormitoryManager);
+        Map<String, Long> company = getCompany(systemUser, companyId, companyRoleId, pageNumber, pageDataSize);
+        List<DormitoryManager> dormitoryManagers = dormitoryManagersDao.selectByUserRole(company.get("companyRoleId"), company.get("companyId"), systemRoleId, communityRoleId, subdistrictRoleId, dormitoryManager);
         return findObjectsMethod(dormitoryManagers);
     }
 

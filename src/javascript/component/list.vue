@@ -18,10 +18,10 @@
                         </div>
                         <div class="col-md-12 d-none d-md-block">
                             <div class="row">
-                                <form class="form-inline resident-list-search" action="javascript:" method="get">
+                                <form action="javascript:" class="form-inline list-search" method="get">
                                     <div class="form-group">
                                         <label>单位</label>
-                                        <el-cascader :change-on-select="true" :clearable="true" :options="companies" @change="chooseCompany" placeholder="单位搜索"></el-cascader>
+                                        <el-cascader :clearable="true" :options="companies" :props="cascaderProps" @change="chooseCompany" placeholder="单位搜索"></el-cascader>
                                     </div>
                                     <div class="form-group">
                                         <label for="name" v-text="'社区' + dataTypeName + '姓名'"></label>
@@ -177,6 +177,9 @@
                 roleIds: data.roleIds,
                 roleId: data.roleId,
                 companies: [],
+                cascaderProps: {
+                    checkStrictly: true
+                },
                 companies2: [],
                 subdistricts: [],
                 subdistrictId: 0,
@@ -523,7 +526,7 @@
         }
     }
 
-    .resident-list-search {
+    .list-search {
         justify-content: space-between;
 
         div.form-group {

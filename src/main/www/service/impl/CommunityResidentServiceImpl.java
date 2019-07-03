@@ -2,7 +2,6 @@ package www.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.github.pagehelper.PageHelper;
 import constant.SystemConstant;
 import exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
@@ -66,32 +65,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Override
     public Map<String, Object> findCommunityResidentByCommunityResident(SystemUser systemUser, Long systemRoleId, Long communityRoleId, Long subdistrictRoleId, CommunityResident communityResident, Long companyId, Long companyRoleId, Integer pageNumber, Integer pageDataSize) {
-        pageNumber = pageNumber == null ? 1 : pageNumber;
-        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        List<CommunityResident> communityResidents = null;
-        if (companyRoleId != null && companyRoleId.equals(communityRoleId)) {
-            // 社区级别
-            communityResident.setCommunityId(companyId);
-            PageHelper.startPage(pageNumber, pageDataSize);
-            communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
-        } else if (companyRoleId != null && companyRoleId.equals(subdistrictRoleId)) {
-            // 街道级别
-            PageHelper.startPage(pageNumber, pageDataSize);
-            communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResident(communityResident);
-        } else {
-            // 未输入单位类型
-            if (systemUser.getRoleId().equals(systemRoleId)) {
-                PageHelper.startPage(pageNumber, pageDataSize);
-                communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
-            } else if (systemUser.getRoleId().equals(subdistrictRoleId)) {
-                PageHelper.startPage(pageNumber, pageDataSize);
-                communityResidents = communityResidentsDao.selectCommunityResidentsByCommunityResident(communityResident);
-            } else if (systemUser.getRoleId().equals(communityRoleId)) {
-                communityResident.setCommunityId(systemUser.getRoleLocationId());
-                communityResidents = communityResidentsDao.selectObjectsByObject(communityResident);
-                PageHelper.startPage(pageNumber, pageDataSize);
-            }
-        }
+        Map<String, Long> company = getCompany(systemUser, companyId, companyRoleId, pageNumber, pageDataSize);
+        List<CommunityResident> communityResidents = communityResidentsDao.selectByUserRole(company.get("companyRoleId"), company.get("companyId"), systemRoleId, communityRoleId, subdistrictRoleId, communityResident);
         return findObjectsMethod(communityResidents);
     }
 

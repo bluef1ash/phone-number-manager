@@ -167,7 +167,7 @@ public class CommunityResidentAction extends BaseAction {
     /**
      * 使用AJAX技术通过社区居民编号删除社区居民
      *
-     * @param id      对应编号
+     * @param id 对应编号
      * @return Ajax信息
      */
     @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
@@ -258,7 +258,7 @@ public class CommunityResidentAction extends BaseAction {
                 communityResident.setCommunityResidentName(name);
                 communityResident.setCommunityResidentAddress(address);
                 communityResident.setCommunityResidentPhones(phone);
-                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(systemUser, communityRoleId, subdistrictRoleId, systemAdministratorId, communityResident, companyId, companyRoleId, page, null);
+                communityResidentMap = communityResidentService.findCommunityResidentByCommunityResident(systemUser, systemAdministratorId, communityRoleId, subdistrictRoleId, communityResident, companyId, companyRoleId, page, null);
             } else {
                 communityResidentMap = communityResidentService.findCommunityResidentsAndCommunity(systemUser, systemRoleId, communityRoleId, subdistrictRoleId, page, null);
             }

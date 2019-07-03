@@ -31,19 +31,15 @@
                                           <i class="icon-lock"></i>
                                         </span>
                                     </div>
-                                    <input class="form-control" :class="{'is-invalid': isInvalids[1]}" type="password" name="password" placeholder="请输入用户密码" v-model="password" ref="password">
+                                    <input :class="{'is-invalid': isInvalids[1]}" @keyup.enter="login" class="form-control" name="password" placeholder="请输入用户密码" ref="password" type="password" v-model="password">
                                     <div class="invalid-feedback" v-text="messages[1]"></div>
-                                </div>
-                                <div class="row login-captcha">
-                                    <div id="captcha"></div>
-                                    <div class="invalid-feedback" :style="{'display': isCaptcha}">{{messages[2]}}</div>
                                 </div>
                                 <div class="row">
                                     <div class="col-6">
                                         <button class="btn btn-primary px-4" type="button" @click="login">登录</button>
                                     </div>
                                     <div class="col-6 text-right">
-                                        <a th:href="@{'/user/forgotPassword'}" class="btn btn-link px-0">忘记密码？</a>
+                                        <a class="btn btn-link px-0" th:href="@{'/user/forgotpassword'}" title="忘记密码？">忘记密码？</a>
                                     </div>
                                 </div>
                             </div>

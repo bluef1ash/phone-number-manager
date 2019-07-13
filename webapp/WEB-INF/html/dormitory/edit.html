@@ -98,7 +98,7 @@
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="political_status">出生年月</label>
                                 <div class="col-md-9">
-                                    <el-date-picker placeholder="选择出生年月" type="month" v-model="dormitoryManager.birth"></el-date-picker>
+                                    <el-date-picker :class="{'is-invalid': errorClasses[3]}" format="yyyy年MM月" placeholder="请选择出生年月" type="month" v-model="dormitoryManager.birth" value-format="yyyy-MM-dd"></el-date-picker>
                                     <input name="birth" type="hidden" v-model="dormitoryManager.birth"> <br>
                                     <span class="help-block">必填项</span>
                                     <div :style="errorClasses[3] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[3]"></div>
@@ -166,9 +166,10 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-md-3 col-form-label" for="manager_count">社区楼长联系户数</label>
+                                <label class="col-md-3 col-form-label">社区楼长联系户数</label>
                                 <div class="col-md-9">
-                                    <input :class="['form-control', {'is-invalid': errorClasses[9]}]" id="manager_count" min="0" name="managerCount" placeholder="请输入社区楼长联系户数" type="number" v-model="dormitoryManager.managerCount">
+                                    <el-input-number :class="{'is-invalid': errorClasses[9]}" :min="1" name="managerCount" placeholder="请输入社区楼长联系户数" v-model="dormitoryManager.managerCount"></el-input-number>
+                                    <br>
                                     <span class="help-block">必填项，社区楼长联系户数只允许填写数字</span>
                                     <div :style="errorClasses[9] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[9]"></div>
                                 </div>
@@ -202,7 +203,6 @@
                         </div>
                         <div class="card-footer">
                             <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
-                            <input name="id" th:if="${dormitoryManager} != null" type="hidden" v-model="dormitoryManager.id">
                             <input name="_method" th:if="${dormitoryManager} != null" type="hidden" value="PUT">
                             <button class="btn btn-sm btn-primary" type="submit">
                                 <i class="fa fa-dot-circle-o"></i>保存

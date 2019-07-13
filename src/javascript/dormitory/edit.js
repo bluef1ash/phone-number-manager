@@ -1,11 +1,14 @@
 import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
-import {DatePicker, Message} from "element-ui";
+import {DatePicker, InputNumber, Message} from "element-ui";
+import "moment/locale/zh-cn";
+import moment from "moment";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
     Vue.use(DatePicker);
+    Vue.use(InputNumber);
     new Vue({
         el: "#edit_dormitory",
         data: {
@@ -33,6 +36,7 @@ $(document).ready(() => {
                     subcontractorId: 0
                 };
             } else {
+                this.dormitoryManager.birth = moment(this.dormitoryManager.birth).format("YYYY-MM-DD");
                 this.loadSubcontractors();
             }
             this.subdistricts.push(this.communities[0].subdistrict);
@@ -62,6 +66,7 @@ $(document).ready(() => {
                 this.dormitoryManager.communityId = 0;
                 this.subcontractors = [];
                 this.dormitoryManager.subcontractorId = 0;
+                this.$set(this.dormitoryManager, "id", null);
                 if (this.subdistrictId !== 0) {
                     this.communities.forEach(item => {
                         if (item.subdistrict.subdistrictId === this.subdistrictId) {
@@ -78,6 +83,7 @@ $(document).ready(() => {
              * 切换社区
              */
             chooseCommunity() {
+                this.$set(this.dormitoryManager, "id", null);
                 this.subcontractors = [];
                 this.dormitoryManager.subcontractorId = 0;
                 this.loadSubcontractors();
@@ -166,7 +172,7 @@ $(document).ready(() => {
                 if (this.dormitoryManager.managerCount === null || this.dormitoryManager.managerCount === "") {
                     return this.stopSubmit(event, "社区楼长的联系户数不能为空！", 9);
                 }
-                let isPhoneEmpty = (this.dormitoryManager.telephone === null || this.dormitoryManager.telephone === "") || (this.dormitoryManager.landline === null || this.dormitoryManager.landline === "");
+                let isPhoneEmpty = (this.dormitoryManager.telephone === null || this.dormitoryManager.telephone === "") && (this.dormitoryManager.landline === null || this.dormitoryManager.landline === "");
                 if (isPhoneEmpty) {
                     return this.stopSubmit(event, "社区楼长的联系方式必须填写一项！", [10, 11], true);
                 }

@@ -1,5 +1,6 @@
 package www.validator;
 
+import constant.PhoneCheckedTypes;
 import exception.BusinessException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -49,7 +50,7 @@ public class SubdistrictInputValidator extends BaseInputValidator<Subdistrict> i
      * @return 是否验证成功
      */
     private boolean checkedPhone(String phone) {
-        if (StringCheckedRegexUtil.checkPhone(phone) == 0) {
+        if (StringCheckedRegexUtil.checkPhone(phone) == PhoneCheckedTypes.FAILED) {
             field = "subdistrictTelephone";
             errorCode = "subdistrict.subdistrictTelephone.errorCode";
             message = "输入的联系方式不合法，请检查后重试！";

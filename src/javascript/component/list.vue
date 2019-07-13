@@ -59,47 +59,47 @@
                         <el-table :data="data" border v-loading="isLoading">
                             <el-table-column :index="index => index + 1" label="序号" type="index">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.$index + 1" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.$index + 1" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="社区居民姓名" prop="communityResidentName" v-if="dataType === 0">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.communityResidentName" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.communityResidentName" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="社区楼长姓名" prop="name" v-if="dataType === 1">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.name" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.name" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="社区楼长性别" prop="sexName" v-if="dataType === 1">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.sexName" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.sexName" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="家庭住址" prop="communityResidentAddress" v-if="dataType === 0">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.communityResidentAddress" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.communityResidentAddress" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="年龄" prop="age" v-if="dataType === 1">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.age" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.age" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="联系方式（多个联系方式以英文逗号分隔）" prop="communityResidentPhones" v-if="dataType === 0">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.communityResidentPhones" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.communityResidentPhones" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="联系方式（多个联系方式以英文逗号分隔）" prop="telephones" v-if="dataType === 1">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.telephones" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.telephones" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="所属社区居委会" prop="community.communityName">
                                 <template slot-scope="scope">
-                                    <element-table-popover :data="scope.row.community.communityName" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.community.communityName" :row="scope.row" v-if="!loading"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="操作">

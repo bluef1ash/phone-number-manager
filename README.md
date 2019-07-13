@@ -23,9 +23,9 @@
 - [MyBatis](https://github.com/mybatis)
 - [POI](https://poi.apache.org)
 - [Webpack](https://github.com/webpack/webpack)
-- [Jquery](https://jquery.com)
+- [JQuery](https://jquery.com)
 - [Bootstrap](https://getbootstrap.com)
-- [Vue](https://github.com/vuejs/vue)
+- [Vue.js](https://github.com/vuejs/vue)
 - [Vue Router](https://github.com/vuejs/vue-router)
 - [Vue Cookie](https://github.com/alfhen/vue-cookie)
 - [Vue CountTo](https://github.com/PanJiaChen/vue-countTo)
@@ -38,10 +38,22 @@
 
 ## 系统截图
 
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/login.png)
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/index.png)
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/list.png)
-![image](https://github.com/bluef1ash/phone_number_manager/raw/master/design/screenshot/create.png)
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/login.jpg)
+
+<div style="text-align: center;">登录页面</div>
+
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/index.jpg)
+
+<div style="text-align: center;">系统首页</div>
+
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/list.jpg)
+
+<div style="text-align: center;">列表页面</div>
+
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/create.jpg)
+
+<div style="text-align: center;">添加、编辑数据页面</div>
+
 
 ## Author: Bluef1ash（廿二月的天）
 
@@ -56,3 +68,6 @@ E-mail: liangtian_2005@163.com
 ```shell
 npm install
 ```
+>系统默认用户名：**admin**
+
+>系统默认密码：**123456**

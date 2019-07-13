@@ -3,6 +3,7 @@ package www.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.promeg.pinyinhelper.Pinyin;
+import constant.PhoneCheckedTypes;
 import constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -66,17 +67,22 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     public DormitoryManager findDormitoryManagerAndCommunityById(String id) {
         DormitoryManager dormitoryManager = dormitoryManagersDao.selectObjectAndCommunityById(id);
         String[] phones = dormitoryManager.getTelephones().split(",");
-        if (phones.length == 1) {
-            setPhoneForPhoneType(phones[0], dormitoryManager);
-        } else if (phones.length == 2) {
-            setPhoneForPhoneType(phones[0], dormitoryManager);
-            setPhoneForPhoneType(phones[1], dormitoryManager);
-        }
-        return dormitoryManager;
+        return phoneTypeHandler(phones, dormitoryManager);
     }
 
     @Override
     public void createDormitoryManager(DormitoryManager dormitoryManager) {
+        StringBuilder phones = new StringBuilder();
+        if (StringUtils.isNotEmpty(dormitoryManager.getTelephone())) {
+            phones.append(dormitoryManager.getTelephone());
+        }
+        if (StringUtils.isNotEmpty(dormitoryManager.getLandline())) {
+            if (phones.length() > 0) {
+                phones.append(",");
+            }
+            phones.append(dormitoryManager.getLandline());
+        }
+        dormitoryManager.setTelephones(phones.toString());
         dormitoryManagersDao.insertObject(dormitoryManager);
     }
 
@@ -176,14 +182,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 // 处理多个联系方式
                 if (dormitoryManager.getTelephones().contains(",")) {
                     String[] phones = dormitoryManager.getTelephones().split(",");
-                    if (phones.length == 2) {
-                        setPhoneForPhoneType(phones[0], dormitoryManager);
-                        setPhoneForPhoneType(phones[1], dormitoryManager);
-                    } else {
-                        setPhoneForPhoneType(phones[0], dormitoryManager);
-                    }
+                    phoneTypeHandler(phones, dormitoryManager);
                 } else {
-                    setPhoneForPhoneType(dormitoryManager.getTelephones(), dormitoryManager);
+                    phoneTypeHandler(new String[]{dormitoryManager.getTelephones()}, dormitoryManager);
                 }
                 // 处理分包人
                 dormitoryManager.setSubcontractorName(dormitoryManager.getSubcontractor().getName());
@@ -276,32 +277,32 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
 
     @Override
     public String findLastId(Long communityId, String communityName, String subdistrictName) {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder lastId = new StringBuilder();
         String id = dormitoryManagersDao.selectLastIdByCommunityId(communityId);
         long idNumber = 0L;
         if (StringUtils.isNotEmpty(id)) {
             Matcher matcher = idPatten.matcher(id);
             while (matcher.find()) {
-                stringBuilder.append(matcher.group(1).toUpperCase());
+                lastId.append(matcher.group(1).toUpperCase());
                 idNumber = Long.parseLong(matcher.group(2));
             }
         } else {
             String sn = subdistrictName.replaceAll("(?iUs)[街道办事处]", "");
             String cn = communityName.replaceAll("(?iUs)[社区居委会]", "");
             String regex = ",";
-            String subdistrictNamePY = Pinyin.toPinyin(sn, regex);
-            String communityNamePY = Pinyin.toPinyin(cn, regex);
-            String[] subdistrictNamePYSplit = subdistrictNamePY.split(regex);
-            String[] communityNamePYSplit = communityNamePY.split(regex);
-            for (String split : subdistrictNamePYSplit) {
-                stringBuilder.append(split.toUpperCase(), 0, 1);
+            String subdistrictNamePinyin = Pinyin.toPinyin(sn, regex);
+            String communityNamePinyin = Pinyin.toPinyin(cn, regex);
+            String[] subdistrictNamePinyinSplit = subdistrictNamePinyin.split(regex);
+            String[] communityNamePinyinSplit = communityNamePinyin.split(regex);
+            for (String split : subdistrictNamePinyinSplit) {
+                lastId.append(split.toUpperCase(), 0, 1);
             }
-            for (String split : communityNamePYSplit) {
-                stringBuilder.append(split.toUpperCase(), 0, 1);
+            for (String split : communityNamePinyinSplit) {
+                lastId.append(split.toUpperCase(), 0, 1);
             }
         }
-        stringBuilder.append(String.format("%04d", idNumber + 1));
-        return stringBuilder.toString();
+        lastId.append(String.format("%04d", idNumber + 1));
+        return lastId.toString();
     }
 
     @Override
@@ -494,15 +495,18 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     /**
      * 根据联系方式类型设置
      *
-     * @param phone            联系方式
+     * @param phones           联系方式数组
      * @param dormitoryManager 楼长对象
+     * @return 社区居民楼长对象
      */
-    private void setPhoneForPhoneType(String phone, DormitoryManager dormitoryManager) {
-        int phoneType = StringCheckedRegexUtil.checkPhone(phone);
-        if (phoneType == 1) {
-            dormitoryManager.setTelephone(phone);
-        } else if (phoneType == 2) {
-            dormitoryManager.setLandline(phone);
+    private DormitoryManager phoneTypeHandler(String[] phones, DormitoryManager dormitoryManager) {
+        for (String phone : phones) {
+            if (StringCheckedRegexUtil.checkPhone(phone) == PhoneCheckedTypes.TELEPHONE) {
+                dormitoryManager.setTelephone(phone);
+            } else if (StringCheckedRegexUtil.checkPhone(phone) == PhoneCheckedTypes.LANDLINE) {
+                dormitoryManager.setLandline(phone);
+            }
         }
+        return dormitoryManager;
     }
 }

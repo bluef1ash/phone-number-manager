@@ -237,6 +237,7 @@
         TIMESTAMPDIFF(YEAR, `pm_dormitory_managers`.`birth`, CURDATE()) AS 'age',
         `pm_dormitory_managers`.`work_status`,
         `pm_dormitory_managers`.`telephones`,
+        `pm_dormitory_managers`.`edit_time`,
         `pm_dormitory_managers`.`community_id`,
         `pm_communities`.`name` AS 'community_name'
         FROM

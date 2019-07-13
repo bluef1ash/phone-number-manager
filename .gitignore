@@ -129,7 +129,6 @@ fabric.properties
 target/
 node_modules/
 webapp/uploads/
-src/main/resources/
 *.iml
 src/test/resources/
 git_stats/

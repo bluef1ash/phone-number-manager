@@ -1,5 +1,6 @@
 package www.validator;
 
+import constant.PhoneCheckedTypes;
 import exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
@@ -93,7 +94,7 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
                 return false;
             }
             // 验证固定电话与手机
-            if (StringCheckedRegexUtil.checkPhone(residentPhone) == 0) {
+            if (StringCheckedRegexUtil.checkPhone(residentPhone) == PhoneCheckedTypes.FAILED) {
                 message = "输入的联系方式不合法，请检查后重试！";
                 return false;
             }

@@ -1,5 +1,6 @@
 package www.validator;
 
+import constant.PhoneCheckedTypes;
 import exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
@@ -52,12 +53,14 @@ public class DormitoryManagerInputValidator extends BaseInputValidator<Dormitory
             message = "社区楼长的联系方式必须填写一项！";
             return false;
         }
-        if (StringUtils.isNotEmpty(dormitoryManager.getTelephone()) && StringCheckedRegexUtil.checkPhone(dormitoryManager.getTelephone()) != 1) {
+        if (StringUtils.isNotEmpty(dormitoryManager.getTelephone()) && StringCheckedRegexUtil.checkPhone(dormitoryManager.getTelephone()) != PhoneCheckedTypes.TELEPHONE) {
             message = "社区楼长的移动联系方式不合法！";
+            return false;
         }
-        if (StringUtils.isNotEmpty(dormitoryManager.getLandline()) && StringCheckedRegexUtil.checkPhone(dormitoryManager.getLandline()) != 2) {
+        if (StringUtils.isNotEmpty(dormitoryManager.getLandline()) && StringCheckedRegexUtil.checkPhone(dormitoryManager.getLandline()) != PhoneCheckedTypes.LANDLINE) {
             field = "landline";
             message = "社区楼长的固定联系方式不合法！";
+            return false;
         }
         // 验证姓名+地址重复
         String nameAddress = dormitoryManager.getName() + dormitoryManager.getAddress();

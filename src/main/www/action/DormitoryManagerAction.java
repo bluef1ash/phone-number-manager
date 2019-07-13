@@ -6,6 +6,7 @@ import exception.BusinessException;
 import exception.JsonException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.datetime.DateFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import utils.CommonUtil;
+import utils.DateUtil;
 import utils.ExcelUtil;
 import www.entity.Community;
 import www.entity.DormitoryManager;
@@ -28,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.ByteArrayOutputStream;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +58,7 @@ public class DormitoryManagerAction extends BaseAction {
     public void initBinder(DataBinder binder) {
         String validFunction = (String) request.getSession().getAttribute("validFunction");
         if ("dormitoryManagerCreateOrEditHandle".equals(validFunction)) {
+            binder.addCustomFormatter(new DateFormatter("yyyy-MM-dd"));
             binder.replaceValidators(new DormitoryManagerInputValidator(dormitoryManagerService, request));
         }
     }
@@ -146,6 +150,7 @@ public class DormitoryManagerAction extends BaseAction {
                 throw new BusinessException("系统出现错误，请联系管理员！");
             }
         }
+        dormitoryManager.setEditTime(DateUtil.getTimestamp(new Date()));
         if (RequestMethod.POST.toString().equals(httpServletRequest.getMethod())) {
             try {
                 dormitoryManagerService.createDormitoryManager(dormitoryManager);

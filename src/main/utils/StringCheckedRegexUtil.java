@@ -1,5 +1,7 @@
 package utils;
 
+import constant.PhoneCheckedTypes;
+
 import java.util.regex.Pattern;
 
 /**
@@ -17,12 +19,12 @@ public class StringCheckedRegexUtil {
      * @param phone 需要验证的联系方式
      * @return 1验证为移动联系方式，2座机，0非法联系方式
      */
-    public static int checkPhone(String phone) {
+    public static PhoneCheckedTypes checkPhone(String phone) {
         if (phonePattern.matcher(phone).matches()) {
-            return 1;
+            return PhoneCheckedTypes.TELEPHONE;
         } else if (landlinePattern.matcher(phone).matches()) {
-            return 2;
+            return PhoneCheckedTypes.LANDLINE;
         }
-        return 0;
+        return PhoneCheckedTypes.FAILED;
     }
 }

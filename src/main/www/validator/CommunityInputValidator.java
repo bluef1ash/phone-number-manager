@@ -1,5 +1,6 @@
 package www.validator;
 
+import constant.PhoneCheckedTypes;
 import exception.BusinessException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -50,7 +51,7 @@ public class CommunityInputValidator extends BaseInputValidator<Community> imple
      * @return 联系方式是否合法
      */
     private boolean checkedPhone(String phone) {
-        if (StringCheckedRegexUtil.checkPhone(phone) == 0) {
+        if (StringCheckedRegexUtil.checkPhone(phone) == PhoneCheckedTypes.FAILED) {
             message = "输入的联系方式不合法，请检查后重试！";
             return false;
         }

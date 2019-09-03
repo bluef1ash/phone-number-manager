@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <nav th:fragment="pagination(pageLink, pageInfo)">
+            <div class="pagination-custom" th:text="'共' + ${pageInfo.getTotal()} + '条'"></div>
+            <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
+            <ul class="pagination float-left">
+                <li class="page-item" th:classappend="${pageInfo.isIsFirstPage()} ? 'disabled' : ''">
+                    <a class="page-link" th:href="${pageInfo.isIsFirstPage()} ? 'javascript:' : @{(${pageLink})(page=${pageInfo.pageNum - 1})}" title="上一页" th:disabled="${pageInfo.isIsFirstPage()} ? true : false">上一页</a>
+                </li>
+                <li class="page-item" th:classappend="${i == pageInfo.getPageNum()} ? 'active' : ''" th:if="${pageInfo.getPages() > 5 && pageInfo.getPageNum() - 2 < 2}" th:each="i, status : ${#numbers.sequence(1, 5)}">
+                    <a class="page-link" th:href="${i} == ${pageInfo.getPageNum()} ? 'javascript:' : @{(${pageLink})(page=${i})}" th:text="${i}" th:title="'第' + ${i} + '页'"></a>
+                </li>
+                <li class="page-item" th:classappend="${i == pageInfo.getPageNum()} ? 'active' : ''" th:if="${pageInfo.getPages() > 5 && pageInfo.getPageNum() - 2 >= 2 && pageInfo.getPageNum() + 2 <= pageInfo.getPages()}" th:each="i, status : ${#numbers.sequence(pageInfo.getPageNum() - 2, pageInfo.getPageNum() + 2 >= pageInfo.getPages() ? pageInfo.getPages() : pageInfo.getPageNum() + 2)}">
+                    <a class="page-link" th:href="${i} == ${pageInfo.getPageNum()} ? 'javascript:' : @{(${pageLink})(page=${i})}" th:text="${i}" th:title="'第' + ${i} + '页'"></a>
+                </li>
+                <li class="page-item" th:classappend="${i == pageInfo.getPageNum()} ? 'active' : ''" th:if="${pageInfo.getPages() > 5 && pageInfo.getPageNum() + 2 > pageInfo.getPages()}" th:each="i, status : ${#numbers.sequence(pageInfo.getPages() - 4, pageInfo.getPages())}">
+                    <a class="page-link" th:href="${i} == ${pageInfo.getPageNum()} ? 'javascript:' : @{(${pageLink})(page=${i})}" th:text="${i}" th:title="'第' + ${i} + '页'"></a>
+                </li>
+                <li class="page-item" th:classappend="${i == pageInfo.getPageNum()} ? 'active' : ''" th:if="${pageInfo.getPages() <= 5}" th:each="i, status : ${#numbers.sequence(1, pageInfo.getPages() == 0 ? 1 : pageInfo.getPages())}">
+                    <a class="page-link" th:href="${i} == ${pageInfo.getPageNum()} ? 'javascript:' : @{(${pageLink})(page=${i})}" th:title="'第' + ${i} + '页'" th:text="${i}"></a>
+                </li>
+                <li class="page-item" th:classappend="${pageInfo.isIsLastPage()} ? 'disabled' : ''">
+                    <a class="page-link" th:href="${pageInfo.isIsLastPage()} ? 'javascript:' : @{(${pageLink})(page=${pageInfo.pageNum + 1})}" title="下一页" th:disabled="${pageInfo.isIsLastPage()} ? true : false">下一页</a>
+                </li>
+            </ul>
+        </nav>
+    </body>
+</html>

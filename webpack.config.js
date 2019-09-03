@@ -1,6 +1,6 @@
 const path = require("path");
 const jsSrcPath = path.resolve(__dirname, "src/javascript");
-const jsDistPath = path.resolve(__dirname, "webapp/javascript");
+const jsDistPath = path.resolve(__dirname, "src/main/resources/static/javascript");
 const Webpack = require("webpack");
 const glob = require("glob-all");
 const ParallelUglifyPlugin = require("webpack-parallel-uglify-plugin");
@@ -64,7 +64,7 @@ module.exports = {
                         options: {
                             name: "[name]-[hash:5].min.[ext]",
                             limit: 1024 * 10,
-                            outputPath: path.relative(jsDistPath, path.resolve(__dirname, "webapp/images")),
+                            outputPath: path.relative(jsDistPath, path.resolve(__dirname, "src/main/resources/static/images")),
                             publicPath: "/images"
                         }
                     }
@@ -78,7 +78,7 @@ module.exports = {
                         options: {
                             name: "[name]-[hash:5].min.[ext]",
                             limit: 1024 * 10,
-                            outputPath: path.relative(jsDistPath, path.resolve(__dirname, "webapp/fonts")),
+                            outputPath: path.relative(jsDistPath, path.resolve(__dirname, "src/main/resources/static/fonts")),
                             publicPath: "/fonts"
                         }
                     }
@@ -112,7 +112,7 @@ module.exports = {
         }),
         new PurifyCssWebpack({
             paths: glob.sync([
-                path.join(__dirname, "webapp/WEB-INF/html/!*.html"),
+                path.join(__dirname, "src/main/resources/templates/!*.html"),
                 path.join(jsDistPath, "!*.js")
             ])
         }),
@@ -126,8 +126,7 @@ module.exports = {
         alias: {
             "vue$": "vue/dist/vue.esm.js",
             "@base": __dirname,
-            "@baseSrc": path.resolve(__dirname, "src"),
-            "@baseWebapp": path.resolve(__dirname, "webapp")
+            "@baseSrc": path.resolve(__dirname, "src")
         },
         modules: [
             path.resolve("node_modules")

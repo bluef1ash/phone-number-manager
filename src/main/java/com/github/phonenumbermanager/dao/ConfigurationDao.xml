@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.dao.ConfigurationDao">
+    <resultMap type="com.github.phonenumbermanager.entity.Configuration" id="baseResultMap">
+        <id property="key" column="key"/>
+        <result property="type" column="type"/>
+        <result property="value" column="value"/>
+        <result property="description" column="description"/>
+        <result property="keyChanged" column="key_is_changed"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <select id="selectAll" resultMap="baseResultMap">
+        SELECT `key`,
+            `value`,
+            `description`,
+            `key_is_changed`,
+            `create_time`,
+            `update_time`
+        FROM `pm_configuration`
+    </select>
+    <select id="selectById" resultMap="baseResultMap">
+        SELECT `key`,
+            `type`,
+            `value`,
+            `description`,
+            `key_is_changed`,
+            `create_time`,
+            `update_time`
+        FROM `pm_configuration`
+        WHERE `key` = #{key}
+    </select>
+    <insert id="insert">
+        INSERT INTO `pm_configuration` (`key`, `type`, `value`, `description`, `key_is_changed`, `create_time`,
+                                        `update_time`)
+        VALUES (#{key}, #{type}, #{value}, #{description}, #{keyChanged}, #{createTime}, #{updateTime})
+    </insert>
+    <update id="update">
+        UPDATE `pm_configuration`
+        <set>
+            <if test="key != null">
+                `key` = #{key}
+            </if>
+            <if test="type != null">
+                , `type` = #{type}
+            </if>
+            <if test="value != null">
+                , `value` = #{value}
+            </if>
+            <if test="description != null">
+                , `description` = #{description}
+            </if>
+            <if test="keyChanged != null">
+                , `key_is_changed` = #{keyChanged}
+            </if>
+            <if test="createTime != null">
+                , `create_time` = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                , `update_time` = #{updateTime}
+            </if>
+        </set>
+        WHERE `key` = #{key}
+    </update>
+    <delete id="deleteById">
+        DELETE
+        FROM `pm_configuration`
+        WHERE `key` = #{key}
+    </delete>
+    <select id="selectByObject" resultMap="baseResultMap">
+        SELECT `key`, `type`, `value`, `description`, `key_is_changed`, `create_time`, `update_time`
+        FROM `pm_configuration`
+        <where>
+            <if test="key != null">
+                `key` = #{key}
+            </if>
+            <if test="type != null">
+                AND `type` = #{type}
+            </if>
+            <if test="value != null">
+                AND `value` = #{value}
+            </if>
+            <if test="description != null">
+                AND `description` = #{description}
+            </if>
+            <if test="keyChanged != null">
+                AND `key_is_changed` = #{keyChanged}
+            </if>
+            <if test="createTime != null">
+                AND `create_time` = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                AND `update_time` = #{updateTime}
+            </if>
+        </where>
+    </select>
+</mapper>

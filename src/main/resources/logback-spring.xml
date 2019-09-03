@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+    <!-- 都说spring boot使用日志需要引入这个，但是我引入了之后总是打印两份日志，所以我去除了，并不影响使用 -->
+    <!-- <include resource="org/springframework/boot/logging/logback/base.xml"/> -->
+    <!-- 控制台设置 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <!-- INFO -->
+    <appender name="infoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 ，注意LOG_PATH是默认值，
+            它的配置对应application.properties里的logging.path值-->
+        <!--<file>${LOG_PATH}/info/info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            &lt;!&ndash; 文件名称 &ndash;&gt;
+            <fileNamePattern>info/info-%d{yyyy-MM-dd}.log
+            </fileNamePattern>
+            &lt;!&ndash; 文件最大保存历史数量 &ndash;&gt;
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- DEBUG -->
+    <appender name="debugAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 ，注意LOG_PATH是默认值，
+            它的配置对应application.properties里的logging.path值-->
+        <!--<file>${LOG_PATH}/debug/debug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            &lt;!&ndash; 文件名称 &ndash;&gt;
+            <fileNamePattern>debug/debug-%d{yyyy-MM-dd}.log</fileNamePattern>
+            &lt;!&ndash; 文件最大保存历史数量 &ndash;&gt;
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- WARN -->
+    <appender name="warnAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 ，注意LOG_PATH是默认值，
+            它的配置对应application.properties里的logging.path值-->
+        <!--<file>${LOG_PATH}/warn/warn.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            &lt;!&ndash; 文件名称 &ndash;&gt;
+            <fileNamePattern>warn/warn-%d{yyyy-MM-dd}.log
+            </fileNamePattern>
+            &lt;!&ndash; 文件最大保存历史数量 &ndash;&gt;
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- ERROR -->
+    <appender name="errorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 ，注意LOG_PATH是默认值，
+            它的配置对应application.properties里的logging.path值-->
+        <!--<file>${LOG_PATH}/error/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            &lt;!&ndash; 文件名称 &ndash;&gt;
+            <fileNamePattern>error/error-%d{yyyy-MM-dd}.log
+            </fileNamePattern>
+            &lt;!&ndash; 文件最大保存历史数量 &ndash;&gt;
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <logger name="org.springframework" additivity="false">
+        <level value="ERROR"/>
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="errorAppender"/>
+    </logger>
+
+    <!-- 由于启动的时候，以下两个包下打印debug级别日志很多 ，所以调到ERROR-->
+    <logger name="org.apache.tomcat.util" additivity="false">
+        <level value="ERROR"/>
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="errorAppender"/>
+    </logger>
+
+    <!-- 默认spring boot导入hibernate很多的依赖包，启动的时候，会有hibernate相关的内容，直接去除 -->
+    <logger name="org.hibernate.validator" additivity="false">
+        <level value="ERROR"/>
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="errorAppender"/>
+    </logger>
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="infoAppender"/>
+        <appender-ref ref="debugAppender"/>
+        <appender-ref ref="warnAppender"/>
+        <appender-ref ref="errorAppender"/>
+    </root>
+</configuration>

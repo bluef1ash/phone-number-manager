@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="layouts/header :: commonHead('首页', ~{::script})">
+        <title></title>
+        <script th:inline="javascript" type="text/javascript">
+            var systemUser = /*[[${systemUser}]]*/null;
+            var systemCompanyType = /*[[${systemCompanyType}]]*/null;
+            var communityCompanyType = /*[[${communityCompanyType}]]*/null;
+            var subdistrictCompanyType = /*[[${subdistrictCompanyType}]]*/null;
+            var getComputedUrl = /*[[@{'/index/getcomputedcount'}]]*/null;
+            var companySelectUrl = /*[[@{'/community/ajax_select'}]]*/null;
+        </script>
+        <script type="text/javascript" th:src="@{'/javascript/index-bundle.js'}"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+            </ol>
+            <div class="container-fluid" id="index" v-cloak>
+                <div class="animated fadeIn">
+                    <!--社区居民基本信息-->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card base-message">
+                                <div class="card-header">
+                                    <span>社区居民录入基本信息</span>
+                                    <div class="float-right">
+                                        <div class="form-group">
+                                            <label for="base_message_subdistrict_id"></label>
+                                            <select @change="loadCommunities(1, baseMessageSubdistrictId, true)" class="form-control form-control-sm" id="base_message_subdistrict_id" v-if="systemUser.companyType === systemCompanyType" v-model="baseMessageSubdistrictId">
+                                                <option :value="-1">请选择需要统计的街道</option>
+                                                <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
+                                                <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="base_message_community_id"></label>
+                                            <select :disabled="disabledCommunityId" @change="loadMessageAndChart(1, baseMessageCommunityId, communityCompanyType)" class="form-control form-control-sm" id="base_message_community_id" v-if="systemUser.companyType !== communityCompanyType" v-model="baseMessageCommunityId">
+                                                <option :value="-1">请选择需要统计的社区</option>
+                                                <option :disabled="systemUser.companyType === communityCompanyType" :value="0">全部社区</option>
+                                                <option :key="community.id" :value="community.id" v-for="community in communities" v-text="community.name"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body" v-loading="loadings[0]">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <div class="callout callout-info">
+                                                <small class="text-muted">录入人数</small> <br>
+                                                <count-to :end-val="addCount" class="h4"></count-to>
+                                            </div>
+                                        </div>
+                                        <!-- /.col-->
+                                        <div class="col-sm-3">
+                                            <div class="callout callout-success">
+                                                <small class="text-muted">核定人数</small> <br>
+                                                <count-to :end-val="haveToCount" class="h4"></count-to>
+                                            </div>
+                                        </div>
+                                        <!-- /.col-->
+                                        <div class="col-sm-3">
+                                            <div class="callout callout-danger">
+                                                <small class="text-muted">最少未录人数</small> <br>
+                                                <count-to :end-val="remnantCount" class="h4"></count-to>
+                                            </div>
+                                        </div>
+                                        <!-- /.col-->
+                                        <div :title="percentCountTitle" class="col-sm-3" data-placement="top" data-toggle="tooltip">
+                                            <div class="callout callout-dark">
+                                                <small class="text-muted">录入与核定比例</small> <br>
+                                                <count-to :decimals="2" :end-val="percentCount" class="h4" suffix="%"></count-to>
+                                            </div>
+                                        </div>
+                                        <!-- /.col-->
+                                    </div>
+                                    <!-- /.row-->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.col-->
+                    </div>
+                    <!--社区居民柱状图表-->
+                    <div class="card resident-chart">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    <h4 class="card-title mb-0">社区居民统计图表</h4>
+                                </div>
+                                <!-- /.col-->
+                                <div class="col-sm-7 d-md-block">
+                                    <div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
+                                        <div class="form-group">
+                                            <label for="chart_subdistrict_id"></label>
+                                            <select :readOnly="systemUser.companyType !== systemCompanyType" @change="choosePieChart(barChartSubdistrictId, 2)" class="form-control form-control-sm" id="chart_subdistrict_id" v-if="isDisplayChooseChart" v-model="barChartSubdistrictId">
+                                                <option :value="-1">请选择需要统计的街道</option>
+                                                <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
+                                                <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.col-->
+                            </div>
+                            <!-- /.row-->
+                            <div class="chart-wrapper" v-loading="loadings[1]">
+                                <ve-histogram :data="barChart" :extend="barChartExtend"></ve-histogram>
+                            </div>
+                        </div>
+                    </div>
+                    <!--社区楼长基本信息-->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card base-message">
+                                <div class="card-header">
+                                    <span>社区楼长录入基本信息</span>
+                                    <div class="float-right">
+                                        <div class="form-group">
+                                            <label for="base_message_dormitory_subdistrict_id"></label>
+                                            <select @change="loadCommunities(3, baseMessageDormitorySubdistrictId, false)" class="form-control form-control-sm" id="base_message_dormitory_subdistrict_id" v-if="systemUser.companyType === systemCompanyType" v-model="baseMessageDormitorySubdistrictId">
+                                                <option :value="-1">请选择需要统计的街道</option>
+                                                <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
+                                                <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="base_message_dormitory_community_id"></label>
+                                            <select :disabled="disabledCommunityId" @change="loadMessageAndChart(3, baseMessageDormitoryCommunityId, communityCompanyType)" class="form-control form-control-sm" id="base_message_dormitory_community_id" v-if="systemUser.companyType !== communityCompanyType" v-model="baseMessageDormitoryCommunityId">
+                                                <option :value="-1">请选择需要统计的社区</option>
+                                                <option :disabled="systemUser.companyType === communityCompanyType" :value="0">全部社区</option>
+                                                <option :key="community.id" :value="community.id" v-for="community in communities" v-text="community.name"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body" v-loading="loadings[2]">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="card border-0">
+                                                <div class="card-header bg-white">楼长性别统计</div>
+                                                <div class="card-body">
+                                                    <div class="progress-group">
+                                                        <div class="progress-group-header">
+                                                            <i class="icon-user progress-group-icon"></i>
+                                                            <div>男性</div>
+                                                            <div class="ml-auto font-weight-bold" v-text="dormitorySex.male"></div>
+                                                        </div>
+                                                        <div class="progress-group-bars">
+                                                            <div class="progress progress-xs">
+                                                                <div :aria-valuenow="dormitorySex.maleParent" :style="{width: dormitorySex.maleParent + '%'}" aria-valuemax="100" aria-valuemin="0" class="progress-bar bg-warning" role="progressbar"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="progress-group mb-5">
+                                                        <div class="progress-group-header">
+                                                            <i class="icon-user-female progress-group-icon"></i>
+                                                            <div>女性</div>
+                                                            <div class="ml-auto font-weight-bold" v-text="dormitorySex.female"></div>
+                                                        </div>
+                                                        <div class="progress-group-bars">
+                                                            <div class="progress progress-xs">
+                                                                <div :aria-valuenow="dormitorySex.femaleParent" :style="{width: dormitorySex.femaleParent + '%'}" aria-valuemax="100" aria-valuemin="0" class="progress-bar bg-warning" role="progressbar"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- /.row-->
+                                        <div class="col-6">
+                                            <div class="card border-0">
+                                                <div class="card-header bg-white">楼长年龄统计</div>
+                                                <div class="card-body">
+                                                    <ve-pie :data="dormitoryAge" :extend="dormitoryPieExtend" :grid="dormitoryPieGrid" height="120px"></ve-pie>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- /.row-->
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="card border-0">
+                                                <div class="card-header bg-white">楼长文化程度统计</div>
+                                                <div class="card-body">
+                                                    <ve-pie :data="dormitoryEducation" :extend="dormitoryPieExtend" :grid="dormitoryPieGrid" height="120px"></ve-pie>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="card border-0">
+                                                <div class="card-header bg-white">楼长政治面貌统计</div>
+                                                <div class="card-body">
+                                                    <ve-pie :data="dormitoryPoliticalStatus" :extend="dormitoryPieExtend" :grid="dormitoryPieGrid" height="120px"></ve-pie>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="card border-0">
+                                                <div class="card-header bg-white">楼长工作状况统计</div>
+                                                <div class="card-body">
+                                                    <ve-pie :data="dormitoryWorkStatus" :extend="dormitoryPieExtend" :grid="dormitoryPieGrid" height="120px"></ve-pie>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.col-->
+                        </div>
+                    </div>
+                    <!--社区楼长柱状图表-->
+                    <div class="card resident-chart">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    <h4 class="card-title mb-0">社区楼长统计图表</h4>
+                                </div>
+                                <!-- /.col-->
+                                <div class="col-sm-7 d-md-block">
+                                    <div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
+                                        <div class="row">
+                                            <div :class="['form-group', isDisplayChooseChart ? 'col-8' : '', 'index-dormitory-chart-switch']">
+                                                <el-switch @change="changeSwitch(barChartDormitoryType, systemUser.companyType === communityCompanyType ? systemUser.companyId : barChartDormitorySubdistrictId)" active-color="#13ce66" active-text="社区楼长人数" inactive-color="#ff4949" inactive-text="社区楼长分包户数" v-model="barChartDormitoryType"></el-switch>
+                                            </div>
+                                            <div class="form-group col-4" v-if="isDisplayChooseChart">
+                                                <label for="dormitory_chart_subdistrict_id"></label>
+                                                <select :readOnly="systemUser.companyType !== systemCompanyType" @change="choosePieChart(barChartDormitorySubdistrictId, 4)" class="form-control form-control-sm" id="dormitory_chart_subdistrict_id" v-model="barChartDormitorySubdistrictId">
+                                                    <option :value="-1">请选择需要统计的街道</option>
+                                                    <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
+                                                    <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.col-->
+                            </div>
+                            <!-- /.row-->
+                            <div class="chart-wrapper" v-loading="loadings[3]">
+                                <ve-histogram :data="dormitoryBarChart" :extend="dormitoryBarChartExtend"></ve-histogram>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+    </body>
+</html>

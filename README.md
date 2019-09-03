@@ -1,6 +1,6 @@
 # 社区居民联系电话管理系统
 
-此系统使用Spring + Mybatis + Spring Security + Spring MVC + Node.js + Webpack + Vue.js架构编写。数据库采用MySQL，提供**强大的**、**安全的**和**完整的**管理社区的功能。
+此系统使用Spring Boot + Mybatis + Spring Security + Node.js + Webpack + Vue.js架构编写。数据库采用MySQL，提供**强大的**、**安全的**和**完整的**管理社区的功能。
 
 ## 安全性
 
@@ -16,8 +16,7 @@
 ## 技术实现
 
 - [Maven](https://maven.apache.org)
-- [Spring](https://spring.io)
-- [Spring MVC](https://spring.io/projects/spring-framework)
+- [Spring Boot](https://spring.io/projects/spring-boot)
 - [Spring Security](https://spring.io/projects/spring-security)
 - [MySQL](https://www.mysql.com)
 - [MyBatis](https://github.com/mybatis)
@@ -59,9 +58,6 @@
 
 E-mail: liangtian_2005@163.com
 
-## Author: Bluef1ash(Liang Tian)
-E-mail: liangtian_2005@163.com
-
 ## 商业友好的开源协议
 
 此系统遵循MIT开源许可证发布。MIT许可证（The MIT License）是许多软件授权条款中，被广泛使用的其中一种。与其他常见的软件授权条款（如GPL、LGPL、BSD）相比，MIT是相对宽松的软件授权条款。
@@ -71,6 +67,7 @@ E-mail: liangtian_2005@163.com
 ```shell
 npm install
 ```
->系统默认用户名：**admin**
 
->系统默认密码：**123456**
+> 系统默认用户名：**admin**
+
+> 系统默认密码：**admin888**

@@ -1,0 +1,4 @@
+# 数据库访问配置
+spring:
+    thymeleaf:
+        cache: false

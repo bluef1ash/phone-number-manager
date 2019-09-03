@@ -18,9 +18,9 @@ $(document).ready(() => {
         data: {
             csrf: csrf,
             systemUser: systemUser,
-            systemRoleId: systemRoleId,
-            communityRoleId: communityRoleId,
-            subdistrictRoleId: subdistrictRoleId,
+            systemCompanyType: systemCompanyType,
+            communityCompanyType: communityCompanyType,
+            subdistrictCompanyType: subdistrictCompanyType,
             loadings: [true, true, true, true],
             baseMessageSubdistrictId: -1,
             baseMessageCommunityId: -1,
@@ -153,13 +153,13 @@ $(document).ready(() => {
                     this.allSubdistricts = data.subdistricts;
                     data.subdistricts.forEach(item => {
                         this.subdistricts.push({
-                            id: item.subdistrictId,
-                            name: item.subdistrictName
+                            id: item.id,
+                            name: item.name
                         });
                     });
                 }
             });
-            if (this.systemUser.roleId === this.systemRoleId) {
+            if (this.systemUser.companyType === this.systemCompanyType) {
                 this.baseMessageSubdistrictId = 0;
                 this.baseMessageCommunityId = 0;
                 this.barChartSubdistrictId = 0;
@@ -167,26 +167,26 @@ $(document).ready(() => {
                 this.baseMessageDormitoryCommunityId = 0;
                 this.barChartDormitorySubdistrictId = 0;
                 this.loadMessageAndChart();
-            } else if (this.systemUser.roleId === this.subdistrictRoleId) {
-                this.baseMessageSubdistrictId = this.systemUser.roleLocationId;
+            } else if (this.systemUser.companyType === this.subdistrictCompanyType) {
+                this.baseMessageSubdistrictId = this.systemUser.companyId;
                 this.baseMessageCommunityId = 0;
                 this.isDisplayChooseChart = false;
-                this.baseMessageDormitorySubdistrictId = this.systemUser.roleLocationId;
+                this.baseMessageDormitorySubdistrictId = this.systemUser.companyId;
                 this.baseMessageDormitoryCommunityId = 0;
-                this.loadMessageAndChart(0, this.systemUser.roleLocationId, this.systemUser.roleId);
-            } else if (this.systemUser.roleId === this.communityRoleId) {
+                this.loadMessageAndChart(0, this.systemUser.companyId, this.systemUser.companyType);
+            } else if (this.systemUser.companyType === this.communityCompanyType) {
                 this.allSubdistricts.forEach(item => {
                     item.communities.some(community => {
-                        if (community.communityId === this.systemUser.roleLocationId) {
+                        if (community.id === this.systemUser.companyId) {
                             this.baseMessageSubdistrictId = item.subdistrictId;
                             this.communities = community;
                         }
                     });
                 });
-                this.baseMessageCommunityId = this.systemUser.roleLocationId;
-                this.baseMessageDormitoryCommunityId = this.systemUser.roleLocationId;
+                this.baseMessageCommunityId = this.systemUser.companyId;
+                this.baseMessageDormitoryCommunityId = this.systemUser.companyId;
                 this.isDisplayChooseChart = false;
-                this.loadMessageAndChart(null, this.systemUser.roleLocationId, this.systemUser.roleId);
+                this.loadMessageAndChart(null, this.systemUser.companyId, this.systemUser.companyType);
             }
         },
         components: {
@@ -205,9 +205,9 @@ $(document).ready(() => {
                 if (this.allSubdistricts.length > 0 && subdistrictId > 0) {
                     this.baseMessageCommunityId = 0;
                     this.disabledCommunityId = false;
-                    this.loadMessageAndChart(getType, subdistrictId, this.subdistrictRoleId);
+                    this.loadMessageAndChart(getType, subdistrictId, this.subdistrictCompanyType);
                     this.allSubdistricts.some(item => {
-                        if (subdistrictId === item.subdistrictId) {
+                        if (subdistrictId === item.id) {
                             this.communities = item.communities;
                             return true;
                         }
@@ -252,7 +252,6 @@ $(document).ready(() => {
                         break;
                     case 3:
                         this.$set(this.loadings, 2, true);
-
                         break;
                     case 4:
                         this.$set(this.loadings, 3, true);
@@ -314,17 +313,17 @@ $(document).ready(() => {
              */
             choosePieChart(subdistrictId, getType) {
                 if (subdistrictId !== -1) {
-                    let companyType = subdistrictId === 0 ? this.systemRoleId : this.subdistrictRoleId;
+                    let companyType = subdistrictId === 0 ? this.systemCompanyType : this.subdistrictCompanyType;
                     this.loadMessageAndChart(getType, subdistrictId, companyType);
                 }
             },
             /**
              * 改变开关事件
              * @param newValue
-             * @param subdistrictId
+             * @param companyId
              */
-            changeSwitch(newValue, subdistrictId) {
-                this.choosePieChart(subdistrictId, 4);
+            changeSwitch(newValue, companyId) {
+                this.choosePieChart(companyId, 4);
             }
         }
     });

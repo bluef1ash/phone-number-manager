@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.dao.DormitoryManagerDao">
+    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="commonResultMap">
+        <result property="sex" column="sex"/>
+        <result property="sexName" column="sex_name"/>
+        <result property="birth" column="birth"/>
+        <result property="age" column="age"/>
+        <result property="politicalStatus" column="political_status"/>
+        <result property="workStatus" column="work_status"/>
+        <result property="education" column="education"/>
+        <result property="address" column="address"/>
+        <result property="managerAddress" column="manager_address"/>
+        <result property="managerCount" column="manager_count"/>
+        <result property="phones" column="phones"/>
+        <result property="subcontractorId" column="subcontractor_id"/>
+        <result property="communityId" column="community_id"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="baseResultMap"
+               extends="commonResultMap">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="aliasResultMap"
+               extends="commonResultMap">
+        <id property="id" column="dormitory_manager_id"/>
+        <result property="name" column="dormitory_manager_name"/>
+        <result column="dormitory_manager_create_time" property="createTime"/>
+        <result column="dormitory_manager_update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="correlationResultMap"
+               extends="aliasResultMap">
+        <association property="community" column="community_id"
+                     resultMap="com.github.phonenumbermanager.dao.CommunityDao.correlationResultMap"/>
+        <association property="subcontractor" column="subcontractor_id"
+                     resultMap="com.github.phonenumbermanager.dao.SubcontractorDao.aliasResultMap"/>
+    </resultMap>
+    <insert id="insert">
+        INSERT INTO `pm_dormitory_manager`(`id`, `name`, `sex`, `birth`, `political_status`,
+                                           `work_status`, `education`, `address`, `manager_address`, `manager_count`,
+                                           `phones`, `create_time`, `update_time`, `subcontractor_id`, `community_id`)
+        VALUES (#{id}, #{name}, #{sex}, #{birth}, #{politicalStatus}, #{workStatus}, #{education}, #{address},
+                #{managerAddress}, #{managerCount}, #{phones}, #{createTime}, #{updateTime}, #{subcontractorId},
+                #{communityId})
+    </insert>
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `pm_dormitory_manager`(`id`, `name`, `sex`, `birth`, `political_status`,
+        `work_status`, `education`,
+        `address`, `manager_address`, `manager_count`, `phones`, `create_time`, `update_time`, `subcontractor_id`,
+        `community_id`)
+        VALUES
+        <foreach collection="objects" item="dormitoryManager" separator=",">
+            (#{dormitoryManager.id}, #{dormitoryManager.name}, #{dormitoryManager.sex}, #{dormitoryManager.birth},
+            #{dormitoryManager.politicalStatus}, #{dormitoryManager.workStatus}, #{dormitoryManager.education},
+            #{dormitoryManager.address}, #{dormitoryManager.managerAddress}, #{dormitoryManager.managerCount},
+            #{dormitoryManager.phones}, #{dormitoryManager.createTime}, #{dormitoryManager.updateTime},
+            #{dormitoryManager.subcontractorId},
+            #{dormitoryManager.communityId})
+        </foreach>
+    </insert>
+    <delete id="deleteById">
+        DELETE
+        FROM `pm_dormitory_manager`
+        WHERE `id` = #{id}
+    </delete>
+    <delete id="deleteByName">
+        DELETE
+        FROM `pm_dormitory_manager`
+        WHERE `name` = #{name}
+    </delete>
+    <delete id="deleteBySubdistrictId">
+        DELETE `pm_dormitory_manager`
+        FROM `pm_dormitory_manager`
+                 LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistrictId}
+    </delete>
+    <update id="update">
+        UPDATE `pm_dormitory_manager`
+        <set>
+            <if test="id != null">
+                `id` = #{id},
+            </if>
+            <if test="name != null">
+                `name` = #{name},
+            </if>
+            <if test="sex != null">
+                `sex` = #{sex},
+            </if>
+            <if test="birth != null">
+                `birth` = #{birth},
+            </if>
+            <if test="politicalStatus != null">
+                `political_status` = #{politicalStatus},
+            </if>
+            <if test="workStatus != null">
+                `work_status` = #{workStatus},
+            </if>
+            <if test="education != null">
+                `education` = #{education},
+            </if>
+            <if test="address != null">
+                `address` = #{address},
+            </if>
+            <if test="managerAddress != null">
+                `manager_address` = #{managerAddress},
+            </if>
+            <if test="managerCount != null">
+                `manager_count` = #{managerCount},
+            </if>
+            <if test="phones != null">
+                `phones` = #{phones},
+            </if>
+            <if test="subcontractorId != null">
+                `subcontractor_id` = #{subcontractorId},
+            </if>
+            <if test="createTime != null">
+                `create_time` = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                `update_time` = #{updateTime},
+            </if>
+            <if test="communityId != null">
+                `community_id` = #{communityId}
+            </if>
+        </set>
+        WHERE `id` = #{id}
+    </update>
+    <select id="selectAll" resultMap="baseResultMap">
+        SELECT `id`, `name`, `sex`, `birth`, `political_status`, `work_status`, `education`,
+            `address`, `manager_address`, `manager_count`, `phones`, `create_time`, `update_time`, `subcontractor_id`,
+            `community_id`
+        FROM `pm_dormitory_manager`
+    </select>
+    <select id="selectById" resultMap="baseResultMap">
+        SELECT `id`, `name`, `sex`, `birth`, `political_status`, `work_status`, `education`,
+            `address`, `manager_address`, `manager_count`, `phones`, `create_time`, `update_time`, `subcontractor_id`,
+            `community_id`
+        FROM `pm_dormitory_manager`
+        WHERE `id` = #{id}
+    </select>
+    <select id="selectByName" resultMap="baseResultMap">
+        SELECT `id`, `name`, `sex`, `birth`, `political_status`, `work_status`, `education`,
+            `address`, `manager_address`, `manager_count`, `phones`, `create_time`, `update_time`, `subcontractor_id`,
+            `community_id`
+        FROM `pm_dormitory_manager`
+        WHERE `name` = #{name}
+    </select>
+    <select id="selectAndCommunityByCommunityIds" resultMap="correlationResultMap">
+        SELECT
+        `pm_dormitory_manager`.`id` AS 'dormitory_manager_id',
+        `pm_dormitory_manager`.`name` AS 'dormitory_manager_name',
+        CASE `pm_dormitory_manager`.`sex` WHEN 0 THEN '男' WHEN 1 THEN '女' ELSE '未知' END AS 'sex_name',
+        TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) AS 'age',
+        `pm_dormitory_manager`.`work_status`,
+        `pm_dormitory_manager`.`phones`,
+        `pm_dormitory_manager`.`create_time` AS 'dormitory_manager_create_time',
+        `pm_dormitory_manager`.`update_time` AS 'dormitory_manager_update_time',
+        `pm_dormitory_manager`.`community_id`,
+        `pm_community`.`name` AS 'community_name',
+        `pm_community`.`dormitory_submitted`
+        FROM
+        `pm_dormitory_manager`
+        LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        <where>
+            <if test="communityIds != null">
+                `pm_dormitory_manager`.`community_id`
+                <choose>
+                    <when test="communityIds.size eq 1">
+                        = #{communityIds[0]}
+                    </when>
+                    <otherwise>
+                        IN
+                        <foreach collection="communityIds" separator="," open="(" close=")" item="communityId">
+                            #{communityId}
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        ORDER BY `pm_dormitory_manager`.`id`
+    </select>
+    <select id="selectAndCommunityById" resultMap="correlationResultMap">
+        SELECT `pm_dormitory_manager`.`id` AS 'dormitory_manager_id',
+            `pm_dormitory_manager`.`name` AS 'dormitory_manager_name',
+            `pm_dormitory_manager`.`sex`,
+            `pm_dormitory_manager`.`birth`,
+            `pm_dormitory_manager`.`political_status`,
+            `pm_dormitory_manager`.`work_status`,
+            `pm_dormitory_manager`.`education`,
+            `pm_dormitory_manager`.`address`,
+            `pm_dormitory_manager`.`manager_address`,
+            `pm_dormitory_manager`.`manager_count`,
+            `pm_dormitory_manager`.`phones`,
+            `pm_dormitory_manager`.`create_time` AS 'dormitory_manager_create_time',
+            `pm_dormitory_manager`.`update_time` AS 'dormitory_manager_update_time',
+            `pm_dormitory_manager`.`subcontractor_id`,
+            `pm_dormitory_manager`.`community_id`,
+            `pm_community`.`name` AS 'community_name',
+            `pm_community`.`dormitory_submitted`
+        FROM `pm_dormitory_manager`
+                 LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        WHERE `pm_dormitory_manager`.`id` = #{id}
+    </select>
+    <select id="selectByUserData" resultMap="correlationResultMap">
+        SELECT `pm_community`.`name` AS 'community_name',
+        `pm_dormitory_manager`.`id` AS 'dormitory_manager_id',
+        `pm_dormitory_manager`.`name` AS 'dormitory_manager_name',
+        `pm_dormitory_manager`.`sex`,
+        `pm_dormitory_manager`.`birth`,
+        `pm_dormitory_manager`.`political_status`,
+        `pm_dormitory_manager`.`work_status`,
+        `pm_dormitory_manager`.`education`,
+        `pm_dormitory_manager`.`address`,
+        `pm_dormitory_manager`.`manager_address`,
+        `pm_dormitory_manager`.`manager_count`,
+        `pm_dormitory_manager`.`phones`,
+        `pm_dormitory_manager`.`create_time` AS 'dormitory_manager_create_time',
+        `pm_dormitory_manager`.`update_time` AS 'dormitory_manager_update_time',
+        `pm_subcontractor`.`name` AS 'subcontractor_name',
+        `pm_subcontractor`.`mobile`,
+        `pm_community`.`subdistrict_id`
+        FROM `pm_dormitory_manager`
+        LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        LEFT JOIN pm_subcontractor ON `pm_dormitory_manager`.`subcontractor_id` =
+        `pm_subcontractor`.`id`
+        <where>
+            <foreach collection="userData" item="item" separator="OR">
+                <choose>
+                    <when test="item.companyType == subdistrictCompanyType">
+                        `pm_community`.`subdistrict_id` = #{item.companyId}
+                    </when>
+                    <when test="item.companyType == communityCompanyType">
+                        `pm_dormitory_manager`.`community_id` = #{item.companyId}
+                    </when>
+                </choose>
+            </foreach>
+        </where>
+    </select>
+    <select id="selectByUserRole" resultMap="correlationResultMap">
+        SELECT
+        `pm_dormitory_manager`.`id` AS 'dormitory_manager_id',
+        `pm_dormitory_manager`.`name` AS 'dormitory_manager_name',
+        CASE `pm_dormitory_manager`.`sex` WHEN 0 THEN '男' WHEN 1 THEN '女' ELSE '未知' END AS 'sex_name',
+        TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) AS 'age',
+        `pm_dormitory_manager`.`work_status`,
+        `pm_dormitory_manager`.`phones`,
+        `pm_dormitory_manager`.`create_time` AS 'dormitory_manager_create_time',
+        `pm_dormitory_manager`.`update_time` AS 'dormitory_manager_update_time',
+        `pm_dormitory_manager`.`community_id`,
+        `pm_community`.`name` AS 'community_name'
+        FROM
+        `pm_dormitory_manager`
+        LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        <where>
+            <if test="object.name != null">
+                `pm_dormitory_manager`.`name` LIKE CONCAT('%', #{object.name}, '%')
+            </if>
+            <if test="object.sex != null and object.sex != -1">
+                AND `pm_dormitory_manager`.`sex` = #{object.sex}
+            </if>
+            <if test="object.address != null">
+                AND `pm_dormitory_manager`.`address` LIKE CONCAT('%', #{object.address}, '%')
+            </if>
+            <if test="object.phones != null">
+                AND `pm_dormitory_manager`.`phones` LIKE CONCAT('%', #{object.phones}, '%')
+            </if>
+            <choose>
+                <when test="companyType == communityCompanyType">
+                    AND `pm_dormitory_manager`.`community_id` = #{companyId}
+                </when>
+                <when test="companyType == subdistrictCompanyType">
+                    AND `pm_community`.`subdistrict_id` = #{companyId}
+                </when>
+            </choose>
+        </where>
+        ORDER BY `pm_dormitory_manager`.`id`
+    </select>
+    <select id="countByCommunityId" resultType="java.lang.Long">
+        SELECT COUNT(`id`)
+        FROM `pm_dormitory_manager`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="selectLastIdByCommunityId" resultType="java.lang.String">
+        SELECT `id`
+        FROM `pm_dormitory_manager`
+        WHERE `community_id` = #{communityId}
+        ORDER BY `id` DESC
+        LIMIT 1
+    </select>
+    <select id="selectByNameAndAddress" resultMap="correlationResultMap">
+        SELECT
+        `pm_dormitory_manager`.`name` AS 'dormitory_manager_name',
+        `pm_dormitory_manager`.`community_id`,
+        `pm_community`.`name` AS 'community_name'
+        FROM `pm_dormitory_manager`
+        LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        <where>
+            CONCAT(`pm_dormitory_manager`.`name`, `pm_dormitory_manager`.`address`) = #{nameAddress}
+            <if test="id != null">
+                AND `pm_dormitory_manager`.`id` != #{id}
+            </if>
+            AND `pm_community`.`subdistrict_id` = #{subdistrictId}
+        </where>
+    </select>
+    <select id="selectByPhones" resultMap="correlationResultMap">
+        SELECT
+        `pm_dormitory_manager`.`id` AS 'dormitory_manager_id',
+        `pm_dormitory_manager`.`name` AS 'dormitory_manager_name',
+        `pm_dormitory_manager`.`phones`,
+        `pm_dormitory_manager`.`community_id`,
+        `pm_community`.`name` AS 'community_name'
+        FROM `pm_dormitory_manager`
+        LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        <where>
+            <foreach collection="phones" item="phone" separator="OR">
+                `pm_dormitory_manager`.`phones` LIKE CONCAT('%', #{phone}, '%')
+            </foreach>
+            <if test="id != null">
+                AND `pm_dormitory_manager`.`id` != #{id}
+            </if>
+            AND `pm_community`.`subdistrict_id` = #{subdistrictId}
+        </where>
+    </select>
+    <select id="countSexAll" resultType="java.util.Map">
+        SELECT COALESCE(SUM(IF(`sex` = 0, 1, 0)), 0) AS 'male',
+            COALESCE(SUM(IF(`sex` = 1, 1, 0)), 0) AS 'female'
+        FROM `pm_dormitory_manager`
+    </select>
+    <select id="countSexByCommunityId" resultType="java.util.Map">
+        SELECT COALESCE(SUM(IF(`sex` = 0, 1, 0)), 0) AS 'male',
+            COALESCE(SUM(IF(`sex` = 1, 1, 0)), 0) AS 'female'
+        FROM `pm_dormitory_manager`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countSexBySubdistrictId" resultType="java.util.Map">
+        SELECT COALESCE(SUM(IF(`pm_dormitory_manager`.`sex` = 0, 1, 0)), 0) AS 'male',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`sex` = 1, 1, 0)), 0) AS 'female'
+        FROM `pm_dormitory_manager`
+                 LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countAgeRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 20, 1, 0)), 0) AS '20岁以下',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 30,
+                    1, 0)), 0) AS '21岁~30岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 31
+                                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                                &lt;
+                                    40, 1, 0)), 0) AS '31岁~40岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 41
+                                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                                &lt;
+                                    50, 1, 0)), 0) AS '41岁~50岁', COALESCE(SUM(
+                                                                              IF(
+                                                                                      TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51
+                                                                                      AND
+                                                                                      TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                                                                                          &lt;
+                                                                                      60, 1, 0)), 0) AS '51岁~60岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61
+                                AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                                &lt;
+                                    70, 1, 0)), 0) AS '61岁~70岁',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) > 71 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 80, 1,
+                    0)), 0) '71岁~80岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 81, 1, 0)), 0) '81岁以上'
+        FROM `pm_dormitory_manager`
+    </select>
+    <select id="countAgeRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 20, 1, 0)), 0) '20岁以下',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 30,
+                    1, 0)), 0) '21岁~30岁',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 31 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 40,
+                    1, 0)), 0) '31岁~40岁',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 41 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 50,
+                    1, 0)), 0) '41岁~50岁',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 60,
+                    1, 0)), 0) '51岁~60岁',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 70,
+                    1, 0)), 0) '61岁~70岁',
+            COALESCE(SUM(IF(
+                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 71 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 80,
+                    1, 0)), 0) '71岁~80岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 81, 1, 0)), 0) '81岁以上'
+        FROM `pm_dormitory_manager`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countAgeRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &lt; 20, 1, 0)),
+                        0) '20岁以下',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &gt; 21 AND
+                            TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &lt; 30, 1, 0)),
+                     0) '21岁~30岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &gt; 31 AND
+                            TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &lt; 40, 1, 0)),
+                     0) '31岁~40岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &gt; 41 AND
+                            TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &lt; 50, 1, 0)),
+                     0) '41岁~50岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &gt; 51 AND
+                            TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &lt; 60, 1, 0)),
+                     0) '51岁~60岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &gt; 61 AND
+                            TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &lt; 70, 1, 0)),
+                     0) '61岁~70岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &gt; 71 AND
+                            TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &lt; 80, 1, 0)),
+                     0) '71岁~80岁',
+            COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `pm_dormitory_manager`.`birth`, CURDATE()) &gt; 81, 1, 0)), 0) '81岁以上'
+        FROM `pm_dormitory_manager`
+                 LEFT JOIN `pm_community` ON pm_dormitory_manager.community_id = `pm_community`.`id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countEducationRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`education` = 0, 1, 0)), 0) '文盲',
+            COALESCE(SUM(IF(`education` = 1, 1, 0)), 0) '小学',
+            COALESCE(SUM(IF(`education` = 2, 1, 0)), 0) '初中',
+            COALESCE(SUM(IF(`education` = 3, 1, 0)), 0) '中专',
+            COALESCE(SUM(IF(`education` = 4, 1, 0)), 0) '高中',
+            COALESCE(SUM(IF(`education` = 5, 1, 0)), 0) '大专',
+            COALESCE(SUM(IF(`education` = 6, 1, 0)), 0) '本科',
+            COALESCE(SUM(IF(`education` = 7, 1, 0)), 0) '硕士研究生',
+            COALESCE(SUM(IF(`education` = 8, 1, 0)), 0) '博士研究生'
+        FROM `pm_dormitory_manager`
+    </select>
+    <select id="countEducationRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`education` = 0, 1, 0)), 0) '文盲',
+            COALESCE(SUM(IF(`education` = 1, 1, 0)), 0) '小学',
+            COALESCE(SUM(IF(`education` = 2, 1, 0)), 0) '初中',
+            COALESCE(SUM(IF(`education` = 3, 1, 0)), 0) '中专',
+            COALESCE(SUM(IF(`education` = 4, 1, 0)), 0) '高中',
+            COALESCE(SUM(IF(`education` = 5, 1, 0)), 0) '大专',
+            COALESCE(SUM(IF(`education` = 6, 1, 0)), 0) '本科',
+            COALESCE(SUM(IF(`education` = 7, 1, 0)), 0) '硕士研究生',
+            COALESCE(SUM(IF(`education` = 8, 1, 0)), 0) '博士研究生'
+        FROM `pm_dormitory_manager`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countEducationRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 0, 1, 0)), 0) '文盲',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 1, 1, 0)), 0) '小学',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 2, 1, 0)), 0) '初中',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 3, 1, 0)), 0) '中专',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 4, 1, 0)), 0) '高中',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 5, 1, 0)), 0) '大专',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 6, 1, 0)), 0) '本科',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 7, 1, 0)), 0) '硕士研究生',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`education` = 8, 1, 0)), 0) '博士研究生'
+        FROM `pm_dormitory_manager`
+                 LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countPoliticalStatusRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`political_status` = 0, 1, 0)), 0) '群众',
+            COALESCE(SUM(IF(`political_status` = 1, 1, 0)), 0) '共产党员',
+            COALESCE(SUM(IF(`political_status` = 2, 1, 0)), 0) '预备共产党员',
+            COALESCE(SUM(IF(`political_status` = 3, 1, 0)), 0) '共青团员',
+            COALESCE(SUM(IF(`political_status` = 4, 1, 0)), 0) '预备共青团员',
+            COALESCE(SUM(IF(`political_status` = 5, 1, 0)), 0) '其它'
+        FROM `pm_dormitory_manager`
+    </select>
+    <select id="countPoliticalStatusRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`political_status` = 0, 1, 0)), 0) '群众',
+            COALESCE(SUM(IF(`political_status` = 1, 1, 0)), 0) '共产党员',
+            COALESCE(SUM(IF(`political_status` = 2, 1, 0)), 0) '预备共产党员',
+            COALESCE(SUM(IF(`political_status` = 3, 1, 0)), 0) '共青团员',
+            COALESCE(SUM(IF(`political_status` = 4, 1, 0)), 0) '预备共青团员',
+            COALESCE(SUM(IF(`political_status` = 5, 1, 0)), 0) '其它'
+        FROM `pm_dormitory_manager`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countPoliticalStatusRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`pm_dormitory_manager`.`political_status` = 0, 1, 0)), 0) '群众',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`political_status` = 1, 1, 0)), 0) '共产党员',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`political_status` = 2, 1, 0)), 0) '预备共产党员',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`political_status` = 3, 1, 0)), 0) '共青团员',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`political_status` = 4, 1, 0)), 0) '预备共青团员',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`political_status` = 5, 1, 0)), 0) '其它'
+        FROM `pm_dormitory_manager`
+                 LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countWorkStatusRangeAll" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`work_status` = 0, 1, 0)), 0) '在职',
+            COALESCE(SUM(IF(`work_status` = 1, 1, 0)), 0) '退休',
+            COALESCE(SUM(IF(`work_status` = 2, 1, 0)), 0) '无业'
+        FROM `pm_dormitory_manager`
+    </select>
+    <select id="countWorkStatusRangeCommunityId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`work_status` = 0, 1, 0)), 0) '在职',
+            COALESCE(SUM(IF(`work_status` = 1, 1, 0)), 0) '退休',
+            COALESCE(SUM(IF(`work_status` = 2, 1, 0)), 0) '无业'
+        FROM `pm_dormitory_manager`
+        WHERE `community_id` = #{communityId}
+    </select>
+    <select id="countWorkStatusRangeSubdistrictId" resultType="java.util.LinkedHashMap">
+        SELECT COALESCE(SUM(IF(`pm_dormitory_manager`.`work_status` = 0, 1, 0)), 0) '在职',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`work_status` = 1, 1, 0)), 0) '退休',
+            COALESCE(SUM(IF(`pm_dormitory_manager`.`work_status` = 2, 1, 0)), 0) '无业'
+        FROM `pm_dormitory_manager`
+                 LEFT JOIN `pm_community` ON `pm_dormitory_manager`.`community_id` = `pm_community`.`id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistricId}
+    </select>
+    <select id="countForGroupSubdistrict" resultType="java.util.Map">
+        SELECT `pm_subdistrict`.`name`, COUNT(`pm_dormitory_manager`.`id`) AS 'value'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+                 LEFT JOIN `pm_dormitory_manager`
+        ON `pm_community`.`id` = `pm_dormitory_manager`.`community_id`
+        GROUP BY `pm_subdistrict`.`id`
+    </select>
+    <select id="countForGroupCommunity" resultType="java.util.Map">
+        SELECT `pm_community`.`name`, COUNT(`pm_dormitory_manager`.`id`) AS 'value'
+        FROM `pm_community`
+                 LEFT JOIN `pm_dormitory_manager`
+        ON `pm_community`.`id` = `pm_dormitory_manager`.`community_id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistrictId}
+        GROUP BY `pm_community`.`id`
+    </select>
+    <select id="countForGroupByCommunityId" resultType="java.util.Map">
+        SELECT `pm_community`.`name`, COUNT(`pm_dormitory_manager`.`id`) AS 'value'
+        FROM `pm_community`
+                 LEFT JOIN `pm_dormitory_manager`
+        ON `pm_community`.`id` = `pm_dormitory_manager`.`community_id`
+        WHERE `pm_community`.`id` = #{communityId}
+    </select>
+    <select id="sumManagerCountForGroupSubdistrict" resultType="java.util.Map">
+        SELECT `pm_subdistrict`.`name`, COALESCE(SUM(`pm_dormitory_manager`.`manager_count`), 0) 'value'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+                 LEFT JOIN `pm_dormitory_manager`
+        ON `pm_community`.`id` = `pm_dormitory_manager`.`community_id`
+        GROUP BY `pm_subdistrict`.`id`
+    </select>
+    <select id="sumManagerCountForGroupByCommunityId" resultType="java.util.Map">
+        SELECT `pm_community`.`name`, COALESCE(SUM(`pm_dormitory_manager`.`manager_count`), 0) 'value'
+        FROM `pm_community`
+                 LEFT JOIN `pm_dormitory_manager`
+        ON `pm_community`.`id` = `pm_dormitory_manager`.`community_id`
+        WHERE `pm_community`.`id` = #{communityId}
+    </select>
+    <select id="countBySubcontractorId" resultType="java.lang.Long">
+        SELECT COUNT(`id`)
+        FROM `pm_dormitory_manager`
+        WHERE `subcontractor_id` = #{subcontractorId}
+    </select>
+    <select id="sumManagerCountForGroupCommunity" resultType="java.util.Map">
+        SELECT `pm_community`.`name`, COALESCE(SUM(`pm_dormitory_manager`.`manager_count`), 0) 'value'
+        FROM `pm_community`
+                 LEFT JOIN `pm_dormitory_manager`
+        ON `pm_community`.`id` = `pm_dormitory_manager`.`community_id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistrictId}
+        GROUP BY `pm_community`.`id`
+    </select>
+</mapper>

@@ -18,6 +18,11 @@ $(document).ready(() => {
             configuration: configuration,
             users: []
         },
+        created() {
+            if (this.configuration.keyChanged === null || typeof this.configuration.keyChanged === "undefined") {
+                this.configuration.keyChanged = true;
+            }
+        },
         methods: {
             /**
              * 加载用户数据
@@ -42,7 +47,7 @@ $(document).ready(() => {
              * 系统配置项提交保存
              * @param event
              */
-            configurationSubmit(event) {
+            submit(event) {
                 let message = null;
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
@@ -80,8 +85,8 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.configuration.value === null || (this.configuration.type === 4 && this.configuration === 0)) {
-                    message = "请选择系统用户！";
+                if (this.configuration.value === null) {
+                    message = "请设置配置项的值！";
                     this.$message({
                         message: message,
                         type: "error"
@@ -91,7 +96,6 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                this.configuration.keyIsChanged = this.configuration.keyIsChanged ? 1 : 0;
             },
             /**
              * 重置表单样式

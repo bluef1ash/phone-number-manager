@@ -20,7 +20,7 @@ $(document).ready(() => {
                 method: "get",
                 data: {
                     _csrf: this.csrf,
-                    isDisplay: 1
+                    display: true
                 }
             }).then(data => {
                 if (data.state === 1) {
@@ -42,9 +42,13 @@ $(document).ready(() => {
              * @return {string}
              */
             setClassOpen(userPrivilege) {
-                if (userPrivilege.subUserPrivileges && userPrivilege.subUserPrivileges[0].uri !== "") {
+                if (userPrivilege.subUserPrivileges.subUserPrivileges) {
                     for (let i = 0; i < userPrivilege.subUserPrivileges.length; i++) {
-                        let uri = userPrivilege.subUserPrivileges[i].uri.substring(0, userPrivilege.subUserPrivileges[i].uri.lastIndexOf("/"));
+                        let subUserPrivilege = userPrivilege.subUserPrivileges[i];
+                        if (typeof subUserPrivilege === "undefined") {
+                            continue;
+                        }
+                        let uri = subUserPrivilege.uri.substring(0, subUserPrivilege.uri.lastIndexOf("/"));
                         if (this.currentUri.indexOf(uri) > -1) {
                             return "open";
                         }

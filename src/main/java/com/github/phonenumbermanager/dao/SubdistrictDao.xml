@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.dao.SubdistrictDao">
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="commonResultMap">
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="baseResultMap">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="landline" column="landline"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="aliasResultMap">
+        <id property="id" column="subdistrict_id"/>
+        <result property="name" column="subdistrict_name"/>
+        <result property="landline" column="subdistrict_landline"/>
+        <result column="subdistrict_create_time" property="createTime"/>
+        <result column="subdistrict_update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="correlationCommunitiesResultMap"
+               extends="aliasResultMap">
+        <collection property="communities" column="subdistrict_id"
+                    resultMap="com.github.phonenumbermanager.dao.CommunityDao.aliasResultMap"/>
+    </resultMap>
+    <insert id="insert">
+        INSERT INTO `pm_subdistrict` (`name`, `landline`, `create_time`, `update_time`)
+        VALUES (#{name}, #{landline}, #{createTime}, #{updateTime})
+    </insert>
+    <delete id="deleteById">
+        DELETE
+        FROM `pm_subdistrict`
+        WHERE `id` = #{id}
+    </delete>
+    <delete id="deleteByName">
+        DELETE
+        FROM `pm_subdistrict`
+        WHERE `name` = #{name}
+    </delete>
+    <update id="update">
+        UPDATE `pm_subdistrict`
+        <set>
+            <if test="id != null">
+                `id` = #{id}
+            </if>
+            <if test="name != null">
+                , `name` = #{name}
+            </if>
+            <if test="landline != null">
+                , `landline` = #{landline}
+            </if>
+            <if test="createTime != null">
+                , `create_time` = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                , `update_time` = #{updateTime}
+            </if>
+        </set>
+        WHERE `id` = #{id}
+    </update>
+    <select id="selectAll" resultMap="baseResultMap">
+        SELECT `id`,
+            `name`,
+            `landline`,
+            `create_time`,
+            `update_time`
+        FROM `pm_subdistrict`
+        ORDER BY `id`
+    </select>
+    <select id="selectById" resultMap="baseResultMap">
+        SELECT `id`,
+            `name`,
+            `landline`,
+            `create_time`,
+            `update_time`
+        FROM `pm_subdistrict`
+        WHERE `id` = #{id}
+    </select>
+    <select id="selectByName" resultMap="baseResultMap">
+        SELECT `id`,
+            `name`,
+            `landline`,
+            `create_time`,
+            `update_time`
+        FROM `pm_subdistrict`
+        WHERE `name` = #{name}
+        ORDER BY `id`
+    </select>
+    <select id="selectOneAndCommunityByCommunityId" resultMap="correlationCommunitiesResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_subdistrict`.`create_time` AS 'community_resident_create_time',
+            `pm_subdistrict`.`update_time` AS 'community_resident_update_time',
+            `pm_community`.`id` AS 'community_id',
+            `pm_community`.`name` AS 'community_name'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+        WHERE `pm_community`.`id` = #{communityId}
+    </select>
+    <select id="selectCorrelationAndCommunityById" resultMap="correlationCommunitiesResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_community`.`id` AS 'community_id',
+            `pm_community`.`name` AS 'community_name'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+        WHERE `pm_subdistrict`.`id` = #{id}
+    </select>
+    <select id="selectAndCommunities" resultMap="correlationCommunitiesResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_community`.`id` AS 'community_id',
+            `pm_community`.`name` AS 'community_name'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+    </select>
+    <select id="countCommunityResidents" resultType="java.util.Map">
+        SELECT `pm_subdistrict`.`name` AS 'key',
+            COUNT(`pm_community_resident`.`id`)
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+                 LEFT JOIN `pm_community_resident`
+        ON `pm_community_resident`.`community_id` = `pm_community`.`id`
+        GROUP BY `pm_subdistrict`.`name`
+    </select>
+    <select id="selectForIdAndName" resultMap="baseResultMap">
+        SELECT `id`, `name`
+        FROM `pm_subdistrict`
+    </select>
+    <select id="selectByObject" resultMap="baseResultMap">
+        SELECT `id`, `name`, `landline` `create_time`, `update_time` FROM `pm_subdistrict`
+        <where>
+            <if test="id != null">
+                `id` = #{id}
+            </if>
+            <if test="name != null">
+                AND `name` = #{name}
+            </if>
+            <if test="landline != null">
+                AND `landline` = #{landline}
+            </if>
+            <if test="createTime != null">
+                AND `create_time` = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                AND `update_time` = #{updateTime}
+            </if>
+        </where>
+    </select>
+</mapper>

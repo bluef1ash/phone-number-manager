@@ -26,38 +26,38 @@ $(document).ready(() => {
             if (this.communityResident === null) {
                 this.communityResident = {
                     communityId: 0,
-                    subcontractorId: 0
+                    subcontractorId: 0,
+                    community: {
+                        residentSubmitted: false
+                    }
                 };
             } else {
+                if (this.communityResident.community === null) {
+                    this.communityResident.community = {residentSubmitted: false};
+                }
                 this.loadSubcontractors();
-                let isEmptyPhone1 = typeof this.communityResident.communityResidentPhone1 === "undefined" || this.communityResident.communityResidentPhone1 === null || this.communityResident.communityResidentPhone1 === "";
-                let isEmptyPhone2 = typeof this.communityResident.communityResidentPhone2 === "undefined" || this.communityResident.communityResidentPhone2 === null || this.communityResident.communityResidentPhone2 === "";
-                if (!isEmptyPhone1) {
+                if (this.showPhone(this.communityResident.phone1, this.communityResident.phone2)) {
                     this.isShowPhone2 = true;
                 }
-                if (!isEmptyPhone2) {
+                if (this.showPhone(this.communityResident.phone2, this.communityResident.phone3)) {
                     this.isShowPhone3 = true;
                 }
             }
-            this.subdistricts.push(this.communities[0].subdistrict);
-            this.communities.forEach(item => {
-                if (item.communityId === this.communityResident.communityId) {
-                    this.subdistrictId = item.subdistrictId;
-                }
-                if (this.subdistrictId === item.subdistrictId) {
-                    this.newCommunities.push({
-                        id: item.communityId,
-                        name: item.communityName
-                    });
-                }
-                this.subdistricts.forEach(subdistrict => {
-                    if (subdistrict.subdistrictId !== item.subdistrict.subdistrictId) {
-                        this.subdistricts.push(item.subdistrict);
-                    }
-                });
-            });
+            let company = commonFunction.companyHandler(this.communities, this.communityResident.communityId);
+            this.newCommunities = company.newCommunities;
+            this.subdistrictId = company.subdistrictId;
+            this.subdistricts = company.subdistricts;
         },
         methods: {
+            /**
+             * 判断是否显示联系方式输入框
+             * @param phone1
+             * @param phone2
+             * @return {boolean|*}
+             */
+            showPhone(phone1, phone2) {
+                return (typeof phone1 !== "undefined" && phone1 !== null && phone1 !== "") && (this.communityResident.community.residentSubmitted && (typeof phone2 !== "undefined" && phone2 !== null && phone2 !== ""));
+            },
             /**
              * 切换街道
              */
@@ -68,10 +68,10 @@ $(document).ready(() => {
                 this.communityResident.subcontractorId = 0;
                 if (this.subdistrictId !== 0) {
                     this.communities.forEach(item => {
-                        if (item.subdistrict.subdistrictId === this.subdistrictId) {
+                        if (item.subdistrict.id === this.subdistrictId) {
                             this.newCommunities.push({
-                                id: item.communityId,
-                                name: item.communityName
+                                id: item.id,
+                                name: item.name
                             });
                         }
                     });
@@ -108,12 +108,12 @@ $(document).ready(() => {
              * 社区居民提交保存
              * @param event
              */
-            residentSubmit(event) {
+            submit(event) {
                 let message = null;
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
-                if (this.communityResident.communityResidentName === "" || this.communityResident.communityResidentName === null) {
+                if (this.communityResident.name === "" || this.communityResident.name === null) {
                     message = "社区居民姓名不能为空！";
                     this.$message({
                         message: message,
@@ -124,7 +124,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.communityResident.communityResidentName.length > 10) {
+                if (this.communityResident.name.length > 10) {
                     message = "社区居民姓名不允许超过10个字符！";
                     this.$message({
                         message: message,
@@ -135,7 +135,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.communityResident.communityResidentAddress === null || this.communityResident.communityResidentAddress === "") {
+                if (this.communityResident.address === null || this.communityResident.address === "") {
                     message = "社区居民家庭地址不能为空！";
                     this.$message({
                         message: message,
@@ -146,9 +146,9 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                let isEmptyPhone1 = typeof this.communityResident.communityResidentPhone1 === "undefined" || this.communityResident.communityResidentPhone1 === null || this.communityResident.communityResidentPhone1 === "";
-                let isEmptyPhone2 = typeof this.communityResident.communityResidentPhone2 === "undefined" || this.communityResident.communityResidentPhone2 === null || this.communityResident.communityResidentPhone2 === "";
-                let isEmptyPhone3 = typeof this.communityResident.communityResidentPhone3 === "undefined" || this.communityResident.communityResidentPhone3 === null || this.communityResident.communityResidentPhone3 === "";
+                let isEmptyPhone1 = typeof this.communityResident.phone1 === "undefined" || this.communityResident.phone1 === null || this.communityResident.phone1 === "";
+                let isEmptyPhone2 = typeof this.communityResident.phone2 === "undefined" || this.communityResident.phone2 === null || this.communityResident.phone2 === "";
+                let isEmptyPhone3 = typeof this.communityResident.phone3 === "undefined" || this.communityResident.phone3 === null || this.communityResident.phone3 === "";
                 if (isEmptyPhone1 && isEmptyPhone2 && isEmptyPhone3) {
                     message = "至少填写一个社区居民联系方式！";
                     this.$message({
@@ -164,8 +164,8 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                console.log(commonFunction.checkPhoneType(this.communityResident.communityResidentPhone1));
-                if (commonFunction.checkPhoneType(this.communityResident.communityResidentPhone1) === -1) {
+                console.log(commonFunction.checkPhoneType(this.communityResident.phone1));
+                if (commonFunction.checkPhoneType(this.communityResident.phone1) === -1) {
                     message = "社区居民联系方式一非法！";
                     this.$message({
                         message: message,
@@ -176,7 +176,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.communityResident.communityResidentPhone2) === -1) {
+                if (commonFunction.checkPhoneType(this.communityResident.phone2) === -1) {
                     message = "社区居民联系方式二非法！";
                     this.$message({
                         message: message,
@@ -187,7 +187,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.communityResident.communityResidentPhone3) === -1) {
+                if (commonFunction.checkPhoneType(this.communityResident.phone3) === -1) {
                     message = "社区居民联系方式三非法！";
                     this.$message({
                         message: message,
@@ -234,10 +234,10 @@ $(document).ready(() => {
             }
         },
         watch: {
-            "communityResident.communityResidentPhone1"(value, oldValue) {
+            "communityResident.phone1"(value) {
                 this.isShowPhone2 = typeof value !== "undefined" && value !== null && value !== "";
             },
-            "communityResident.communityResidentPhone2"(value, oldValue) {
+            "communityResident.phone2"(value) {
                 this.isShowPhone3 = typeof value !== "undefined" && value !== null && value !== "";
             }
         }

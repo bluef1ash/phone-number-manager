@@ -3,6 +3,8 @@ import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message, MessageBox} from "element-ui";
 import commonFunction from "@base/lib/javascript/common";
+import "moment/locale/zh-cn";
+import moment from "moment";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -16,14 +18,15 @@ $(document).ready(() => {
             systemUsers: systemUsers
         },
         methods: {
+            moment,
             /**
              * 系统用户锁定与开锁
-             * @param systemUserId
-             * @param isLocked
+             * @param id
+             * @param locked
              * @param index
              */
-            userLock(systemUserId, isLocked, index) {
-                if (systemUserId === this.systemAdministratorId) {
+            userLock(id, locked, index) {
+                if (id === this.systemAdministratorId) {
                     this.$message({
                         message: "不允许锁定超级管理员！",
                         type: "error"
@@ -35,20 +38,20 @@ $(document).ready(() => {
                     method: "get",
                     data: {
                         _csrf: this.csrf,
-                        systemUserId: systemUserId,
-                        locked: isLocked
+                        id: id,
+                        locked: locked
                     }
                 }).then(data => {
                     let message = null;
                     let messageType = "success";
                     if (data.state === 1) {
                         let oldSystemUser = this.systemUsers[index];
-                        oldSystemUser.isLocked = !oldSystemUser.isLocked;
+                        oldSystemUser.locked = !oldSystemUser.locked;
                         this.$set(this.systemUsers, index, oldSystemUser);
-                        message = data.isLocked === 0 ? "解锁成功，该用户下次将能够登录系统！" : "锁定成功，该用户下次将无法登录系统！";
+                        message = data.locked === 0 ? "解锁成功，该用户下次将能够登录系统！" : "锁定成功，该用户下次将无法登录系统！";
                     } else {
                         messageType = "error";
-                        message = isLocked ? "解锁失败，该用户下次将无法登录系统！" : "锁定失败，该用户下次将能够登录系统！";
+                        message = locked ? "解锁失败，该用户下次将无法登录系统！" : "锁定失败，该用户下次将能够登录系统！";
                     }
                     this.$message({
                         message: message,
@@ -71,7 +74,5 @@ $(document).ready(() => {
                 commonFunction.deleteObject(this, deleteUrl, id);
             }
         }
-    })
-    ;
-})
-;
+    });
+});

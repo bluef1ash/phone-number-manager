@@ -1,2 +1,2 @@
-import "bootstrap/scss/bootstrap.scss";
+import "@baseSrc/javascript/common/public";
 import "@baseSrc/scss/error.scss";

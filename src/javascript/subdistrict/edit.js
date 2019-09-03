@@ -18,7 +18,7 @@ $(document).ready(() => {
         created() {
             if (this.subdistrict === null) {
                 this.subdistrict = {
-                    subdistrictName: ""
+                    name: ""
                 };
             }
         },
@@ -27,12 +27,12 @@ $(document).ready(() => {
              * 街道提交保存
              * @param event
              */
-            subdistrictSubmit(event) {
+            submit(event) {
                 let message = null;
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
-                if (this.subdistrict.subdistrictName === "" || this.subdistrict.subdistrictName === null) {
+                if (this.subdistrict.name === "" || this.subdistrict.name === null) {
                     message = "街道办事处名称不能为空！";
                     this.$message({
                         message: message,
@@ -43,7 +43,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.subdistrict.subdistrictName.length > 10) {
+                if (this.subdistrict.name.length > 10) {
                     message = "街道办事处名称不允许超过10个字符！";
                     this.$message({
                         message: message,
@@ -54,7 +54,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.subdistrict.subdistrictTelephone === null || this.subdistrict.subdistrictTelephone === "") {
+                if (this.subdistrict.landline === null || this.subdistrict.landline === "") {
                     message = "街道办事处联系方式不能为空！";
                     this.$message({
                         message: message,
@@ -65,7 +65,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.subdistrict.subdistrictTelephone) === -1) {
+                if (commonFunction.checkPhoneType(this.subdistrict.landline) === -1) {
                     message = "街道办事处联系方式非法！";
                     this.$message({
                         message: message,

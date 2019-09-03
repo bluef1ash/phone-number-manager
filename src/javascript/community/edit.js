@@ -1,11 +1,12 @@
 import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
-import {Message} from "element-ui";
+import {InputNumber, Message} from "element-ui";
 import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
+    Vue.use(InputNumber);
     new Vue({
         el: "#edit_community",
         data: {
@@ -13,14 +14,23 @@ $(document).ready(() => {
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false],
             errorMessages: ["", "", "", ""],
-            community: community
+            community: community,
+            residentSubmitted: null,
+            dormitorySubmitted: null
         },
         created() {
             if (this.community === null) {
                 this.community = {
-                    communityName: "",
+                    name: "",
                     subdistrictId: 0
                 };
+            } else {
+                if (this.community.residentSubmitted) {
+                    this.residentSubmitted = "on";
+                }
+                if (this.community.dormitorySubmitted) {
+                    this.dormitorySubmitted = "on";
+                }
             }
         },
         methods: {
@@ -28,12 +38,12 @@ $(document).ready(() => {
              * 街道提交保存
              * @param event
              */
-            communitySubmit(event) {
+            submit(event) {
                 let message = null;
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
-                if (this.community.communityName === "" || this.community.communityName === null) {
+                if (this.community.name === "" || this.community.name === null) {
                     message = "社区名称不能为空！";
                     this.$message({
                         message: message,
@@ -44,7 +54,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.community.communityName.length > 10) {
+                if (this.community.name.length > 10) {
                     message = "社区名称不允许超过10个字符！";
                     this.$message({
                         message: message,
@@ -55,7 +65,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.community.communityTelephone === null || this.community.communityTelephone === "") {
+                if (this.community.landline === null || this.community.landline === "") {
                     message = "社区联系方式不能为空！";
                     this.$message({
                         message: message,
@@ -66,7 +76,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.community.communityTelephone) === -1) {
+                if (commonFunction.checkPhoneType(this.community.landline) === -1) {
                     message = "社区联系方式非法！";
                     this.$message({
                         message: message,
@@ -79,17 +89,6 @@ $(document).ready(() => {
                 }
                 if (this.community.actualNumber === null || this.community.actualNumber === 0) {
                     message = "社区总人数不能为空，或者为0！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
-                    this.$set(this.errorClasses, 2, true);
-                    this.$set(this.errorMessages, 2, message);
-                    event.preventDefault();
-                    return;
-                }
-                if (/\d+/.test(this.community.actualNumber)) {
-                    message = "社区总人数只能为数字！";
                     this.$message({
                         message: message,
                         type: "error"
@@ -115,11 +114,21 @@ $(document).ready(() => {
              */
             resetClass() {
                 this.community = {
-                    communityName: "",
+                    name: "",
                     subdistrictId: 0
                 };
+                this.dormitorySubmitted = null;
+                this.residentSubmitted = null;
                 this.errorClasses = [false, false, false, false];
                 this.errorMessages = ["", "", "", ""];
+            }
+        },
+        watch: {
+            "residentSubmitted"(value) {
+                this.community.residentSubmitted = value === "on";
+            },
+            "dormitorySubmitted"(value) {
+                this.community.dormitorySubmitted = value === "on";
             }
         }
     });

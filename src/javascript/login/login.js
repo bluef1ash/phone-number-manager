@@ -5,6 +5,7 @@ import sha256 from "sha256";
 import VueCookie from "vue-cookie";
 import commonFunction from "@base/lib/javascript/common";
 import "@base/lib/javascript/gt";
+import {Base64} from "js-base64";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -18,12 +19,12 @@ $(document).ready(() => {
         data: {
             username: "",
             password: "",
-            csrf: csrf,
             isInvalids: [false, false, false, false],
             messages: ["", "", "正在加载验证码，请稍后。。。"],
             captchaObj: null,
             isCaptcha: "block",
             browserType: "",
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
             loading: null
         },
         directives: {
@@ -60,10 +61,10 @@ $(document).ready(() => {
                             data: {
                                 username: this.username,
                                 password: sha256(this.password),
-                                _csrf: this.csrf,
                                 browserType: this.browserType
                             },
                             beforeSend: xmlHttpRequest => {
+                                xmlHttpRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf.prop("content"));
                                 this.loading = this.$loading({
                                     lock: true,
                                     text: "正在登录，请稍等。。。",
@@ -80,16 +81,28 @@ $(document).ready(() => {
                             setTimeout(location.href = "/", 3000);
                         }).catch((xhr, status, error) => {
                             this.loading.close();
-                            this.$message.error(xhr.responseJSON.message);
+                            let responseJSON = xhr.responseJSON;
+                            this.$message.error(responseJSON.message);
                             let invalidIndex = 0;
-                            if (xhr.responseJSON.fieldName === "password") {
+                            if (responseJSON.fieldName === "password") {
                                 invalidIndex = 1;
-                            } else if (xhr.responseJSON.fieldName === "captcha") {
+                            } else if (responseJSON.fieldName === "captcha") {
                                 invalidIndex = 2;
                                 this.isCaptcha = "block";
                             }
                             this.$set(this.isInvalids, invalidIndex, true);
-                            this.$set(this.messages, invalidIndex, xhr.responseJSON.message);
+                            this.$set(this.messages, invalidIndex, responseJSON.message);
+                            let data = Base64.encodeURI(JSON.stringify({host: location.hostname, timeStamp: new Date().getTime()}));
+                            $.ajax({
+                                url: getCsrfUrl,
+                                data: {
+                                    data
+                                }
+                            }).then(data => {
+                                if (data.state) {
+                                    this.csrf.attr("content", data.csrf);
+                                }
+                            });
                         });
                     }).onError(() => {
                         this.$set(this.messages, 2, "加载图形验证码失败，请稍后再试！");

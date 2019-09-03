@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+    <head th:replace="layouts/header :: commonHead('系统用户列表 - 系统用户管理', ~{::script})">
+        <title></title>
+        <script type="text/javascript" th:inline="javascript">
+            var systemAdministratorId = /*[[${systemAdministratorId}]]*/null;
+            var systemUsers = /*[[${systemUsers}]]*/null;
+            var deleteUrl = /*[[@{'/system/user_role/user/ajax_delete'}]]*/null;
+            var userLockUrl = /*[[@{'/system/user_role/user/ajax_user_lock'}]]*/null;
+        </script>
+        <script type="text/javascript" th:src="@{'/javascript/system-user-list-bundle.js'}"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统管理">系统管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统用户管理">系统用户管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/system/user_role/user/list'}" title="系统用户列表">系统用户列表</a>
+                </li>
+            </ol>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="col-3 float-right">
+                                    <a th:href="@{'/system/user_role/user/create'}" class="btn btn-block btn-primary" title="添加系统用户">添加系统用户</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-bordered table-striped" id="user_list" v-cloak>
+                                    <thead>
+                                        <tr>
+                                            <th>序号</th>
+                                            <th>系统用户名称</th>
+                                            <th>系统角色</th>
+                                            <th>登录时间</th>
+                                            <th>登录时IP地址</th>
+                                            <th>状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(systemUser, index) in systemUsers" :key="systemUser.id">
+                                            <td v-text="index + 1"></td>
+                                            <td v-text="systemUser.username"></td>
+                                            <td v-text="systemUser.userRole.description"></td>
+                                            <td v-text="new Date(systemUser.loginTime).getTime() === 0 ? '从未登录' : moment(systemUser.loginTime).format('YYYY-M-D Ah:mm')"></td>
+                                            <td v-text="systemUser.loginIp === '' ? '从未登录' : systemUser.loginIp"></td>
+                                            <td>
+                                                <button :class="['badge', systemUser.locked ? 'badge-danger' : 'badge-success']" title="用户状态" :style="{cursor: systemUser.id === systemAdministratorId ? 'default' : 'pointer'}" v-text="systemUser.locked ? '已锁定' : '正常'" @click="userLock(systemUser.id, !systemUser.locked, index)"></button>
+                                            </td>
+                                            <td>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <a th:attr="':href'='\'' + @{'/system/user_role/user/edit?id='} + '\' + systemUser.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(systemUser.id)">删除</button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
+                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/user/list', ${pageInfo})"></nav>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.col-->
+                </div>
+            </div>
+        </th:block>
+    </body>
+</html>

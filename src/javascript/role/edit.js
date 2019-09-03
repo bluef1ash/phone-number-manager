@@ -22,7 +22,7 @@ $(document).ready(() => {
         },
         created() {
             if (this.userRole === null) {
-                this.userRole = {higherRole: -1};
+                this.userRole = {name: "ROLE_", parentId: -1};
                 this.privilegeIds = [];
             }
             this.privilegeTree = this.setTree(this.userPrivileges, 0);
@@ -34,25 +34,25 @@ $(document).ready(() => {
             /**
              * 递归设置权限树形菜单
              * @param userPrivileges
-             * @param higherPrivilegeId
+             * @param parentId
              * @return {Array}
              */
-            setTree(userPrivileges, higherPrivilegeId) {
+            setTree(userPrivileges, parentId) {
                 let nodes = [];
                 for (let i = 0; i < userPrivileges.length; i++) {
-                    let node = {id: userPrivileges[i].privilegeId, label: userPrivileges[i].privilegeName};
+                    let node = {id: userPrivileges[i].id, label: userPrivileges[i].name, parentId: userPrivileges[i].parentId};
                     if (typeof this.userRole.userPrivileges !== "undefined" && this.userRole.userPrivileges !== null) {
                         for (let j = 0; j < this.userRole.userPrivileges.length; j++) {
-                            if (userPrivileges[i].privilegeId === this.userRole.userPrivileges[j].privilegeId) {
-                                this.checkedList.push(userPrivileges[i].privilegeId);
-                                this.privilegeIds.push(userPrivileges[i].privilegeId);
-                            } else if (userPrivileges[i].higherPrivilege === this.userRole.userPrivileges[j].privilegeId) {
-                                this.checkedList.push(userPrivileges[i].privilegeId);
+                            if (userPrivileges[i].id === this.userRole.userPrivileges[j].id) {
+                                this.checkedList.push(userPrivileges[i].id);
+                                this.privilegeIds.push(userPrivileges[i].id);
+                            } else if (userPrivileges[i].parent === this.userRole.userPrivileges[j].id) {
+                                this.checkedList.push(userPrivileges[i].id);
                             }
                         }
                     }
-                    if (higherPrivilegeId === userPrivileges[i].higherPrivilege && userPrivileges[i].subUserPrivileges !== null && userPrivileges[i].subUserPrivileges.length > 0) {
-                        node.children = this.setTree(userPrivileges[i].subUserPrivileges, userPrivileges[i].privilegeId);
+                    if (parentId === userPrivileges[i].parentId && userPrivileges[i].subUserPrivileges !== null && userPrivileges[i].subUserPrivileges.length > 0) {
+                        node.children = this.setTree(userPrivileges[i].subUserPrivileges, userPrivileges[i].id);
                     }
                     nodes.push(node);
                 }
@@ -75,12 +75,12 @@ $(document).ready(() => {
              * 用户角色提交保存
              * @param event
              */
-            userRoleSubmit(event) {
+            submit(event) {
                 let message = null;
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
-                if (this.userRole.roleName === "" || this.userRole.roleName === null) {
+                if (this.userRole.name === "" || this.userRole.name === null) {
                     message = "系统用户角色名称不能为空！";
                     this.$message({
                         message: message,
@@ -91,7 +91,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.userRole.roleDescription === null && this.userRole.roleDescription === "") {
+                if (this.userRole.description === null && this.userRole.description === "") {
                     message = "系统用户角色描述不能为空！";
                     this.$message({
                         message: message,
@@ -102,7 +102,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.userRole.higherRole === null || this.userRole.higherRole === -1) {
+                if (this.userRole.parentId === null || this.userRole.parentId === -1) {
                     message = "请选择系统用户角色的上级角色！";
                     this.$message({
                         message: message,
@@ -128,7 +128,7 @@ $(document).ready(() => {
              * 重置表单样式
              */
             resetClass: function() {
-                this.userRole = {higherRole: -1};
+                this.userRole = {name: "ROLE_", parentId: -1};
                 this.errorClasses = [false, false, false, false, false];
                 this.errorMessages = ["", "", "", "", ""];
                 this.privilegeIds = [];

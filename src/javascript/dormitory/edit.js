@@ -4,6 +4,7 @@ import Vue from "vue";
 import {DatePicker, InputNumber, Message} from "element-ui";
 import "moment/locale/zh-cn";
 import moment from "moment";
+import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -33,29 +34,22 @@ $(document).ready(() => {
                     workStatus: -1,
                     education: -1,
                     communityId: 0,
-                    subcontractorId: 0
+                    subcontractorId: 0,
+                    community: {
+                        dormitorySubmitted: false
+                    }
                 };
             } else {
+                if (this.dormitoryManager.community === null) {
+                    this.dormitoryManager.community = {dormitorySubmitted: false};
+                }
                 this.dormitoryManager.birth = moment(this.dormitoryManager.birth).format("YYYY-MM-DD");
                 this.loadSubcontractors();
             }
-            this.subdistricts.push(this.communities[0].subdistrict);
-            this.communities.forEach(item => {
-                if (item.communityId === this.dormitoryManager.communityId) {
-                    this.subdistrictId = item.subdistrictId;
-                }
-                if (this.subdistrictId === item.subdistrictId) {
-                    this.newCommunities.push({
-                        id: item.communityId,
-                        name: item.communityName
-                    });
-                }
-                this.subdistricts.forEach(subdistrict => {
-                    if (subdistrict.subdistrictId !== item.subdistrict.subdistrictId) {
-                        this.subdistricts.push(item.subdistrict);
-                    }
-                });
-            });
+            let company = commonFunction.companyHandler(this.communities, this.dormitoryManager.communityId);
+            this.subdistrictId = company.subdistrictId;
+            this.subdistricts = company.subdistricts;
+            this.newCommunities = company.newCommunities;
         },
         methods: {
             /**
@@ -69,12 +63,12 @@ $(document).ready(() => {
                 this.$set(this.dormitoryManager, "id", null);
                 if (this.subdistrictId !== 0) {
                     this.communities.forEach(item => {
-                        if (item.subdistrict.subdistrictId === this.subdistrictId) {
+                        if (item.subdistrict.id === this.subdistrictId) {
                             this.newCommunities.push({
-                                id: item.communityId,
-                                name: item.communityName
+                                id: item.id,
+                                name: item.name
                             });
-                            this.subdistrictName = item.subdistrict.subdistrictName;
+                            this.subdistrictName = item.subdistrict.name;
                         }
                     });
                 }
@@ -89,8 +83,8 @@ $(document).ready(() => {
                 this.loadSubcontractors();
                 if (this.dormitoryManager.communityId !== 0) {
                     this.communities.forEach(item => {
-                        if (item.communityId === this.dormitoryManager.communityId) {
-                            this.communityName = item.communityName;
+                        if (item.id === this.dormitoryManager.communityId) {
+                            this.communityName = item.name;
                         }
                     });
                     $.ajax({
@@ -132,7 +126,7 @@ $(document).ready(() => {
              * 社区楼长提交保存
              * @param event
              */
-            dormitorySubmit(event) {
+            submit(event) {
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
@@ -172,7 +166,7 @@ $(document).ready(() => {
                 if (this.dormitoryManager.managerCount === null || this.dormitoryManager.managerCount === "") {
                     return this.stopSubmit(event, "社区楼长的联系户数不能为空！", 9);
                 }
-                let isPhoneEmpty = (this.dormitoryManager.telephone === null || this.dormitoryManager.telephone === "") && (this.dormitoryManager.landline === null || this.dormitoryManager.landline === "");
+                let isPhoneEmpty = (this.dormitoryManager.mobile === null || this.dormitoryManager.mobile === "") && (this.dormitoryManager.landline === null || this.dormitoryManager.landline === "");
                 if (isPhoneEmpty) {
                     return this.stopSubmit(event, "社区楼长的联系方式必须填写一项！", [10, 11], true);
                 }

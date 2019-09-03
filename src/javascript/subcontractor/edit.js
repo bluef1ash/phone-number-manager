@@ -28,7 +28,7 @@ $(document).ready(() => {
              * 社区分包人提交保存
              * @param event
              */
-            subcontractorSubmit(event) {
+            submit(event) {
                 let message = null;
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
@@ -55,7 +55,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.subcontractor.telephone === null || this.subcontractor.telephone === "") {
+                if (this.subcontractor.mobile === null || this.subcontractor.mobile === "") {
                     message = "社区分包人联系方式不能为空！";
                     this.$message({
                         message: message,
@@ -66,7 +66,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.subcontractor.telephone) === -1) {
+                if (commonFunction.checkPhoneType(this.subcontractor.mobile) === -1) {
                     message = "社区分包人联系方式非法！";
                     this.$message({
                         message: message,

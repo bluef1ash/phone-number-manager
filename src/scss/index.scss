@@ -7,7 +7,7 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
 @import "~simple-line-icons/scss/simple-line-icons";
 @import "~@coreui/coreui/scss/coreui";
 @import "../../lib/css/pace.min.css";
-@import "../../lib/css/public.css";
+@import "../../lib/css/common.css";
 @import "../../lib/css/style.min.css";
 
 @font-face {
@@ -44,6 +44,7 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
     .navbar-brand {
         display: block;
         background-image: none;
+        color: #20a8d8;
         font-family: "webfont", serif !important;
         font-size: 2rem;
         font-style: normal;
@@ -106,6 +107,22 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
 
     .index-dormitory-chart-switch {
         padding-top: 20px;
-        padding-right: 35px;
+    }
+}
+
+.pagination-custom {
+    font-size: 13px;
+    float: left;
+    line-height: 2rem;
+    margin: 0 0.5rem;
+}
+
+.pagination {
+    .page-item {
+        .page-link:disabled {
+            font-size: 13px;
+            pointer-events: auto;
+            cursor: not-allowed;
+        }
     }
 }

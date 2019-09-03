@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+    <!--/*@thymesVar id="configuration" type="com.github.phonenumbermanager.entity.Configuration"*/-->
+    <head th:replace="layouts/header :: commonHead('系统配置项' + ${configuration == null ? '添加' : '编辑'} + ' - 系统管理', ~{::script})">
+        <title></title>
+        <script type="text/javascript" th:inline="javascript">
+            var loadUsersUrl = /*[[@{'/system/user_role/user/ajax_get'}]]*/null;
+            var configuration = /*[[${configuration}]]*/null;
+            var messageErrors = /*[[${messageErrors}]]*/null;
+        </script>
+        <script type="text/javascript" th:src="@{'/javascript/configuration-edit-bundle.js'}"></script>
+    </head>
+    <body>
+        <th:block layout:fragment="content">
+            <!-- Breadcrumb-->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/'}" title="管理系统首页">管理系统首页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统管理">系统管理</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:" title="系统配置项">系统配置项</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{'/system/configuration/' + ${configuration == null ? 'create' : 'edit?key=' + configuration.key}}" th:text="${configuration} == null ? '系统配置项添加' : '系统配置项编辑'"></a>
+                </li>
+            </ol>
+            <div class="container-fluid">
+                <div class="card" id="edit_configuration" v-cloak>
+                    <div class="card-header" th:text="${configuration} == null ? '系统配置项添加' : '系统配置项' + ${configuration.key} + '编辑'"></div>
+                    <form class="form-horizontal" th:action="@{'/system/configuration/handle'}" method="post" @submit="submit">
+                        <div class="card-body">
+                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
+                                {{messageError.defaultMessage}}
+                                <button class="close" type="button" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="key">系统配置项关键字名称</label>
+                                <div class="col-md-9">
+                                    <input type="text" name="key" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="key" placeholder="请输入系统配置项关键字名称" v-model="configuration.key" :readonly="!configuration.keyChanged">
+                                    <span class="help-block">系统配置项关键字名称不允许超过50个字符</span>
+                                    <div class="invalid-feedback" :style="errorClasses[0] && {'display': 'block'}" v-text="errorMessages[0]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="description">系统配置项描述</label>
+                                <div class="col-md-9">
+                                    <input type="text" name="description" :class="['form-control', {'is-invalid': errorClasses[1]}]" id="description" placeholder="请输入系统配置项描述" v-model="configuration.description">
+                                    <span class="help-block">系统配置项描述不允许超过60个字符</span>
+                                    <div class="invalid-feedback" :style="errorClasses[1] && {'display': 'block'}" v-text="errorMessages[1]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-3 col-form-label" for="configuration_type">系统配置项值类别</label>
+                                <div class="col-md-9">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[2]}]" id="configuration_type" name="type" v-model="configuration.type" @change="loadUsers">
+                                        <option :value="0">请选择</option>
+                                        <option :value="1">布尔类型</option>
+                                        <option :value="2">字符串类型</option>
+                                        <option :value="3">数值类型</option>
+                                        <option :value="4">系统用户</option>
+                                    </select>
+                                    <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row" v-if="configuration.type !== 0">
+                                <label class="col-md-3 col-form-label" for="configuration_value">系统配置项值</label>
+                                <div class="col-md-9">
+                                    <div class="form-check form-check-inline mr-1" v-if="configuration.type === 1">
+                                        <input type="radio" name="value" class="form-check-input" id="inline-radio1" v-model="configuration.value" :value="1">
+                                        <label class="form-check-label" for="inline-radio1">是</label>
+                                    </div>
+                                    <div class="form-check form-check-inline mr-1" v-if="configuration.type === 1">
+                                        <input type="radio" name="value" class="form-check-input" id="inline-radio2" v-model="configuration.value" :value="0">
+                                        <label class="form-check-label" for="inline-radio2">否</label>
+                                    </div>
+                                    <input type="text" name="value" :class="['form-control', {'is-invalid': errorClasses[2]}]" id="configuration_value" placeholder="请输入系统配置项值" v-model="configuration.value" v-if="configuration.type === 2">
+                                    <input type="number" name="value" :class="['form-control', {'is-invalid': errorClasses[2]}]" id="configuration_value" placeholder="请输入系统配置项值" v-model="configuration.value" v-if="configuration.type === 3">
+                                    <select :class="['form-control', {'is-invalid': errorClasses[2]}]" id="configuration_value" name="value" v-model="configuration.value" v-if="configuration.type === 4">
+                                        <option :value="0">请选择</option>
+                                        <option :value="user.id" v-for="user in users" v-text="user.name"></option>
+                                    </select>
+                                    <span class="help-block" v-if="configuration.type === 2 || configuration.type === 3">系统配置项值不允许超过15个字符</span>
+                                    <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row" th:if="${configuration == null}">
+                                <label class="col-md-3 col-form-label">系统配置项关键字名称是否允许更改</label>
+                                <div class="col-md-9">
+                                    <label class="switch switch-3d switch-primary">
+                                        <input class="switch-input" type="checkbox" name="keyChanged" v-model="configuration.keyChanged">
+                                        <span class="switch-slider"></span> </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
+                            <input type="hidden" name="_method" value="PUT" th:if="${configuration} != null">
+                            <button class="btn btn-sm btn-primary" type="submit">
+                                <i class="fa fa-dot-circle-o"></i>保存
+                            </button>
+                            <button class="btn btn-sm btn-danger" type="reset" @click="resetClass">
+                                <i class="fa fa-ban"></i>重置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </th:block>
+    </body>
+</html>

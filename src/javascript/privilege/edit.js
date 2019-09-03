@@ -13,11 +13,14 @@ $(document).ready(() => {
             errorClasses: [false, false, false, false, false],
             errorMessages: ["", "", "", "", ""],
             userPrivilege: userPrivilege,
-            userPrivileges: userPrivileges
+            userPrivileges: userPrivileges,
+            display: null
         },
         created() {
             if (this.userPrivilege === null) {
-                this.userPrivilege = {higherPrivilege: -1, isDisplay: 0};
+                this.userPrivilege = {parentId: -1, display: false};
+            } else {
+                this.display = this.userPrivilege.display ? "on" : null;
             }
         },
         methods: {
@@ -25,12 +28,12 @@ $(document).ready(() => {
              * 用户角色提交保存
              * @param event
              */
-            userPrivilegeSubmit(event) {
+            submit(event) {
                 let message = null;
                 if (this.csrf === null || this.csrf === "") {
                     location.reload();
                 }
-                if (this.userPrivilege.privilegeName === "" || this.userPrivilege.privilegeName === null) {
+                if (this.userPrivilege.name === "" || this.userPrivilege.name === null) {
                     message = "系统用户权限名称不能为空！";
                     this.$message({
                         message: message,
@@ -63,7 +66,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.userPrivilege.higherPrivilege === null || this.userPrivilege.higherPrivilege === -1) {
+                if (this.userPrivilege.parentId === null || this.userPrivilege.parentId === -1) {
                     message = "请选择系统用户权限的上级权限！";
                     this.$message({
                         message: message,
@@ -73,13 +76,13 @@ $(document).ready(() => {
                     this.$set(this.errorMessages, 4, message);
                     event.preventDefault();
                 }
-                this.userPrivilege.isDisplay = this.userPrivilege.isDisplay ? 1 : 0;
+                this.userPrivilege.display = this.display === "on";
             },
             /**
              * 重置表单样式
              */
-            resetClass: function() {
-                this.userPrivilege = {higherPrivilege: -1};
+            resetClass() {
+                this.userPrivilege = {parentId: -1};
                 this.errorClasses = [false, false, false, false, false];
                 this.errorMessages = ["", "", "", "", ""];
                 this.privilegeIds = [];

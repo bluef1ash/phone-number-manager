@@ -64,7 +64,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param page  分页对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/user/list", method = RequestMethod.GET)
+    @GetMapping("/user/list")
     public String systemUserList(HttpSession session, Model model, Integer page) {
         getSessionRoleId(session);
         try {
@@ -87,9 +87,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param locked  锁定与解锁的标记
      * @return Ajax信息
      */
-    @RequestMapping(value = "/user/ajax_user_lock", method = RequestMethod.GET)
+    @PostMapping("/user/ajax_user_lock")
     @ResponseBody
-    public Map<String, Object> systemUserLockedForAjax(HttpSession session, Long id, Boolean locked) {
+    public Map<String, Object> systemUserLockedForAjax(HttpSession session, @RequestParam Long id, @RequestParam Boolean locked) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         getSessionRoleId(session);
         SystemUser systemUser = new SystemUser();
@@ -118,7 +118,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/user/create", method = RequestMethod.GET)
+    @GetMapping("/user/create")
     public String createSystemUser(HttpSession session, Model model) {
         getSessionRoleId(session);
         model.addAttribute("communityCompanyType", communityCompanyType);
@@ -144,8 +144,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param id      编辑的对应编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/user/edit", method = RequestMethod.GET)
-    public String editSystemUser(HttpSession session, Model model, Long id) {
+    @GetMapping("/user/edit")
+    public String editSystemUser(HttpSession session, Model model, @RequestParam Long id) {
         getSessionRoleId(session);
         model.addAttribute("communityCompanyType", communityCompanyType);
         model.addAttribute("subdistrictCompanyType", subdistrictCompanyType);
@@ -213,9 +213,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param id      对应编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/user/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/user/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteSystemUserForAjax(HttpSession session, Long id) {
+    public Map<String, Object> deleteSystemUserForAjax(HttpSession session, @RequestParam Long id) {
         getSessionRoleId(session);
         Map<String, Object> map = new HashMap<>(3);
         try {
@@ -239,7 +239,7 @@ public class UserAndRoleAction extends BaseAction {
      *
      * @return Ajax信息
      */
-    @RequestMapping(value = "/user/ajax_get", method = RequestMethod.GET)
+    @GetMapping("/user/ajax_get")
     @ResponseBody
     public Map<String, Object> getSystemUsersForAjax() {
         Map<String, Object> map = new HashMap<>(3);
@@ -261,7 +261,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param page  分页页数
      * @return 视图页面
      */
-    @RequestMapping(value = "/role/list", method = RequestMethod.GET)
+    @GetMapping("/role/list")
     public String systemUserRoleList(Model model, Integer page) {
         try {
             Map<String, Object> userRoles = userRoleService.find(page, null);
@@ -280,7 +280,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param model 前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/role/create", method = RequestMethod.GET)
+    @GetMapping("/role/create")
     public String createSystemUserRole(Model model) {
         try {
             List<UserRole> userRoles = userRoleService.find();
@@ -301,8 +301,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param id    角色编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/role/edit", method = RequestMethod.GET)
-    public String editSystemUserRole(Model model, Long id) {
+    @GetMapping("/role/edit")
+    public String editSystemUserRole(Model model, @RequestParam Long id) {
         try {
             List<UserRole> userRoles = userRoleService.find();
             UserRole userRole = userRoleService.findCorrelation(id);
@@ -367,9 +367,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param id      对应编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/role/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/role/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, Long id) {
+    public Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, @RequestParam Long id) {
         getSessionRoleId(session);
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
@@ -379,7 +379,7 @@ public class UserAndRoleAction extends BaseAction {
             return jsonMap;
         } catch (BusinessException be) {
             be.printStackTrace();
-            throw new JsonException(be);
+            throw new JsonException(be.getMessage(), be);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("删除用户角色失败！", e);
@@ -393,7 +393,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param page  分页页码
      * @return 视图页面
      */
-    @RequestMapping(value = "/privilege/list", method = RequestMethod.GET)
+    @GetMapping("/privilege/list")
     public String systemUserPrivilegeList(Model model, Integer page) {
         try {
             Map<String, Object> userPrivileges = userPrivilegeService.find(page, null);
@@ -412,7 +412,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param model 前台模型对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/privilege/create", method = RequestMethod.GET)
+    @GetMapping("/privilege/create")
     public String createSystemUserPrivilege(Model model) {
         List<UserPrivilege> userPrivileges;
         try {
@@ -432,8 +432,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param id    权限编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/privilege/edit", method = RequestMethod.GET)
-    public String editSystemUserPrivilege(Model model, Long id) {
+    @GetMapping("/privilege/edit")
+    public String editSystemUserPrivilege(Model model, @RequestParam Long id) {
         try {
             List<UserPrivilege> userPrivileges = userPrivilegeService.find();
             UserPrivilege userPrivilege = userPrivilegeService.find(id);
@@ -489,9 +489,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param id 系统用户权限编号
      * @return Ajax消息
      */
-    @RequestMapping(value = "/privilege/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/privilege/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteSystemUserPrivilegeForAjax(Long id) {
+    public Map<String, Object> deleteSystemUserPrivilegeForAjax(@RequestParam Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             userPrivilegeService.delete(id);
@@ -510,9 +510,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param roleId 系统用户角色编号
      * @return Ajax消息
      */
-    @RequestMapping(value = "/privilege/ajax_get_privileges", method = RequestMethod.GET)
+    @GetMapping("/privilege/ajax_get_privileges")
     @ResponseBody
-    public Map<String, Object> getPrivilegesByRoleIdForAjax(Long roleId) {
+    public Map<String, Object> getPrivilegesByRoleIdForAjax(@RequestParam Long roleId) {
         try {
             Set<UserPrivilege> privileges = userPrivilegeService.findByRoleId(roleId);
             Map<String, Object> map = new HashMap<>(2);

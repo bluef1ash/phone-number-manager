@@ -12,16 +12,12 @@ import com.github.phonenumbermanager.utils.CommonUtils;
 import com.github.phonenumbermanager.utils.ExcelUtils;
 import com.github.phonenumbermanager.validator.CommunityResidentInputValidator;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -44,12 +40,8 @@ public class CommunityResidentAction extends BaseAction {
     private CommunityResidentService communityResidentService;
     @Resource
     private CommunityService communityService;
-    private final HttpServletRequest request;
-
-    @Autowired
-    public CommunityResidentAction(HttpServletRequest request) {
-        this.request = request;
-    }
+    @Resource
+    private HttpServletRequest request;
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -67,7 +59,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @GetMapping("/list")
     public String communityResidentList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
@@ -89,7 +81,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/create", method = RequestMethod.GET)
+    @GetMapping("/create")
     public String createCommunityResident(HttpSession session, Model model) {
         getSessionRoleId(session);
         try {
@@ -110,7 +102,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param id      需要编辑的社区居民的编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/edit", method = RequestMethod.GET)
+    @GetMapping("/edit")
     public String editCommunityResident(HttpSession session, Model model, Long id) {
         getSessionRoleId(session);
         try {
@@ -177,7 +169,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/ajax_delete")
     @ResponseBody
     public Map<String, Object> deleteCommunityResidentForAjax(Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -200,7 +192,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param subdistrictId 导入的街道编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
+    @PostMapping("/import_as_system")
     @ResponseBody
     public Map<String, Object> communityResidentImportAsSystem(HttpSession session, HttpServletRequest request, Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -224,7 +216,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param response 前台响应对象
      * @param data     传递数据
      */
-    @RequestMapping(value = "/save_as_excel", method = RequestMethod.GET)
+    @GetMapping("/save_as_excel")
     public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response, String data) {
         List<Map<String, Object>> userData = getDecodeData(session, data);
         //获取属性-列头
@@ -257,7 +249,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param isSearch    是否搜索
      * @return Ajax消息
      */
-    @RequestMapping(value = "/ajax_list", method = RequestMethod.GET)
+    @PostMapping("/ajax_list")
     @ResponseBody
     public Map<String, Object> findCommunityResidentsForAjax(HttpSession session, Integer page, Long companyId, Long companyType, String name, String address, String phone, Boolean isSearch) {
         getSessionRoleId(session);

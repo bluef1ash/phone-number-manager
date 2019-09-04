@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.service.impl;
 
 import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,6 @@ public class ConfigurationServiceImpl extends BaseServiceImpl<Configuration> imp
         if (configuration.getKeyChanged()) {
             return configurationDao.deleteById(key);
         }
-        return 0;
+        throw new BusinessException("不允许删除内置系统配置");
     }
 }

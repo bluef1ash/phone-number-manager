@@ -9,7 +9,6 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_subcontractor",
         data: {
-            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false],
             errorMessages: ["", "", ""],
@@ -30,15 +29,9 @@ $(document).ready(() => {
              */
             submit(event) {
                 let message = null;
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.subcontractor.name === "" || this.subcontractor.name === null) {
                     message = "社区分包人姓名不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -46,10 +39,7 @@ $(document).ready(() => {
                 }
                 if (this.subcontractor.name.length > 10) {
                     message = "社区分包人姓名不允许超过10个字符！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -57,10 +47,7 @@ $(document).ready(() => {
                 }
                 if (this.subcontractor.mobile === null || this.subcontractor.mobile === "") {
                     message = "社区分包人联系方式不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -68,10 +55,7 @@ $(document).ready(() => {
                 }
                 if (commonFunction.checkPhoneType(this.subcontractor.mobile) === -1) {
                     message = "社区分包人联系方式非法！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -79,10 +63,7 @@ $(document).ready(() => {
                 }
                 if (this.subcontractor.actualNumber === null || this.subcontractor.actualNumber === 0) {
                     message = "请选择所属社区！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 2, true);
                     this.$set(this.errorMessages, 2, message);
                     event.preventDefault();

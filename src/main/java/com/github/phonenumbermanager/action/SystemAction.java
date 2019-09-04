@@ -5,17 +5,13 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.validator.ConfigurationInputValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -33,12 +29,8 @@ import java.util.Map;
 public class SystemAction extends BaseAction {
     @Resource
     private ConfigurationService configurationService;
-    private final HttpServletRequest request;
-
-    @Autowired
-    public SystemAction(HttpServletRequest request) {
-        this.request = request;
-    }
+    @Resource
+    private HttpServletRequest request;
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -56,7 +48,7 @@ public class SystemAction extends BaseAction {
      * @param page  分页页码
      * @return 视图页面
      */
-    @RequestMapping(value = "/configuration/list", method = RequestMethod.GET)
+    @GetMapping("/configuration/list")
     public String configurationList(Model model, Integer page) {
         try {
             Map<String, Object> configurationsMap = configurationService.find(page, null);
@@ -74,7 +66,7 @@ public class SystemAction extends BaseAction {
      *
      * @return 视图页面
      */
-    @RequestMapping(value = "/configuration/create", method = RequestMethod.GET)
+    @GetMapping("/configuration/create")
     public String createConfiguration() {
         return "configuration/edit";
     }
@@ -86,8 +78,8 @@ public class SystemAction extends BaseAction {
      * @param key   编辑的对应系统配置项关键字名称
      * @return 视图页面
      */
-    @RequestMapping(value = "/configuration/edit", method = RequestMethod.GET)
-    public String editConfiguration(Model model, String key) {
+    @GetMapping("/configuration/edit")
+    public String editConfiguration(Model model, @RequestParam String key) {
         try {
             Configuration configuration = configurationService.find(key);
             model.addAttribute("configuration", configuration);
@@ -144,19 +136,18 @@ public class SystemAction extends BaseAction {
      * @param key 对应系统配置项关键字名称
      * @return Ajax信息
      */
-    @RequestMapping(value = "/configuration/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/configuration/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteConfigurationForAjax(String key) {
+    public Map<String, Object> deleteConfigurationForAjax(@RequestParam String key) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
-            if (configurationService.delete(key) > 0) {
-                jsonMap.put("state", 1);
-                jsonMap.put("message", "删除系统配置成功！");
-            } else {
-                jsonMap.put("state", 0);
-                jsonMap.put("message", "不允许删除内置系统配置");
-            }
+            configurationService.delete(key);
+            jsonMap.put("state", 1);
+            jsonMap.put("message", "删除系统配置成功！");
             return jsonMap;
+        } catch (BusinessException be) {
+            be.printStackTrace();
+            throw new JsonException(be.getMessage(), be);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("删除系统配置失败！", e);

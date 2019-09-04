@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.security;
 
+import com.github.phonenumbermanager.constant.SecurityConfigType;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 import org.springframework.security.access.ConfigAttribute;
@@ -24,13 +25,13 @@ public class FilterInvocationSecurityMetadataSource implements org.springframewo
         FilterInvocation filterInvocation = (FilterInvocation) object;
         HttpSession session = filterInvocation.getHttpRequest().getSession();
         Set<UserPrivilege> userPrivileges = (Set<UserPrivilege>) session.getAttribute("userPrivileges");
+        List<ConfigAttribute> configAttributes = new ArrayList<>();
         if (userPrivileges != null) {
             String url = filterInvocation.getRequestUrl();
             int firstQuestionMarkIndex = url.indexOf("?");
             if (firstQuestionMarkIndex != -1) {
                 url = url.substring(0, firstQuestionMarkIndex);
             }
-            List<ConfigAttribute> configAttributes = new ArrayList<>();
             for (UserPrivilege userPrivilege : userPrivileges) {
                 if (url.equals(userPrivilege.getUri())) {
                     SecurityConfig securityConfig = new SecurityConfig(userPrivilege.getUri());
@@ -44,12 +45,13 @@ public class FilterInvocationSecurityMetadataSource implements org.springframewo
                 }
             }
             if (configAttributes.size() == 0) {
-                SecurityConfig securityConfig = new SecurityConfig("null");
+                SecurityConfig securityConfig = new SecurityConfig(SecurityConfigType.NOT_MATCH.toString());
                 configAttributes.add(securityConfig);
             }
-            return configAttributes;
+        } else {
+            configAttributes.add(new SecurityConfig(SecurityConfigType.NOT_LOGGED.toString()));
         }
-        return null;
+        return configAttributes;
     }
 
 

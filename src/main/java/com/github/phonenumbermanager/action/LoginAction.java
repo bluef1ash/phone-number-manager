@@ -8,8 +8,8 @@ import com.github.phonenumbermanager.utils.GeetestLibUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ public class LoginAction extends BaseAction {
      *
      * @return 视图页面
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public String login() {
         if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserDetails) {
             return "redirect:/";
@@ -45,7 +45,7 @@ public class LoginAction extends BaseAction {
      * @param browserType 浏览器类型
      * @return 验证图案数据
      */
-    @RequestMapping(value = "/captcha", method = RequestMethod.GET)
+    @GetMapping("/captcha")
     @ResponseBody
     public JSONObject captcha(HttpServletRequest request, String browserType) {
         GeetestLibUtils gtSdk = new GeetestLibUtils(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);

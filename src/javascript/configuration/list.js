@@ -11,7 +11,6 @@ $(document).ready(() => {
     new Vue({
         el: "#configuration_list",
         data: {
-            csrf: csrf,
             configurations: configurations
         },
         methods: {

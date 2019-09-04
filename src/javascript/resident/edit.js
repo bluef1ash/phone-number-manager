@@ -9,7 +9,6 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_resident",
         data: {
-            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", "", "", ""],
@@ -110,15 +109,9 @@ $(document).ready(() => {
              */
             submit(event) {
                 let message = null;
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.communityResident.name === "" || this.communityResident.name === null) {
                     message = "社区居民姓名不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -126,10 +119,7 @@ $(document).ready(() => {
                 }
                 if (this.communityResident.name.length > 10) {
                     message = "社区居民姓名不允许超过10个字符！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -137,10 +127,7 @@ $(document).ready(() => {
                 }
                 if (this.communityResident.address === null || this.communityResident.address === "") {
                     message = "社区居民家庭地址不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -151,10 +138,7 @@ $(document).ready(() => {
                 let isEmptyPhone3 = typeof this.communityResident.phone3 === "undefined" || this.communityResident.phone3 === null || this.communityResident.phone3 === "";
                 if (isEmptyPhone1 && isEmptyPhone2 && isEmptyPhone3) {
                     message = "至少填写一个社区居民联系方式！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 2, true);
                     this.$set(this.errorMessages, 2, message);
                     this.$set(this.errorClasses, 3, true);
@@ -167,10 +151,7 @@ $(document).ready(() => {
                 console.log(commonFunction.checkPhoneType(this.communityResident.phone1));
                 if (commonFunction.checkPhoneType(this.communityResident.phone1) === -1) {
                     message = "社区居民联系方式一非法！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 2, true);
                     this.$set(this.errorMessages, 2, message);
                     event.preventDefault();
@@ -178,10 +159,7 @@ $(document).ready(() => {
                 }
                 if (commonFunction.checkPhoneType(this.communityResident.phone2) === -1) {
                     message = "社区居民联系方式二非法！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 3, true);
                     this.$set(this.errorMessages, 3, message);
                     event.preventDefault();
@@ -189,10 +167,7 @@ $(document).ready(() => {
                 }
                 if (commonFunction.checkPhoneType(this.communityResident.phone3) === -1) {
                     message = "社区居民联系方式三非法！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 4, true);
                     this.$set(this.errorMessages, 4, message);
                     event.preventDefault();
@@ -200,10 +175,7 @@ $(document).ready(() => {
                 }
                 if (this.communityResident.communityId === null || this.communityResident.communityId === 0) {
                     message = "请选择所属社区！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 6, true);
                     this.$set(this.errorMessages, 6, message);
                     event.preventDefault();
@@ -211,10 +183,7 @@ $(document).ready(() => {
                 }
                 if (this.communityResident.subcontractorId === null || this.communityResident.subcontractorId === 0) {
                     message = "请选择社区分包人！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 7, true);
                     this.$set(this.errorMessages, 7, message);
                     event.preventDefault();

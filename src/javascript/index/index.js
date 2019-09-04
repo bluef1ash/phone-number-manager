@@ -16,7 +16,7 @@ $(document).ready(() => {
     new Vue({
         el: "#index",
         data: {
-            csrf: csrf,
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
             systemUser: systemUser,
             systemCompanyType: systemCompanyType,
             communityCompanyType: communityCompanyType,
@@ -142,13 +142,9 @@ $(document).ready(() => {
             this.dormitoryBarChartExtend.series = this.barChartExtend.series;
             this.dormitoryBarChartExtend.xAxis = this.barChartExtend.xAxis;
             this.dormitoryBarChartExtend.yAxis = this.barChartExtend.yAxis;
-            $.ajax({
-                url: companySelectUrl,
-                method: "get",
-                data: {
-                    _csrf: this.csrf
-                }
-            }).then(data => {
+            commonFunction.$ajax({
+                url: companySelectUrl
+            }, data => {
                 if (data.state === 1) {
                     this.allSubdistricts = data.subdistricts;
                     data.subdistricts.forEach(item => {
@@ -231,7 +227,6 @@ $(document).ready(() => {
              */
             loadMessageAndChart(getType = null, companyId = null, companyType = null) {
                 let params = {
-                    _csrf: this.csrf,
                     getType,
                     companyType,
                     companyId
@@ -260,11 +255,14 @@ $(document).ready(() => {
                     default:
                         break;
                 }
-                $.ajax({
+                commonFunction.$ajax({
                     url: getComputedUrl,
-                    method: "get",
+                    method: "post",
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                    },
                     data: params
-                }).then(data => {
+                }, data => {
                     this.percentCountTitle = "";
                     if (data.state === 1) {
                         if (data.resident.baseMessage) {

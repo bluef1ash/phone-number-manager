@@ -13,7 +13,7 @@ $(document).ready(() => {
     new Vue({
         el: "#user_list",
         data: {
-            csrf: csrf,
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
             systemAdministratorId: systemAdministratorId,
             systemUsers: systemUsers
         },
@@ -27,21 +27,20 @@ $(document).ready(() => {
              */
             userLock(id, locked, index) {
                 if (id === this.systemAdministratorId) {
-                    this.$message({
-                        message: "不允许锁定超级管理员！",
-                        type: "error"
-                    });
+                    this.$message.error("不允许锁定超级管理员！");
                     return;
                 }
-                $.ajax({
+                commonFunction.$ajax({
                     url: userLockUrl,
-                    method: "get",
+                    method: "post",
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                    },
                     data: {
-                        _csrf: this.csrf,
                         id: id,
                         locked: locked
                     }
-                }).then(data => {
+                }, data => {
                     let message = null;
                     let messageType = "success";
                     if (data.state === 1) {
@@ -65,10 +64,7 @@ $(document).ready(() => {
              */
             deleteObject(id) {
                 if (id === this.systemAdministratorId) {
-                    this.$message({
-                        message: "不允许删除超级管理员！",
-                        type: "error"
-                    });
+                    this.$message.error("不允许删除超级管理员！");
                     return;
                 }
                 commonFunction.deleteObject(this, deleteUrl, id);

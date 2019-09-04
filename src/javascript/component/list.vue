@@ -172,7 +172,7 @@
     export default {
         data() {
             return {
-                csrf: csrf,
+                csrf: $("meta[name='X-CSRF-TOKEN']"),
                 publicParams: publicPrams,
                 data: data.data,
                 dataType: data.dataType,
@@ -225,22 +225,17 @@
              */
             loadCompanies() {
                 if (this.companies.length === 0) {
-                    $.ajax({
-                        url: this.publicParams.companySelectUrl,
-                        method: "get",
-                        async: false,
-                        data: {
-                            _csrf: this.csrf
-                        }
-                    }).then(data => {
-                        if (data.state === 1) {
+                    commonFunction.$ajax({
+                        url: this.publicParams.companySelectUrl
+                    }, result => {
+                        if (result.state === 1) {
                             let disabled = false;
                             this.isStrictly = false;
                             if (this.companyType === this.companyTypes.communityCompanyType) {
                                 disabled = true;
                                 this.isStrictly = true;
                             }
-                            data.subdistricts.forEach(item => {
+                            result.subdistricts.forEach(item => {
                                 let node1 = {value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType};
                                 let node2 = {value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType, disabled};
                                 if (item.communities) {
@@ -296,14 +291,10 @@
             loadSubdistricts() {
                 if (this.subdistricts.length === 0) {
                     $.ajax({
-                        url: this.publicParams.loadSubdistrictsUrl,
-                        method: "get",
-                        data: {
-                            _csrf: this.csrf
-                        }
-                    }).then(data => {
-                        if (data.state === 1) {
-                            this.subdistricts = data.subdistricts;
+                        url: this.publicParams.loadSubdistrictsUrl
+                    }).then(result => {
+                        if (result.state === 1) {
+                            this.subdistricts = result.subdistricts;
                         }
                     });
                 }
@@ -363,15 +354,9 @@
             uploadSuccess(response, file, fileList) {
                 this.loading.close();
                 if (response.state === 0) {
-                    this.$message({
-                        message: response.message,
-                        type: "error"
-                    });
+                    this.$message.error(response.message);
                 } else {
-                    this.$message({
-                        message: response.message,
-                        type: "success"
-                    });
+                    this.$message.success(response.message);
                     $("#import_as_system_modal").modal("hide");
                     this.loadData();
                 }
@@ -395,30 +380,30 @@
             loadData() {
                 this.pagination = this.$route.path.substring(1) === "" ? 1 : parseInt(this.$route.path.substring(1));
                 let data = {
-                    page: this.pagination,
-                    _csrf: this.csrf
+                    page: this.pagination
                 };
                 if (Object.keys(this.searchParams).length > 0 && this.searchParams.isSearch) {
                     this.searchParams.isFrist = false;
                     data = Object.assign(data, this.searchParams);
                 }
-                $.ajax({
+                commonFunction.$ajax({
                     url: this.publicParams.loadDataUrl,
-                    method: "get",
+                    method: "post",
                     data: data,
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                    },
                     beforeSend: xmlHttpRequest => {
                         this.isLoading = true;
                     }
-                }).then(data => {
+                }, result => {
                     this.isLoading = false;
-                    if (data.state === 1) {
-                        this.data = data.data;
-                        this.pageInfo = data.pageInfo;
+                    if (result.state === 1) {
+                        this.data = result.data;
+                        this.pageInfo = result.pageInfo;
                     } else {
-                        this.$message.error(data.messageErrors[0].defaultMessage);
+                        this.$message.error(result.messageErrors[0].defaultMessage);
                     }
-                }).catch((xhr, status, error) => {
-                    this.$message.error(xhr.responseJSON.messageError.defaultMessage);
                 });
             },
             /**
@@ -441,10 +426,7 @@
                         }];
                 }
                 if (this.exportExcelIds.length === 0) {
-                    this.$message({
-                        message: "请选择导出单位！",
-                        type: "error"
-                    });
+                    this.$message.error("请选择导出单位！");
                     return;
                 }
                 this.$cookie.set("exportExcel", "wait", {expires: "5m"});
@@ -524,10 +506,7 @@
                     };
                 }
                 if (this.commitCommunityIds.length === 0) {
-                    this.$message({
-                        message: "请选择提交单位！",
-                        type: "error"
-                    });
+                    this.$message.error("请选择提交单位！");
                     return;
                 }
                 this.$confirm("是否确定提交更改？一经提交，将无法更改、删除。", "警告", {
@@ -535,24 +514,25 @@
                     cancelButtonText: "取消",
                     type: "warning"
                 }).then(() => {
-                    $.ajax({
+                    commonFunction.$ajax({
                         url: this.publicParams.chooseSubmitUrl,
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        },
                         data: {
                             data: Base64.encodeURI(JSON.stringify(this.commitCommunityIds)),
-                            changeType: this.dataType,
-                            _csrf: this.csrf
+                            changeType: this.dataType
                         }
-                    }).then(data => {
-                        if (data.state) {
-                            this.$message.success(data.message);
+                    }, result => {
+                        if (result.state) {
+                            this.$message.success(result.message);
                             setTimeout(() => {
                                 location.reload();
                             }, 3000);
                         } else {
-                            this.$message.error(data.message);
+                            this.$message.error(result.message);
                         }
-                    }).catch((xhr, status, error) => {
-                        this.$message.error(xhr.responseJSON.messageError.defaultMessage);
                     });
                 });
             }

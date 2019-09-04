@@ -9,7 +9,6 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_subdistrict",
         data: {
-            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false],
             errorMessages: ["", ""],
@@ -29,15 +28,9 @@ $(document).ready(() => {
              */
             submit(event) {
                 let message = null;
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.subdistrict.name === "" || this.subdistrict.name === null) {
                     message = "街道办事处名称不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -45,10 +38,7 @@ $(document).ready(() => {
                 }
                 if (this.subdistrict.name.length > 10) {
                     message = "街道办事处名称不允许超过10个字符！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -56,10 +46,7 @@ $(document).ready(() => {
                 }
                 if (this.subdistrict.landline === null || this.subdistrict.landline === "") {
                     message = "街道办事处联系方式不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -67,10 +54,7 @@ $(document).ready(() => {
                 }
                 if (commonFunction.checkPhoneType(this.subdistrict.landline) === -1) {
                     message = "街道办事处联系方式非法！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();

@@ -6,17 +6,13 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.SubdistrictService;
 import com.github.phonenumbermanager.validator.SubdistrictInputValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -34,12 +30,8 @@ import java.util.Map;
 public class SubdistrictAction extends BaseAction {
     @Resource
     private SubdistrictService subdistrictService;
-    private final HttpServletRequest request;
-
-    @Autowired
-    public SubdistrictAction(HttpServletRequest request) {
-        this.request = request;
-    }
+    @Resource
+    private HttpServletRequest request;
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -57,7 +49,7 @@ public class SubdistrictAction extends BaseAction {
      * @param page  分页对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @GetMapping("/list")
     public String subdistrictList(Model model, Integer page) {
         try {
             Map<String, Object> subdistricts = subdistrictService.find(page, null);
@@ -74,7 +66,7 @@ public class SubdistrictAction extends BaseAction {
      *
      * @return 视图页面
      */
-    @RequestMapping(value = "/create", method = RequestMethod.GET)
+    @GetMapping("/create")
     public String createSubdistrict() {
         return "subdistrict/edit";
     }
@@ -86,8 +78,8 @@ public class SubdistrictAction extends BaseAction {
      * @param id    编辑的对应编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/edit", method = RequestMethod.GET)
-    public String editSubdistrict(Model model, Long id) {
+    @GetMapping("/edit")
+    public String editSubdistrict(Model model, @RequestParam Long id) {
         try {
             Subdistrict subdistrict = subdistrictService.find(id);
             model.addAttribute("subdistrict", subdistrict);
@@ -136,9 +128,9 @@ public class SubdistrictAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteSubdistrictForAjax(Long id) {
+    public Map<String, Object> deleteSubdistrictForAjax(@RequestParam Long id) {
         Map<String, Object> map = new HashMap<>(3);
         try {
             subdistrictService.delete(id);
@@ -159,7 +151,7 @@ public class SubdistrictAction extends BaseAction {
      *
      * @return 街道信息
      */
-    @RequestMapping(value = "/ajax_load", method = RequestMethod.GET)
+    @GetMapping("/ajax_load")
     @ResponseBody
     public Map<String, Object> getSubdistrictForAjax() {
         Map<String, Object> map = new HashMap<>(3);

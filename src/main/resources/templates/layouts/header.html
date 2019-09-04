@@ -19,7 +19,7 @@
         </script><![endif]-->
         <!-- basic scripts -->
         <script type="text/javascript" th:inline="javascript">
-            var csrf = /*[[${_csrf.token}]]*/null;
+            var getCsrfUrl = /*[[@{'/getcsrf'}]]*/null;
             var getMenuUrl = /*[[@{'/index/getmenu'}]]*/null;
         </script>
         <!--/*@thymesVar id="scripts" type="java.lang.String"*/-->

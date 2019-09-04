@@ -13,7 +13,6 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_dormitory",
         data: {
-            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false, false, false, false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
@@ -87,18 +86,16 @@ $(document).ready(() => {
                             this.communityName = item.name;
                         }
                     });
-                    $.ajax({
+                    commonFunction.$ajax({
                         url: loadDormitoryManagerLastIdUrl,
-                        method: "get",
                         data: {
-                            _csrf: this.csrf,
                             communityId: this.dormitoryManager.communityId,
                             subdistrictName: this.subdistrictName,
                             communityName: this.communityName
                         }
-                    }).then(data => {
-                        if (data.state === 1) {
-                            this.$set(this.dormitoryManager, "id", data.id);
+                    }, result => {
+                        if (result.state === 1) {
+                            this.$set(this.dormitoryManager, "id", result.id);
                         }
                     });
                 }
@@ -108,16 +105,14 @@ $(document).ready(() => {
              */
             loadSubcontractors() {
                 if (this.dormitoryManager.communityId !== 0) {
-                    $.ajax({
+                    commonFunction.$ajax({
                         url: loadSubcontractorsUrl,
-                        method: "get",
                         data: {
-                            _csrf: this.csrf,
                             communityId: this.dormitoryManager.communityId
                         }
-                    }).then(item => {
-                        if (item.state) {
-                            this.subcontractors = item.subcontractors;
+                    }, result => {
+                        if (result.state) {
+                            this.subcontractors = result.subcontractors;
                         }
                     });
                 }
@@ -127,9 +122,6 @@ $(document).ready(() => {
              * @param event
              */
             submit(event) {
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.dormitoryManager.communityId === null || this.dormitoryManager.communityId === 0) {
                     return this.stopSubmit(event, "请选择所属社区！", 13);
                 }
@@ -198,10 +190,7 @@ $(document).ready(() => {
              * @param isArray
              */
             stopSubmit(event, message, errorIndex, isArray = false) {
-                this.$message({
-                    message: message,
-                    type: "error"
-                });
+                this.$message.error(message);
                 if (isArray) {
                     for (let i = 0; i < errorIndex; i++) {
                         this.$set(this.errorClasses, errorIndex[i], true);

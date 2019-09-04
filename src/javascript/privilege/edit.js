@@ -8,7 +8,6 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_privilege",
         data: {
-            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false],
             errorMessages: ["", "", "", "", ""],
@@ -30,15 +29,9 @@ $(document).ready(() => {
              */
             submit(event) {
                 let message = null;
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.userPrivilege.name === "" || this.userPrivilege.name === null) {
                     message = "系统用户权限名称不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -46,10 +39,7 @@ $(document).ready(() => {
                 }
                 if (this.userPrivilege.constraintAuth === null && this.userPrivilege.constraintAuth === "") {
                     message = "系统权限约束名称不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -57,10 +47,7 @@ $(document).ready(() => {
                 }
                 if (this.userPrivilege.uri === null || this.userPrivilege.uri === "") {
                     message = "系统访问地址不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 2, true);
                     this.$set(this.errorMessages, 2, message);
                     event.preventDefault();
@@ -68,10 +55,7 @@ $(document).ready(() => {
                 }
                 if (this.userPrivilege.parentId === null || this.userPrivilege.parentId === -1) {
                     message = "请选择系统用户权限的上级权限！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 4, true);
                     this.$set(this.errorMessages, 4, message);
                     event.preventDefault();

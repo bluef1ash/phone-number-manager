@@ -2,6 +2,7 @@ import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message} from "element-ui";
+import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     if (configuration === null) {
@@ -11,7 +12,6 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_configuration",
         data: {
-            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", ""],
@@ -30,14 +30,10 @@ $(document).ready(() => {
             loadUsers() {
                 if (this.configuration.type === 4 && this.users.length === 0) {
                     this.configuration.value = 0;
-                    $.ajax({
+                    commonFunction.$ajax({
                         url: loadUsersUrl,
-                        method: "get",
-                        data: {
-                            _csrf: this.csrf
-                        }
-                    }).then(data => {
-                        this.users = data.systemUsers.map(item => ({id: item.systemUserId, name: item.username}));
+                    }, data => {
+                        this.users = data.systemUsers.map(item => ({id: item.id, name: item.username}));
                     });
                 } else {
                     this.configuration.value = null;
@@ -49,15 +45,9 @@ $(document).ready(() => {
              */
             submit(event) {
                 let message = null;
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.configuration.key === "" || this.configuration.key === null) {
                     message = "系统配置项关键字名称不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -65,10 +55,7 @@ $(document).ready(() => {
                 }
                 if (this.configuration.description === null || this.configuration.description === "") {
                     message = "系统配置项描述不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -76,10 +63,7 @@ $(document).ready(() => {
                 }
                 if (this.configuration.type === null || this.configuration.type === 0) {
                     message = "请选择系统配置项值类别！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 2, true);
                     this.$set(this.errorMessages, 2, message);
                     event.preventDefault();
@@ -87,10 +71,7 @@ $(document).ready(() => {
                 }
                 if (this.configuration.value === null) {
                     message = "请设置配置项的值！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 3, true);
                     this.$set(this.errorMessages, 3, message);
                     event.preventDefault();

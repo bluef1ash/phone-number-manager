@@ -3,6 +3,7 @@ import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message} from "element-ui";
 import sha256 from "sha256";
+import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -14,7 +15,6 @@ $(document).ready(() => {
             communityCompanyType: communityCompanyType,
             user: user,
             confirmPassword: null,
-            csrf: csrf,
             locked: null,
             subdistricts: [],
             subdistrictId: -1,
@@ -32,13 +32,12 @@ $(document).ready(() => {
                 this.subdistrictId = this.user.companyId;
                 this.loadCommunities(this.subdistrictId);
             } else if (this.user.companyType === this.communityCompanyType) {
-                $.ajax({
+                commonFunction.$ajax({
                     url: loadCommunityUrl,
                     data: {
                         id: this.user.companyId,
-                        _csrf: this.csrf
                     }
-                }).then(data => {
+                }, data => {
                     if (data.state) {
                         this.subdistrictId = data.community.subdistrictId;
                         this.loadCommunities(data.community.subdistrictId, () => {
@@ -56,13 +55,12 @@ $(document).ready(() => {
              */
             loadCommunities(subdistrictId, callback = null) {
                 if (subdistrictId > 0) {
-                    $.ajax({
+                    commonFunction.$ajax({
                         url: loadCompaniesUrl,
                         data: {
                             subdistrictId: subdistrictId,
-                            _csrf: this.csrf
                         }
-                    }).then(data => {
+                    }, data => {
                         if (data.state) {
                             this.communities = data.communities;
                             callback && callback();
@@ -76,15 +74,9 @@ $(document).ready(() => {
              */
             submit(event) {
                 let message = null;
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.user.username === "" || this.user.username === null) {
                     message = "系统用户名称不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -92,10 +84,7 @@ $(document).ready(() => {
                 }
                 if (this.user.password !== null && this.user.password !== "" && !/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,}$/.test(this.user.password)) {
                     message = "系统用户密码需要在6位以上，且英文字母与数字混合！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -103,10 +92,7 @@ $(document).ready(() => {
                 }
                 if (this.user.password !== this.confirmPassword) {
                     message = "系统用户密码与确认密码不一致！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     this.$set(this.errorClasses, 2, true);
@@ -116,10 +102,7 @@ $(document).ready(() => {
                 }
                 if (this.user.roleId === null || this.user.roleId === 0) {
                     message = "请选择系统用户角色！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 3, true);
                     this.$set(this.errorMessages, 3, message);
                     event.preventDefault();
@@ -127,10 +110,7 @@ $(document).ready(() => {
                 }
                 if (this.subdistrictId === null || this.subdistrictId === -1) {
                     message = "请选择系统用户所属街道！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 4, true);
                     this.$set(this.errorMessages, 4, message);
                     event.preventDefault();
@@ -138,10 +118,7 @@ $(document).ready(() => {
                 }
                 if (this.user.companyType === this.communityCompanyType && (this.communityId === null || this.communityId === 0)) {
                     message = "请选择系统用户所属社区！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 5, true);
                     this.$set(this.errorMessages, 5, message);
                     event.preventDefault();

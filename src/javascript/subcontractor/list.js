@@ -11,7 +11,6 @@ $(document).ready(() => {
     new Vue({
         el: "#subcontractor_list",
         data: {
-            csrf: csrf,
             subcontractors: subcontractors
         },
         methods: {

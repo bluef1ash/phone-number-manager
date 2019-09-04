@@ -4,7 +4,6 @@ $(document).ready(() => {
     new Vue({
         el: "#sidebar",
         data: {
-            csrf: csrf,
             getMenuUrl: getMenuUrl,
             userPrivileges: [],
             currentUri: null
@@ -19,7 +18,6 @@ $(document).ready(() => {
                 url: this.getMenuUrl,
                 method: "get",
                 data: {
-                    _csrf: this.csrf,
                     display: true
                 }
             }).then(data => {

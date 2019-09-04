@@ -11,7 +11,6 @@ $(document).ready(() => {
     new Vue({
         el: "#role_table",
         data: {
-            csrf: csrf,
             userRoles: userRoles
         },
         methods: {
@@ -21,10 +20,7 @@ $(document).ready(() => {
              */
             deleteObject(id) {
                 if (id === 1) {
-                    this.$message({
-                        message: "不允许删除管理员角色！",
-                        type: "error"
-                    });
+                    this.$message.error("不允许删除管理员角色！");
                     return;
                 }
                 commonFunction.deleteObject(this, deleteUrl, id);

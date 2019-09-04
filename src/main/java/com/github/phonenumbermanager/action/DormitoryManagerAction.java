@@ -13,17 +13,13 @@ import com.github.phonenumbermanager.utils.DateUtils;
 import com.github.phonenumbermanager.utils.ExcelUtils;
 import com.github.phonenumbermanager.validator.DormitoryManagerInputValidator;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -44,16 +40,12 @@ import java.util.Map;
 @Controller
 @RequestMapping("/dormitory")
 public class DormitoryManagerAction extends BaseAction {
-    private final HttpServletRequest request;
     @Resource
     private DormitoryManagerService dormitoryManagerService;
     @Resource
     private CommunityService communityService;
-
-    @Autowired
-    public DormitoryManagerAction(HttpServletRequest request) {
-        this.request = request;
-    }
+    @Resource
+    private HttpServletRequest request;
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -72,7 +64,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @GetMapping("/list")
     public String dormitoryManagerList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
@@ -94,7 +86,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/create", method = RequestMethod.GET)
+    @GetMapping("/create")
     public String createDormitoryManager(HttpSession session, Model model) {
         getSessionRoleId(session);
         try {
@@ -115,8 +107,8 @@ public class DormitoryManagerAction extends BaseAction {
      * @param id      需要编辑的社区楼长的编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/edit", method = RequestMethod.GET)
-    public String editDormitoryManager(HttpSession session, Model model, String id) {
+    @GetMapping("/edit")
+    public String editDormitoryManager(HttpSession session, Model model, @RequestParam String id) {
         getSessionRoleId(session);
         try {
             DormitoryManager dormitoryManager = dormitoryManagerService.findCorrelation(id);
@@ -183,9 +175,9 @@ public class DormitoryManagerAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
+    @GetMapping("/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteDormitoryManagerForAjax(String id) {
+    public Map<String, Object> deleteDormitoryManagerForAjax(@RequestParam String id) {
         try {
             Map<String, Object> jsonMap = new HashMap<>(3);
             dormitoryManagerService.delete((Serializable) id);
@@ -206,9 +198,9 @@ public class DormitoryManagerAction extends BaseAction {
      * @param subdistrictId 导入的街道编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/import_as_system", method = RequestMethod.POST)
+    @PostMapping("/import_as_system")
     @ResponseBody
-    public Map<String, Object> dormitoryManagerImportAsSystem(HttpSession session, HttpServletRequest request, Long subdistrictId) {
+    public Map<String, Object> dormitoryManagerImportAsSystem(HttpSession session, HttpServletRequest request, @RequestParam Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             Workbook workbook = uploadExcel(request, session, "excel_dormitory_title");
@@ -229,8 +221,8 @@ public class DormitoryManagerAction extends BaseAction {
      * @param response 前台响应对象
      * @param data     传递数据
      */
-    @RequestMapping(value = "/save_as_excel", method = RequestMethod.GET)
-    public void dormitoryManagerSaveAsExcel(HttpSession session, HttpServletResponse response, String data) {
+    @GetMapping("/save_as_excel")
+    public void dormitoryManagerSaveAsExcel(HttpSession session, HttpServletResponse response, @RequestParam String data) {
         try {
             List<Map<String, Object>> userData = getDecodeData(session, data);
             //获取属性-列头
@@ -263,7 +255,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param phone       社区楼长联系方式
      * @return Ajax消息
      */
-    @RequestMapping(value = "/ajax_list", method = RequestMethod.GET)
+    @PostMapping("/ajax_list")
     @ResponseBody
     public Map<String, Object> findDormitoryManagersForAjax(HttpSession session, Integer page, Boolean isSearch, Long companyId, Integer companyType, String name, Integer sex, String address, String phone) {
         getSessionRoleId(session);
@@ -294,9 +286,9 @@ public class DormitoryManagerAction extends BaseAction {
      * @param subdistrictName 街道办事处名称
      * @return JSON数据
      */
-    @RequestMapping(value = "/ajax_id", method = RequestMethod.GET)
+    @GetMapping("/ajax_id")
     @ResponseBody
-    public Map<String, Object> loadDormitoryManagerLastIdForAjax(Long communityId, String communityName, String subdistrictName) {
+    public Map<String, Object> loadDormitoryManagerLastIdForAjax(@RequestParam Long communityId, String communityName, String subdistrictName) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             String lastId = dormitoryManagerService.find(communityId, communityName, subdistrictName);

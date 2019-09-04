@@ -11,17 +11,13 @@ import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.service.SubdistrictService;
 import com.github.phonenumbermanager.validator.CommunityInputValidator;
 import com.github.phonenumbermanager.validator.SubcontractorInputValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -45,12 +41,8 @@ public class CommunityAction extends BaseAction {
     private SubcontractorService subcontractorService;
     @Resource
     private SubdistrictService subdistrictService;
-    private final HttpServletRequest request;
-
-    @Autowired
-    public CommunityAction(HttpServletRequest request) {
-        this.request = request;
-    }
+    @Resource
+    private HttpServletRequest request;
 
     @InitBinder
     public void initBinder(DataBinder binder) {
@@ -69,7 +61,7 @@ public class CommunityAction extends BaseAction {
      * @param page  分页页码
      * @return 视图页面
      */
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @GetMapping("/list")
     public String communityList(Model model, Integer page) {
         try {
             Map<String, Object> communityMap = communityService.findCorrelation(page, null);
@@ -88,7 +80,7 @@ public class CommunityAction extends BaseAction {
      * @param model 前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/create", method = RequestMethod.GET)
+    @GetMapping("/create")
     public String createCommunity(Model model) {
         try {
             List<Subdistrict> subdistricts = subdistrictService.find();
@@ -107,8 +99,8 @@ public class CommunityAction extends BaseAction {
      * @param id    编辑的对应编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/edit", method = RequestMethod.GET)
-    public String editCommunity(Model model, Long id) {
+    @GetMapping("/edit")
+    public String editCommunity(Model model, @RequestParam Long id) {
         try {
             Community community = communityService.findCorrelation(id);
             List<Subdistrict> subdistricts = subdistrictService.find();
@@ -169,9 +161,9 @@ public class CommunityAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteCommunityForAjax(Long id) {
+    public Map<String, Object> deleteCommunityForAjax(@RequestParam Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             communityService.delete(id);
@@ -180,7 +172,7 @@ public class CommunityAction extends BaseAction {
             return jsonMap;
         } catch (BusinessException be) {
             be.printStackTrace();
-            throw new JsonException(be);
+            throw new JsonException(be.getMessage(), be);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("删除社区失败！", e);
@@ -194,7 +186,7 @@ public class CommunityAction extends BaseAction {
      * @param subdistrictId 街道级编号
      * @return Ajax消息
      */
-    @RequestMapping(value = "/ajax_select", method = RequestMethod.GET)
+    @GetMapping("/ajax_select")
     @ResponseBody
     public Map<String, Object> findCommunitiesForAjax(HttpSession session, Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -225,9 +217,9 @@ public class CommunityAction extends BaseAction {
      * @param changeType 更改类型
      * @return 是否更改成功
      */
-    @RequestMapping(value = "/choose_submit", method = RequestMethod.GET)
+    @PostMapping("/choose_submit")
     @ResponseBody
-    public Map<String, Object> chooseSubmitForAjax(HttpSession session, String data, Integer changeType) {
+    public Map<String, Object> chooseSubmitForAjax(HttpSession session, @RequestParam String data, @RequestParam Integer changeType) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             communityService.update(getDecodeData(session, data), changeType, systemCompanyType, communityCompanyType, subdistrictCompanyType);
@@ -246,9 +238,9 @@ public class CommunityAction extends BaseAction {
      * @param id 社区编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/ajax_load", method = RequestMethod.GET)
+    @GetMapping("/ajax_load")
     @ResponseBody
-    public Map<String, Object> loadCommunityForAjax(Long id) {
+    public Map<String, Object> loadCommunityForAjax(@RequestParam Long id) {
         try {
             Community community = communityService.find(id);
             Map<String, Object> jsonMap = new HashMap<>(3);
@@ -269,7 +261,7 @@ public class CommunityAction extends BaseAction {
      * @param page    分页页码
      * @return 视图页面
      */
-    @RequestMapping(value = "/subcontractor/list", method = RequestMethod.GET)
+    @GetMapping("/subcontractor/list")
     public String subcontractorList(HttpSession session, Model model, Integer page) {
         getSessionRoleId(session);
         try {
@@ -289,7 +281,7 @@ public class CommunityAction extends BaseAction {
      * @param model 前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = "/subcontractor/create", method = RequestMethod.GET)
+    @GetMapping("/subcontractor/create")
     public String createSubcontractor(Model model, HttpSession session) {
         getSessionRoleId(session);
         try {
@@ -309,8 +301,8 @@ public class CommunityAction extends BaseAction {
      * @param id    编辑的对应编号
      * @return 视图页面
      */
-    @RequestMapping(value = "/subcontractor/edit", method = RequestMethod.GET)
-    public String editSubcontractor(HttpSession session, Model model, Long id) {
+    @GetMapping("/subcontractor/edit")
+    public String editSubcontractor(HttpSession session, Model model, @RequestParam Long id) {
         getSessionRoleId(session);
         try {
             Subcontractor subcontractor = subcontractorService.find(id);
@@ -375,9 +367,9 @@ public class CommunityAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @RequestMapping(value = "/subcontractor/ajax_delete", method = RequestMethod.DELETE)
+    @DeleteMapping("/subcontractor/ajax_delete")
     @ResponseBody
-    public Map<String, Object> deleteSubcontractorForAjax(Long id) {
+    public Map<String, Object> deleteSubcontractorForAjax(@RequestParam Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             subcontractorService.delete(id);
@@ -386,7 +378,7 @@ public class CommunityAction extends BaseAction {
             return jsonMap;
         } catch (BusinessException be) {
             be.printStackTrace();
-            throw new JsonException(be);
+            throw new JsonException(be.getMessage(), be);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("删除社区分包人失败！", e);
@@ -399,9 +391,9 @@ public class CommunityAction extends BaseAction {
      * @param communityId 社区编号
      * @return 社区分包人对象集合
      */
-    @RequestMapping(value = "/subcontractor/ajax_load", method = RequestMethod.GET)
+    @GetMapping("/subcontractor/ajax_load")
     @ResponseBody
-    public Map<String, Object> loadSubcontractorForAjax(Long communityId) {
+    public Map<String, Object> loadSubcontractorForAjax(@RequestParam Long communityId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             List<Subcontractor> subcontractors = subcontractorService.findByCommunityId(communityId);

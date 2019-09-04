@@ -11,7 +11,6 @@ $(document).ready(() => {
     new Vue({
         el: "#community_list",
         data: {
-            csrf: csrf,
             communities: communities
         },
         methods: {

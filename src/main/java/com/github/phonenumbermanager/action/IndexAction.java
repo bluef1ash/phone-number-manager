@@ -8,8 +8,8 @@ import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
@@ -39,7 +39,7 @@ public class IndexAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @RequestMapping(value = {"/", "/index"}, method = RequestMethod.GET)
+    @GetMapping({"/", "/index"})
     public String index(HttpSession session, Model model) {
         getSessionRoleId(session);
         model.addAttribute("systemUser", systemUser);
@@ -55,7 +55,7 @@ public class IndexAction extends BaseAction {
      * @param display 是否显示
      * @return 视图页面
      */
-    @RequestMapping(value = "/index/getmenu", method = RequestMethod.GET)
+    @GetMapping("/index/getmenu")
     @ResponseBody
     public Map<String, Object> getMenu(Boolean display, HttpSession session) {
         Set<UserPrivilege> userPrivileges = (Set<UserPrivilege>) session.getAttribute("userPrivileges");
@@ -80,7 +80,7 @@ public class IndexAction extends BaseAction {
      * @param barChartTypeParam 柱状图表类型参数
      * @return Ajax返回JSON对象
      */
-    @RequestMapping(value = "/index/getcomputedcount", method = RequestMethod.GET)
+    @PostMapping("/index/getcomputedcount")
     @ResponseBody
     public Map<String, Object> getComputedCount(HttpSession session, Integer getType, Long companyId, Long companyType, Boolean barChartTypeParam) {
         getSessionRoleId(session);

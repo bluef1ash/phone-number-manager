@@ -9,7 +9,6 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_role",
         data: {
-            csrf: csrf,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false],
             errorMessages: ["", "", "", "", ""],
@@ -77,15 +76,9 @@ $(document).ready(() => {
              */
             submit(event) {
                 let message = null;
-                if (this.csrf === null || this.csrf === "") {
-                    location.reload();
-                }
                 if (this.userRole.name === "" || this.userRole.name === null) {
                     message = "系统用户角色名称不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 0, true);
                     this.$set(this.errorMessages, 0, message);
                     event.preventDefault();
@@ -93,10 +86,7 @@ $(document).ready(() => {
                 }
                 if (this.userRole.description === null && this.userRole.description === "") {
                     message = "系统用户角色描述不能为空！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
                     this.$set(this.errorMessages, 1, message);
                     event.preventDefault();
@@ -104,10 +94,7 @@ $(document).ready(() => {
                 }
                 if (this.userRole.parentId === null || this.userRole.parentId === -1) {
                     message = "请选择系统用户角色的上级角色！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 2, true);
                     this.$set(this.errorMessages, 2, message);
                     event.preventDefault();
@@ -115,10 +102,7 @@ $(document).ready(() => {
                 }
                 if (this.privilegeIds === null || this.privilegeIds.length < 1) {
                     message = "请选择系统用户角色的权限！";
-                    this.$message({
-                        message: message,
-                        type: "error"
-                    });
+                    this.$message.error(message);
                     this.$set(this.errorClasses, 3, true);
                     this.$set(this.errorMessages, 3, message);
                     event.preventDefault();

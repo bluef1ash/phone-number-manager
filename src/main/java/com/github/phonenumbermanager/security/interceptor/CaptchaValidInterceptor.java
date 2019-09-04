@@ -2,6 +2,7 @@ package com.github.phonenumbermanager.security.interceptor;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.utils.CommonUtils;
 import com.github.phonenumbermanager.utils.GeetestLibUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import org.springframework.security.web.FilterInvocation;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -24,6 +26,15 @@ import java.util.Map;
 public class CaptchaValidInterceptor implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        HttpSession session = httpServletRequest.getSession();
+        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+        String loginUri = "/login";
+        String requestUri = httpServletRequest.getRequestURI();
+        if (systemUser == null && !requestUri.contains(loginUri)) {
+            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+            httpServletResponse.sendRedirect(loginUri);
+        }
         GeetestLibUtils gtSdk = new GeetestLibUtils(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
         String challenge = request.getParameter(GeetestLibUtils.FN_GEETEST_CHALLENGE);
         String validate = request.getParameter(GeetestLibUtils.FN_GEETEST_VALIDATE);
@@ -33,7 +44,6 @@ public class CaptchaValidInterceptor implements Filter {
             filterInvocation.getChain().doFilter(filterInvocation.getRequest(), filterInvocation.getResponse());
             return;
         }
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         int gtServerStatusCode = (Integer) httpServletRequest.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
         Map<String, String> param = new HashMap<>(3);
         param.put("client_type", request.getParameter("browserType"));

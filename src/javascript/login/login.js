@@ -38,76 +38,77 @@ $(document).ready(() => {
         },
         mounted() {
             this.browserType = commonFunction.browserType() ? "web" : "h5";
-            $.ajax({
+            commonFunction.$ajax({
                 url: captchaUrl + "?browserType=" + this.browserType + "&time=" + (new Date()).getTime(),
-                type: "get",
                 dataType: "json"
-            }).then(data => {
-                initGeetest({
-                    gt: data.gt,
-                    challenge: data.challenge,
-                    product: "bind",
-                    offline: !data.success,
-                    new_captcha: true
-                }, captchaObj => {
-                    this.captchaObj = captchaObj;
-                    this.captchaObj.bindForm("#login_form");
-                    this.captchaObj.onReady(() => {
-                        this.isCaptcha = "none";
-                    }).onSuccess(() => {
-                        $.ajax({
-                            url: this.$refs.loginForm.action,
-                            method: "post",
-                            data: {
-                                username: this.username,
-                                password: sha256(this.password),
-                                browserType: this.browserType
-                            },
-                            beforeSend: xmlHttpRequest => {
-                                xmlHttpRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf.prop("content"));
-                                this.loading = this.$loading({
-                                    lock: true,
-                                    text: "正在登录，请稍等。。。",
-                                    spinner: "el-icon-loading",
-                                    background: "rgba(0, 0, 0, 0.8)"
-                                });
-                            }
-                        }).then(data => {
-                            this.loading.close();
-                            this.$message({
-                                message: data.message,
-                                type: "success"
-                            });
-                            setTimeout(location.href = "/", 3000);
-                        }).catch((xhr, status, error) => {
-                            this.loading.close();
-                            let responseJSON = xhr.responseJSON;
-                            this.$message.error(responseJSON.message);
-                            let invalidIndex = 0;
-                            if (responseJSON.fieldName === "password") {
-                                invalidIndex = 1;
-                            } else if (responseJSON.fieldName === "captcha") {
-                                invalidIndex = 2;
-                                this.isCaptcha = "block";
-                            }
-                            this.$set(this.isInvalids, invalidIndex, true);
-                            this.$set(this.messages, invalidIndex, responseJSON.message);
-                            let data = Base64.encodeURI(JSON.stringify({host: location.hostname, timeStamp: new Date().getTime()}));
-                            $.ajax({
-                                url: getCsrfUrl,
+            }, result => {
+                if (result.success === 1) {
+                    initGeetest({
+                        gt: result.gt,
+                        challenge: result.challenge,
+                        product: "bind",
+                        offline: !result.success,
+                        new_captcha: true
+                    }, captchaObj => {
+                        this.captchaObj = captchaObj;
+                        this.captchaObj.bindForm("#login_form");
+                        this.captchaObj.onReady(() => {
+                            this.isCaptcha = "none";
+                        }).onSuccess(() => {
+                            commonFunction.$ajax({
+                                url: this.$refs.loginForm.action,
+                                method: "post",
                                 data: {
-                                    data
+                                    username: this.username,
+                                    password: sha256(this.password),
+                                    browserType: this.browserType
+                                },
+                                beforeSend: xmlHttpRequest => {
+                                    xmlHttpRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf.prop("content"));
+                                    this.loading = this.$loading({
+                                        lock: true,
+                                        text: "正在登录，请稍等。。。",
+                                        spinner: "el-icon-loading",
+                                        background: "rgba(0, 0, 0, 0.8)"
+                                    });
                                 }
-                            }).then(data => {
-                                if (data.state) {
-                                    this.csrf.attr("content", data.csrf);
+                            }, data => {
+                                this.loading.close();
+                                this.$message({
+                                    message: data.message,
+                                    type: "success"
+                                });
+                                setTimeout(location.href = "/", 3000);
+                            }, xhr => {
+                                this.loading.close();
+                                let responseJSON = xhr.responseJSON;
+                                this.$message.error(responseJSON.message);
+                                let invalidIndex = 0;
+                                if (responseJSON.fieldName === "password") {
+                                    invalidIndex = 1;
+                                } else if (responseJSON.fieldName === "captcha") {
+                                    invalidIndex = 2;
+                                    this.isCaptcha = "block";
                                 }
+                                this.$set(this.isInvalids, invalidIndex, true);
+                                this.$set(this.messages, invalidIndex, responseJSON.message);
+                                let data = Base64.encodeURI(JSON.stringify({host: location.hostname, timeStamp: new Date().getTime()}));
+                                commonFunction.$ajax({
+                                    url: getCsrfUrl,
+                                    data: {
+                                        data
+                                    }
+                                }, data => {
+                                    if (data.state) {
+                                        this.csrf.attr("content", data.csrf);
+                                    }
+                                });
                             });
+                        }).onError(() => {
+                            this.$set(this.messages, 2, "加载图形验证码失败，请稍后再试！");
                         });
-                    }).onError(() => {
-                        this.$set(this.messages, 2, "加载图形验证码失败，请稍后再试！");
                     });
-                });
+                }
             });
             if (this.$cookie.get("sessionExpired") !== null) {
                 this.$cookie.delete("sessionExpired");

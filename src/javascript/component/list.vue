@@ -146,7 +146,7 @@
                                     <option :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
                                 </select>
                             </div>
-                            <el-upload :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :data="{_csrf: csrf, subdistrictId: subdistrictId}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo" ref="uploadExcel">
+                            <el-upload :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :headers="{'X-CSRF-TOKEN': csrf.prop('content')}" :data="{subdistrictId}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo" ref="uploadExcel">
                                 <el-button size="small" type="primary">浏览文件</el-button>
                             </el-upload>
                         </form>

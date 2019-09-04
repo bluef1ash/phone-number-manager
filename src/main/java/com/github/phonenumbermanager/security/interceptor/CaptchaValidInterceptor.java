@@ -31,7 +31,14 @@ public class CaptchaValidInterceptor implements Filter {
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
         String loginUri = "/login";
         String requestUri = httpServletRequest.getRequestURI();
-        if (systemUser == null && !requestUri.contains(loginUri)) {
+        boolean isPermit = false;
+        for (int i = 0; i < SystemConstant.LOGGED_PERMITS.length; i++) {
+            if (requestUri.contains(SystemConstant.LOGGED_PERMITS[i])) {
+                isPermit = true;
+                break;
+            }
+        }
+        if (systemUser == null && !requestUri.contains(loginUri) && !isPermit) {
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
             httpServletResponse.sendRedirect(loginUri);
         }

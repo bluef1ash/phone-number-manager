@@ -38,4 +38,5 @@ public final class SystemConstant {
      * 权限通过
      */
     public static final String[] PRIVILEGE_PERMITS = {"/", "permitAll", "/exception", "/index/getmenu", "/community/ajax_select", "/index/getcomputedcount", "/community/subcontractor/ajax_load"};
+    public static final String[] LOGGED_PERMITS = {"/getcsrf", "permitAll", "/exception"};
 }

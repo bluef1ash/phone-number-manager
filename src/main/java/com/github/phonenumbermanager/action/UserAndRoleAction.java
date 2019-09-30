@@ -217,17 +217,17 @@ public class UserAndRoleAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> deleteSystemUserForAjax(HttpSession session, @RequestParam Long id) {
         getSessionRoleId(session);
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             if (id.equals(systemAdministratorId)) {
-                map.put("state", 0);
-                map.put("message", "不允许删除超级管理员！");
+                jsonMap.put("state", 0);
+                jsonMap.put("message", "不允许删除超级管理员！");
             } else {
                 systemUserService.delete(id);
-                map.put("state", 1);
-                map.put("message", "删除系统用户成功！");
+                jsonMap.put("state", 1);
+                jsonMap.put("message", "删除系统用户成功！");
             }
-            return map;
+            return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("删除系统用户失败！", e);
@@ -239,15 +239,15 @@ public class UserAndRoleAction extends BaseAction {
      *
      * @return Ajax信息
      */
-    @GetMapping("/user/ajax_get")
+    @PostMapping("/user/ajax_get")
     @ResponseBody
     public Map<String, Object> getSystemUsersForAjax() {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             List<SystemUser> systemUsers = systemUserService.findIdAndName();
-            map.put("state", 1);
-            map.put("systemUsers", systemUsers);
-            return map;
+            jsonMap.put("state", 1);
+            jsonMap.put("systemUsers", systemUsers);
+            return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("获取系统用户失败！", e);
@@ -492,12 +492,12 @@ public class UserAndRoleAction extends BaseAction {
     @DeleteMapping("/privilege/ajax_delete")
     @ResponseBody
     public Map<String, Object> deleteSystemUserPrivilegeForAjax(@RequestParam Long id) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             userPrivilegeService.delete(id);
-            map.put("state", 1);
-            map.put("message", "删除用户权限成功！");
-            return map;
+            jsonMap.put("state", 1);
+            jsonMap.put("message", "删除用户权限成功！");
+            return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("删除用户权限失败！", e);
@@ -510,14 +510,14 @@ public class UserAndRoleAction extends BaseAction {
      * @param roleId 系统用户角色编号
      * @return Ajax消息
      */
-    @GetMapping("/privilege/ajax_get_privileges")
+    @PostMapping("/privilege/ajax_get_privileges")
     @ResponseBody
     public Map<String, Object> getPrivilegesByRoleIdForAjax(@RequestParam Long roleId) {
         try {
-            Set<UserPrivilege> privileges = userPrivilegeService.findByRoleId(roleId);
-            Map<String, Object> map = new HashMap<>(2);
-            map.put("privileges", privileges);
-            return map;
+            Map<String, Object> jsonMap = new HashMap<>(3);
+            jsonMap.put("state", 1);
+            jsonMap.put("privileges", userPrivilegeService.findByRoleId(roleId));
+            return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("系统异常！找不到数据，请稍后再试！", e);

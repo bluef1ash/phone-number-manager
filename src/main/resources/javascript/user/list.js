@@ -13,7 +13,6 @@ $(document).ready(() => {
     new Vue({
         el: "#user_list",
         data: {
-            csrf: $("meta[name='X-CSRF-TOKEN']"),
             systemAdministratorId: systemAdministratorId,
             systemUsers: systemUsers
         },
@@ -34,7 +33,7 @@ $(document).ready(() => {
                     url: userLockUrl,
                     method: "post",
                     headers: {
-                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                        "X-CSRF-TOKEN": $("meta[name='X-CSRF-TOKEN']").prop("content")
                     },
                     data: {
                         id: id,

@@ -1,5 +1,5 @@
 const path = require("path");
-const jsSrcPath = path.resolve(__dirname, "src/javascript");
+const jsSrcPath = path.resolve(__dirname, "src/main/resources/javascript");
 const jsDistPath = path.resolve(__dirname, "src/main/resources/static/javascript");
 const Webpack = require("webpack");
 const glob = require("glob-all");
@@ -41,7 +41,7 @@ module.exports = {
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                include: path.resolve(__dirname, "src/javascript"),
+                include: jsSrcPath,
                 use: "babel-loader?cacheDirectory"
             },
             {
@@ -126,11 +126,19 @@ module.exports = {
         alias: {
             "vue$": "vue/dist/vue.esm.js",
             "@base": __dirname,
-            "@baseSrc": path.resolve(__dirname, "src")
+            "@baseSrc": path.resolve(__dirname, "src/main/resources")
         },
         modules: [
             path.resolve("node_modules")
         ],
         extensions: [".js", ".css", ".vue", ".json"]
+    },
+    performance: {
+        hints: "warning",
+        maxAssetSize: 5 * 1024 * 1024,
+        maxEntrypointSize: 10 * 1024 * 1024,
+        assetFilter(assetFilename) {
+            return assetFilename.endsWith(".css") || assetFilename.endsWith(".js");
+        }
     }
 };

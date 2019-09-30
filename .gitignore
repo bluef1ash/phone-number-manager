@@ -34,7 +34,6 @@ build/
 
 .mvn/
 node_modules/
-src/main/resoures/static/javascript/
-src/main/resoures/static/fonts/
-
 src/main/resources/application-product.yml
+src/main/resources/static/fonts/
+src/main/resources/static/javascript/

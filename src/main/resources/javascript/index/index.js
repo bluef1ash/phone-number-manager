@@ -143,7 +143,11 @@ $(document).ready(() => {
             this.dormitoryBarChartExtend.xAxis = this.barChartExtend.xAxis;
             this.dormitoryBarChartExtend.yAxis = this.barChartExtend.yAxis;
             commonFunction.$ajax({
-                url: companySelectUrl
+                url: companySelectUrl,
+                method: "post",
+                headers: {
+                    "X-CSRF-TOKEN": this.csrf.prop("content")
+                }
             }, data => {
                 if (data.state === 1) {
                     this.allSubdistricts = data.subdistricts;

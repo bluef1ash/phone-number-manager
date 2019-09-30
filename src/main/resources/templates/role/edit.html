@@ -78,7 +78,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="hidden" name="id" v-model="userRole.id" th:if="${userRole} != null">
                             <input type="hidden" name="_method" value="PUT" th:if="${userRole} != null">
                             <button class="btn btn-sm btn-primary" type="submit">

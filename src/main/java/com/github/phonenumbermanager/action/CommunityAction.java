@@ -186,7 +186,7 @@ public class CommunityAction extends BaseAction {
      * @param subdistrictId 街道级编号
      * @return Ajax消息
      */
-    @GetMapping("/ajax_select")
+    @PostMapping("/ajax_select")
     @ResponseBody
     public Map<String, Object> findCommunitiesForAjax(HttpSession session, Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -238,7 +238,7 @@ public class CommunityAction extends BaseAction {
      * @param id 社区编号
      * @return Ajax信息
      */
-    @GetMapping("/ajax_load")
+    @PostMapping("/ajax_load")
     @ResponseBody
     public Map<String, Object> loadCommunityForAjax(@RequestParam Long id) {
         try {
@@ -391,7 +391,7 @@ public class CommunityAction extends BaseAction {
      * @param communityId 社区编号
      * @return 社区分包人对象集合
      */
-    @GetMapping("/subcontractor/ajax_load")
+    @PostMapping("/subcontractor/ajax_load")
     @ResponseBody
     public Map<String, Object> loadSubcontractorForAjax(@RequestParam Long communityId) {
         Map<String, Object> jsonMap = new HashMap<>(3);

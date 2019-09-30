@@ -35,6 +35,10 @@ public final class SystemConstant {
      */
     public static final String DATABASE_START_TIMESTAMP_STRING = "1000-00-00 00:00:00";
     /**
+     * 毫秒时间差
+     */
+    public static final int TIMESTAMP_MILLISECONDS_DIFFERENCE = 1000 * 10;
+    /**
      * 权限通过
      */
     public static final String[] PRIVILEGE_PERMITS = {"/", "permitAll", "/exception", "/index/getmenu", "/community/ajax_select", "/index/getcomputedcount", "/community/subcontractor/ajax_load"};

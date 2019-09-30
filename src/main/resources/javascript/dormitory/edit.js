@@ -13,6 +13,8 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_dormitory",
         data: {
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
+            csrfToken: null,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false, false, false, false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
@@ -26,6 +28,7 @@ $(document).ready(() => {
             newCommunities: []
         },
         created() {
+            this.csrfToken = this.csrf.prop("content");
             if (this.dormitoryManager === null) {
                 this.dormitoryManager = {
                     sex: -1,
@@ -88,6 +91,10 @@ $(document).ready(() => {
                     });
                     commonFunction.$ajax({
                         url: loadDormitoryManagerLastIdUrl,
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        },
                         data: {
                             communityId: this.dormitoryManager.communityId,
                             subdistrictName: this.subdistrictName,
@@ -97,7 +104,7 @@ $(document).ready(() => {
                         if (result.state === 1) {
                             this.$set(this.dormitoryManager, "id", result.id);
                         }
-                    });
+                    }, null, csrfToken => this.csrfToken = csrfToken);
                 }
             },
             /**
@@ -107,6 +114,10 @@ $(document).ready(() => {
                 if (this.dormitoryManager.communityId !== 0) {
                     commonFunction.$ajax({
                         url: loadSubcontractorsUrl,
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        },
                         data: {
                             communityId: this.dormitoryManager.communityId
                         }
@@ -114,7 +125,7 @@ $(document).ready(() => {
                         if (result.state) {
                             this.subcontractors = result.subcontractors;
                         }
-                    });
+                    }, null, csrfToken => this.csrfToken = csrfToken);
                 }
             },
             /**
@@ -201,7 +212,6 @@ $(document).ready(() => {
                 this.$set(this.errorMessages, errorIndex, message);
                 event.preventDefault();
             }
-        },
-        watch: {}
+        }
     });
 });

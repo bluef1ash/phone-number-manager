@@ -1,6 +1,5 @@
 package com.github.phonenumbermanager.action;
 
-
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -131,18 +130,18 @@ public class SubdistrictAction extends BaseAction {
     @DeleteMapping("/ajax_delete")
     @ResponseBody
     public Map<String, Object> deleteSubdistrictForAjax(@RequestParam Long id) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             subdistrictService.delete(id);
-            map.put("state", 1);
-            map.put("message", "删除街道成功！");
-            return map;
+            jsonMap.put("state", 1);
+            jsonMap.put("message", "删除街道成功！");
+            return jsonMap;
         } catch (BusinessException be) {
             be.printStackTrace();
-            throw new BusinessException(be);
+            throw new JsonException(be);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessException("删除街道失败！", e);
+            throw new JsonException("删除街道失败！", e);
         }
     }
 
@@ -151,15 +150,14 @@ public class SubdistrictAction extends BaseAction {
      *
      * @return 街道信息
      */
-    @GetMapping("/ajax_load")
+    @PostMapping("/ajax_load")
     @ResponseBody
     public Map<String, Object> getSubdistrictForAjax() {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(3);
         try {
-            List<Subdistrict> subdistricts = subdistrictService.find();
-            map.put("state", 1);
-            map.put("subdistricts", subdistricts);
-            return map;
+            jsonMap.put("state", 1);
+            jsonMap.put("subdistricts", subdistrictService.find());
+            return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("获取街道失败！", e);

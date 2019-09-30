@@ -9,6 +9,8 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_resident",
         data: {
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
+            csrfToken: null,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", "", "", ""],
@@ -22,6 +24,7 @@ $(document).ready(() => {
             isShowPhone3: false
         },
         created() {
+            this.csrfToken = this.csrf.prop("content");
             if (this.communityResident === null) {
                 this.communityResident = {
                     communityId: 0,
@@ -89,18 +92,20 @@ $(document).ready(() => {
              */
             loadSubcontractors() {
                 if (this.communityResident.communityId !== 0) {
-                    $.ajax({
+                    commonFunction.$ajax({
                         url: loadSubcontractorsUrl,
-                        method: "get",
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        },
                         data: {
-                            _csrf: this.csrf,
                             communityId: this.communityResident.communityId
                         }
-                    }).then(item => {
+                    }, item => {
                         if (item.state) {
                             this.subcontractors = item.subcontractors;
                         }
-                    });
+                    }, null, csrfToken => this.csrfToken = csrfToken);
                 }
             },
             /**
@@ -148,7 +153,6 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                console.log(commonFunction.checkPhoneType(this.communityResident.phone1));
                 if (commonFunction.checkPhoneType(this.communityResident.phone1) === -1) {
                     message = "社区居民联系方式一非法！";
                     this.$message.error(message);

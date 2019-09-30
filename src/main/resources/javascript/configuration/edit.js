@@ -12,6 +12,8 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_configuration",
         data: {
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
+            csrfToken: null,
             messageErrors: messageErrors,
             errorClasses: [false, false, false, false, false, false],
             errorMessages: ["", "", "", "", "", ""],
@@ -19,6 +21,7 @@ $(document).ready(() => {
             users: []
         },
         created() {
+            this.csrfToken = this.csrf.prop("content");
             if (this.configuration.keyChanged === null || typeof this.configuration.keyChanged === "undefined") {
                 this.configuration.keyChanged = true;
             }
@@ -32,9 +35,13 @@ $(document).ready(() => {
                     this.configuration.value = 0;
                     commonFunction.$ajax({
                         url: loadUsersUrl,
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        }
                     }, data => {
                         this.users = data.systemUsers.map(item => ({id: item.id, name: item.username}));
-                    });
+                    }, null, csrfToken => this.csrfToken = csrfToken);
                 } else {
                     this.configuration.value = null;
                 }
@@ -75,7 +82,6 @@ $(document).ready(() => {
                     this.$set(this.errorClasses, 3, true);
                     this.$set(this.errorMessages, 3, message);
                     event.preventDefault();
-                    return;
                 }
             },
             /**

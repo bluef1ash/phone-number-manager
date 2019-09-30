@@ -6,7 +6,8 @@
             var publicPrams = {createUrl: /*[[@{'/resident/create'}]]*/null, editUrl: /*[[@{'/resident/edit?id='}]]*/null, deleteUrl: /*[[@{'/resident/ajax_delete'}]]*/null, companySelectUrl: /*[[@{'/community/ajax_select'}]]*/null, importAsSystemUrl: /*[[@{'/resident/import_as_system'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/ajax_load'}]]*/null, loadDataUrl: /*[[@{'/resident/ajax_list'}]]*/null, downloadExcelUrl: /*[[@{'/resident/save_as_excel'}]]*/null, chooseSubmitUrl: /*[[@{'/community/choose_submit'}]]*/null};
             var data = {data: /*[[${communityResidents}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, companyTypes: /*[[${companyTypes}]]*/null, companyType: /*[[${companyType}]]*/null};
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/resident-list-bundle.js'}"></script>
+        <script type="text/javascript" src="http://localhost:3000/resident-list-bundle.js"></script>
+        <!--        <script type="text/javascript" th:src="@{'/javascript/resident-list-bundle.js'}"></script>-->
     </head>
     <body>
         <th:block layout:fragment="content">

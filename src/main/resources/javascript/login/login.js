@@ -5,7 +5,6 @@ import sha256 from "sha256";
 import VueCookie from "vue-cookie";
 import commonFunction from "@base/lib/javascript/common";
 import "@base/lib/javascript/gt";
-import {Base64} from "js-base64";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -92,17 +91,6 @@ $(document).ready(() => {
                                 }
                                 this.$set(this.isInvalids, invalidIndex, true);
                                 this.$set(this.messages, invalidIndex, responseJSON.message);
-                                let data = Base64.encodeURI(JSON.stringify({host: location.hostname, timeStamp: new Date().getTime()}));
-                                commonFunction.$ajax({
-                                    url: getCsrfUrl,
-                                    data: {
-                                        data
-                                    }
-                                }, data => {
-                                    if (data.state) {
-                                        this.csrf.attr("content", data.csrf);
-                                    }
-                                });
                             });
                         }).onError(() => {
                             this.$set(this.messages, 2, "加载图形验证码失败，请稍后再试！");

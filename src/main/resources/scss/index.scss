@@ -6,17 +6,17 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
 @import "~font-awesome/scss/font-awesome";
 @import "~simple-line-icons/scss/simple-line-icons";
 @import "~@coreui/coreui/scss/coreui";
-@import "../../lib/css/pace.min.css";
-@import "../../lib/css/common.css";
-@import "../../lib/css/style.min.css";
+@import "../../../../lib/css/pace.min.css";
+@import "../../../../lib/css/common.css";
+@import "../../../../lib/css/style.min.css";
 
 @font-face {
     font-family: "webfont";
-    src: url("../../lib/fonts/webfont.eot"); /* IE9 */
-    src: url("../../lib/fonts/webfont.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
-    url("../../lib/fonts/webfont.woff") format("woff"), /* chrome、firefox */
-    url("../../lib/fonts/webfont.ttf") format("truetype"), /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
-    url("../../lib/fonts/webfont.svg#webfont") format("svg"); /* iOS 4.1- */
+    src: url("../../../../lib/fonts/webfont.eot"); /* IE9 */
+    src: url("../../../../lib/fonts/webfont.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
+    url("../../../../lib/fonts/webfont.woff") format("woff"), /* chrome、firefox */
+    url("../../../../lib/fonts/webfont.ttf") format("truetype"), /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
+    url("../../../../lib/fonts/webfont.svg#webfont") format("svg"); /* iOS 4.1- */
 }
 
 .login-captcha {

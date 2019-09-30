@@ -111,7 +111,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf" th:if="${communityResident == null || communityResident.community == null || !communityResident.community.residentSubmitted}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" v-model="csrfToken" th:if="${communityResident == null || communityResident.community == null || !communityResident.community.residentSubmitted}">
                             <input type="hidden" name="id" v-model="communityResident.id" th:if="${communityResident} != null">
                             <input type="hidden" name="_method" value="PUT" th:if="${communityResident} != null">
                             <button class="btn btn-sm btn-primary" type="submit" th:if="${communityResident == null || communityResident.community == null || !communityResident.community.residentSubmitted}">

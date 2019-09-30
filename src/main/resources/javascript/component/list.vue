@@ -226,7 +226,11 @@
             loadCompanies() {
                 if (this.companies.length === 0) {
                     commonFunction.$ajax({
-                        url: this.publicParams.companySelectUrl
+                        url: this.publicParams.companySelectUrl,
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        }
                     }, result => {
                         if (result.state === 1) {
                             let disabled = false;
@@ -270,7 +274,9 @@
                     }
                 }
                 this.pagination = 1;
-                this.$router.push({path: "/"});
+                if (this.$route.path !== "/") {
+                    this.$router.push({path: "/"});
+                }
                 this.loadData();
             },
             /**
@@ -290,9 +296,13 @@
              */
             loadSubdistricts() {
                 if (this.subdistricts.length === 0) {
-                    $.ajax({
-                        url: this.publicParams.loadSubdistrictsUrl
-                    }).then(result => {
+                    commonFunction.$ajax({
+                        url: this.publicParams.loadSubdistrictsUrl,
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        }
+                    }, result => {
                         if (result.state === 1) {
                             this.subdistricts = result.subdistricts;
                         }
@@ -390,10 +400,8 @@
                     url: this.publicParams.loadDataUrl,
                     method: "post",
                     data: data,
-                    headers: {
-                        "X-CSRF-TOKEN": this.csrf.prop("content")
-                    },
                     beforeSend: xmlHttpRequest => {
+                        xmlHttpRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf.prop("content"));
                         this.isLoading = true;
                     }
                 }, result => {

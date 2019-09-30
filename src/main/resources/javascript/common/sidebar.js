@@ -1,4 +1,5 @@
 import Vue from "vue";
+import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     new Vue({
@@ -10,23 +11,19 @@ $(document).ready(() => {
         },
         created() {
             let arrUrl = location.toString().split("//");
-            this.currentUri = arrUrl[1].substring(arrUrl[1].indexOf("/"));
-            if (this.currentUri.indexOf("?") !== -1) {
-                this.currentUri = this.currentUri.split("?")[0];
-            }
-            $.ajax({
+            this.currentUri = arrUrl[1].replace("#/", "").substring(arrUrl[1].indexOf("/"));
+            commonFunction.$ajax({
                 url: this.getMenuUrl,
-                method: "get",
                 data: {
                     display: true
                 }
-            }).then(data => {
+            }, data => {
                 if (data.state === 1) {
-                    data.userPrivileges.forEach(item => {
-                        if (item.constraintAuth.slice(-5) === "Title") {
-                            this.userPrivileges.push(item);
-                            item.subUserPrivileges.forEach(sub => {
-                                this.userPrivileges.push(sub);
+                    data.userPrivileges.forEach(userPrivilege => {
+                        if (userPrivilege.constraintAuth.slice(-5) === "Title") {
+                            this.userPrivileges.push(userPrivilege);
+                            userPrivilege.subUserPrivileges.forEach(subUserPrivilege => {
+                                this.userPrivileges.push(subUserPrivilege);
                             });
                         }
                     });
@@ -43,11 +40,11 @@ $(document).ready(() => {
                 if (userPrivilege.subUserPrivileges.subUserPrivileges) {
                     for (let i = 0; i < userPrivilege.subUserPrivileges.length; i++) {
                         let subUserPrivilege = userPrivilege.subUserPrivileges[i];
+                        console.log(subUserPrivilege);
                         if (typeof subUserPrivilege === "undefined") {
                             continue;
                         }
-                        let uri = subUserPrivilege.uri.substring(0, subUserPrivilege.uri.lastIndexOf("/"));
-                        if (this.currentUri.indexOf(uri) > -1) {
+                        if (subUserPrivilege.uri.includes(this.currentUri)) {
                             return "open";
                         }
                     }

@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.action;
 
 import com.alibaba.fastjson.JSON;
+import com.github.phonenumbermanager.constant.SystemConstant;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,7 +31,7 @@ public class CommonAction extends BaseAction {
         String host = request.getHeader("host").substring(0, request.getHeader("host").indexOf(":"));
         Map<String, Object> jsonMap = new HashMap<>(3);
         jsonMap.put("state", 0);
-        if (host.equals(dataMap.get("host")) && System.currentTimeMillis() - (long) dataMap.get("timeStamp") <= 100000) {
+        if (host.equals(dataMap.get("host")) && System.currentTimeMillis() - (long) dataMap.get("timeStamp") <= SystemConstant.TIMESTAMP_MILLISECONDS_DIFFERENCE) {
             jsonMap.put("state", 1);
             CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
             jsonMap.put("csrf", csrfToken.getToken());

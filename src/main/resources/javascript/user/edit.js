@@ -10,6 +10,8 @@ $(document).ready(() => {
     new Vue({
         el: "#edit_user",
         data: {
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
+            csrfToken: null,
             systemAdministratorId: systemAdministratorId,
             subdistrictCompanyType: subdistrictCompanyType,
             communityCompanyType: communityCompanyType,
@@ -25,6 +27,7 @@ $(document).ready(() => {
             errorMessages: ["", "", "", "", "", ""]
         },
         created() {
+            this.csrfToken = this.csrf.prop("content");
             if (this.user === null) {
                 this.user = {username: null, password: null, roleId: 0, companyType: -1, companyId: -1, locked: false};
             }
@@ -34,6 +37,10 @@ $(document).ready(() => {
             } else if (this.user.companyType === this.communityCompanyType) {
                 commonFunction.$ajax({
                     url: loadCommunityUrl,
+                    method: "post",
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                    },
                     data: {
                         id: this.user.companyId,
                     }
@@ -44,7 +51,7 @@ $(document).ready(() => {
                             this.communityId = this.user.companyId;
                         });
                     }
-                });
+                }, null, csrfToken => this.csrfToken = csrfToken);
             }
         },
         methods: {
@@ -57,6 +64,10 @@ $(document).ready(() => {
                 if (subdistrictId > 0) {
                     commonFunction.$ajax({
                         url: loadCompaniesUrl,
+                        method: "post",
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        },
                         data: {
                             subdistrictId: subdistrictId,
                         }
@@ -65,7 +76,7 @@ $(document).ready(() => {
                             this.communities = data.communities;
                             callback && callback();
                         }
-                    });
+                    }, null, csrfToken => this.csrfToken = csrfToken);
                 }
             },
             /**

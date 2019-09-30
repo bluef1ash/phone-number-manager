@@ -7,6 +7,7 @@ import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.utils.CommonUtils;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -44,7 +45,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
         Integer systemIsActive = CommonUtils.convertConfigurationInteger(configurationsMap.get("system_is_active"));
         Long systemAdministratorId = CommonUtils.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
         if (systemIsActive == 0 && !systemAdministratorId.equals(systemUser.getId())) {
-            throw new UsernameNotFoundException("该系统已经禁止登录，请联系管理员！");
+            throw new LockedException("该系统已经禁止登录，请联系管理员！");
         }
         // 系统用户权限
         Set<UserPrivilege> userPrivilegesAll = new LinkedHashSet<>(userPrivilegeDao.selectAll());

@@ -175,7 +175,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @GetMapping("/ajax_delete")
+    @DeleteMapping("/ajax_delete")
     @ResponseBody
     public Map<String, Object> deleteDormitoryManagerForAjax(@RequestParam String id) {
         try {
@@ -286,7 +286,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param subdistrictName 街道办事处名称
      * @return JSON数据
      */
-    @GetMapping("/ajax_id")
+    @PostMapping("/ajax_id")
     @ResponseBody
     public Map<String, Object> loadDormitoryManagerLastIdForAjax(@RequestParam Long communityId, String communityName, String subdistrictName) {
         Map<String, Object> jsonMap = new HashMap<>(3);

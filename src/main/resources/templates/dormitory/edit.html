@@ -202,7 +202,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input th:name="${_csrf.parameterName}" type="hidden" v-model="csrf" th:if="${dormitoryManager == null || dormitoryManager.community == null || !dormitoryManager.community.dormitorySubmitted}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" v-model="csrfToken" th:if="${dormitoryManager == null || dormitoryManager.community == null || !dormitoryManager.community.dormitorySubmitted}">
                             <input name="_method" th:if="${dormitoryManager} != null" type="hidden" value="PUT">
                             <button class="btn btn-sm btn-primary" type="submit" th:if="${dormitoryManager == null || dormitoryManager.community == null || !dormitoryManager.community.dormitorySubmitted}">
                                 <i class="fa fa-dot-circle-o"></i>保存

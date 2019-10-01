@@ -23,6 +23,13 @@ import java.util.Map;
 @Controller
 public class CommonAction extends BaseAction {
 
+    /**
+     * 通过AJAX技术获取CSRF的Token
+     *
+     * @param request HTTP请求对象
+     * @param data    加密字符串验证是否非法来源
+     * @return JSON数据
+     */
     @GetMapping("/getcsrf")
     @ResponseBody
     public Map<String, Object> getCsrf(HttpServletRequest request, @RequestParam String data) {

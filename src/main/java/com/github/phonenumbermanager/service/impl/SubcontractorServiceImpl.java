@@ -47,11 +47,11 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<Subcontractor> imp
     @Override
     public long delete(Serializable id) {
         Long communityResidentCount = communityResidentDao.countBySubcontractorId(id);
-        if (communityResidentCount == null || communityResidentCount == 0) {
+        if (communityResidentCount != null && communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区分包人！");
         }
         Long dormitoryManagerCount = dormitoryManagerDao.countBySubcontractorId(id);
-        if (dormitoryManagerCount == null || dormitoryManagerCount == 0) {
+        if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区分包人！");
         }
         return super.delete(id);

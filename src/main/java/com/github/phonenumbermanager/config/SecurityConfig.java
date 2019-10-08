@@ -64,7 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuthenticationProvider authProvider() {
+    AuthenticationProvider authProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
@@ -73,24 +73,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler() {
+    AuthenticationFailureHandler authenticationFailureHandler() {
         return new AuthenticationFailureHandler();
     }
 
     @Bean
-    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+    AuthenticationSuccessHandler authenticationSuccessHandler() {
         AuthenticationSuccessHandler authenticationSuccessHandler = new AuthenticationSuccessHandler();
         authenticationSuccessHandler.setSystemUserService(systemUserServiceImpl());
         return authenticationSuccessHandler;
     }
 
     @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
+    AccessDeniedHandler accessDeniedHandler() {
         return new AccessDeniedHandlerImpl();
     }
 
     @Bean
-    public CompositeSessionAuthenticationStrategy sessionAuthenticationStrategy() {
+    CompositeSessionAuthenticationStrategy sessionAuthenticationStrategy() {
         SessionRegistry sessionRegistry = sessionRegistry();
         ConcurrentSessionControlAuthenticationStrategy concurrentSessionControlAuthenticationStrategy = new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry);
         concurrentSessionControlAuthenticationStrategy.setExceptionIfMaximumExceeded(false);
@@ -110,20 +110,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public ConcurrentSessionFilter concurrentSessionFilter() {
+    ConcurrentSessionFilter concurrentSessionFilter() {
         SessionRegistry sessionRegistry = sessionRegistry();
         SimpleRedirectSessionInformationExpiredStrategy sessionInformationExpiredStrategy = new SimpleRedirectSessionInformationExpiredStrategy(LOGIN_FROM_URL);
         return new ConcurrentSessionFilter(sessionRegistry, sessionInformationExpiredStrategy);
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SystemUserServiceImpl systemUserServiceImpl() {
+    SystemUserServiceImpl systemUserServiceImpl() {
         return new SystemUserServiceImpl();
+    }
+
+    @Bean
+    CsrfFilter csrfFilter() {
+        return new CsrfFilter();
     }
 
     private CaptchaValidInterceptor captchaValidInterceptor() {
@@ -135,9 +140,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         filterSecurityInterceptor.setAccessDecisionManager(new AccessDecisionManager());
         filterSecurityInterceptor.setSecurityMetadataSource(new FilterInvocationSecurityMetadataSource());
         return filterSecurityInterceptor;
-    }
-
-    private CsrfFilter csrfFilter() {
-        return new CsrfFilter();
     }
 }

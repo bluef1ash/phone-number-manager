@@ -12,7 +12,7 @@
             var loadCompaniesUrl = /*[[@{'/community/ajax_select'}]]*/null;
             var loadCommunityUrl = /*[[@{'/community/ajax_load'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/system-user-edit-bundle.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/user-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -45,7 +45,7 @@
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="username">系统用户名称</label>
                                 <div class="col-md-9">
-                                    <input type="text" name="username" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="username" placeholder="请输入系统用户名称" v-model="user.username">
+                                    <input type="text" name="username" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="username" placeholder="请输入系统用户名称" v-model="user.username" :disabled="usernameIsDisabled">
                                     <span class="help-block">系统用户名称不允许超过10个字符</span>
                                     <div class="invalid-feedback" :style="errorClasses[0] && {'display': 'block'}" v-text="errorMessages[0]"></div>
                                 </div>

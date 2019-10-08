@@ -85,11 +85,11 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
     @Override
     public long delete(Serializable id) {
         Long communityResidentCount = communityResidentDao.countByCommunityId(id);
-        if (communityResidentCount == null || communityResidentCount == 0) {
+        if (communityResidentCount != null && communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
         }
         Long dormitoryManagerCount = dormitoryManagerDao.countByCommunityId(id);
-        if (dormitoryManagerCount == null || dormitoryManagerCount == 0) {
+        if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
         return super.delete(id);

@@ -17,12 +17,9 @@
                         <div class="dropdown-header text-center">
                             <strong>用户管理</strong>
                         </div>
-                        <a class="dropdown-item" href="javascript:" title="个人中心"><i class="fa fa-bell-o"></i>个人中心</a>
+                        <a class="dropdown-item" th:href="@{'/system/user_role/user/edit'}" title="修改个人资料"><i class="fa fa-bell-o"></i>修改个人资料</a>
                         <div class="dropdown-divider"></div>
-                        <form method="post" name="logout" th:action="@{'/login/logout'}">
-                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
-                            <a class="dropdown-item" href="javascript:document.logout.submit();" title="退出系统"><i class="fa fa-lock"></i>退出系统</a>
-                        </form>
+                        <a class="dropdown-item" href="javascript:logout()" title="退出系统"><i class="fa fa-lock"></i>退出系统</a>
                     </div>
                 </li>
             </ul>
@@ -36,13 +33,11 @@
                         </li>
                         <li :class="userPrivilege.constraintAuth.slice(-5) === 'Title' ? 'nav-title' : ['nav-item', {'nav-dropdown': userPrivilege.subUserPrivileges !== null}, 'cursor-pointer', setClassOpen(userPrivilege)]" v-for="userPrivilege in userPrivileges" :key="userPrivilege.id">{{userPrivilege.constraintAuth.slice(-5) === "Title" ? userPrivilege.name : ""}}
                             <a class="nav-link nav-dropdown-toggle" :href="userPrivilege.uri === '' ? 'javascript:;' : userPrivilege.uri" :title="userPrivilege.name" v-if="userPrivilege.constraintAuth.slice(-5) !== 'Title'">
-                                <i :class="['nav-icon', userPrivilege.iconName]"></i>{{userPrivilege.name}}
-                            </a>
+                                <i :class="['nav-icon', userPrivilege.iconName]"></i>{{userPrivilege.name}} </a>
                             <ul class="nav-dropdown-items" v-if="userPrivilege.constraintAuth.slice(-5) !== 'Title' && userPrivilege.subUserPrivileges !== null">
                                 <li class="nav-item" v-for="privilege in userPrivilege.subUserPrivileges" :key="privilege.id">
                                     <a :class="['nav-link', {'active': currentUri.indexOf(privilege.uri) > -1}]" :href="privilege.uri" :title="privilege.name">
-                                        <i :class="['nav-icon', privilege.iconName]"></i> {{privilege.name}}
-                                    </a>
+                                        <i :class="['nav-icon', privilege.iconName]"></i> {{privilege.name}} </a>
                                 </li>
                             </ul>
                         </li>

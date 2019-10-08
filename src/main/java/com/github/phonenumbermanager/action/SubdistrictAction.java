@@ -138,7 +138,7 @@ public class SubdistrictAction extends BaseAction {
             return jsonMap;
         } catch (BusinessException be) {
             be.printStackTrace();
-            throw new JsonException(be);
+            throw new JsonException(be.getMessage(), be);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("删除街道失败！", e);

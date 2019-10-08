@@ -16,6 +16,7 @@ $(document).ready(() => {
             subdistrictCompanyType: subdistrictCompanyType,
             communityCompanyType: communityCompanyType,
             user: user,
+            usernameIsDisabled: false,
             confirmPassword: null,
             locked: null,
             subdistricts: [],
@@ -30,6 +31,8 @@ $(document).ready(() => {
             this.csrfToken = this.csrf.prop("content");
             if (this.user === null) {
                 this.user = {username: null, password: null, roleId: 0, companyType: -1, companyId: -1, locked: false};
+            } else {
+                this.usernameIsDisabled = true;
             }
             if (this.user.companyType === this.subdistrictCompanyType) {
                 this.subdistrictId = this.user.companyId;

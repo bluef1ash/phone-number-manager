@@ -55,7 +55,7 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> impleme
     @Override
     public long delete(Serializable id) {
         List<Community> communities = communityDao.selectBySubdistrictId(id);
-        if (communities == null || communities.size() == 0) {
+        if (communities != null && communities.size() > 0) {
             throw new BusinessException("不允许删除存在下属社区的街道单位！");
         }
         return super.delete(id);

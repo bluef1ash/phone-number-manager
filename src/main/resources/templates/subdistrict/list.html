@@ -6,7 +6,7 @@
             var subdistricts = /*[[${subdistricts}]]*/null;
             var deleteUrl = /*[[@{'/subdistrict/ajax_delete'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/subdistrict-list-bundle.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/subdistrict-list-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

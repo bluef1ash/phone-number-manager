@@ -145,11 +145,14 @@ public class UserAndRoleAction extends BaseAction {
      * @return 视图页面
      */
     @GetMapping("/user/edit")
-    public String editSystemUser(HttpSession session, Model model, @RequestParam Long id) {
+    public String editSystemUser(HttpSession session, Model model, Long id) {
         getSessionRoleId(session);
         model.addAttribute("communityCompanyType", communityCompanyType);
         model.addAttribute("subdistrictCompanyType", subdistrictCompanyType);
         model.addAttribute("systemAdministratorId", systemAdministratorId);
+        if (id == null) {
+            id = systemUser.getId();
+        }
         try {
             List<UserRole> userRoles = userRoleService.find();
             SystemUser user = systemUserService.findCorrelation(id);

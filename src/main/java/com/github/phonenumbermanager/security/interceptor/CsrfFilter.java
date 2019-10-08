@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.security.interceptor;
 
+import com.github.phonenumbermanager.utils.CommonUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,6 +21,10 @@ import java.io.IOException;
  * @author 廿二月的天
  */
 public class CsrfFilter extends OncePerRequestFilter implements Filter {
+
+    @Value("${mode}")
+    private String mode;
+
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         CsrfToken csrfToken = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
@@ -30,6 +36,24 @@ public class CsrfFilter extends OncePerRequestFilter implements Filter {
                 cookie.setPath("/");
                 httpServletResponse.addCookie(cookie);
             }
+        }
+        if ("debug".equals(mode) && !CommonUtils.isRequestAjax(httpServletRequest)) {
+            String[] paths = httpServletRequest.getServletPath().split("/");
+            boolean is2Path = false;
+            if (paths.length == 0) {
+                paths = new String[]{"index"};
+            } else {
+                is2Path = "create".equals(paths[paths.length - 1]) || "list".equals(paths[paths.length - 1]) || "edit".equals(paths[paths.length - 1]);
+            }
+            StringBuilder filePath = new StringBuilder();
+            filePath.append("http://127.0.0.1:3000/");
+            if (is2Path) {
+                filePath.append(paths[paths.length - 2]).append("-");
+                paths[paths.length - 1] = paths[paths.length - 1].replace("create", "edit");
+            }
+            filePath.append(paths[paths.length - 1]).append("-bundle.js");
+            httpServletRequest.setAttribute("jsFilePath", filePath);
+            httpServletRequest.setAttribute("mode", mode);
         }
         FilterInvocation filterInvocation = new FilterInvocation(httpServletRequest, httpServletResponse, filterChain);
         filterInvocation.getChain().doFilter(filterInvocation.getRequest(), filterInvocation.getResponse());

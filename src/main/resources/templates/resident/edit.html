@@ -9,7 +9,7 @@
             var communities = /*[[${communities}]]*/null;
             var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/ajax_load'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/resident-edit-bundle.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/resident-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

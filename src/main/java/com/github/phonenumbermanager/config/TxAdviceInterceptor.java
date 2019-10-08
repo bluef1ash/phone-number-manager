@@ -23,7 +23,7 @@ import java.util.Map;
 @Configuration
 public class TxAdviceInterceptor {
     private static final int TX_METHOD_TIMEOUT = 5;
-    private static final String AOP_POINTCUT_EXPRESSION = "execution (* com.github.service.impl.*.*(..))";
+    private static final String AOP_POINTCUT_EXPRESSION = "execution (* com.github.phonenumbermanager.service.impl.*.*(..))";
 
     private final PlatformTransactionManager transactionManager;
 

@@ -1,11 +1,12 @@
 server:
     port: 8081
 
+mode: debug
+
 # 数据库访问配置
 spring:
-    profiles:
-        include: develop, product
-        active: develop
+    #profiles:
+    #active: product
 
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
@@ -35,7 +36,7 @@ spring:
         prefix: classpath:/templates/
         suffix: .html
         mode: LEGACYHTML5
-        cache: true
+        cache: false
 
     servlet:
         multipart:
@@ -58,3 +59,5 @@ logging:
     pattern:
         console: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
         file: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
+    path: /var/log/phone-number-manager
+

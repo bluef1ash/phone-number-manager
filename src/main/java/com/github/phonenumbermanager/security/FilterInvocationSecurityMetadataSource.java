@@ -39,7 +39,7 @@ public class FilterInvocationSecurityMetadataSource implements org.springframewo
                 }
             }
             for (int i = 0; i < SystemConstant.PRIVILEGE_PERMITS.length; i++) {
-                if (url.contains(SystemConstant.PRIVILEGE_PERMITS[i])) {
+                if (SystemConstant.PRIVILEGE_PERMITS[i].equalsIgnoreCase(url)) {
                     SecurityConfig securityConfig = new SecurityConfig(url);
                     configAttributes.add(securityConfig);
                 }

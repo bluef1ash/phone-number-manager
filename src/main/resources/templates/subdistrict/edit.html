@@ -7,7 +7,7 @@
             var messageErrors = /*[[${messageErrors}]]*/null;
             var subdistrict = /*[[${subdistrict}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/subdistrict-edit-bundle.js'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/subdistrict-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

@@ -157,6 +157,9 @@ $(document).ready(() => {
                             name: item.name
                         });
                     });
+                    if (this.systemUser.companyType === this.subdistrictCompanyType) {
+                        this.communities = this.allSubdistricts[0].communities;
+                    }
                 }
             });
             if (this.systemUser.companyType === this.systemCompanyType) {
@@ -168,11 +171,11 @@ $(document).ready(() => {
                 this.barChartDormitorySubdistrictId = 0;
                 this.loadMessageAndChart();
             } else if (this.systemUser.companyType === this.subdistrictCompanyType) {
-                this.baseMessageSubdistrictId = this.systemUser.companyId;
+                this.baseMessageSubdistrictId = this.baseMessageDormitorySubdistrictId = this.barChartSubdistrictId = this.barChartDormitorySubdistrictId = this.systemUser.companyId;
                 this.baseMessageCommunityId = 0;
                 this.isDisplayChooseChart = false;
-                this.baseMessageDormitorySubdistrictId = this.systemUser.companyId;
                 this.baseMessageDormitoryCommunityId = 0;
+                this.disabledCommunityId = false;
                 this.loadMessageAndChart(0, this.systemUser.companyId, this.systemUser.companyType);
             } else if (this.systemUser.companyType === this.communityCompanyType) {
                 this.allSubdistricts.forEach(item => {
@@ -228,13 +231,22 @@ $(document).ready(() => {
              * @param getType
              * @param companyId
              * @param companyType
+             * @param parentId
              */
-            loadMessageAndChart(getType = null, companyId = null, companyType = null) {
+            loadMessageAndChart(getType = null, companyId = null, companyType = null, parentId = null) {
                 let params = {
                     getType,
                     companyType,
                     companyId
                 };
+                if (companyId === 0) {
+                    if (companyType === this.subdistrictCompanyType) {
+
+                    } else if (companyType === this.communityCompanyType) {
+                        params.companyType = this.subdistrictCompanyType;
+                        params.companyId = parentId;
+                    }
+                }
                 switch (getType) {
                     case null:
                         this.$set(this.loadings, 0, true);
@@ -257,6 +269,7 @@ $(document).ready(() => {
                         params.barChartTypeParam = this.barChartDormitoryType;
                         break;
                     default:
+                        params.barChartTypeParam = this.barChartDormitoryType;
                         break;
                 }
                 commonFunction.$ajax({

@@ -2,6 +2,20 @@ import Vue from "vue";
 import commonFunction from "@base/lib/javascript/common";
 
 $(document).ready(() => {
+    /**
+     * 退出登录
+     */
+    document.getElementById("logout").onclick = () => {
+        commonFunction.$ajax({
+            url: logoutUrl,
+            method: "post",
+            headers: {
+                "X-CSRF-TOKEN": $("meta[name='X-CSRF-TOKEN']").prop("content")
+            }
+        }, () => {
+            location.reload();
+        });
+    };
     new Vue({
         el: "#sidebar",
         data: {

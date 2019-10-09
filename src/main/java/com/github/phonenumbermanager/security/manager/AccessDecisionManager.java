@@ -42,6 +42,11 @@ public class AccessDecisionManager implements org.springframework.security.acces
                     return;
                 }
             }
+            for (int i = 0; i < SystemConstant.LOGGED_PERMITS.length; i++) {
+                if (configAttribute.getAttribute().equals(SystemConstant.LOGGED_PERMITS[i])) {
+                    return;
+                }
+            }
             for (UserPrivilege userPrivilege : systemUser.getUserRole().getUserPrivileges()) {
                 if (configAttribute.getAttribute().equals(userPrivilege.getUri())) {
                     return;

@@ -126,3 +126,7 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
         }
     }
 }
+
+.el-scrollbar__wrap {
+    overflow-x: hidden;
+}

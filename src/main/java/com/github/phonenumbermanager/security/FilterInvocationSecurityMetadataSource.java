@@ -27,11 +27,7 @@ public class FilterInvocationSecurityMetadataSource implements org.springframewo
         Set<UserPrivilege> userPrivileges = (Set<UserPrivilege>) session.getAttribute("userPrivileges");
         List<ConfigAttribute> configAttributes = new ArrayList<>();
         if (userPrivileges != null) {
-            String url = filterInvocation.getRequestUrl();
-            int firstQuestionMarkIndex = url.indexOf("?");
-            if (firstQuestionMarkIndex != -1) {
-                url = url.substring(0, firstQuestionMarkIndex);
-            }
+            String url = filterInvocation.getRequest().getServletPath();
             for (UserPrivilege userPrivilege : userPrivileges) {
                 if (url.equals(userPrivilege.getUri())) {
                     SecurityConfig securityConfig = new SecurityConfig(userPrivilege.getUri());
@@ -40,6 +36,12 @@ public class FilterInvocationSecurityMetadataSource implements org.springframewo
             }
             for (int i = 0; i < SystemConstant.PRIVILEGE_PERMITS.length; i++) {
                 if (SystemConstant.PRIVILEGE_PERMITS[i].equalsIgnoreCase(url)) {
+                    SecurityConfig securityConfig = new SecurityConfig(url);
+                    configAttributes.add(securityConfig);
+                }
+            }
+            for (int i = 0; i < SystemConstant.LOGGED_PERMITS.length; i++) {
+                if (SystemConstant.LOGGED_PERMITS[i].equalsIgnoreCase(url)) {
                     SecurityConfig securityConfig = new SecurityConfig(url);
                     configAttributes.add(securityConfig);
                 }

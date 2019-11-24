@@ -8,7 +8,7 @@
             var deleteUrl = /*[[@{'/system/user_role/user/ajax_delete'}]]*/null;
             var userLockUrl = /*[[@{'/system/user_role/user/ajax_user_lock'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/user-list-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/user-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

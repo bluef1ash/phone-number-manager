@@ -6,7 +6,7 @@
             var communities = /*[[${communities}]]*/null;
             var deleteUrl = /*[[@{'/community/ajax_delete'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/community-list-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/community-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

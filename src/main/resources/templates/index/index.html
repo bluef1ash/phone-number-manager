@@ -10,7 +10,7 @@
             var getComputedUrl = /*[[@{'/index/getcomputedcount'}]]*/null;
             var companySelectUrl = /*[[@{'/community/ajax_select'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/index-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/index-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

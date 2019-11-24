@@ -8,7 +8,7 @@
             var userPrivilege = /*[[${userPrivilege}]]*/null;
             var userPrivileges = /*[[${userPrivileges}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/privilege-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/privilege-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

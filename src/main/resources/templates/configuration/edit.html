@@ -8,7 +8,7 @@
             var configuration = /*[[${configuration}]]*/null;
             var messageErrors = /*[[${messageErrors}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/configuration-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/configuration-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

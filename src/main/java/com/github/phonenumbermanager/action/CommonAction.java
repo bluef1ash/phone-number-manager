@@ -35,7 +35,10 @@ public class CommonAction extends BaseAction {
     public Map<String, Object> getCsrf(HttpServletRequest request, @RequestParam String data) {
         byte[] jsonDecode = Base64.getDecoder().decode(data);
         Map<String, Object> dataMap = (Map<String, Object>) JSON.parse(jsonDecode);
-        String host = request.getHeader("host").substring(0, request.getHeader("host").indexOf(":"));
+        String host = request.getHeader("host");
+        if (host.contains(":")) {
+            host = host.substring(0, host.indexOf(":"));
+        }
         Map<String, Object> jsonMap = new HashMap<>(3);
         jsonMap.put("state", 0);
         if (host.equals(dataMap.get("host")) && System.currentTimeMillis() - (long) dataMap.get("timeStamp") <= SystemConstant.TIMESTAMP_MILLISECONDS_DIFFERENCE) {

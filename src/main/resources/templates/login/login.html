@@ -6,7 +6,7 @@
             var getCsrfUrl = /*[[@{'/getcsrf'}]]*/null;
             var captchaUrl = /*[[@{'/login/captcha'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/login-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/login-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body class="app flex-row align-items-center">
         <div class="container" id="login" v-cloak>

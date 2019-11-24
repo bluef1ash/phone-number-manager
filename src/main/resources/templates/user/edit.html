@@ -12,7 +12,7 @@
             var loadCompaniesUrl = /*[[@{'/community/ajax_select'}]]*/null;
             var loadCommunityUrl = /*[[@{'/community/ajax_load'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/user-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/user-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

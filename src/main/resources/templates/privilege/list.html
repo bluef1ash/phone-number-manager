@@ -6,7 +6,7 @@
             var userPrivileges = /*[[${userPrivileges}]]*/null;
             var deleteUrl = /*[[@{'/system/user_role/privilege/ajax_delete'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/privilege-list-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/privilege-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

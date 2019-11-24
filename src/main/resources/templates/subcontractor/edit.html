@@ -7,7 +7,7 @@
             var messageErrors = /*[[${messageErrors}]]*/null;
             var subcontractor = /*[[${subcontractor}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/subcontractor-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/subcontractor-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

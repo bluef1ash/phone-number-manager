@@ -1,12 +1,17 @@
 server:
     port: 8081
+    undertow:
+        io-threads: 8
+        worker-threads: 64
+        buffer-size: 1024
+        direct-buffers: true
 
-mode: debug
+debug: true
 
 # 数据库访问配置
 spring:
-    #profiles:
-    #active: product
+#    profiles:
+#        active: product
 
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
@@ -14,23 +19,19 @@ spring:
         url: jdbc:mysql://127.0.0.1:3306/phone_number?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=GMT%2B8&allowMultiQueries=true
         username: root
         password: root
-        # 下面为连接池的补充设置，应用到上面所有数据源中
-        initialSize: 25
-        minIdle: 5
-        maxActive: 100
-        # 配置获取连接等待超时的时间
-        maxWait: 60000
-        # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
-        timeBetweenEvictionRunsMillis: 60000
-        # 配置一个连接在池中最小生存的时间，单位是毫秒
-        minEvictableIdleTimeMillis: 300000
-        validationQuery: SELECT 1 FROM DUAL
-        testWhileIdle: true
-        testOnBorrow: false
-        testOnReturn: false
+        initial-size: 25
+        min-idle: 5
+        max-active: 100
+        max-wait: 60000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1 FROM DUAL
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
 
     mvc:
-        throwExceptionIfNoHandlerFound: true
+        throw-exception-if-no-handler-found: true
 
     thymeleaf:
         prefix: classpath:/templates/
@@ -50,7 +51,7 @@ mybatis:
     config-location: classpath:mybatis-config.xml
 
 pagehelper:
-    helperDialect: mysql
+    helper-dialect: mysql
     reasonable: false
     params: count=countSql
 
@@ -60,4 +61,3 @@ logging:
         console: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
         file: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
     path: /var/log/phone-number-manager
-

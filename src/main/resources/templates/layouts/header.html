@@ -23,7 +23,7 @@
             var getMenuUrl = /*[[@{'/index/getmenu'}]]*/null;
             var logoutUrl = /*[[@{'/login/logout'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="${jsFilePath}" th:if="${mode != null && mode == 'debug'}"></script>
+        <script type="text/javascript" th:src="${jsFilePath}" th:if="${debug}"></script>
         <!--/*@thymesVar id="scripts" type="java.lang.String"*/-->
         <th:block th:replace="${scripts}"/>
     </head>

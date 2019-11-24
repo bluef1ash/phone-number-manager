@@ -10,7 +10,7 @@
             var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/ajax_load'}]]*/null;
             var loadDormitoryManagerLastIdUrl = /*[[@{'/dormitory/ajax_id'}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/dormitory-edit-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/dormitory-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

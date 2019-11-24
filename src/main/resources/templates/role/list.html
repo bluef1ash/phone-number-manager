@@ -5,7 +5,7 @@
         <script type="text/javascript" th:inline="javascript">
             var userRoles = /*[[${userRoles}]]*/null;
         </script>
-        <script type="text/javascript" th:src="@{'/javascript/role-list-bundle.js'}" th:if="${mode == null || mode != 'debug'}"></script>
+        <script type="text/javascript" th:src="@{'/javascript/role-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

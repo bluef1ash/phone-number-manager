@@ -22,8 +22,8 @@ import java.io.IOException;
  */
 public class CsrfFilter extends OncePerRequestFilter implements Filter {
 
-    @Value("${mode}")
-    private String mode;
+    @Value("${debug}")
+    private Boolean debug;
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
@@ -37,7 +37,9 @@ public class CsrfFilter extends OncePerRequestFilter implements Filter {
                 httpServletResponse.addCookie(cookie);
             }
         }
-        if ("debug".equals(mode) && !CommonUtils.isRequestAjax(httpServletRequest)) {
+        debug = debug == null ? false : debug;
+        httpServletRequest.setAttribute("debug", debug);
+        if (debug && !CommonUtils.isRequestAjax(httpServletRequest)) {
             String[] paths = httpServletRequest.getServletPath().split("/");
             boolean is2Path = false;
             if (paths.length == 0) {
@@ -53,7 +55,6 @@ public class CsrfFilter extends OncePerRequestFilter implements Filter {
             }
             filePath.append(paths[paths.length - 1]).append("-bundle.js");
             httpServletRequest.setAttribute("jsFilePath", filePath);
-            httpServletRequest.setAttribute("mode", mode);
         }
         FilterInvocation filterInvocation = new FilterInvocation(httpServletRequest, httpServletResponse, filterChain);
         filterInvocation.getChain().doFilter(filterInvocation.getRequest(), filterInvocation.getResponse());

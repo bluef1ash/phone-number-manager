@@ -37,3 +37,8 @@ node_modules/
 src/main/resources/application-product.yml
 src/main/resources/static/fonts/
 src/main/resources/static/javascript/
+
+error/
+info/
+debug/
+warn/

@@ -23,7 +23,7 @@
         <pagehelper-spring-boot-autoconfigure.version>1.2.12</pagehelper-spring-boot-autoconfigure.version>
         <poi.version>3.17</poi.version>
         <fastjson.version>1.2.47</fastjson.version>
-        <hibernate-validator.version>6.0.9.Final</hibernate-validator.version>
+        <hibernate-validator.version>6.1.0.Final</hibernate-validator.version>
     </properties>
     <dependencies>
         <dependency>
@@ -175,7 +175,7 @@
             <version>2.0.3</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator.version}</version>
         </dependency>

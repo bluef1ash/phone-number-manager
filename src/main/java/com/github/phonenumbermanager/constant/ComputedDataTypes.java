@@ -15,6 +15,10 @@ public enum ComputedDataTypes {
      */
     RESIDENT_BAR_CHART(2),
     /**
+     * 社区居民分包人柱状图表
+     */
+    RESIDENT_SUBCONTRACTOR_BAR_CHART(5),
+    /**
      * 社区楼长基本信息
      */
     DORMITORY_BASE_MESSAGE(3),

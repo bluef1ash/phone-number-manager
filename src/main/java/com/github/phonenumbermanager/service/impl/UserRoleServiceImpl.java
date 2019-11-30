@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserRole;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.UserRoleService;
@@ -46,6 +47,11 @@ public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements Us
         setPageHelper(pageNumber, pageDataSize);
         List<UserRole> data = userRoleDao.selectAndSystemUsers();
         return find(data);
+    }
+
+    @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
     }
 
     @Override

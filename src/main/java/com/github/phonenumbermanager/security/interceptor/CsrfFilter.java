@@ -22,7 +22,7 @@ import java.io.IOException;
  */
 public class CsrfFilter extends OncePerRequestFilter implements Filter {
 
-    @Value("${debug}")
+    @Value("${custom.debug}")
     private Boolean debug;
 
     @Override

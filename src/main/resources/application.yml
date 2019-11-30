@@ -8,6 +8,9 @@ server:
 
 debug: true
 
+custom:
+    debug: true
+
 # 数据库访问配置
 spring:
 #    profiles:

@@ -363,6 +363,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
+    }
+
+    @Override
     public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Boolean typeParam, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         String label = "社区楼长分包总户数";
         String companyLabel = null;
@@ -396,7 +401,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         } else {
             dormitoryManager = new LinkedList<>();
         }
-        return barChartDataHandler(label, companyLabel, dormitoryManager);
+        return barChartDataHandler(label, companyLabel, "户", dormitoryManager);
     }
 
     @Override

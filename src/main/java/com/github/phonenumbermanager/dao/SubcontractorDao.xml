@@ -149,4 +149,26 @@
         FROM `pm_subcontractor`
                  LEFT JOIN `pm_community` ON `pm_subcontractor`.`community_id` = `pm_community`.`id`
     </select>
+    <select id="countForGroupSubdistrict" resultType="java.util.Map">
+        SELECT `pm_subdistrict`.`name`, COUNT(`pm_subcontractor`.`id`) AS 'value'
+        FROM `pm_subcontractor`
+            LEFT JOIN `pm_community` ON `pm_subcontractor`.`community_id` = `pm_community`.`id`
+            LEFT JOIN `pm_subdistrict` ON `pm_subdistrict`.`id` = `pm_community`.`id`
+    </select>
+    <select id="countForGroupCommunity" resultType="java.util.Map">
+        SELECT `pm_community`.`name`, COUNT(`pm_subcontractor`.`id`) AS 'value'
+        FROM `pm_subcontractor`
+            LEFT JOIN `pm_community` ON `pm_subcontractor`.`community_id` = `pm_community`.`id`
+        WHERE `pm_community`.`subdistrict_id` = #{subdistrictId}
+        GROUP BY `pm_community`.`name`
+    </select>
+    <select id="countForGroupByCommunityId" resultType="java.util.Map">
+        SELECT `pm_subcontractor`.`name`, COUNT(`pm_community_resident`.`id`) AS 'value'
+        FROM `pm_subcontractor`
+                 LEFT JOIN `pm_community_resident`
+        ON `pm_subcontractor`.`id` = `pm_community_resident`.`subcontractor_id`
+        LEFT JOIN  `pm_community` ON `pm_community`.`id` = `pm_subcontractor`.`community_id`
+        WHERE `pm_community`.`id` = #{communityId}
+        GROUP BY `pm_subcontractor`.`name`
+    </select>
 </mapper>

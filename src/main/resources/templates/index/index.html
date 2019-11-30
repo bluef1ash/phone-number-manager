@@ -31,7 +31,7 @@
                                     <div class="float-right">
                                         <div class="form-group">
                                             <label for="base_message_subdistrict_id"></label>
-                                            <select @change="loadCommunities(1, baseMessageSubdistrictId, true)" class="form-control form-control-sm" id="base_message_subdistrict_id" v-if="systemUser.companyType === systemCompanyType" v-model="baseMessageSubdistrictId">
+                                            <select @change="loadCommunities(1, baseMessageSubdistrictId, 'baseMessageCommunityId', 'disabledCommunityId')" class="form-control form-control-sm" id="base_message_subdistrict_id" v-if="systemUser.companyType === systemCompanyType" v-model="baseMessageSubdistrictId">
                                                 <option :value="-1">请选择需要统计的街道</option>
                                                 <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
                                                 <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
@@ -112,6 +112,42 @@
                             </div>
                         </div>
                     </div>
+                    <!--社区居民分包人柱状图表-->
+                    <div class="card resident-chart">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    <h4 class="card-title mb-0">社区居民分包人统计图表</h4>
+                                </div>
+                                <!-- /.col-->
+                                <div class="col-sm-7 d-md-block">
+                                    <div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
+                                        <div class="form-group">
+                                            <label for="chart_subcontractor_subdistrict_id"></label>
+                                            <select @change="loadCommunities(5, barChartSubcontractorSubdistrictId, 'barChartSubcontractorCommunityId', 'disabledSubcontractorCommunityId')" class="form-control form-control-sm" id="chart_subcontractor_subdistrict_id" v-model="barChartSubcontractorSubdistrictId" v-if="systemUser.companyType === systemCompanyType">
+                                                <option :value="-1">请选择需要统计的街道</option>
+                                                <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
+                                                <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group ml-3">
+                                            <label for="chart_subcontractor_community_id"></label>
+                                            <select :disabled="disabledSubcontractorCommunityId" @change="loadMessageAndChart(5, barChartSubcontractorCommunityId, communityCompanyType, barChartSubcontractorSubdistrictId)" class="form-control form-control-sm" id="chart_subcontractor_community_id" v-if="isDisplayChooseChart" v-model="barChartSubcontractorCommunityId">
+                                                <option :value="-1">请选择需要统计的社区</option>
+                                                <option :disabled="systemUser.companyType === communityCompanyType" :value="0">全部社区</option>
+                                                <option :key="community.id" :value="community.id" v-for="community in communities" v-text="community.name"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.col-->
+                            </div>
+                            <!-- /.row-->
+                            <div class="chart-wrapper" v-loading="loadings[4]">
+                                <ve-histogram :data="barChartSubcontractor" :extend="subcontractorBarChartExtend"></ve-histogram>
+                            </div>
+                        </div>
+                    </div>
                     <!--社区楼长基本信息-->
                     <div class="row">
                         <div class="col-md-12">
@@ -121,7 +157,7 @@
                                     <div class="float-right">
                                         <div class="form-group">
                                             <label for="base_message_dormitory_subdistrict_id"></label>
-                                            <select @change="loadCommunities(3, baseMessageDormitorySubdistrictId, false)" class="form-control form-control-sm" id="base_message_dormitory_subdistrict_id" v-if="systemUser.companyType === systemCompanyType" v-model="baseMessageDormitorySubdistrictId">
+                                            <select @change="loadCommunities(3, baseMessageDormitorySubdistrictId, 'baseMessageDormitoryCommunityId', 'disabledDormitoryCommunityId')" class="form-control form-control-sm" id="base_message_dormitory_subdistrict_id" v-if="systemUser.companyType === systemCompanyType" v-model="baseMessageDormitorySubdistrictId">
                                                 <option :value="-1">请选择需要统计的街道</option>
                                                 <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
                                                 <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
@@ -129,7 +165,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="base_message_dormitory_community_id"></label>
-                                            <select :disabled="disabledCommunityId" @change="loadMessageAndChart(3, baseMessageDormitoryCommunityId, communityCompanyType, baseMessageDormitorySubdistrictId)" class="form-control form-control-sm" id="base_message_dormitory_community_id" v-if="systemUser.companyType !== communityCompanyType" v-model="baseMessageDormitoryCommunityId">
+                                            <select :disabled="disabledDormitoryCommunityId" @change="loadMessageAndChart(3, baseMessageDormitoryCommunityId, communityCompanyType, baseMessageDormitorySubdistrictId)" class="form-control form-control-sm" id="base_message_dormitory_community_id" v-if="systemUser.companyType !== communityCompanyType" v-model="baseMessageDormitoryCommunityId">
                                                 <option :value="-1">请选择需要统计的社区</option>
                                                 <option :disabled="systemUser.companyType === communityCompanyType" :value="0">全部社区</option>
                                                 <option :key="community.id" :value="community.id" v-for="community in communities" v-text="community.name"></option>

@@ -95,6 +95,11 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
     }
 
     @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
+    }
+
+    @Override
     public SystemUser findCorrelation(Serializable id) {
         return systemUserDao.selectAndRoleById(id);
     }

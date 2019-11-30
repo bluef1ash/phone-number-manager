@@ -21,10 +21,12 @@ $(document).ready(() => {
             systemCompanyType: systemCompanyType,
             communityCompanyType: communityCompanyType,
             subdistrictCompanyType: subdistrictCompanyType,
-            loadings: [true, true, true, true],
+            loadings: [true, true, true, true, true],
             baseMessageSubdistrictId: -1,
             baseMessageCommunityId: -1,
             barChartSubdistrictId: -1,
+            barChartSubcontractorSubdistrictId: -1,
+            barChartSubcontractorCommunityId: -1,
             baseMessageDormitorySubdistrictId: -1,
             baseMessageDormitoryCommunityId: -1,
             barChartDormitorySubdistrictId: -1,
@@ -35,12 +37,15 @@ $(document).ready(() => {
             subdistricts: [],
             communities: [],
             disabledCommunityId: true,
+            disabledSubcontractorCommunityId: true,
+            disabledDormitoryCommunityId: true,
             addCount: 0,
             haveToCount: 0,
             remnantCount: 0,
             percentCount: 0,
             percentCountTitle: null,
             barChart: null,
+            barChartSubcontractor: null,
             barChartExtend: {
                 grid: {
                     height: "auto",
@@ -61,7 +66,7 @@ $(document).ready(() => {
                         normal: {
                             show: true,
                             position: "top",
-                            formatter: "{c}人"
+                            formatter: "{c}"
                         }
                     }
                 },
@@ -92,7 +97,7 @@ $(document).ready(() => {
                     show: true,
                     type: "value",
                     axisLabel: {
-                        formatter: "{value}人"
+                        formatter: "{value}"
                     }
                 },
                 color: []
@@ -133,15 +138,48 @@ $(document).ready(() => {
             dormitoryWorkStatus: null,
             dormitoryBarChart: null,
             dormitoryBarChartExtend: {
-                color: []
+                color: [],
+                series: {
+                    label: {
+                        normal: {
+                            show: true,
+                            position: "top",
+                            formatter: "{c}"
+                        }
+                    }
+                },
+                yAxis: {
+                    show: true,
+                    type: "value",
+                    axisLabel: {
+                        formatter: "{value}"
+                    }
+                }
+            },
+            subcontractorBarChartExtend: {
+                color: [],
+                series: {
+                    label: {
+                        normal: {
+                            show: true,
+                            position: "top",
+                            formatter: "{c}"
+                        }
+                    }
+                },
+                yAxis: {
+                    show: true,
+                    type: "value",
+                    axisLabel: {
+                        formatter: "{value}"
+                    }
+                }
             }
         },
         created() {
-            this.dormitoryBarChartExtend.grid = this.barChartExtend.grid;
-            this.dormitoryBarChartExtend.tooltip = this.barChartExtend.tooltip;
-            this.dormitoryBarChartExtend.series = this.barChartExtend.series;
-            this.dormitoryBarChartExtend.xAxis = this.barChartExtend.xAxis;
-            this.dormitoryBarChartExtend.yAxis = this.barChartExtend.yAxis;
+            this.dormitoryBarChartExtend.grid = this.subcontractorBarChartExtend.grid = this.barChartExtend.grid;
+            this.dormitoryBarChartExtend.tooltip = this.subcontractorBarChartExtend.tooltip = this.barChartExtend.tooltip;
+            this.dormitoryBarChartExtend.xAxis = this.subcontractorBarChartExtend.xAxis = this.barChartExtend.xAxis;
             commonFunction.$ajax({
                 url: companySelectUrl,
                 method: "post",
@@ -163,19 +201,12 @@ $(document).ready(() => {
                 }
             });
             if (this.systemUser.companyType === this.systemCompanyType) {
-                this.baseMessageSubdistrictId = 0;
-                this.baseMessageCommunityId = 0;
-                this.barChartSubdistrictId = 0;
-                this.baseMessageDormitorySubdistrictId = 0;
-                this.baseMessageDormitoryCommunityId = 0;
-                this.barChartDormitorySubdistrictId = 0;
+                this.baseMessageSubdistrictId = this.baseMessageCommunityId = this.barChartSubdistrictId = this.barChartSubcontractorSubdistrictId = this.barChartSubcontractorCommunityId = this.baseMessageDormitorySubdistrictId =  this.baseMessageDormitoryCommunityId = this.barChartDormitorySubdistrictId = 0;
                 this.loadMessageAndChart();
             } else if (this.systemUser.companyType === this.subdistrictCompanyType) {
-                this.baseMessageSubdistrictId = this.baseMessageDormitorySubdistrictId = this.barChartSubdistrictId = this.barChartDormitorySubdistrictId = this.systemUser.companyId;
-                this.baseMessageCommunityId = 0;
-                this.isDisplayChooseChart = false;
-                this.baseMessageDormitoryCommunityId = 0;
-                this.disabledCommunityId = false;
+                this.baseMessageSubdistrictId = this.baseMessageDormitorySubdistrictId = this.barChartSubdistrictId = this.barChartDormitorySubdistrictId = this.barChartSubcontractorSubdistrictId = this.systemUser.companyId;
+                this.baseMessageCommunityId = this.barChartSubcontractorCommunityId = this.baseMessageDormitoryCommunityId = 0;
+                this.isDisplayChooseChart = this.disabledCommunityId = false;
                 this.loadMessageAndChart(0, this.systemUser.companyId, this.systemUser.companyType);
             } else if (this.systemUser.companyType === this.communityCompanyType) {
                 this.allSubdistricts.forEach(item => {
@@ -186,8 +217,7 @@ $(document).ready(() => {
                         }
                     });
                 });
-                this.baseMessageCommunityId = this.systemUser.companyId;
-                this.baseMessageDormitoryCommunityId = this.systemUser.companyId;
+                this.baseMessageCommunityId = this.baseMessageDormitoryCommunityId = this.barChartSubcontractorCommunityId = this.systemUser.companyId;
                 this.isDisplayChooseChart = false;
                 this.loadMessageAndChart(null, this.systemUser.companyId, this.systemUser.companyType);
             }
@@ -202,12 +232,14 @@ $(document).ready(() => {
              * 切换街道获取对应社区
              * @param getType
              * @param subdistrictId
-             * @param communityType
+             * @param communityIdVar
+             * @param communityDisabledVar
              */
-            loadCommunities(getType, subdistrictId, communityType) {
+            loadCommunities(getType, subdistrictId, communityIdVar, communityDisabledVar) {
+                eval("this." + communityIdVar + " = 0");
+                eval("this." + communityDisabledVar + " = true");
                 if (this.allSubdistricts.length > 0 && subdistrictId > 0) {
-                    this.baseMessageCommunityId = 0;
-                    this.disabledCommunityId = false;
+                    eval("this." + communityDisabledVar + " = false");
                     this.loadMessageAndChart(getType, subdistrictId, this.subdistrictCompanyType);
                     this.allSubdistricts.some(item => {
                         if (subdistrictId === item.id) {
@@ -216,14 +248,11 @@ $(document).ready(() => {
                         }
                     });
                 } else if (subdistrictId === -1) {
-                    communityType === true ? this.baseMessageCommunityId = 0 : this.baseMessageDormitoryCommunityId = 0;
                     this.communities = [];
-                    this.disabledCommunityId = true;
                 } else {
-                    this.loadMessageAndChart(getType);
-                    this.baseMessageCommunityId = subdistrictId;
+                    eval("this." + communityIdVar + " = subdistrictId");
                     this.communities = [];
-                    this.disabledCommunityId = true;
+                    this.loadMessageAndChart(getType);
                 }
             },
             /**
@@ -253,6 +282,7 @@ $(document).ready(() => {
                         this.$set(this.loadings, 1, true);
                         this.$set(this.loadings, 2, true);
                         this.$set(this.loadings, 3, true);
+                        this.$set(this.loadings, 4, true);
                         params.barChartTypeParam = this.barChartDormitoryType;
                         break;
                     case 1:
@@ -267,6 +297,9 @@ $(document).ready(() => {
                     case 4:
                         this.$set(this.loadings, 3, true);
                         params.barChartTypeParam = this.barChartDormitoryType;
+                        break;
+                    case 5:
+                        this.$set(this.loadings, 4, true);
                         break;
                     default:
                         params.barChartTypeParam = this.barChartDormitoryType;
@@ -296,7 +329,17 @@ $(document).ready(() => {
                             this.barChartExtend.color = commonFunction.generateHexadecimalColors();
                             this.barChart = data.resident.barChart.data;
                             this.barChartExtend.xAxis.data = data.resident.barChart.titleLabel;
+                            this.barChartExtend.series.label.normal.formatter = (formatterData) => commonFunction.formatNumber(formatterData.value) + data.resident.barChart.formatter;
+                            this.barChartExtend.yAxis.axisLabel.formatter = (formatterData) => commonFunction.formatNumber(formatterData) + data.resident.barChart.formatter;
                             this.$set(this.loadings, 1, false);
+                        }
+                        if (data.subcontractor.barChart) {
+                            this.subcontractorBarChartExtend.color = commonFunction.generateHexadecimalColors();
+                            this.barChartSubcontractor = data.subcontractor.barChart.data;
+                            this.subcontractorBarChartExtend.xAxis.data = data.subcontractor.barChart.titleLabel;
+                            this.subcontractorBarChartExtend.series.label.normal.formatter = (formatterData) => commonFunction.formatNumber(formatterData.value) + data.subcontractor.barChart.formatter;
+                            this.subcontractorBarChartExtend.yAxis.axisLabel.formatter = (formatterData) => commonFunction.formatNumber(formatterData) + data.subcontractor.barChart.formatter;
+                            this.$set(this.loadings, 4, false);
                         }
                         if (data.dormitory.baseMessage) {
                             this.dormitorySex = data.dormitory.baseMessage.sex;
@@ -315,6 +358,8 @@ $(document).ready(() => {
                         if (data.dormitory.barChart) {
                             this.dormitoryBarChartExtend.color = commonFunction.generateHexadecimalColors();
                             this.dormitoryBarChart = data.dormitory.barChart.data;
+                            this.dormitoryBarChartExtend.yAxis.formatter = (formatterData) => commonFunction.formatNumber(formatterData) + data.dormitory.barChart.formatter;
+                            this.dormitoryBarChartExtend.series.label.normal.formatter = (formatterData) => commonFunction.formatNumber(formatterData.value) + data.dormitory.barChart.formatter;
                             this.dormitoryBarChartExtend.xAxis.data = data.dormitory.barChart.titleLabel;
                             this.$set(this.loadings, 3, false);
                         }

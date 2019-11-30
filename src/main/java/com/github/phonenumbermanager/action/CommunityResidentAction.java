@@ -198,7 +198,8 @@ public class CommunityResidentAction extends BaseAction {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             Workbook workbook = uploadExcel(request, session, "excel_resident_title");
-            jsonMap.put("state", communityResidentService.create(workbook, subdistrictId, configurationsMap));
+            jsonMap.put("state", 1);
+            jsonMap.put("create", communityResidentService.create(workbook, subdistrictId, configurationsMap));
             return jsonMap;
         } catch (BusinessException be) {
             be.printStackTrace();

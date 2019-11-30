@@ -1,14 +1,17 @@
 package com.github.phonenumbermanager.service.impl;
 
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserRole;
 import com.github.phonenumbermanager.entity.UserRolePrivilege;
 import com.github.phonenumbermanager.service.UserRolePrivilegeService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 系统用户权限业务实现
@@ -44,5 +47,10 @@ public class UserRolePrivilegeServiceImpl extends BaseServiceImpl<UserRolePrivil
     public long update(UserRolePrivilege userRolePrivilege) {
         userRolePrivilege.setUpdateTime(DateUtils.getTimestamp(new Date()));
         return super.update(userRolePrivilege);
+    }
+
+    @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
     }
 }

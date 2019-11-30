@@ -282,7 +282,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         } else {
             communityResidents = new LinkedList<>();
         }
-        return barChartDataHandler("社区居民总人数", companyLabel, communityResidents);
+        return barChartDataHandler("社区居民总户数", companyLabel, "户", communityResidents);
     }
 
     /**

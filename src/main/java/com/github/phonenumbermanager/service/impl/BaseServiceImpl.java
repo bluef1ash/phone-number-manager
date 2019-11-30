@@ -228,6 +228,9 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
      * @return 转换成功的字符串
      */
     String convertCellString(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
         return CommonUtils.qj2bj(CommonUtils.replaceBlank(String.valueOf(ExcelUtils.getCellValue(cell, CellType.STRING))));
     }
 
@@ -322,10 +325,11 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
      *
      * @param label        饼图图例
      * @param companyLabel 柱状图横坐标文字
+     * @param formatter    格式文字
      * @param object       饼图数据内容
      * @return 处理后的对象
      */
-    Map<String, Object> barChartDataHandler(String label, String companyLabel, LinkedList<Map<String, Object>> object) {
+    Map<String, Object> barChartDataHandler(String label, String companyLabel, String formatter, LinkedList<Map<String, Object>> object) {
         Map<String, Object> barChartMap = new HashMap<>(3);
         List<String> columns = new ArrayList<>();
         List<Map<String, Object>> rows = new ArrayList<>();
@@ -344,6 +348,7 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
         barChartMap.put("rows", rows);
         data.put("data", barChartMap);
         data.put("titleLabel", titleLabel);
+        data.put("formatter", formatter);
         return data;
     }
 

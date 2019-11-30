@@ -5,6 +5,7 @@ import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
+import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +30,8 @@ public class IndexAction extends BaseAction {
     private CommunityResidentService communityResidentService;
     @Resource
     private DormitoryManagerService dormitoryManagerService;
+    @Resource
+    private SubcontractorService subcontractorService;
     @Resource
     private UserPrivilegeService userPrivilegeService;
 
@@ -86,17 +89,21 @@ public class IndexAction extends BaseAction {
         getSessionRoleId(session);
         Map<String, Object> jsonMap = new HashMap<>(3);
         Map<String, Object> resident = new HashMap<>(3);
+        Map<String, Object> subcontractor = new HashMap<>(3);
         Map<String, Object> dormitory = new HashMap<>(3);
         try {
             if (getType == null || getType == 0) {
                 resident.put("baseMessage", communityResidentService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
                 resident.put("barChart", communityResidentService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                subcontractor.put("barChart", subcontractorService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
                 dormitory.put("baseMessage", dormitoryManagerService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
                 dormitory.put("barChart", dormitoryManagerService.find(systemUser, companyId, companyType, barChartTypeParam, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.RESIDENT_BASE_MESSAGE.getCode()) {
                 resident.put("baseMessage", communityResidentService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.RESIDENT_BAR_CHART.getCode()) {
                 resident.put("barChart", communityResidentService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+            } else if (getType == ComputedDataTypes.RESIDENT_SUBCONTRACTOR_BAR_CHART.getCode()) {
+                subcontractor.put("barChart", subcontractorService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.DORMITORY_BASE_MESSAGE.getCode()) {
                 dormitory.put("baseMessage", dormitoryManagerService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.DORMITORY_BAR_CHART.getCode()) {
@@ -104,6 +111,7 @@ public class IndexAction extends BaseAction {
             }
             jsonMap.put("state", 1);
             jsonMap.put("resident", resident);
+            jsonMap.put("subcontractor", subcontractor);
             jsonMap.put("dormitory", dormitory);
             return jsonMap;
         } catch (Exception e) {

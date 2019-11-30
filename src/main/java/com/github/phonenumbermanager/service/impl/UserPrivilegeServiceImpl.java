@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.entity.UserRolePrivilege;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
@@ -28,6 +29,11 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
     public long update(UserPrivilege userPrivilege) {
         userPrivilege.setUpdateTime(DateUtils.getTimestamp(new Date()));
         return super.update(userPrivilege);
+    }
+
+    @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.service.impl;
 
 import com.github.phonenumbermanager.entity.Subcontractor;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.utils.DateUtils;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +32,31 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<Subcontractor> imp
     public long update(Subcontractor subcontractor) {
         subcontractor.setUpdateTime(DateUtils.getTimestamp(new Date()));
         return super.update(subcontractor);
+    }
+
+    @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        String companyLabel = "社区";
+        String label = null;
+        String formatter = "人";
+        LinkedList<Map<String, Object>> subcontractors;
+        long ct = (long) (companyType == null ? 0L : companyType);
+        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getCompanyType()) || (systemCompanyType.equals(systemUser.getCompanyType()) && ct == (int) subdistrictCompanyType);
+        if (companyType == null || ct == (int) systemCompanyType) {
+            companyLabel = "街道";
+            label = "街道分包人总人数";
+            subcontractors = subcontractorDao.countForGroupSubdistrict();
+        } else if (isSystemRoleCount) {
+            label = "社区分包人总人数";
+            subcontractors = subcontractorDao.countForGroupCommunity(companyId);
+        } else if (ct == (int) communityCompanyType || (int) communityCompanyType == (long) systemUser.getCompanyType()) {
+            label = "社区居民分包总户数";
+            formatter = "户";
+            subcontractors = subcontractorDao.countForGroupByCommunityId(companyId);
+        } else {
+            subcontractors = new LinkedList<>();
+        }
+        return barChartDataHandler(label, companyLabel, formatter, subcontractors);
     }
 
     @Override

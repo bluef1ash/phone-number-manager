@@ -2,16 +2,14 @@ package com.github.phonenumbermanager.service.impl;
 
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Subdistrict;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.SubdistrictService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 街道业务实现
@@ -32,6 +30,11 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> impleme
     public long update(Subdistrict subdistrict) {
         subdistrict.setUpdateTime(DateUtils.getTimestamp(new Date()));
         return super.update(subdistrict);
+    }
+
+    @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
     }
 
     @Override

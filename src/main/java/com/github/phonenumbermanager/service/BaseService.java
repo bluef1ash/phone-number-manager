@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.service;
 
+import com.github.phonenumbermanager.entity.SystemUser;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -164,4 +166,18 @@ public interface BaseService<T> {
      * @throws Exception SERVICE层异常
      */
     Map<String, Object> findCorrelation(Integer pageNumber, Integer pageDataSize) throws Exception;
+
+    /**
+     * 获取柱状图数据
+     *
+     * @param systemUser             正在登录中的系统用户对象
+     * @param companyId              单位编号
+     * @param companyType            单位类型
+     * @param systemCompanyType      系统单位类型编号
+     * @param communityCompanyType   社区单位类型编号
+     * @param subdistrictCompanyType 街道单位类型编号
+     * @return 柱状图数据
+     * @throws Exception SERVICE层异常
+     */
+    Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) throws Exception;
 }

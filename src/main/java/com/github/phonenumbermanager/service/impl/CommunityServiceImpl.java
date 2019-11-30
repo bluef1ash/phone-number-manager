@@ -53,6 +53,11 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
     }
 
     @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
+    }
+
+    @Override
     public List<Community> findCorrelation() {
         return communityDao.selectAndSubdistrictAll();
     }

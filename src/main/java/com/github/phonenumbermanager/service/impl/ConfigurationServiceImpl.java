@@ -1,12 +1,15 @@
 package com.github.phonenumbermanager.service.impl;
 
 import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * 系统配置Service层实现
@@ -20,6 +23,11 @@ public class ConfigurationServiceImpl extends BaseServiceImpl<Configuration> imp
     public long update(Configuration configuration) {
         configuration.setUpdateTime(DateUtils.getTimestamp(new Date()));
         return super.update(configuration);
+    }
+
+    @Override
+    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) throws Exception {
+        return null;
     }
 
     @Override

@@ -114,7 +114,7 @@
     </logger>
     <!-- 开发、默认环境 只输出到控制台 -->
     <springProfile name="default,develop">
-        <root level="info">
+        <root level="debug">
             <appender-ref ref="console"/>
         </root>
     </springProfile>

@@ -45,13 +45,13 @@ public class CsrfFilter extends OncePerRequestFilter implements Filter {
             if (paths.length == 0) {
                 paths = new String[]{"index"};
             } else {
-                is2Path = "create".equals(paths[paths.length - 1]) || "list".equals(paths[paths.length - 1]) || "edit".equals(paths[paths.length - 1]);
+                is2Path = "create".equals(paths[paths.length - 1]) || "list".equals(paths[paths.length - 1]) || "edit".equals(paths[paths.length - 1]) || "handle".equals(paths[paths.length - 1]);
             }
             StringBuilder filePath = new StringBuilder();
             filePath.append("http://127.0.0.1:3000/");
             if (is2Path) {
                 filePath.append(paths[paths.length - 2]).append("-");
-                paths[paths.length - 1] = paths[paths.length - 1].replace("create", "edit");
+                paths[paths.length - 1] = paths[paths.length - 1].replaceAll("create|handle", "edit");
             }
             filePath.append(paths[paths.length - 1]).append("-bundle.js");
             httpServletRequest.setAttribute("jsFilePath", filePath);

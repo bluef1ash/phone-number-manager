@@ -119,29 +119,36 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
         if (isNameAndAddressRepeat.size() > 0) {
             String checkType = null;
             if (isCheckedPhone) {
-                for (int i = 0; i < isNameAndAddressRepeat.size(); i++) {
+                for (CommunityResident resident : isNameAndAddressRepeat) {
                     if (RequestMethod.PUT.toString().equals(request.getMethod()) && communityResident.getId() != null) {
-                        boolean isPhone1 = StringUtils.isNotEmpty(communityResident.getPhone1()) && isNameAndAddressRepeat.toString().contains(communityResident.getPhone1());
-                        boolean isPhone2 = StringUtils.isNotEmpty(communityResident.getPhone2()) && isNameAndAddressRepeat.toString().contains(communityResident.getPhone2());
-                        boolean isPhone3 = StringUtils.isNotEmpty(communityResident.getPhone3()) && isNameAndAddressRepeat.toString().contains(communityResident.getPhone3());
-                        if (isPhone1 || isPhone2 || isPhone3) {
+                        boolean isRepeat = false;
+                        if (StringUtils.isNotEmpty(communityResident.getPhone1()) && resident.getPhones().contains(communityResident.getPhone1()) && !resident.getId().equals(communityResident.getId())) {
+                            isRepeat = true;
+                        }
+                        if (StringUtils.isNotEmpty(communityResident.getPhone2()) && resident.getPhones().contains(communityResident.getPhone2()) && !resident.getId().equals(communityResident.getId())) {
+                            isRepeat = true;
+                        }
+                        if (StringUtils.isNotEmpty(communityResident.getPhone3()) && resident.getPhones().contains(communityResident.getPhone3()) && !resident.getId().equals(communityResident.getId())) {
+                            isRepeat = true;
+                        }
+                        if (!isRepeat) {
                             continue;
                         }
                     }
-                    if (i > 0) {
+                    if (communityNames.length() > 0) {
                         communityNames.append("，");
                     }
-                    communityNames.append(isNameAndAddressRepeat.get(i).getCommunity().getName()).append("的").append(communityResident.getName()).append("居民");
+                    communityNames.append(resident.getCommunity().getName()).append("的").append(resident.getName()).append("居民");
                     isChecked = false;
                     checkType = "联系方式";
                     field = "phones";
                 }
             } else {
-                for (int i = 0; i < isNameAndAddressRepeat.size(); i++) {
-                    if (i > 0) {
+                for (CommunityResident resident : isNameAndAddressRepeat) {
+                    if (communityNames.length() > 0) {
                         communityNames.append("，");
                     }
-                    communityNames.append(isNameAndAddressRepeat.get(i).getCommunity().getName());
+                    communityNames.append(resident.getCommunity().getName());
                 }
                 field = "name";
                 checkType = "社区居民";

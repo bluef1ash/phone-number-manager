@@ -148,6 +148,12 @@ $(document).ready(() => {
                         }
                     }
                 },
+                xAxis: {
+                    type: "category",
+                    show: true,
+                    position: "bottom",
+                    axisLabel: null
+                },
                 yAxis: {
                     show: true,
                     type: "value",
@@ -167,6 +173,12 @@ $(document).ready(() => {
                         }
                     }
                 },
+                xAxis: {
+                    type: "category",
+                    show: true,
+                    position: "bottom",
+                    axisLabel: null
+                },
                 yAxis: {
                     show: true,
                     type: "value",
@@ -179,7 +191,7 @@ $(document).ready(() => {
         created() {
             this.dormitoryBarChartExtend.grid = this.subcontractorBarChartExtend.grid = this.barChartExtend.grid;
             this.dormitoryBarChartExtend.tooltip = this.subcontractorBarChartExtend.tooltip = this.barChartExtend.tooltip;
-            this.dormitoryBarChartExtend.xAxis = this.subcontractorBarChartExtend.xAxis = this.barChartExtend.xAxis;
+            this.dormitoryBarChartExtend.xAxis.axisLabel = this.subcontractorBarChartExtend.xAxis.axisLabel = this.barChartExtend.xAxis.axisLabel;
             commonFunction.$ajax({
                 url: companySelectUrl,
                 method: "post",

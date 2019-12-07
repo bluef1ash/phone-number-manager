@@ -150,7 +150,7 @@
                  LEFT JOIN `pm_community` ON `pm_subcontractor`.`community_id` = `pm_community`.`id`
     </select>
     <select id="countForGroupSubdistrict" resultType="java.util.Map">
-        SELECT `pm_subdistrict`.`name`, COUNT(`pm_subcontractor`.`id`) AS 'value'
+        SELECT ANY_VALUE(`pm_subdistrict`.`name`) AS 'name', COUNT(`pm_subcontractor`.`id`) AS 'value'
         FROM `pm_subcontractor`
             LEFT JOIN `pm_community` ON `pm_subcontractor`.`community_id` = `pm_community`.`id`
             LEFT JOIN `pm_subdistrict` ON `pm_subdistrict`.`id` = `pm_community`.`id`

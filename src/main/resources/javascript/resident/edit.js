@@ -38,12 +38,8 @@ $(document).ready(() => {
                     this.communityResident.community = {residentSubmitted: false};
                 }
                 this.loadSubcontractors();
-                if (this.showPhone(this.communityResident.phone1, this.communityResident.phone2)) {
-                    this.isShowPhone2 = true;
-                }
-                if (this.showPhone(this.communityResident.phone2, this.communityResident.phone3)) {
-                    this.isShowPhone3 = true;
-                }
+                this.showPhone(this.communityResident.phone1, "isShowPhone2");
+                this.showPhone(this.communityResident.phone2, "isShowPhone3");
             }
             let company = commonFunction.companyHandler(this.communities, this.communityResident.communityId);
             this.newCommunities = company.newCommunities;
@@ -53,12 +49,13 @@ $(document).ready(() => {
         methods: {
             /**
              * 判断是否显示联系方式输入框
-             * @param phone1
-             * @param phone2
-             * @return {boolean|*}
+             * @param phone
+             * @param phoneShowVar
              */
-            showPhone(phone1, phone2) {
-                return (typeof phone1 !== "undefined" && phone1 !== null && phone1 !== "") && (this.communityResident.community.residentSubmitted && (typeof phone2 !== "undefined" && phone2 !== null && phone2 !== ""));
+            showPhone(phone, phoneShowVar) {
+                if (typeof phone !== "undefined" && phone !== null && phone !== "") {
+                    eval("this." + phoneShowVar + " = true");
+                }
             },
             /**
              * 切换街道

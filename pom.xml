@@ -190,6 +190,19 @@
                     <fork>true</fork>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
+            </plugin>
         </plugins>
 
         <resources>
@@ -204,10 +217,28 @@
 
             <resource>
                 <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.ftl</exclude>
+                    <exclude>**/*.trl</exclude>
+                    <exclude>**/*.html</exclude>
+                    <exclude>**/*.js</exclude>
+                    <exclude>**/*.png</exclude>
+                    <exclude>**/*.jpg</exclude>
+                    <exclude>**/*.ico</exclude>
+                    <exclude>**/*.css</exclude>
+                    <exclude>**/*.eot</exclude>
+                    <exclude>**/*.svg</exclude>
+                    <exclude>**/*.ttf</exclude>
+                    <exclude>**/*.woff</exclude>
+                    <exclude>**/*.woff2</exclude>
+                    <exclude>**/*.vm</exclude>
+                </excludes>
+                <filtering>true</filtering>
+            </resource>
+
+            <resource>
+                <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.properties</include>
-                    <include>**/*.yml</include>
                     <include>**/*.ftl</include>
                     <include>**/*.trl</include>
                     <include>**/*.html</include>
@@ -226,4 +257,27 @@
             </resource>
         </resources>
     </build>
+
+    <profiles>
+        <profile>
+            <id>develop</id>
+            <properties>
+                <profileActive>develop</profileActive>
+                <maven.test.skip>true</maven.test.skip>
+                <scope.jar>compile</scope.jar>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>product</id>
+            <properties>
+                <profileActive>product</profileActive>
+                <maven.test.skip>true</maven.test.skip>
+                <scope.jar>provided</scope.jar>
+            </properties>
+        </profile>
+    </profiles>
 </project>

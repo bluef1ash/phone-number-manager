@@ -51,6 +51,7 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         margin-left: 1.5rem;
+        width: auto;
 
         &:hover {
             color: #20a8d8;
@@ -65,10 +66,6 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
 @media (max-width: 991.98px) {
     .app-header {
         .navbar-brand {
-            position: absolute;
-            left: 50%;
-            width: 0;
-            margin-left: 0;
             display: contents;
         }
 
@@ -127,6 +124,13 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
     }
 }
 
-.el-scrollbar__wrap {
-    overflow-x: hidden;
+.cascader-panel {
+    .el-cascader-panel {
+        .el-cascader-menu {
+            .el-scrollbar__wrap {
+                padding-bottom: 17px;
+                overflow-x: hidden;
+            }
+        }
+    }
 }

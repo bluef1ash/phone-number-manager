@@ -31,7 +31,7 @@
                                 <form action="javascript:" class="form-inline list-search" method="get">
                                     <div class="form-group">
                                         <label>单位</label>
-                                        <el-cascader :clearable="true" :options="companies" :props="cascaderProps" placeholder="单位搜索" v-model="searchCompanyIds"></el-cascader>
+                                        <el-cascader :clearable="true" :options="companies" :props="cascaderProps" placeholder="单位搜索" v-model="searchCompanyIds" popper-class="cascader-panel" ref="companiesCascader" @change="companiesCascaderChanged"></el-cascader>
                                     </div>
                                     <div class="form-group">
                                         <label for="name" v-text="'社区' + dataTypeName + '姓名'"></label>
@@ -256,6 +256,15 @@
                             });
                         }
                     });
+                }
+            },
+            /**
+             * 选中单位级联器事件
+             * @param checkedValue
+             */
+            companiesCascaderChanged(checkedValue) {
+                if (checkedValue) {
+                    this.$refs.companiesCascader.dropDownVisible = false;
                 }
             },
             /**

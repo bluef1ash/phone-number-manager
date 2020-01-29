@@ -218,6 +218,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
+                    <exclude>**/*.txt</exclude>
                     <exclude>**/*.ftl</exclude>
                     <exclude>**/*.trl</exclude>
                     <exclude>**/*.html</exclude>
@@ -239,6 +240,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>**/*.txt</include>
                     <include>**/*.ftl</include>
                     <include>**/*.trl</include>
                     <include>**/*.html</include>

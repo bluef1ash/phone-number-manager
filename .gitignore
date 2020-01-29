@@ -42,3 +42,4 @@ error/
 info/
 debug/
 warn/
+.yarn/

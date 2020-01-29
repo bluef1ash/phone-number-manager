@@ -60,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/static/**", "/javascript/**", "/fonts/**", "/images/**", "/uploads/**");
+        web.ignoring().antMatchers("/static/**", "/javascript/**", "/fonts/**", "/images/**", "/uploads/**", "/robots.txt");
     }
 
     @Bean

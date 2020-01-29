@@ -58,17 +58,14 @@
 
 E-mail: liangtian_2005@163.com
 
-## Author: Bluef1ash(Liang Tian)
-E-mail: liangtian_2005@163.com
-
 ## 商业友好的开源协议
 
 此系统遵循MIT开源许可证发布。MIT许可证（The MIT License）是许多软件授权条款中，被广泛使用的其中一种。与其他常见的软件授权条款（如GPL、LGPL、BSD）相比，MIT是相对宽松的软件授权条款。
 
-## 首次运行需要执行`npm install`命令，切记！
+## 首次运行需要执行`yarn install`命令，切记！
 
 ```shell
-npm install
+yarn install
 ```
 
 > 系统默认用户名：**admin**

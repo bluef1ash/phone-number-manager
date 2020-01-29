@@ -72,12 +72,10 @@ $(document).ready(() => {
                                     });
                                 }
                             }, data => {
+                                let timeout = 5000;
                                 this.loading.close();
-                                this.$message({
-                                    message: data.message,
-                                    type: "success"
-                                });
-                                setTimeout(location.href = "/", 3000);
+                                this.$message.success(data.message + timeout / 1000 + "秒后进入系统。。。");
+                                setTimeout(location.href = "/", timeout);
                             }, xhr => {
                                 this.loading.close();
                                 let responseJSON = xhr.responseJSON;

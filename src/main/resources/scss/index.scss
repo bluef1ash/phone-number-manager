@@ -8,7 +8,6 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
 @import "~@coreui/coreui/scss/coreui";
 @import "../../../../lib/css/pace.min.css";
 @import "../../../../lib/css/common.css";
-@import "../../../../lib/css/style.min.css";
 
 @font-face {
     font-family: "webfont";
@@ -19,117 +18,191 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
     url("../../../../lib/fonts/webfont.svg#webfont") format("svg"); /* iOS 4.1- */
 }
 
-.login-captcha {
-    padding: 0.5rem 0 1.5rem 1.5rem;
-}
+body {
+    font-size: .65rem;
 
-.login-about {
-    text-align: center;
-
-    p:first-of-type {
-        text-align: left;
-        text-indent: 2em;
+    a, .form-control {
+        font-size: .65rem;
     }
 
-    p:last-of-type {
-        font-size: 0.8rem;
-        font-weight: bold;
-        font-style: normal;
-        text-indent: 2em;
-        text-align: left;
+    .login-captcha {
+        padding: 0.5rem 0 1.5rem 1.5rem;
     }
-}
 
-.app-header {
-    .navbar-brand {
-        display: block;
-        background-image: none;
-        color: #20a8d8;
-        font-family: "webfont", serif !important;
-        font-size: 2rem;
-        font-style: normal;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        margin-left: 1.5rem;
-        width: auto;
+    .login-about {
+        text-align: center;
 
-        &:hover {
-            color: #20a8d8;
+        p:first-of-type {
+            text-align: left;
+            text-indent: 2em;
+        }
+
+        p:last-of-type {
+            font-size: 0.8rem;
+            font-weight: bold;
+            font-style: normal;
+            text-indent: 2em;
+            text-align: left;
         }
     }
-}
 
-.sidebar-toggler {
-    display: none;
-}
-
-@media (max-width: 991.98px) {
     .app-header {
         .navbar-brand {
-            display: contents;
+            display: block;
+            background-image: none;
+            color: #20a8d8;
+            font-family: "webfont", serif !important;
+            font-size: 2rem;
+            font-style: normal;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin-left: 1.5rem;
+            width: auto;
+
+            &:hover {
+                color: #20a8d8;
+            }
         }
 
         .sidebar-toggler {
-            display: block;
+            display: none;
         }
     }
-}
 
-#index {
-    .base-message {
-        .card-header {
-            .float-right {
-                .form-group {
-                    float: left;
-                    margin: -1.5rem 0.5rem;
+    .app-body {
+        .main {
+            #index {
+                .base-message {
+                    > .card-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-content: center;
+
+                        div {
+                            display: flex;
+                            justify-content: space-between;
+                            align-content: center;
+
+                            .form-group {
+                                margin-bottom: 0;
+                                display: flex;
+                                align-content: center;
+
+                                &:first-child {
+                                    margin-right: 1vw;
+                                }
+                            }
+                        }
+                    }
+
+                    > .card-body {
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: space-around;
+
+                        .callout + .callout {
+                            margin-top: 1rem;
+                        }
+
+                        &.dormitory-body {
+                            justify-content: space-between;
+
+                            > div {
+                                width: 48%;
+                            }
+                        }
+                    }
+                }
+
+                .resident-chart {
+                    .card-body {
+                        .card-title {
+                            display: flex;
+                            justify-content: space-between;
+                            align-content: center;
+                            flex-wrap: wrap;
+
+                            h6 {
+                                flex: 2;
+                                line-height: 3.1rem;
+                            }
+
+                            .el-switch {
+                                margin: 1.2rem 1rem 0 0;
+                            }
+                        }
+
+                        .chart-selected {
+                            display: flex;
+                            float: right;
+                        }
+
+                        .chart-wrapper {
+                            .chartjs-render-monitor {
+                                display: block;
+                            }
+                        }
+                    }
                 }
             }
-        }
-    }
 
-    .resident-chart {
-        .card-body {
-            .row {
-                .chart-wrapper {
-                    height: 300px;
-                    margin-top: 40px;
+            .pagination-custom {
+                font-size: 13px;
+                float: left;
+                line-height: 2rem;
+                margin: 0 0.5rem;
+            }
 
-                    .chartjs-render-monitor {
-                        display: block;
+            .pagination {
+                .page-item {
+                    .page-link:disabled {
+                        font-size: 13px;
+                        pointer-events: auto;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+
+            .cascader-panel {
+                .el-cascader-panel {
+                    .el-cascader-menu {
+                        .el-scrollbar__wrap {
+                            padding-bottom: 17px;
+                            overflow-x: hidden;
+                        }
                     }
                 }
             }
         }
     }
 
-    .index-dormitory-chart-switch {
-        padding-top: 20px;
-    }
-}
+    @media only screen and (max-width: 991.98px) {
+        .app-header {
+            .navbar-brand {
+                display: contents;
+                margin-left: 0;
+            }
 
-.pagination-custom {
-    font-size: 13px;
-    float: left;
-    line-height: 2rem;
-    margin: 0 0.5rem;
-}
+            .sidebar-toggler {
+                display: block;
+            }
+        }
 
-.pagination {
-    .page-item {
-        .page-link:disabled {
-            font-size: 13px;
-            pointer-events: auto;
-            cursor: not-allowed;
+        .app-body {
+            .main {
+                .form-control {
+                    font-size: .65rem;
+                }
+            }
         }
     }
-}
 
-.cascader-panel {
-    .el-cascader-panel {
-        .el-cascader-menu {
-            .el-scrollbar__wrap {
-                padding-bottom: 17px;
-                overflow-x: hidden;
+    @media only screen and (max-width: 480px) {
+        .app-body {
+            .main {
+                .form-control {
+                    font-size: 1rem;
+                }
             }
         }
     }

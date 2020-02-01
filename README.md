@@ -40,19 +40,15 @@
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/login.jpg)
 
 <div style="text-align: center;">登录页面</div>
-
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/index.jpg)
 
 <div style="text-align: center;">系统首页</div>
-
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/list.jpg)
 
 <div style="text-align: center;">列表页面</div>
-
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/create.jpg)
 
 <div style="text-align: center;">添加、编辑数据页面</div>
-
 
 ## Author: Bluef1ash（廿二月的天）
 
@@ -62,10 +58,11 @@ E-mail: liangtian_2005@163.com
 
 此系统遵循MIT开源许可证发布。MIT许可证（The MIT License）是许多软件授权条款中，被广泛使用的其中一种。与其他常见的软件授权条款（如GPL、LGPL、BSD）相比，MIT是相对宽松的软件授权条款。
 
-## 首次运行需要执行`yarn install`命令，切记！
+## 首次运行需要执行`yarn install`与`yarn run build`命令，切记！
 
 ```shell
 yarn install
+yarn run build
 ```
 
 > 系统默认用户名：**admin**

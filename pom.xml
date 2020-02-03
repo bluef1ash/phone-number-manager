@@ -214,48 +214,36 @@
                 </includes>
                 <filtering>false</filtering>
             </resource>
-
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>**/*.txt</exclude>
-                    <exclude>**/*.ftl</exclude>
-                    <exclude>**/*.trl</exclude>
-                    <exclude>**/*.html</exclude>
-                    <exclude>**/*.js</exclude>
-                    <exclude>**/*.png</exclude>
-                    <exclude>**/*.jpg</exclude>
-                    <exclude>**/*.ico</exclude>
-                    <exclude>**/*.css</exclude>
-                    <exclude>**/*.eot</exclude>
-                    <exclude>**/*.svg</exclude>
-                    <exclude>**/*.ttf</exclude>
-                    <exclude>**/*.woff</exclude>
-                    <exclude>**/*.woff2</exclude>
-                    <exclude>**/*.vm</exclude>
-                </excludes>
-                <filtering>true</filtering>
-            </resource>
-
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.txt</include>
-                    <include>**/*.ftl</include>
-                    <include>**/*.trl</include>
-                    <include>**/*.html</include>
-                    <include>**/*.js</include>
-                    <include>**/*.png</include>
-                    <include>**/*.jpg</include>
-                    <include>**/*.ico</include>
-                    <include>**/*.css</include>
-                    <include>**/*.eot</include>
-                    <include>**/*.svg</include>
-                    <include>**/*.ttf</include>
-                    <include>**/*.woff</include>
-                    <include>**/*.woff2</include>
-                    <include>**/*.vm</include>
+                    <include>*.yml</include>
+                    <include>*.sql</include>
+                    <include>*.properties</include>
+                    <include>*.xml</include>
                 </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources/static</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources/javascript</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources/scss</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <filtering>false</filtering>
             </resource>
         </resources>
     </build>

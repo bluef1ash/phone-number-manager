@@ -217,33 +217,20 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>*.yml</include>
-                    <include>*.sql</include>
-                    <include>*.properties</include>
-                    <include>*.xml</include>
+                    <include>**/static/**</include>
+                    <include>**/javascript/**</include>
+                    <include>**/scss/**</include>
                 </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/static/**</exclude>
+                    <exclude>**/javascript/**</exclude>
+                    <exclude>**/scss/**</exclude>
+                </excludes>
                 <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources/static</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-                <filtering>false</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources/javascript</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-                <filtering>false</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources/scss</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-                <filtering>false</filtering>
             </resource>
         </resources>
     </build>

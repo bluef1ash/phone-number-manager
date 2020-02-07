@@ -1,5 +1,9 @@
 server:
     port: 8081
+
+    compression:
+        enabled: true
+
     undertow:
         io-threads: 8
         worker-threads: 64

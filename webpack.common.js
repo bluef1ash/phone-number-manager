@@ -1,10 +1,9 @@
 const path = require("path");
 const jsSrcPath = path.resolve(__dirname, "src/main/resources/javascript");
+const jsLibPath = path.resolve(__dirname, "lib/javascript");
 const jsDistPath = path.resolve(__dirname, "src/main/resources/static/javascript");
+const fontDistPath = path.resolve(__dirname, "src/main/resources/static/fonts");
 const Webpack = require("webpack");
-const glob = require("glob-all");
-const ParallelUglifyPlugin = require("webpack-parallel-uglify-plugin");
-const PurifyCssWebpack = require("purifycss-webpack");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
 
@@ -41,7 +40,7 @@ module.exports = {
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                include: jsSrcPath,
+                include: [jsSrcPath, jsLibPath],
                 use: "babel-loader?cacheDirectory"
             },
             {
@@ -78,7 +77,7 @@ module.exports = {
                         options: {
                             name: "[name]-[hash:5].min.[ext]",
                             limit: 1024 * 10,
-                            outputPath: path.relative(jsDistPath, path.resolve(__dirname, "src/main/resources/static/fonts")),
+                            outputPath: path.relative(jsDistPath, fontDistPath),
                             publicPath: "/fonts"
                         }
                     }
@@ -95,31 +94,10 @@ module.exports = {
     },
     plugins: [
         new Webpack.BannerPlugin("@author 廿二月的天"),
-        new ParallelUglifyPlugin({
-            workerCount: 4,
-            uglifyES: {
-                output: {
-                    beautify: false,
-                    comments: false
-                },
-                compress: {
-                    warnings: false,
-                    drop_console: false,
-                    collapse_vars: true,
-                    reduce_vars: true
-                }
-            }
-        }),
-        new PurifyCssWebpack({
-            paths: glob.sync([
-                path.join(__dirname, "src/main/resources/templates/!*.html"),
-                path.join(jsDistPath, "!*.js")
-            ])
-        }),
         new Webpack.ProvidePlugin({
             "$": "jquery"
         }),
-        new CleanWebpackPlugin(jsDistPath),
+        new CleanWebpackPlugin([jsDistPath, fontDistPath]),
         new VueLoaderPlugin()
     ],
     resolve: {
@@ -132,13 +110,5 @@ module.exports = {
             path.resolve("node_modules")
         ],
         extensions: [".js", ".css", ".vue", ".json"]
-    },
-    performance: {
-        hints: "warning",
-        maxAssetSize: 5 * 1024 * 1024,
-        maxEntrypointSize: 10 * 1024 * 1024,
-        assetFilter(assetFilename) {
-            return assetFilename.endsWith(".css") || assetFilename.endsWith(".js");
-        }
     }
 };

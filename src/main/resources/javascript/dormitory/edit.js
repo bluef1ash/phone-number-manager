@@ -4,7 +4,7 @@ import Vue from "vue";
 import {DatePicker, InputNumber, Message} from "element-ui";
 import "moment/locale/zh-cn";
 import moment from "moment";
-import commonFunction from "@base/lib/javascript/common";
+import {$ajax, companyHandler} from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -48,7 +48,7 @@ $(document).ready(() => {
                 this.dormitoryManager.birth = moment(this.dormitoryManager.birth).format("YYYY-MM-DD");
                 this.loadSubcontractors();
             }
-            let company = commonFunction.companyHandler(this.communities, this.dormitoryManager.communityId);
+            let company = companyHandler(this.communities, this.dormitoryManager.communityId);
             this.subdistrictId = company.subdistrictId;
             this.subdistricts = company.subdistricts;
             this.newCommunities = company.newCommunities;
@@ -89,7 +89,7 @@ $(document).ready(() => {
                             this.communityName = item.name;
                         }
                     });
-                    commonFunction.$ajax({
+                    $ajax({
                         url: loadDormitoryManagerLastIdUrl,
                         method: "post",
                         headers: {
@@ -112,7 +112,7 @@ $(document).ready(() => {
              */
             loadSubcontractors() {
                 if (this.dormitoryManager.communityId !== 0) {
-                    commonFunction.$ajax({
+                    $ajax({
                         url: loadSubcontractorsUrl,
                         method: "post",
                         headers: {

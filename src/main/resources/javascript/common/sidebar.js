@@ -1,12 +1,12 @@
 import Vue from "vue";
-import commonFunction from "@base/lib/javascript/common";
+import { $ajax } from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     /**
      * 退出登录
      */
     document.getElementById("logout").onclick = () => {
-        commonFunction.$ajax({
+        $ajax({
             url: logoutUrl,
             method: "post",
             headers: {
@@ -26,7 +26,7 @@ $(document).ready(() => {
         created() {
             let arrUrl = location.toString().split("//");
             this.currentUri = arrUrl[1].replace("#/", "").substring(arrUrl[1].indexOf("/"));
-            commonFunction.$ajax({
+            $ajax({
                 url: this.getMenuUrl,
                 data: {
                     display: true

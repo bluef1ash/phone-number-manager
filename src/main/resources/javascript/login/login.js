@@ -1,9 +1,9 @@
 import "@baseSrc/javascript/common/public";
 import Vue from "vue";
-import {Loading, Message, MessageBox} from "element-ui";
+import { Loading, Message, MessageBox } from "element-ui";
 import sha256 from "sha256";
 import VueCookie from "vue-cookie";
-import commonFunction from "@base/lib/javascript/common";
+import { $ajax, browserType } from "@base/lib/javascript/common";
 import "@base/lib/javascript/gt";
 
 $(document).ready(() => {
@@ -36,8 +36,8 @@ $(document).ready(() => {
             }
         },
         mounted() {
-            this.browserType = commonFunction.browserType() ? "web" : "h5";
-            commonFunction.$ajax({
+            this.browserType = browserType() ? "web" : "h5";
+            $ajax({
                 url: captchaUrl + "?browserType=" + this.browserType + "&time=" + (new Date()).getTime(),
                 dataType: "json"
             }, result => {
@@ -54,7 +54,7 @@ $(document).ready(() => {
                         this.captchaObj.onReady(() => {
                             this.isCaptcha = "none";
                         }).onSuccess(() => {
-                            commonFunction.$ajax({
+                            $ajax({
                                 url: this.$refs.loginForm.action,
                                 method: "post",
                                 data: {

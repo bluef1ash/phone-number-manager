@@ -2,7 +2,7 @@ import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import "bootstrap";
 import Vue from "vue";
-import commonFunction from "@base/lib/javascript/common";
+import {$ajax, generateHexadecimalColors, formatNumber} from "@base/lib/javascript/common";
 import countTo from "vue-count-to";
 import {Loading, Switch} from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
@@ -192,7 +192,7 @@ $(document).ready(() => {
             this.dormitoryBarChartExtend.grid = this.subcontractorBarChartExtend.grid = this.barChartExtend.grid;
             this.dormitoryBarChartExtend.tooltip = this.subcontractorBarChartExtend.tooltip = this.barChartExtend.tooltip;
             this.dormitoryBarChartExtend.xAxis.axisLabel = this.subcontractorBarChartExtend.xAxis.axisLabel = this.barChartExtend.xAxis.axisLabel;
-            commonFunction.$ajax({
+            $ajax({
                 url: companySelectUrl,
                 method: "post",
                 headers: {
@@ -317,7 +317,7 @@ $(document).ready(() => {
                         params.barChartTypeParam = this.barChartDormitoryType;
                         break;
                 }
-                commonFunction.$ajax({
+                $ajax({
                     url: getComputedUrl,
                     method: "post",
                     headers: {
@@ -338,19 +338,19 @@ $(document).ready(() => {
                             this.$set(this.loadings, 0, false);
                         }
                         if (data.resident.barChart) {
-                            this.barChartExtend.color = commonFunction.generateHexadecimalColors();
+                            this.barChartExtend.color = generateHexadecimalColors();
                             this.barChart = data.resident.barChart.data;
                             this.barChartExtend.xAxis.data = data.resident.barChart.titleLabel;
-                            this.barChartExtend.series.label.normal.formatter = (formatterData) => commonFunction.formatNumber(formatterData.value) + data.resident.barChart.formatter;
-                            this.barChartExtend.yAxis.axisLabel.formatter = (formatterData) => commonFunction.formatNumber(formatterData) + data.resident.barChart.formatter;
+                            this.barChartExtend.series.label.normal.formatter = (formatterData) => formatNumber(formatterData.value) + data.resident.barChart.formatter;
+                            this.barChartExtend.yAxis.axisLabel.formatter = (formatterData) => formatNumber(formatterData) + data.resident.barChart.formatter;
                             this.$set(this.loadings, 1, false);
                         }
                         if (data.subcontractor.barChart) {
-                            this.subcontractorBarChartExtend.color = commonFunction.generateHexadecimalColors();
+                            this.subcontractorBarChartExtend.color = generateHexadecimalColors();
                             this.barChartSubcontractor = data.subcontractor.barChart.data;
                             this.subcontractorBarChartExtend.xAxis.data = data.subcontractor.barChart.titleLabel;
-                            this.subcontractorBarChartExtend.series.label.normal.formatter = (formatterData) => commonFunction.formatNumber(formatterData.value) + data.subcontractor.barChart.formatter;
-                            this.subcontractorBarChartExtend.yAxis.axisLabel.formatter = (formatterData) => commonFunction.formatNumber(formatterData) + data.subcontractor.barChart.formatter;
+                            this.subcontractorBarChartExtend.series.label.normal.formatter = (formatterData) => formatNumber(formatterData.value) + data.subcontractor.barChart.formatter;
+                            this.subcontractorBarChartExtend.yAxis.axisLabel.formatter = (formatterData) => formatNumber(formatterData) + data.subcontractor.barChart.formatter;
                             this.$set(this.loadings, 4, false);
                         }
                         if (data.dormitory.baseMessage) {
@@ -364,14 +364,14 @@ $(document).ready(() => {
                             this.dormitoryEducation = data.dormitory.baseMessage.education;
                             this.dormitoryPoliticalStatus = data.dormitory.baseMessage.politicalStatus;
                             this.dormitoryWorkStatus = data.dormitory.baseMessage.workStatus;
-                            this.dormitoryPieExtend.color = commonFunction.generateHexadecimalColors();
+                            this.dormitoryPieExtend.color = generateHexadecimalColors();
                             this.$set(this.loadings, 2, false);
                         }
                         if (data.dormitory.barChart) {
-                            this.dormitoryBarChartExtend.color = commonFunction.generateHexadecimalColors();
+                            this.dormitoryBarChartExtend.color = generateHexadecimalColors();
                             this.dormitoryBarChart = data.dormitory.barChart.data;
-                            this.dormitoryBarChartExtend.yAxis.formatter = (formatterData) => commonFunction.formatNumber(formatterData) + data.dormitory.barChart.formatter;
-                            this.dormitoryBarChartExtend.series.label.normal.formatter = (formatterData) => commonFunction.formatNumber(formatterData.value) + data.dormitory.barChart.formatter;
+                            this.dormitoryBarChartExtend.yAxis.formatter = (formatterData) => formatNumber(formatterData) + data.dormitory.barChart.formatter;
+                            this.dormitoryBarChartExtend.series.label.normal.formatter = (formatterData) => formatNumber(formatterData.value) + data.dormitory.barChart.formatter;
                             this.dormitoryBarChartExtend.xAxis.data = data.dormitory.barChart.titleLabel;
                             this.$set(this.loadings, 3, false);
                         }

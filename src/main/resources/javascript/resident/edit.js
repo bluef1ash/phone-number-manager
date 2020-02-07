@@ -2,7 +2,7 @@ import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message} from "element-ui";
-import commonFunction from "@base/lib/javascript/common";
+import { deleteObject, $ajax, companyHandler } from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -41,7 +41,7 @@ $(document).ready(() => {
                 this.showPhone(this.communityResident.phone1, "isShowPhone2");
                 this.showPhone(this.communityResident.phone2, "isShowPhone3");
             }
-            let company = commonFunction.companyHandler(this.communities, this.communityResident.communityId);
+            let company = companyHandler(this.communities, this.communityResident.communityId);
             this.newCommunities = company.newCommunities;
             this.subdistrictId = company.subdistrictId;
             this.subdistricts = company.subdistricts;
@@ -89,7 +89,7 @@ $(document).ready(() => {
              */
             loadSubcontractors() {
                 if (this.communityResident.communityId !== 0) {
-                    commonFunction.$ajax({
+                    $ajax({
                         url: loadSubcontractorsUrl,
                         method: "post",
                         headers: {
@@ -150,7 +150,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.communityResident.phone1) === -1) {
+                if (checkPhoneType(this.communityResident.phone1) === -1) {
                     message = "社区居民联系方式一非法！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 2, true);
@@ -158,7 +158,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.communityResident.phone2) === -1) {
+                if (checkPhoneType(this.communityResident.phone2) === -1) {
                     message = "社区居民联系方式二非法！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 3, true);
@@ -166,7 +166,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.communityResident.phone3) === -1) {
+                if (checkPhoneType(this.communityResident.phone3) === -1) {
                     message = "社区居民联系方式三非法！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 4, true);

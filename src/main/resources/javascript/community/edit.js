@@ -2,7 +2,7 @@ import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {InputNumber, Message} from "element-ui";
-import commonFunction from "@base/lib/javascript/common";
+import {checkPhoneType} from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -63,7 +63,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (commonFunction.checkPhoneType(this.community.landline) === -1) {
+                if (checkPhoneType(this.community.landline) === -1) {
                     message = "社区联系方式非法！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);

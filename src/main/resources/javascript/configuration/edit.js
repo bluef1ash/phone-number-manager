@@ -2,7 +2,7 @@ import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message} from "element-ui";
-import commonFunction from "@base/lib/javascript/common";
+import {$ajax} from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     if (configuration === null) {
@@ -33,7 +33,7 @@ $(document).ready(() => {
             loadUsers() {
                 if (this.configuration.type === 4 && this.users.length === 0) {
                     this.configuration.value = 0;
-                    commonFunction.$ajax({
+                    $ajax({
                         url: loadUsersUrl,
                         method: "post",
                         headers: {

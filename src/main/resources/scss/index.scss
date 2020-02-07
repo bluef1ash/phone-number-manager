@@ -15,11 +15,11 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
     /* IE9 */
     src: url("../../../../lib/fonts/webfont.eot?#iefix") format("embedded-opentype"),
         /* IE6-IE8 */
-        url("../../../../lib/fonts/webfont.woff") format("woff"),
+    url("../../../../lib/fonts/webfont.woff") format("woff"),
         /* chrome、firefox */
-        url("../../../../lib/fonts/webfont.ttf") format("truetype"),
+    url("../../../../lib/fonts/webfont.ttf") format("truetype"),
         /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
-        url("../../../../lib/fonts/webfont.svg#webfont") format("svg");
+    url("../../../../lib/fonts/webfont.svg#webfont") format("svg");
     /* iOS 4.1- */
 }
 
@@ -35,7 +35,7 @@ body {
 
     #login {
         #login_form {
-            .card-body{
+            .card-body {
                 h1 {
                     font-size: 1.8rem;
                 }
@@ -91,7 +91,7 @@ body {
         .main {
             #index {
                 .base-message {
-                    >.card-header {
+                    > .card-header {
                         display: flex;
                         justify-content: space-between;
                         align-content: center;
@@ -113,19 +113,19 @@ body {
                         }
                     }
 
-                    >.card-body {
+                    > .card-body {
                         display: flex;
                         flex-wrap: wrap;
                         justify-content: space-around;
 
-                        .callout+.callout {
+                        .callout + .callout {
                             margin-top: 1rem;
                         }
 
                         &.dormitory-body {
                             justify-content: space-between;
 
-                            >div {
+                            > div {
                                 width: 48%;
                             }
                         }
@@ -181,14 +181,15 @@ body {
                 }
             }
 
-            .cascader-panel {
-                .el-cascader-panel {
-                    .el-cascader-menu {
-                        .el-scrollbar__wrap {
-                            padding-bottom: 17px;
-                            overflow-x: hidden;
-                        }
-                    }
+        }
+    }
+
+    .cascader-panel {
+        .el-cascader-panel {
+            .el-cascader-menu {
+                .el-scrollbar__wrap {
+                    padding-bottom: 17px;
+                    overflow-x: hidden;
                 }
             }
         }

@@ -2,7 +2,7 @@ import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message, MessageBox} from "element-ui";
-import commonFunction from "@base/lib/javascript/common";
+import { deleteObject } from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -23,7 +23,7 @@ $(document).ready(() => {
                     this.$message.error("不允许删除管理员角色！");
                     return;
                 }
-                commonFunction.deleteObject(this, deleteUrl, id);
+                deleteObject(this, deleteUrl, id);
             }
         }
     });

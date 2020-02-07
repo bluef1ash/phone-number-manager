@@ -43,3 +43,4 @@ info/
 debug/
 warn/
 .yarn/
+.cache/

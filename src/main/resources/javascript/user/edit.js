@@ -3,7 +3,7 @@ import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message} from "element-ui";
 import sha256 from "sha256";
-import commonFunction from "@base/lib/javascript/common";
+import {$ajax} from "@base/lib/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -38,7 +38,7 @@ $(document).ready(() => {
                 this.subdistrictId = this.user.companyId;
                 this.loadCommunities(this.subdistrictId);
             } else if (this.user.companyType === this.communityCompanyType) {
-                commonFunction.$ajax({
+                $ajax({
                     url: loadCommunityUrl,
                     method: "post",
                     headers: {
@@ -65,7 +65,7 @@ $(document).ready(() => {
              */
             loadCommunities(subdistrictId, callback = null) {
                 if (subdistrictId > 0) {
-                    commonFunction.$ajax({
+                    $ajax({
                         url: loadCompaniesUrl,
                         method: "post",
                         headers: {

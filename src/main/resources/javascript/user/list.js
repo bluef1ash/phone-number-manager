@@ -2,7 +2,7 @@ import "@baseSrc/javascript/common/public";
 import "@baseSrc/javascript/common/sidebar";
 import Vue from "vue";
 import {Message, MessageBox} from "element-ui";
-import commonFunction from "@base/lib/javascript/common";
+import { deleteObject, $ajax} from "@base/lib/javascript/common";
 import "moment/locale/zh-cn";
 import moment from "moment";
 
@@ -29,7 +29,7 @@ $(document).ready(() => {
                     this.$message.error("不允许锁定超级管理员！");
                     return;
                 }
-                commonFunction.$ajax({
+                $ajax({
                     url: userLockUrl,
                     method: "post",
                     headers: {
@@ -66,7 +66,7 @@ $(document).ready(() => {
                     this.$message.error("不允许删除超级管理员！");
                     return;
                 }
-                commonFunction.deleteObject(this, deleteUrl, id);
+                deleteObject(this, deleteUrl, id);
             }
         }
     });

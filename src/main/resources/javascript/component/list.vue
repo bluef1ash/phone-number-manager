@@ -165,7 +165,7 @@
     </div>
 </template>
 <script>
-    import commonFunction from "@base/lib/javascript/common";
+    import {deleteObject, $ajax} from "@base/lib/javascript/common";
     import {Base64} from "js-base64";
     import elementTablePopover from "@baseSrc/javascript/component/element-table-popover";
 
@@ -218,14 +218,14 @@
              * @param id
              */
             deleteObject(id) {
-                commonFunction.deleteObject(this, this.publicParams.deleteUrl, id);
+                deleteObject(this, this.publicParams.deleteUrl, id);
             },
             /**
              * 加载单位
              */
             loadCompanies() {
                 if (this.companies.length === 0) {
-                    commonFunction.$ajax({
+                    $ajax({
                         url: this.publicParams.companySelectUrl,
                         method: "post",
                         headers: {
@@ -305,7 +305,7 @@
              */
             loadSubdistricts() {
                 if (this.subdistricts.length === 0) {
-                    commonFunction.$ajax({
+                    $ajax({
                         url: this.publicParams.loadSubdistrictsUrl,
                         method: "post",
                         headers: {
@@ -405,7 +405,7 @@
                     this.searchParams.isFrist = false;
                     data = Object.assign(data, this.searchParams);
                 }
-                commonFunction.$ajax({
+                $ajax({
                     url: this.publicParams.loadDataUrl,
                     method: "post",
                     data: data,
@@ -531,7 +531,7 @@
                     cancelButtonText: "取消",
                     type: "warning"
                 }).then(() => {
-                    commonFunction.$ajax({
+                    $ajax({
                         url: this.publicParams.chooseSubmitUrl,
                         method: "post",
                         headers: {

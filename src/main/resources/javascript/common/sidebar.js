@@ -5,17 +5,19 @@ $(document).ready(() => {
     /**
      * 退出登录
      */
-    document.getElementById("logout").onclick = () => {
+    document.querySelector("#logout").addEventListener("click", () => {
         $ajax({
             url: logoutUrl,
             method: "post",
             headers: {
                 "X-CSRF-TOKEN": $("meta[name='X-CSRF-TOKEN']").prop("content")
             }
-        }, () => {
-            location.reload();
+        }, (data, textStatus, jqXHR) => {
+            if (jqXHR.status === 200) {
+                location.href = "/login";
+            }
         });
-    };
+    });
     new Vue({
         el: "#sidebar",
         data: {

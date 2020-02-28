@@ -69,13 +69,12 @@ body {
             display: block;
             background-image: none;
             color: #20a8d8;
-            font-family: "webfont", serif !important;
-            font-size: 2rem;
-            font-style: normal;
+            font: bold 1.6rem "webfont", serif !important;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             margin-left: 1.5rem;
             width: auto;
+            height: auto;
 
             &:hover {
                 color: #20a8d8;
@@ -198,7 +197,10 @@ body {
     @media only screen and (max-width: 991.98px) {
         .app-header {
             .navbar-brand {
-                display: contents;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
                 margin-left: 0;
             }
 

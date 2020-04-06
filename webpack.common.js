@@ -1,11 +1,37 @@
 const path = require("path");
-const jsSrcPath = path.resolve(__dirname, "src/main/resources/javascript");
+const resourcesPath = path.resolve(__dirname, "src/main/resources");
+const staticPath = path.resolve(__dirname, "src/main/resources/static");
+const jsSrcPath = path.join(resourcesPath, "javascript");
 const jsLibPath = path.resolve(__dirname, "lib/javascript");
-const jsDistPath = path.resolve(__dirname, "src/main/resources/static/javascript");
-const fontDistPath = path.resolve(__dirname, "src/main/resources/static/fonts");
+const jsDistPath = path.join(staticPath, "javascript");
+const fontDistPath = path.join(staticPath, "fonts");
 const Webpack = require("webpack");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
+const devMode = process.env.NODE_ENV === "development";
+
+/**
+ * 文件加载
+ * @param type
+ * @param limit
+ * @return {{loader: string, options: {outputPath: string, name: string, limit: number, publicPath: string}}}
+ */
+function fileLoaderOptions(type, limit = 1024 * 10) {
+    let publicPath = "/" + type;
+    if (devMode) {
+        limit = 100000000000000;
+        publicPath = "";
+    }
+    return {
+        loader: "url-loader",
+        options: {
+            name: "[name]-[hash:5].min.[ext]",
+            limit,
+            outputPath: path.relative(staticPath, type),
+            publicPath
+        }
+    };
+}
 
 module.exports = {
     entry: {
@@ -48,40 +74,16 @@ module.exports = {
                 use: ["style-loader", "css-loader", "resolve-url-loader"]
             },
             {
-                test: /\.less$/,
-                use: ["style-loader", "css-loader", "postcss-loader", "less-loader", "resolve-url-loader"]
-            },
-            {
                 test: /\.(s[ac]ss)$/,
                 use: ["style-loader", "css-loader", "postcss-loader", "sass-loader", "resolve-url-loader"]
             },
             {
                 test: /\.(png|jp[e]?g|gif)$/,
-                use: [
-                    {
-                        loader: require.resolve("url-loader"),
-                        options: {
-                            name: "[name]-[hash:5].min.[ext]",
-                            limit: 1024 * 10,
-                            outputPath: path.relative(jsDistPath, path.resolve(__dirname, "src/main/resources/static/images")),
-                            publicPath: "/images"
-                        }
-                    }
-                ]
+                use: [fileLoaderOptions("images")]
             },
             {
                 test: /\.(eot|woff[2]?|ttf|svg)(v=\d+)?$/,
-                use: [
-                    {
-                        loader: "url-loader",
-                        options: {
-                            name: "[name]-[hash:5].min.[ext]",
-                            limit: 1024 * 10,
-                            outputPath: path.relative(jsDistPath, fontDistPath),
-                            publicPath: "/fonts"
-                        }
-                    }
-                ]
+                use: [fileLoaderOptions("fonts")]
             },
             {
                 test: /\.vue$/,
@@ -89,26 +91,22 @@ module.exports = {
             }
         ]
     },
-    node: {
-        fs: "empty"
-    },
     plugins: [
         new Webpack.BannerPlugin("@author 廿二月的天"),
         new Webpack.ProvidePlugin({
             "$": "jquery"
         }),
-        new CleanWebpackPlugin([jsDistPath, fontDistPath]),
         new VueLoaderPlugin()
     ],
     resolve: {
         alias: {
             "vue$": "vue/dist/vue.esm.js",
             "@base": __dirname,
-            "@baseSrc": path.resolve(__dirname, "src/main/resources")
+            "@baseSrc": resourcesPath
         },
         modules: [
             path.resolve("node_modules")
         ],
-        extensions: [".js", ".css", ".vue", ".json"]
+        extensions: [".js", ".css", ".vue", "scss", ".json"]
     }
 };

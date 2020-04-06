@@ -3,7 +3,6 @@ const jsDistPath = path.resolve(
     __dirname,
     "src/main/resources/static/javascript"
 );
-const fontDistPath = path.resolve(__dirname, "src/main/resources/static/fonts");
 const webpackMerge = require("webpack-merge");
 const common = require("./webpack.common");
 const PurifyCssWebpack = require("purifycss-webpack");
@@ -16,11 +15,11 @@ module.exports = webpackMerge(common, {
     plugins: [
         new PurifyCssWebpack({
             paths: glob.sync([
-                path.join(__dirname, "src/main/resources/templates/!*.html"),
+                path.join(__dirname, "src/main/resources/templates/**/!*.html"),
                 path.join(jsDistPath, "!*.js")
             ])
         }),
-        new CleanWebpackPlugin([jsDistPath, fontDistPath])
+        new CleanWebpackPlugin()
     ],
 
     optimization: {
@@ -49,11 +48,14 @@ module.exports = webpackMerge(common, {
                 }
             }),
             new OptimizeCssAssetsWebpackPlugin({
-                assetNameRegExp: /\.optimize\.css$/g,
+                assetNameRegExp: /\.css$/g,
                 cssProcessor: require("cssnano"),
                 cssProcessorOptions: {
+                    parser: require("postcss-safe-parser"),
+                    discardComments: {removeAll: true},
                     safe: true,
-                    discardComments: {removeAll: true}
+                    mergeLonghand: true,
+                    autoprefixer: false
                 },
                 canPrint: true
             })

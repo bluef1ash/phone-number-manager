@@ -3,8 +3,8 @@
     "version": "1.0.0",
     "description": "此系统使用Spring + Mybatis + Spring Security + Spring Boot + Webpack + Vue.js架构编写。数据库采用MySQL，提供强大的、安全的和完整的管理社区的功能。",
     "scripts": {
-        "dev": "webpack-dev-server --mode development --progress --display-modules --colors --display-error-details --inline --config ./webpack.dev.js",
-        "build": "webpack --mode production --progress --display-modules --colors --display-error-details --inline --config ./webpack.prod.js"
+        "dev": "cross-env webpack-dev-server --progress --display-modules --colors --display-error-details --inline --config ./webpack.dev.js",
+        "build": "cross-env webpack --progress --display-modules --colors --display-error-details --inline --config ./webpack.prod.js"
     },
     "author": "廿二月的天",
     "license": "ISC",
@@ -23,8 +23,12 @@
         "babel-polyfill": "^6.26.0",
         "clean-webpack-plugin": "^1.0.1",
         "core-js": "^2.6.9",
+        "cross-env": "^7.0.2",
         "css-loader": "^2.1.1",
         "cssnano": "^4.1.10",
+        "eslint": "^6.8.0",
+        "eslint-config-prettier": "^6.10.1",
+        "eslint-loader": "^4.0.0",
         "file-loader": "^3.0.1",
         "glob-all": "^3.1.0",
         "less": "^3.10.3",
@@ -36,7 +40,9 @@
         "perfect-scrollbar": "^1.4.0",
         "popper.js": "^1.15.0",
         "postcss-loader": "^3.0.0",
+        "postcss-safe-parser": "^4.0.2",
         "precss": "^4.0.0",
+        "prettier": "^2.0.3",
         "purify-css": "^1.2.5",
         "purifycss-webpack": "^0.7.0",
         "react": "^16.9.0",

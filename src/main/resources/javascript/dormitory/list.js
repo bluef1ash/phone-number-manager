@@ -1,5 +1,5 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import VueCookie from "vue-cookie";
@@ -16,7 +16,7 @@ import {
     Tree,
     Upload
 } from "element-ui";
-import listComponent from "@baseSrc/javascript/component/list";
+import listComponent from "@jsSrc/component/list";
 
 $(document).ready(() => {
     Vue.use(VueRouter);
@@ -39,7 +39,7 @@ $(document).ready(() => {
         el: "#dormitory_list",
         data: {},
         router: new VueRouter([
-            {name: "home", path: "/:page", component: listComponent}
+            { name: "home", path: "/:page", component: listComponent }
         ]),
         render: c => c(listComponent)
     })

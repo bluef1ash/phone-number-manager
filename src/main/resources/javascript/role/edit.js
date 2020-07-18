@@ -1,7 +1,7 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {Message, Tree} from "element-ui";
+import { Message, Tree } from "element-ui";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -21,7 +21,7 @@ $(document).ready(() => {
         },
         created() {
             if (this.userRole === null) {
-                this.userRole = {name: "ROLE_", parentId: -1};
+                this.userRole = { name: "ROLE_", parentId: -1 };
                 this.privilegeIds = [];
             }
             this.privilegeTree = this.setTree(this.userPrivileges, 0);
@@ -39,7 +39,7 @@ $(document).ready(() => {
             setTree(userPrivileges, parentId) {
                 let nodes = [];
                 for (let i = 0; i < userPrivileges.length; i++) {
-                    let node = {id: userPrivileges[i].id, label: userPrivileges[i].name, parentId: userPrivileges[i].parentId};
+                    let node = { id: userPrivileges[i].id, label: userPrivileges[i].name, parentId: userPrivileges[i].parentId };
                     if (typeof this.userRole.userPrivileges !== "undefined" && this.userRole.userPrivileges !== null) {
                         for (let j = 0; j < this.userRole.userPrivileges.length; j++) {
                             if (userPrivileges[i].id === this.userRole.userPrivileges[j].id) {
@@ -112,7 +112,7 @@ $(document).ready(() => {
              * 重置表单样式
              */
             resetClass: function() {
-                this.userRole = {name: "ROLE_", parentId: -1};
+                this.userRole = { name: "ROLE_", parentId: -1 };
                 this.errorClasses = [false, false, false, false, false];
                 this.errorMessages = ["", "", "", "", ""];
                 this.privilegeIds = [];

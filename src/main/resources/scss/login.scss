@@ -1,0 +1,43 @@
+@charset "UTF-8";
+@import "~@scss/variable";
+
+#login {
+    #login_form {
+        .card-body {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            p.text-muted {
+                font-size: 0.875rem;
+            }
+        }
+    }
+
+    .login-captcha {
+        padding: 0.5rem 0 1.5rem 1.5rem;
+    }
+
+    .login-about {
+        text-align: center;
+
+        h2 {
+            //text-align:left;
+            font-size: 1.2rem;
+        }
+
+        p:first-of-type {
+            font-size: 0.8rem;
+            text-align: left;
+            text-indent: 2em;
+        }
+
+        p:last-of-type {
+            font-size: 0.7rem;
+            font-weight: bold;
+            font-style: normal;
+            text-indent: 2em;
+            text-align: left;
+        }
+    }
+}

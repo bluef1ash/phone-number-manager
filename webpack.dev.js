@@ -10,8 +10,9 @@ module.exports = webpackMerge(common, {
     devtool: "inline-source-map",
     devServer: {
         contentBase: jsDistPath,
-        host: "localhost",
-        port: 3000
+        host: "0.0.0.0",
+        port: 3000,
+        disableHostCheck: true
     },
     performance: {
         hints: "warning",

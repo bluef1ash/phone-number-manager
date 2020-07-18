@@ -1,9 +1,9 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {Message} from "element-ui";
+import { Message } from "element-ui";
 import sha256 from "sha256";
-import {$ajax} from "@base/lib/javascript/common";
+import { $ajax } from "@library/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -30,7 +30,7 @@ $(document).ready(() => {
         created() {
             this.csrfToken = this.csrf.prop("content");
             if (this.user === null) {
-                this.user = {username: null, password: null, roleId: 0, companyType: -1, companyId: -1, locked: false};
+                this.user = { username: null, password: null, roleId: 0, companyType: -1, companyId: -1, locked: false };
             } else {
                 this.usernameIsDisabled = true;
             }
@@ -45,7 +45,7 @@ $(document).ready(() => {
                         "X-CSRF-TOKEN": this.csrf.prop("content")
                     },
                     data: {
-                        id: this.user.companyId,
+                        id: this.user.companyId
                     }
                 }, data => {
                     if (data.state) {
@@ -72,7 +72,7 @@ $(document).ready(() => {
                             "X-CSRF-TOKEN": this.csrf.prop("content")
                         },
                         data: {
-                            subdistrictId: subdistrictId,
+                            subdistrictId: subdistrictId
                         }
                     }, data => {
                         if (data.state) {

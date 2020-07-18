@@ -1,2 +1,2 @@
-import "@baseSrc/javascript/common/public";
+import "@jsSrc/common/public";
 import "@baseSrc/scss/error.scss";

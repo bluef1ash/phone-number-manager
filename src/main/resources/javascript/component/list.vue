@@ -26,7 +26,7 @@
                             </div>
                             <a :href="publicParams.createUrl" :title="'添加社区' + dataTypeName" class="btn btn-primary" v-text="'添加社区' + dataTypeName"></a>
                         </div>
-                        <div class="col-md-12 d-none d-md-block">
+                        <div class="col-md-12 d-none d-md-block search-inputs">
                             <div class="row">
                                 <form action="javascript:" class="form-inline list-search" method="get">
                                     <div class="form-group">
@@ -165,9 +165,9 @@
     </div>
 </template>
 <script>
-    import {deleteObject, $ajax} from "@base/lib/javascript/common";
-    import {Base64} from "js-base64";
-    import elementTablePopover from "@baseSrc/javascript/component/element-table-popover";
+    import { $ajax, deleteObject } from "@library/javascript/common";
+    import { Base64 } from "js-base64";
+    import elementTablePopover from "@jsSrc/component/element-table-popover";
 
     export default {
         data() {
@@ -240,13 +240,13 @@
                                 this.isStrictly = true;
                             }
                             result.subdistricts.forEach(item => {
-                                let node1 = {value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType};
-                                let node2 = {value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType, disabled};
+                                let node1 = { value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType };
+                                let node2 = { value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType, disabled };
                                 if (item.communities) {
                                     node1.children = [];
                                     node2.children = [];
                                     item.communities.forEach(community => {
-                                        let children = {value: community.id, label: community.name, companyType: this.companyTypes.communityCompanyType};
+                                        let children = { value: community.id, label: community.name, companyType: this.companyTypes.communityCompanyType };
                                         node1.children.push(children);
                                         node2.children.push(children);
                                     });
@@ -284,7 +284,7 @@
                 }
                 this.pagination = 1;
                 if (this.$route.path !== "/") {
-                    this.$router.push({path: "/"});
+                    this.$router.push({ path: "/" });
                 }
                 this.loadData();
             },
@@ -429,7 +429,7 @@
              */
             paginationCurrentChange(currentPageNumber) {
                 this.pagination = currentPageNumber;
-                this.$router.push({path: "/" + currentPageNumber});
+                this.$router.push({ path: "/" + currentPageNumber });
             },
             /**
              * 导出Excel
@@ -446,7 +446,7 @@
                     this.$message.error("请选择导出单位！");
                     return;
                 }
-                this.$cookie.set("exportExcel", "wait", {expires: "5m"});
+                this.$cookie.set("exportExcel", "wait", { expires: "5m" });
                 this.loading = this.$loading({
                     lock: true,
                     text: "正在生成Excel，请稍后。。。",
@@ -506,7 +506,7 @@
              */
             chooseIds(obj, objIds, isChecked, childrenIsChecked) {
                 if (isChecked) {
-                    new Date().getTime() - this.timeout > 5 && objIds.push({companyId: obj.value, companyType: obj.companyType});
+                    new Date().getTime() - this.timeout > 5 && objIds.push({ companyId: obj.value, companyType: obj.companyType });
                     this.timeout = new Date().getTime();
                 } else {
                     objIds.splice(objIds.findIndex(item => item.companyId === obj.value && item.companyType === obj.companyType), 1);

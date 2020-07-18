@@ -1,21 +1,27 @@
 @charset "utf-8";
+@import "~@scss/variable";
+
 body {
     background-color: #fff;
 }
+
 .top {
     margin-top: 20px;
+
     .error-code {
         font-size: 150px;
         color: #e64918;
         text-align: right;
         font-weight: bold;
     }
+
     .error-message {
         h3 {
             font-size: 40px;
             font-weight: bold;
             color: #e64918;
         }
+
         .text {
             a {
                 font-weight: bold;

@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { $ajax } from "@base/lib/javascript/common";
+import { $ajax } from "@library/javascript/common";
 
 $(document).ready(() => {
     /**

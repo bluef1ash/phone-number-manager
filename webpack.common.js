@@ -4,9 +4,7 @@ const staticPath = path.resolve(__dirname, "src/main/resources/static");
 const jsSrcPath = path.join(resourcesPath, "javascript");
 const jsLibPath = path.resolve(__dirname, "lib/javascript");
 const jsDistPath = path.join(staticPath, "javascript");
-const fontDistPath = path.join(staticPath, "fonts");
 const Webpack = require("webpack");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
 const devMode = process.env.NODE_ENV === "development";
 
@@ -20,14 +18,13 @@ function fileLoaderOptions(type, limit = 1024 * 10) {
     let publicPath = "/" + type;
     if (devMode) {
         limit = 100000000000000;
-        publicPath = "";
     }
     return {
         loader: "url-loader",
         options: {
             name: "[name]-[hash:5].min.[ext]",
             limit,
-            outputPath: path.relative(staticPath, type),
+            outputPath: path.relative(jsDistPath, staticPath + "/" + type),
             publicPath
         }
     };
@@ -102,11 +99,14 @@ module.exports = {
         alias: {
             "vue$": "vue/dist/vue.esm.js",
             "@base": __dirname,
-            "@baseSrc": resourcesPath
+            "@baseSrc": resourcesPath,
+            "@scss": path.join(resourcesPath, "scss"),
+            "@jsSrc": jsSrcPath,
+            "@library": path.join(__dirname, "library")
         },
         modules: [
             path.resolve("node_modules")
         ],
-        extensions: [".js", ".css", ".vue", "scss", ".json"]
+        extensions: [".js", ".css", ".vue", ".scss", ".json"]
     }
 };

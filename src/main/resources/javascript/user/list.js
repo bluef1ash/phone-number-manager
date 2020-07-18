@@ -1,8 +1,8 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {Message, MessageBox} from "element-ui";
-import { deleteObject, $ajax} from "@base/lib/javascript/common";
+import { Message, MessageBox } from "element-ui";
+import { $ajax, deleteObject } from "@library/javascript/common";
 import "moment/locale/zh-cn";
 import moment from "moment";
 

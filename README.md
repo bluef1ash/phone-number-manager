@@ -39,19 +39,19 @@
 
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/login.jpg)
 
-<div style="text-align: center;">登录页面</div>
+<div align="center">登录页面</div>
 
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/index.jpg)
 
-<div style="text-align: center;">系统首页</div>
+<div align="center">系统首页</div>
 
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/list.jpg)
 
-<div style="text-align: center;">列表页面</div>
+<div align="center">列表页面</div>
 
 ![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/create.jpg)
 
-<div style="text-align: center;">添加、编辑数据页面</div>
+<div align="center">添加、编辑数据页面</div>
 
 ## Author: Bluef1ash（廿二月的天）
 

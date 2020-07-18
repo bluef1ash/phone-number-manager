@@ -1,12 +1,12 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {Message} from "element-ui";
-import {$ajax} from "@base/lib/javascript/common";
+import { Message } from "element-ui";
+import { $ajax } from "@library/javascript/common";
 
 $(document).ready(() => {
     if (configuration === null) {
-        configuration = {key: "", type: 0, value: null};
+        configuration = { key: "", type: 0, value: null };
     }
     Vue.prototype.$message = Message;
     new Vue({
@@ -40,7 +40,7 @@ $(document).ready(() => {
                             "X-CSRF-TOKEN": this.csrf.prop("content")
                         }
                     }, data => {
-                        this.users = data.systemUsers.map(item => ({id: item.id, name: item.username}));
+                        this.users = data.systemUsers.map(item => ({ id: item.id, name: item.username }));
                     }, null, csrfToken => this.csrfToken = csrfToken);
                 } else {
                     this.configuration.value = null;

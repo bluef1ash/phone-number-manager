@@ -1,25 +1,23 @@
 @charset "UTF-8";
-$flag-icon-css-path: "~flag-icon-css/flags";
-$fa-font-path: "~font-awesome/fonts";
-$simple-line-font-path: "~simple-line-icons/fonts/";
+@import "~@scss/variable";
 @import "~flag-icon-css/sass/flag-icon";
 @import "~font-awesome/scss/font-awesome";
 @import "~simple-line-icons/scss/simple-line-icons";
 @import "~@coreui/coreui/scss/coreui";
-@import "../../../../lib/css/pace.min.css";
-@import "../../../../lib/css/common.css";
+@import "~@library/css/pace.min.css";
+@import "~@library/scss/common";
 
 @font-face {
     font-family: "webfont";
-    src: url("../../../../lib/fonts/webfont.eot");
+    src: url("~@library/fonts/webfont.eot");
     /* IE9 */
-    src: url("../../../../lib/fonts/webfont.eot?#iefix") format("embedded-opentype"),
+    src: url("~@library/fonts/webfont.eot?#iefix") format("embedded-opentype"),
         /* IE6-IE8 */
-    url("../../../../lib/fonts/webfont.woff") format("woff"),
+    url("~@library/fonts/webfont.woff") format("woff"),
         /* chrome、firefox */
-    url("../../../../lib/fonts/webfont.ttf") format("truetype"),
+    url("~@library/fonts/webfont.ttf") format("truetype"),
         /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
-    url("../../../../lib/fonts/webfont.svg#webfont") format("svg");
+    url("~@library/fonts/webfont.svg#webfont") format("svg");
     /* iOS 4.1- */
 }
 
@@ -33,36 +31,7 @@ body {
         font-size: .65rem;
     }
 
-    #login {
-        #login_form {
-            .card-body {
-                h1 {
-                    font-size: 1.8rem;
-                }
-            }
-        }
-
-        .login-captcha {
-            padding: 0.5rem 0 1.5rem 1.5rem;
-        }
-
-        .login-about {
-            text-align: center;
-
-            p:first-of-type {
-                text-align: left;
-                text-indent: 2em;
-            }
-
-            p:last-of-type {
-                font-size: 0.7rem;
-                font-weight: bold;
-                font-style: normal;
-                text-indent: 2em;
-                text-align: left;
-            }
-        }
-    }
+    @import "~@scss/login";
 
     .app-header {
         .navbar-brand {
@@ -87,13 +56,47 @@ body {
     }
 
     .app-body {
+        @import "~@scss/sidebar";
+
         .main {
+            .breadcrumb {
+                a {
+                    color: $a-color;
+                }
+            }
+
+            .card {
+                .card-header {
+                    font-size: .8rem;
+
+                    .search-inputs {
+                        font-size: 0.65rem;
+                    }
+                }
+
+                .card-body {
+                    font-size: 0.7rem;
+
+                    div {
+                        div {
+                            .help-block {
+                                margin-left: 0.3rem;
+                            }
+                        }
+                    }
+                }
+            }
+
             #index {
                 .base-message {
                     > .card-header {
                         display: flex;
                         justify-content: space-between;
                         align-content: center;
+
+                        h6 {
+                            font-size: 0.8rem;
+                        }
 
                         div {
                             display: flex;
@@ -117,8 +120,9 @@ body {
                         flex-wrap: wrap;
                         justify-content: space-around;
 
-                        .callout + .callout {
+                        .callout {
                             margin-top: 1rem;
+                            font-size: 0.7rem;
                         }
 
                         &.dormitory-body {
@@ -194,37 +198,6 @@ body {
         }
     }
 
-    @media only screen and (max-width: 991.98px) {
-        .app-header {
-            .navbar-brand {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                margin-left: 0;
-            }
-
-            .sidebar-toggler {
-                display: block;
-            }
-        }
-
-        .app-body {
-            .main {
-                .form-control {
-                    font-size: .65rem;
-                }
-            }
-        }
-    }
-
-    @media only screen and (max-width: 480px) {
-        .app-body {
-            .main {
-                .form-control {
-                    font-size: 1rem;
-                }
-            }
-        }
-    }
+    @import "~@scss/footer";
+    @import "~@scss/media";
 }

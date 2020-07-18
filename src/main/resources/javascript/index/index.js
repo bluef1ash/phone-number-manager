@@ -1,12 +1,16 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import "bootstrap";
 import Vue from "vue";
-import {$ajax, generateHexadecimalColors, formatNumber} from "@base/lib/javascript/common";
+import {
+    $ajax,
+    formatNumber,
+    generateHexadecimalColors
+} from "@library/javascript/common";
 import countTo from "vue-count-to";
-import {Loading, Switch} from "element-ui";
+import { Loading, Switch } from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
-import {VeHistogram, VePie} from "v-charts/lib/index.esm";
+import { VeHistogram, VePie } from "v-charts/lib/index.esm";
 
 $(document).ready(() => {
     Vue.prototype.$loading = Loading;
@@ -213,7 +217,7 @@ $(document).ready(() => {
                 }
             });
             if (this.systemUser.companyType === this.systemCompanyType) {
-                this.baseMessageSubdistrictId = this.baseMessageCommunityId = this.barChartSubdistrictId = this.barChartSubcontractorSubdistrictId = this.barChartSubcontractorCommunityId = this.baseMessageDormitorySubdistrictId =  this.baseMessageDormitoryCommunityId = this.barChartDormitorySubdistrictId = 0;
+                this.baseMessageSubdistrictId = this.baseMessageCommunityId = this.barChartSubdistrictId = this.barChartSubcontractorSubdistrictId = this.barChartSubcontractorCommunityId = this.baseMessageDormitorySubdistrictId = this.baseMessageDormitoryCommunityId = this.barChartDormitorySubdistrictId = 0;
                 this.loadMessageAndChart();
             } else if (this.systemUser.companyType === this.subdistrictCompanyType) {
                 this.baseMessageSubdistrictId = this.baseMessageDormitorySubdistrictId = this.barChartSubdistrictId = this.barChartDormitorySubdistrictId = this.barChartSubcontractorSubdistrictId = this.systemUser.companyId;

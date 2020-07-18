@@ -1,10 +1,10 @@
-import "@baseSrc/javascript/common/public";
+import "@jsSrc/common/public";
 import Vue from "vue";
 import { Loading, Message, MessageBox } from "element-ui";
 import sha256 from "sha256";
 import VueCookie from "vue-cookie";
-import { $ajax, browserType } from "@base/lib/javascript/common";
-import "@base/lib/javascript/gt";
+import { $ajax, browserType } from "@library/javascript/common";
+import "@library/javascript/gt";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;

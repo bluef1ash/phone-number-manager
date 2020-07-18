@@ -6,7 +6,7 @@ const jsDistPath = path.resolve(
 const webpackMerge = require("webpack-merge");
 const common = require("./webpack.common");
 const PurifyCssWebpack = require("purifycss-webpack");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const glob = require("glob-all");
 const TerserWebpackPlugin = require("terser-webpack-plugin");
 const OptimizeCssAssetsWebpackPlugin = require("optimize-css-assets-webpack-plugin");
@@ -19,7 +19,17 @@ module.exports = webpackMerge(common, {
                 path.join(jsDistPath, "!*.js")
             ])
         }),
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: [
+                "**/*",
+                path.join(process.cwd(), "Assets/static/css/*"),
+                path.join(process.cwd(), "Assets/static/fonts/*")
+            ],
+            dangerouslyAllowCleanPatternsOutsideProject: true,
+            dry: true,
+            protectWebpackAssets: true,
+            verbose: true
+        })
     ],
 
     optimization: {
@@ -31,7 +41,7 @@ module.exports = webpackMerge(common, {
         },
         minimizer: [
             new TerserWebpackPlugin({
-                test: /\.js(\?.*)$/i,
+                test: /\.js.*$/i,
                 parallel: true,
                 sourceMap: false,
                 extractComments: false,
@@ -50,13 +60,6 @@ module.exports = webpackMerge(common, {
             new OptimizeCssAssetsWebpackPlugin({
                 assetNameRegExp: /\.css$/g,
                 cssProcessor: require("cssnano"),
-                cssProcessorOptions: {
-                    parser: require("postcss-safe-parser"),
-                    discardComments: {removeAll: true},
-                    safe: true,
-                    mergeLonghand: true,
-                    autoprefixer: false
-                },
                 canPrint: true
             })
         ]

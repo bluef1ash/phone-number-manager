@@ -1,0 +1,10 @@
+@charset "utf-8";
+@import "~@scss/variable";
+
+footer.app-footer {
+    font-size: 0.65rem;
+
+    a {
+        color: $a-color;
+    }
+}

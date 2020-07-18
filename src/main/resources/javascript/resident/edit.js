@@ -1,8 +1,8 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {Message} from "element-ui";
-import { deleteObject, $ajax, companyHandler } from "@base/lib/javascript/common";
+import { Message } from "element-ui";
+import { $ajax, companyHandler } from "@library/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -35,7 +35,7 @@ $(document).ready(() => {
                 };
             } else {
                 if (this.communityResident.community === null) {
-                    this.communityResident.community = {residentSubmitted: false};
+                    this.communityResident.community = { residentSubmitted: false };
                 }
                 this.loadSubcontractors();
                 this.showPhone(this.communityResident.phone1, "isShowPhone2");

@@ -1,8 +1,8 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {Message} from "element-ui";
-import { checkPhoneType } from "@base/lib/javascript/common";
+import { Message } from "element-ui";
+import { checkPhoneType } from "@library/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;

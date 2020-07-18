@@ -1,10 +1,10 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {DatePicker, InputNumber, Message} from "element-ui";
+import { DatePicker, InputNumber, Message } from "element-ui";
 import "moment/locale/zh-cn";
 import moment from "moment";
-import {$ajax, companyHandler} from "@base/lib/javascript/common";
+import { $ajax, companyHandler } from "@library/javascript/common";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -43,7 +43,7 @@ $(document).ready(() => {
                 };
             } else {
                 if (this.dormitoryManager.community === null) {
-                    this.dormitoryManager.community = {dormitorySubmitted: false};
+                    this.dormitoryManager.community = { dormitorySubmitted: false };
                 }
                 this.dormitoryManager.birth = moment(this.dormitoryManager.birth).format("YYYY-MM-DD");
                 this.loadSubcontractors();

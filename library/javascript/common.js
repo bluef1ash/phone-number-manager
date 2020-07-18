@@ -20,6 +20,7 @@ export function isURL(str_url) {
     //re.test()
     return re.test(str_url);
 }
+
 /**
  * 删除数据
  * @param vueObj
@@ -29,45 +30,44 @@ export function isURL(str_url) {
  */
 export function deleteObject(vueObj, url, id, idField = "id") {
     if (id !== null && id !== "") {
-        vueObj
-            .$confirm("是否确定要删除此数据？", "警告", {
-                confirmButtonText: "确定",
-                cancelButtonText: "取消",
-                type: "warning"
-            })
-            .then(() => {
-                this.$ajax(
-                    {
-                        url: url,
-                        method: "delete",
-                        headers: {
-                            "X-CSRF-TOKEN": $("meta[name='X-CSRF-TOKEN']").prop(
-                                "content"
-                            )
-                        },
-                        data: {
-                            [idField]: id
-                        }
+        vueObj.$confirm("是否确定要删除此数据？", "警告", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+        }).then(() => {
+            this.$ajax(
+                {
+                    url: url,
+                    method: "delete",
+                    headers: {
+                        "X-CSRF-TOKEN": $("meta[name='X-CSRF-TOKEN']").prop(
+                            "content"
+                        )
                     },
-                    data => {
-                        if (data.state) {
-                            vueObj.$message.success(data.message);
-                            setTimeout(function() {
-                                location.reload();
-                            }, 3000);
-                        } else {
-                            vueObj.$message.error(data.message);
-                        }
-                    },
-                    xhr => {
-                        vueObj.$message.error(
-                            xhr.responseJSON.messageError.defaultMessage
-                        );
+                    data: {
+                        [idField]: id
                     }
-                );
-            });
+                },
+                data => {
+                    if (data.state) {
+                        vueObj.$message.success(data.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 3000);
+                    } else {
+                        vueObj.$message.error(data.message);
+                    }
+                },
+                xhr => {
+                    vueObj.$message.error(
+                        xhr.responseJSON.messageError.defaultMessage
+                    );
+                }
+            );
+        });
     }
 }
+
 /**
  * 去除字符串中所有空格、制表符、换行符
  * @returns {string | void | *}
@@ -75,6 +75,7 @@ export function deleteObject(vueObj, url, id, idField = "id") {
 export function trim(string) {
     return string.replace(/[\s\n\t]+/g, "");
 }
+
 /**
  * 检查联系方式的类型
  * @param phoneNumber 需要检测的联系方式
@@ -96,6 +97,7 @@ export function checkPhoneType(phoneNumber) {
     }
     return -1;
 }
+
 /**
  * 判断用户是否使用PC端打开
  * @return {boolean}
@@ -121,6 +123,7 @@ export function browserType() {
         bIsWM
     );
 }
+
 /**
  * 生成十六进制颜色数组
  * @param length
@@ -170,6 +173,7 @@ export function companyHandler(communities, communityId) {
     });
     return companies;
 }
+
 /**
  * 包装AJAX
  * @param options
@@ -184,35 +188,32 @@ export function $ajax(options, then, catches = null, csrfTokenCallback = null) {
             this.$message.error(responseJSON.messageError.defaultMessage);
         };
     }
-    $.ajax(options)
-        .then((result, status, xhr) => then && then(result, status, xhr))
-        .catch((xhr, status, error) => catches && catches(xhr, status, error))
-        .always((xhr, status, error) => {
-            if (
-                typeof options.method !== "undefined" &&
-                options.method !== "get"
-            ) {
-                $.ajax({
-                    url: getCsrfUrl,
-                    data: {
-                        data: Base64.encodeURI(
-                            JSON.stringify({
-                                host: location.hostname,
-                                timeStamp: new Date().getTime()
-                            })
-                        )
-                    }
-                }).then(data => {
-                    if (data.state) {
-                        $("meta[name='X-CSRF-TOKEN']").attr(
-                            "content",
-                            data.csrf
-                        );
-                        csrfTokenCallback && csrfTokenCallback(data.csrf);
-                    }
-                });
-            }
-        });
+    $.ajax(options).then((result, status, xhr) => then && then(result, status, xhr)).catch((xhr, status, error) => catches && catches(xhr, status, error)).always((xhr, status, error) => {
+        if (
+            typeof options.method !== "undefined" &&
+            options.method !== "get"
+        ) {
+            $.ajax({
+                url: getCsrfUrl,
+                data: {
+                    data: Base64.encodeURI(
+                        JSON.stringify({
+                            host: location.hostname,
+                            timeStamp: new Date().getTime()
+                        })
+                    )
+                }
+            }).then(data => {
+                if (data.state) {
+                    $("meta[name='X-CSRF-TOKEN']").attr(
+                        "content",
+                        data.csrf
+                    );
+                    csrfTokenCallback && csrfTokenCallback(data.csrf);
+                }
+            });
+        }
+    });
 }
 
 /**

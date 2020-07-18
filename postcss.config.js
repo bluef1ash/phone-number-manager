@@ -9,6 +9,18 @@ module.exports = {
                 "ie >= 8"
             ],
             grid: true
+        }),
+        require("cssnano")({
+            preset: [
+                "default",
+                {
+                    parser: require("postcss-safe-parser"),
+                    discardComments: { removeAll: true },
+                    safe: true,
+                    mergeLonghand: true,
+                    autoprefixer: false
+                }
+            ]
         })
     ]
 };

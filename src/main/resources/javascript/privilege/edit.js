@@ -1,7 +1,7 @@
-import "@baseSrc/javascript/common/public";
-import "@baseSrc/javascript/common/sidebar";
+import "@jsSrc/common/public";
+import "@jsSrc/common/sidebar";
 import Vue from "vue";
-import {Message} from "element-ui";
+import { Message } from "element-ui";
 
 $(document).ready(() => {
     Vue.prototype.$message = Message;
@@ -17,7 +17,7 @@ $(document).ready(() => {
         },
         created() {
             if (this.userPrivilege === null) {
-                this.userPrivilege = {parentId: -1, display: false};
+                this.userPrivilege = { parentId: -1, display: false };
             } else {
                 this.display = this.userPrivilege.display ? "on" : null;
             }
@@ -66,7 +66,7 @@ $(document).ready(() => {
              * 重置表单样式
              */
             resetClass() {
-                this.userPrivilege = {parentId: -1};
+                this.userPrivilege = { parentId: -1 };
                 this.errorClasses = [false, false, false, false, false];
                 this.errorMessages = ["", "", "", "", ""];
                 this.privilegeIds = [];

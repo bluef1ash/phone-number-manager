@@ -6,8 +6,8 @@
         "dev": "cross-env webpack-dev-server --progress --display-modules --colors --display-error-details --inline --config ./webpack.dev.js",
         "build": "cross-env webpack --progress --display-modules --colors --display-error-details --inline --config ./webpack.prod.js"
     },
-    "author": "廿二月的天",
-    "license": "ISC",
+    "author": "廿二月的天 <liangtian_2005@163.com>",
+    "license": "MIT",
     "engines": {
         "node": ">=6"
     },

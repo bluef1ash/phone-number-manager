@@ -1,5 +1,3 @@
--- 添加表用户权限
-GRANT SELECT, UPDATE, DELETE, INSERT, EXECUTE ON `phone_number`.* TO phone_number@localhost;
 truncate table `phone_number`.`pm_privilege`;
 -- 添加基础权限
 INSERT INTO `phone_number`.`pm_privilege`

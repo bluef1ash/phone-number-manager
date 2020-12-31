@@ -44,3 +44,4 @@ debug/
 warn/
 .yarn/
 .cache/
+.vagrant

@@ -1,0 +1,23 @@
+version: '3'
+services:
+    database:
+        image: library/mysql:latest
+        container_name: mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        command: [
+                '--character-set-server=utf8mb4',
+                '--collation-server=utf8mb4_unicode_ci'
+        ]
+    phone-number-manager:
+        image: bluef1ash/phone-number-manager:latest
+        container_name: phone-number-manager
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment:
+            spring.datasource.host: database
+        ports:
+            - 8080:8080
+        depends_on:
+            - database

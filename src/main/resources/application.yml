@@ -1,5 +1,5 @@
 server:
-    port: 8081
+    port: 8080
 
     compression:
         enabled: true
@@ -28,6 +28,7 @@ spring:
         test-while-idle: true
         test-on-borrow: false
         test-on-return: false
+        initialization-mode: always
 
     mvc:
         throw-exception-if-no-handler-found: true

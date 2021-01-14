@@ -5,10 +5,11 @@ server:
         enabled: true
 
     undertow:
-        io-threads: 8
-        worker-threads: 64
         buffer-size: 1024
         direct-buffers: true
+        threads:
+            io: 8
+            worker: 64
 
 # 数据库访问配置
 spring:
@@ -29,6 +30,9 @@ spring:
         test-on-borrow: false
         test-on-return: false
         initialization-mode: always
+        continue-on-error: false
+        schema: classpath:schema.sql
+        sql-script-encoding: UTF-8
 
     mvc:
         throw-exception-if-no-handler-found: true
@@ -45,9 +49,9 @@ spring:
 
 # Mybatis基础配置
 mybatis:
-    mapper-locations: classpath:com/github/phonenumbermanager/dao/*Mapper.xml
+    mapper-locations: classpath:mybatis/mapper/*.xml
     type-aliases-package: com.github.phonenumbermanager.entity
-    config-location: classpath:mybatis-config.xml
+    config-location: classpath:mybatis/config.xml
 
 pagehelper:
     helper-dialect: mysql
@@ -59,4 +63,5 @@ logging:
     pattern:
         console: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
         file: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
-    path: /var/log/phone-number-manager
+    file:
+        path: /var/log/phone-number-manager

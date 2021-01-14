@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.utils.ExcelUtils;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.Serializable;
 import java.util.List;
@@ -17,20 +16,6 @@ import java.util.Map;
  */
 public interface DormitoryManagerService extends BaseService<DormitoryManager> {
     /**
-     * 查找所有社区楼长及所属社区
-     *
-     * @param systemUser             登录的系统用户对象
-     * @param systemCompanyType      系统单位类型编号
-     * @param communityCompanyType   社区单位类型编号
-     * @param subdistrictCompanyType 街道单位类型编号
-     * @param pageNumber             分页页码
-     * @param pageDataSize           每页展示的数量
-     * @return 查找到的社区楼长集合与分页对象
-     * @throws Exception SERVICE层异常
-     */
-    Map<String, Object> findCorrelation(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) throws Exception;
-
-    /**
      * 通过楼长编号查找楼长与所属社区
      *
      * @param id 楼长编号
@@ -38,17 +23,6 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      * @throws Exception SERVICE层异常
      */
     DormitoryManager findCorrelation(Serializable id) throws Exception;
-
-    /**
-     * 从Excel导入数据
-     *
-     * @param workbook          Excel工作簿对象
-     * @param subdistrictId     导入的街道编号
-     * @param configurationsMap 系统配置
-     * @return 导入的行数
-     * @throws Exception SERVICE层异常
-     */
-    long create(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) throws Exception;
 
     /**
      * 通过系统用户角色编号与定位角色编号查找社区楼长及所属社区

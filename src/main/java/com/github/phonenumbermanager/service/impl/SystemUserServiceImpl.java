@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -67,6 +68,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
         return systemUser;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(SystemUser systemUser) {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
@@ -77,6 +79,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
         return super.create(systemUser);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(SystemUser systemUser) {
         if (StringUtils.isNotEmpty(systemUser.getPassword())) {

@@ -6,6 +6,7 @@ import com.github.phonenumbermanager.entity.UserRolePrivilege;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.*;
@@ -18,6 +19,7 @@ import java.util.*;
 @Service("userPrivilegeService")
 public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> implements UserPrivilegeService {
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(UserPrivilege userPrivilege) {
         userPrivilege.setCreateTime(DateUtils.getTimestamp(new Date()));
@@ -25,6 +27,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
         return super.create(userPrivilege);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(UserPrivilege userPrivilege) {
         userPrivilege.setUpdateTime(DateUtils.getTimestamp(new Date()));
@@ -69,6 +72,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
         return privileges;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(Serializable id) {
         if (systemUserDao.selectByRoleId(id).size() > 0) {

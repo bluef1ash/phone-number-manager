@@ -68,7 +68,7 @@ public class DormitoryManagerAction extends BaseAction {
     public String dormitoryManagerList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
-            Map<String, Object> dormitoryManagerMap = dormitoryManagerService.findCorrelation(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, null, null);
+            Map<String, Object> dormitoryManagerMap = dormitoryManagerService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, null, null);
             model.addAttribute("dormitoryManagers", dormitoryManagerMap.get("data"));
             model.addAttribute("pageInfo", dormitoryManagerMap.get("pageInfo"));
             model.addAttribute("dataType", 1);
@@ -269,7 +269,7 @@ public class DormitoryManagerAction extends BaseAction {
                 dormitoryManager.setPhones(phone);
                 dormitoryManagerMap = dormitoryManagerService.find(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, dormitoryManager, companyId, companyType, page, null);
             } else {
-                dormitoryManagerMap = dormitoryManagerService.findCorrelation(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, page, null);
+                dormitoryManagerMap = dormitoryManagerService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, page, null);
             }
             return setJsonMap(dormitoryManagerMap);
         } catch (Exception e) {

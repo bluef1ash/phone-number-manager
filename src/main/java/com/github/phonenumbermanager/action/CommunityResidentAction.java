@@ -63,7 +63,7 @@ public class CommunityResidentAction extends BaseAction {
     public String communityResidentList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
-            Map<String, Object> communityResidentMap = communityResidentService.findCorrelation(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, null, null);
+            Map<String, Object> communityResidentMap = communityResidentService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, null, null);
             model.addAttribute("communityResidents", communityResidentMap.get("data"));
             model.addAttribute("pageInfo", communityResidentMap.get("pageInfo"));
             model.addAttribute("dataType", 0);
@@ -263,7 +263,7 @@ public class CommunityResidentAction extends BaseAction {
                 communityResident.setPhones(phone);
                 communityResidentMap = communityResidentService.find(systemUser, systemAdministratorId, communityCompanyType, subdistrictCompanyType, communityResident, companyId, companyType, page, null);
             } else {
-                communityResidentMap = communityResidentService.findCorrelation(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, page, null);
+                communityResidentMap = communityResidentService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, page, null);
             }
             return setJsonMap(communityResidentMap);
         } catch (Exception e) {

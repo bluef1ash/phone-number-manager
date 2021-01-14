@@ -15,9 +15,9 @@ import com.github.phonenumbermanager.utils.ExcelUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.PostConstruct;
@@ -58,8 +58,6 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
     protected SubcontractorDao subcontractorDao;
     List<Subcontractor> subcontractors;
     Map<String, Long> communityMap;
-    @Resource
-    private DataSourceTransactionManager transactionManager;
 
 
     /**
@@ -79,21 +77,25 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
         baseField.set(this, field.get(this));
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(T obj) {
         return baseDao.insert(obj);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(Serializable id) {
         return baseDao.deleteById(id);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(String name) {
         return baseDao.deleteByName(name);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(T obj) {
         return baseDao.update(obj);
@@ -165,6 +167,18 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
         return null;
     }
 
+    @Override
+    public long create(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) throws Exception {
+        return 0;
+    }
+
+    @Override
+    public Map<String, Object> findCorrelation(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
+        List<Serializable> companyIds = findCommunityIds(systemUser, communityCompanyType, subdistrictCompanyType, pageNumber, pageDataSize);
+        List<T> data = baseDao.selectAndCommunityByCommunityIds(companyIds);
+        return find(data);
+    }
+
     /**
      * 配置PageHelper
      *
@@ -194,14 +208,13 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
      * 查找社区编号
      *
      * @param systemUser             系统用户对象
-     * @param systemCompanyType      系统单位类型编号
      * @param communityCompanyType   社区单位类型编号
      * @param subdistrictCompanyType 街道单位类型编号
      * @param pageNumber             页面页码
      * @param pageDataSize           页面展示数据数量
      * @return 社区编号数组
      */
-    List<Serializable> findCommunityIds(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
+    List<Serializable> findCommunityIds(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
         pageNumber = pageNumber == null ? 1 : pageNumber;
         pageDataSize = pageDataSize == null ? 10 : pageDataSize;
         Integer companyType = systemUser.getCompanyType();
@@ -253,6 +266,7 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
      * @param communityId    所属社区编号
      * @return 分包人编号
      */
+    @Transactional(rollbackFor = Exception.class)
     Long addSubcontractorHandler(String name, String mobile, List<Subcontractor> subcontractors, Serializable communityId) {
         Long id = null;
         Timestamp timestamp = DateUtils.getTimestamp(new Date());
@@ -264,9 +278,7 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
                     subcontractor.setUpdateTime(timestamp);
                     DefaultTransactionDefinition def = new DefaultTransactionDefinition();
                     def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-                    TransactionStatus status = transactionManager.getTransaction(def);
                     subcontractorDao.update(subcontractor);
-                    transactionManager.commit(status);
                 }
                 break;
             }
@@ -280,9 +292,7 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
             newSubcontractor.setUpdateTime(timestamp);
             DefaultTransactionDefinition def = new DefaultTransactionDefinition();
             def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-            TransactionStatus status = transactionManager.getTransaction(def);
             subcontractorDao.insert(newSubcontractor);
-            transactionManager.commit(status);
             subcontractors.add(newSubcontractor);
         }
         return id;

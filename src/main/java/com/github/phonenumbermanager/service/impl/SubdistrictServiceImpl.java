@@ -7,6 +7,7 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.SubdistrictService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.*;
@@ -19,6 +20,7 @@ import java.util.*;
 @Service("subdistrictService")
 public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> implements SubdistrictService {
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(Subdistrict subdistrict) {
         subdistrict.setCreateTime(DateUtils.getTimestamp(new Date()));
@@ -26,6 +28,7 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> impleme
         return super.create(subdistrict);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(Subdistrict subdistrict) {
         subdistrict.setUpdateTime(DateUtils.getTimestamp(new Date()));
@@ -55,6 +58,7 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> impleme
         return subdistricts;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(Serializable id) {
         List<Community> communities = communityDao.selectBySubdistrictId(id);

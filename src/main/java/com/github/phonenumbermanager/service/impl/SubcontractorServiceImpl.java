@@ -6,6 +6,7 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Service("subcontractorService")
 public class SubcontractorServiceImpl extends BaseServiceImpl<Subcontractor> implements SubcontractorService {
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(Subcontractor subcontractor) {
         subcontractor.setCreateTime(DateUtils.getTimestamp(new Date()));
@@ -28,6 +30,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<Subcontractor> imp
         return super.create(subcontractor);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(Subcontractor subcontractor) {
         subcontractor.setUpdateTime(DateUtils.getTimestamp(new Date()));
@@ -71,6 +74,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<Subcontractor> imp
         return findBySystemUserRole(companyType, companyId, systemCompanyType, communityCompanyType, subdistrictCompanyType);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(Serializable id) {
         Long communityResidentCount = communityResidentDao.countBySubcontractorId(id);

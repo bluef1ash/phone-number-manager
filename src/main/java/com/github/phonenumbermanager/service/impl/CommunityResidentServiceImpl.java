@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -28,7 +29,7 @@ import java.util.regex.Pattern;
  */
 @Service("communityResidentService")
 public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResident> implements CommunityResidentService {
-    private Pattern communityPattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
+    private final Pattern communityPattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
 
     @Override
     public CommunityResident findCorrelation(Serializable id) {
@@ -53,6 +54,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return communityResident;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(CommunityResident communityResident) {
         if (communityDao.selectSubmittedById(0, communityResident.getCommunityId())) {
@@ -63,6 +65,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return super.create(communityResident);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(CommunityResident communityResident) {
         if (communityDao.selectSubmittedById(0, communityResident.getCommunityId())) {
@@ -79,17 +82,18 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return find(communityResidents);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         List<CommunityResident> residents = new ArrayList<>();
-        Long readResidentExcelStartRowNumber = CommonUtils.convertConfigurationLong(configurationsMap.get("read_resident_excel_start_row_number"));
-        Integer excelCommunityCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_community_name_cell_number"));
-        Integer excelCommunityResidentNameCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_name_cell_number"));
-        Integer excelResidentAddressCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_address_cell_number"));
-        Integer excelPhone1CellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_phone1_cell_number"));
-        Integer excelPhone2CellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_phone2_cell_number"));
-        Integer excelPhone3CellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_phone3_cell_number"));
-        Integer excelSubcontractorCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
+        long readResidentExcelStartRowNumber = CommonUtils.convertConfigurationLong(configurationsMap.get("read_resident_excel_start_row_number"));
+        int excelCommunityCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_community_name_cell_number"));
+        int excelCommunityResidentNameCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_name_cell_number"));
+        int excelResidentAddressCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_address_cell_number"));
+        int excelPhone1CellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_phone1_cell_number"));
+        int excelPhone2CellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_phone2_cell_number"));
+        int excelPhone3CellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_phone3_cell_number"));
+        int excelSubcontractorCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
         Timestamp timestamp = DateUtils.getTimestamp(new Date());
         setCommunityVariables(subdistrictId);
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
@@ -136,13 +140,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             return communityResidentDao.insertBatch(residents);
         }
         return 0;
-    }
-
-    @Override
-    public Map<String, Object> findCorrelation(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
-        List<Serializable> companyIds = findCommunityIds(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, pageNumber, pageDataSize);
-        List<CommunityResident> data = communityResidentDao.selectAndCommunityByCommunityIds(companyIds);
-        return find(data);
     }
 
     @Override
@@ -306,7 +303,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         if (!StringUtils.isEmpty(communityResident.getPhone3())) {
             tempPhone.append(CommonUtils.qj2bj(CommonUtils.replaceBlank(communityResident.getPhone3())).replaceAll("—", "-")).append(",");
         }
-        communityResident.setPhones(tempPhone.toString().substring(0, tempPhone.length() - 1));
+        communityResident.setPhones(tempPhone.substring(0, tempPhone.length() - 1));
         // 编辑时间
         communityResident.setUpdateTime(DateUtils.getTimestamp(new Date()));
     }

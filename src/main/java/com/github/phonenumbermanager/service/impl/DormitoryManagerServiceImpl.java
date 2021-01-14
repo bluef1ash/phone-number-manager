@@ -56,8 +56,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private Integer excelDormitorySubcontractorTelephoneCellNumber;
     private String fileTitle = "XX";
     private String[] titles;
-    private Pattern idPatten = Pattern.compile("(?iUs)([A-Za-z]+)(\\d+)");
-    private ExcelUtils.DataHandler excelDataHandler = (params, headers) -> {
+    private final Pattern idPatten = Pattern.compile("(?iUs)([A-Za-z]+)(\\d+)");
+    private final ExcelUtils.DataHandler excelDataHandler = (params, headers) -> {
         Integer rowIndex = (Integer) params.get("rowIndex");
         Workbook workbook = (Workbook) params.get("workbook");
         Sheet sheet = (Sheet) params.get("sheet");
@@ -134,13 +134,6 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public Map<String, Object> findCorrelation(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
-        List<Serializable> companyIds = findCommunityIds(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, pageNumber, pageDataSize);
-        List<DormitoryManager> data = dormitoryManagerDao.selectAndCommunityByCommunityIds(companyIds);
-        return find(data);
-    }
-
-    @Override
     public DormitoryManager findCorrelation(Serializable id) {
         DormitoryManager dormitoryManager = dormitoryManagerDao.selectAndCommunityById(id);
         String[] phones = dormitoryManager.getPhones().split(",");
@@ -171,7 +164,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Override
     public long create(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) throws Exception {
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
-        Long readDormitoryExcelStartRowNumber = CommonUtils.convertConfigurationLong(configurationsMap.get("read_dormitory_excel_start_row_number"));
+        long readDormitoryExcelStartRowNumber = CommonUtils.convertConfigurationLong(configurationsMap.get("read_dormitory_excel_start_row_number"));
         excelDormitoryCommunityNameCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_community_name_cell_number"));
         excelDormitoryIdCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_id_cell_number"));
         excelDormitoryNameCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_name_cell_number"));

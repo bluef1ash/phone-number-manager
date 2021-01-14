@@ -6,6 +6,7 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.UserRoleService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -20,6 +21,7 @@ import java.util.Map;
 @Service("userRoleService")
 public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements UserRoleService {
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(UserRole userRole) {
         userRole.setCreateTime(DateUtils.getTimestamp(new Date()));
@@ -27,12 +29,14 @@ public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements Us
         return super.create(userRole);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(UserRole userRole) {
         userRole.setUpdateTime(DateUtils.getTimestamp(new Date()));
         return super.update(userRole);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(Serializable id) {
         Long systemUserCount = systemUserDao.countByRoleId(id);

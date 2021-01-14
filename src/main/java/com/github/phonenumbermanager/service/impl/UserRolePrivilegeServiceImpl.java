@@ -6,6 +6,7 @@ import com.github.phonenumbermanager.entity.UserRolePrivilege;
 import com.github.phonenumbermanager.service.UserRolePrivilegeService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,11 +22,13 @@ import java.util.Map;
 @Service("userRolePrivilegeService")
 public class UserRolePrivilegeServiceImpl extends BaseServiceImpl<UserRolePrivilege> implements UserRolePrivilegeService {
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(UserRolePrivilege userRolePrivilege) {
         return userRolePrivilegeDao.deleteByUserRolePrivilege(userRolePrivilege);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(UserRole userRole, Long[] privilegeIds) {
         List<UserRolePrivilege> userRolePrivileges = new ArrayList<>();
@@ -43,6 +46,7 @@ public class UserRolePrivilegeServiceImpl extends BaseServiceImpl<UserRolePrivil
         return userRolePrivilegeDao.insertBatch(userRolePrivileges);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(UserRolePrivilege userRolePrivilege) {
         userRolePrivilege.setUpdateTime(DateUtils.getTimestamp(new Date()));

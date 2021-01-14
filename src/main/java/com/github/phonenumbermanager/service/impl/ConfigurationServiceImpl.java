@@ -6,6 +6,7 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Service("configurationService")
 public class ConfigurationServiceImpl extends BaseServiceImpl<Configuration> implements ConfigurationService {
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(Configuration configuration) {
         configuration.setUpdateTime(DateUtils.getTimestamp(new Date()));
@@ -30,6 +32,7 @@ public class ConfigurationServiceImpl extends BaseServiceImpl<Configuration> imp
         return null;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(String key) {
         Configuration configuration = configurationDao.selectById(key);

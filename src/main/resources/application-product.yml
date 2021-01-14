@@ -1,0 +1,14 @@
+# 数据库访问配置
+spring:
+    datasource:
+        url: jdbc:mysql://${spring.datasource.host}:3306/phone_number?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+        username: root
+        password: root
+
+    thymeleaf:
+        cache: true
+
+debug: false
+
+custom:
+    debug: false

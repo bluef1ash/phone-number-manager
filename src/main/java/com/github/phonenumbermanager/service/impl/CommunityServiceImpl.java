@@ -7,6 +7,7 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import java.util.Map;
 @Service("communityService")
 public class CommunityServiceImpl extends BaseServiceImpl<Community> implements CommunityService {
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long create(Community community) {
         community.setCreateTime(DateUtils.getTimestamp(new Date()));
@@ -32,6 +33,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
         return super.create(community);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(Community community) {
         community.setUpdateTime(DateUtils.getTimestamp(new Date()));
@@ -82,11 +84,13 @@ public class CommunityServiceImpl extends BaseServiceImpl<Community> implements 
         return communityDao.selectBySubdistrictId(subdistrictId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long update(List<Map<String, Object>> data, Integer changeType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         return communityDao.updateSubmitted(data, changeType, systemCompanyType, communityCompanyType, subdistrictCompanyType);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public long delete(Serializable id) {
         Long communityResidentCount = communityResidentDao.countByCommunityId(id);

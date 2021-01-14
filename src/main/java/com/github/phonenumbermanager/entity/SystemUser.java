@@ -1,5 +1,9 @@
 package com.github.phonenumbermanager.entity;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,8 +20,11 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
+@Data
+@NoArgsConstructor
+@ToString
+@Accessors(chain = true)
 public class SystemUser implements UserDetails {
-    private static final long serialVersionUID = -5035917619026010434L;
     private Long id;
     private String username;
     private String password;
@@ -30,36 +37,6 @@ public class SystemUser implements UserDetails {
     private Long companyId;
     private Long roleId;
     private UserRole userRole;
-
-    public SystemUser() {
-    }
-
-    public SystemUser(Long id, String username, String password, Timestamp loginTime, String loginIp, Boolean locked, Timestamp createTime, Timestamp updateTime, Integer companyType, Long companyId, Long roleId, UserRole userRole) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.loginTime = loginTime;
-        this.loginIp = loginIp;
-        this.locked = locked;
-        this.createTime = createTime;
-        this.updateTime = updateTime;
-        this.companyType = companyType;
-        this.companyId = companyId;
-        this.roleId = roleId;
-        this.userRole = userRole;
-    }
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     @Override
     public String getUsername() {
@@ -86,10 +63,6 @@ public class SystemUser implements UserDetails {
         return true;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
@@ -102,82 +75,6 @@ public class SystemUser implements UserDetails {
     @Override
     public String getPassword() {
         return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Timestamp getLoginTime() {
-        return loginTime;
-    }
-
-    public void setLoginTime(Timestamp loginTime) {
-        this.loginTime = loginTime;
-    }
-
-    public String getLoginIp() {
-        return loginIp;
-    }
-
-    public void setLoginIp(String loginIp) {
-        this.loginIp = loginIp;
-    }
-
-    public Boolean getLocked() {
-        return locked;
-    }
-
-    public void setLocked(Boolean locked) {
-        this.locked = locked;
-    }
-
-    public Long getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(Long roleId) {
-        this.roleId = roleId;
-    }
-
-    public Timestamp getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Timestamp createTime) {
-        this.createTime = createTime;
-    }
-
-    public Timestamp getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Timestamp updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public Integer getCompanyType() {
-        return companyType;
-    }
-
-    public void setCompanyType(Integer companyType) {
-        this.companyType = companyType;
-    }
-
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
-    }
-
-    public UserRole getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(UserRole userRole) {
-        this.userRole = userRole;
     }
 
     @Override
@@ -194,10 +91,5 @@ public class SystemUser implements UserDetails {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37).append(getId()).append(getUsername()).append(getRoleId()).append(getLocked()).append(getCreateTime()).append(getUpdateTime()).append(getCompanyId()).append(getCompanyType()).toHashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "SystemUser{" + "id=" + id + ", username='" + username + '\'' + ", password='" + password + '\'' + ", loginTime=" + loginTime + ", loginIp='" + loginIp + '\'' + ", locked=" + locked + ", createTime=" + createTime + ", updateTime=" + updateTime + ", companyType=" + companyType + ", companyId=" + companyId + ", roleId=" + roleId + ", userRole=" + userRole + '}';
     }
 }

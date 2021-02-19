@@ -64,15 +64,15 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_system_user` (
 -- Table `phone_number`.`pm_community`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `phone_number`.`pm_community` (
-    `id`                  BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
-    `name`                VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '社区名称',
-    `landline`            VARCHAR(15)          NOT NULL DEFAULT '' COMMENT '联系电话',
-    `actual_number`       SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '指标',
-    `dormitory_submitted` TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '社区楼长是否已提交',
-    `resident_submitted`  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '社区居民是否已提交',
-    `create_time`         DATETIME(0)          NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '增加时间',
-    `update_time`         DATETIME(0)          NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '更新时间',
-    `subdistrict_id`      BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '街道办事处所属ID',
+    `id`                  BIGINT UNSIGNED       NOT NULL AUTO_INCREMENT,
+    `name`                VARCHAR(10)           NOT NULL DEFAULT '' COMMENT '社区名称',
+    `landline`            VARCHAR(15)           NOT NULL DEFAULT '' COMMENT '联系电话',
+    `actual_number`       MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0 COMMENT '辖区内人数',
+    `dormitory_submitted` TINYINT(1) UNSIGNED   NOT NULL DEFAULT 0 COMMENT '社区楼长是否已提交',
+    `resident_submitted`  TINYINT(1) UNSIGNED   NOT NULL DEFAULT 0 COMMENT '社区居民是否已提交',
+    `create_time`         DATETIME(0)           NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '增加时间',
+    `update_time`         DATETIME(0)           NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '更新时间',
+    `subdistrict_id`      BIGINT UNSIGNED       NOT NULL DEFAULT 0 COMMENT '街道办事处所属ID',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `uk_name`(`name` ASC),
     INDEX `idx_subdistrict_id`(`subdistrict_id` ASC)

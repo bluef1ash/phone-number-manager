@@ -3,13 +3,14 @@
     <!--/*@thymesVar id="dormitoryManager" type="com.github.phonenumbermanager.entity.DormitoryManager"*/-->
     <head th:replace="layouts/header :: commonHead('社区楼长' + ${dormitoryManager == null ? '添加' : '编辑'} + ' - 社区楼长管理', ~{::script})">
         <title></title>
-        <script th:inline="javascript" type="text/javascript">
+        <script type="text/javascript" th:inline="javascript">
             var messageErrors = /*[[${messageErrors}]]*/null;
             var dormitoryManager = /*[[${dormitoryManager}]]*/null;
             var communities = /*[[${communities}]]*/null;
-            var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/ajax_load'}]]*/null;
-            var loadDormitoryManagerLastIdUrl = /*[[@{'/dormitory/ajax_id'}]]*/null;
+            var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/load'}]]*/null;
+            var loadDormitoryManagerLastIdUrl = /*[[@{'/dormitory/last_id'}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/dormitory-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/dormitory-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -26,16 +27,16 @@
                     <a href="javascript:" title="社区楼长管理">社区楼长管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/dormitory/' + ${dormitoryManager == null ? 'create' : 'edit?id=' + dormitoryManager.id}}" th:text="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长编辑'" th:title="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长编辑'"></a>
+                    <a th:href="@{'/dormitory/' + ${dormitoryManager == null ? 'create' : 'edit/' + dormitoryManager.id}}" th:text="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长编辑'" th:title="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_dormitory" v-cloak>
                     <div class="card-header" th:text="${dormitoryManager} == null ? '社区楼长添加' : '社区楼长' + ${dormitoryManager.name} + '编辑'"></div>
-                    <form class="form-horizontal" method="post" th:action="@{'/dormitory/handle'}" @submit="submit">
+                    <form class="form-horizontal" method="post" th:action="@{'/dormitory'}" @submit="submit">
                         <div class="card-body">
                             <div :key="messageError.defaultMessage" class="alert alert-danger" role="alert" v-for="messageError in messageErrors" v-if="messageErrors !== null">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button aria-label="Close" class="close" data-dismiss="alert" type="button">
                                     <span aria-hidden="true">×</span>
                                 </button>
@@ -169,8 +170,7 @@
                                 <label class="col-md-3 col-form-label">社区楼长联系户数</label>
                                 <div class="col-md-9">
                                     <el-input-number :class="{'is-invalid': errorClasses[9]}" :min="1" name="managerCount" placeholder="请输入社区楼长联系户数" v-model="dormitoryManager.managerCount" :disabled="dormitoryManager.community.dormitorySubmitted"></el-input-number>
-                                    <br>
-                                    <span class="help-block">必填项，社区楼长联系户数只允许填写数字</span>
+                                    <br> <span class="help-block">必填项，社区楼长联系户数只允许填写数字</span>
                                     <div :style="errorClasses[9] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[9]"></div>
                                 </div>
                             </div>

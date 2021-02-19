@@ -10,7 +10,6 @@ import com.github.phonenumbermanager.service.UserPrivilegeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
@@ -83,7 +82,7 @@ public class IndexAction extends BaseAction {
      * @param barChartTypeParam 柱状图表类型参数
      * @return Ajax返回JSON对象
      */
-    @PostMapping("/index/getcomputedcount")
+    @GetMapping("/index/getcomputed")
     @ResponseBody
     public Map<String, Object> getComputedCount(HttpSession session, Integer getType, Long companyId, Long companyType, Boolean barChartTypeParam) {
         getSessionRoleId(session);

@@ -7,8 +7,9 @@
             var messageErrors = /*[[${messageErrors}]]*/null;
             var communityResident = /*[[${communityResident}]]*/null;
             var communities = /*[[${communities}]]*/null;
-            var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/ajax_load'}]]*/null;
+            var loadSubcontractorsUrl = /*[[@{'/community/subcontractor/load'}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/resident-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/resident-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -31,10 +32,10 @@
             <div class="container-fluid">
                 <div class="card" id="edit_resident" v-cloak>
                     <div class="card-header" th:text="${communityResident} == null ? '社区居民添加' : '社区居民' + ${communityResident.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/resident/handle'}" method="post" @submit="submit">
+                    <form class="form-horizontal" th:action="@{'/resident'}" method="post" @submit="submit">
                         <div class="card-body">
                             <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>

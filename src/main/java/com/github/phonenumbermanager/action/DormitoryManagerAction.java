@@ -49,9 +49,7 @@ public class DormitoryManagerAction extends BaseAction {
 
     @InitBinder
     public void initBinder(DataBinder binder) {
-        StringBuffer requestUrl = request.getRequestURL();
-        String url = requestUrl.substring(requestUrl.lastIndexOf("/"));
-        if (VALID_URL.equals(url)) {
+        if (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod())) {
             binder.addCustomFormatter(new DateFormatter("yyyy-MM-dd"));
             binder.replaceValidators(new DormitoryManagerInputValidator(dormitoryManagerService, request));
         }
@@ -64,7 +62,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @GetMapping("/list")
+    @GetMapping
     public String dormitoryManagerList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
@@ -107,8 +105,8 @@ public class DormitoryManagerAction extends BaseAction {
      * @param id      需要编辑的社区楼长的编号
      * @return 视图页面
      */
-    @GetMapping("/edit")
-    public String editDormitoryManager(HttpSession session, Model model, @RequestParam String id) {
+    @GetMapping("/edit/{id}")
+    public String editDormitoryManager(HttpSession session, Model model, @PathVariable String id) {
         getSessionRoleId(session);
         try {
             DormitoryManager dormitoryManager = dormitoryManagerService.findCorrelation(id);
@@ -132,7 +130,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param bindingResult      错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     public String dormitoryManagerCreateOrEditHandle(HttpServletRequest httpServletRequest, HttpSession session, Model model, @Validated DormitoryManager dormitoryManager, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
@@ -166,7 +164,7 @@ public class DormitoryManagerAction extends BaseAction {
                 throw new BusinessException("修改社区楼长失败！", e);
             }
         }
-        return "redirect:/dormitory/list";
+        return "redirect:/dormitory";
     }
 
     /**
@@ -175,9 +173,9 @@ public class DormitoryManagerAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @DeleteMapping("/ajax_delete")
+    @DeleteMapping("/{id}")
     @ResponseBody
-    public Map<String, Object> deleteDormitoryManagerForAjax(@RequestParam String id) {
+    public Map<String, Object> deleteDormitoryManagerForAjax(@PathVariable String id) {
         try {
             Map<String, Object> jsonMap = new HashMap<>(3);
             dormitoryManagerService.delete((Serializable) id);
@@ -198,7 +196,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param subdistrictId 导入的街道编号
      * @return Ajax信息
      */
-    @PostMapping("/import_as_system")
+    @PostMapping("/import")
     @ResponseBody
     public Map<String, Object> dormitoryManagerImportAsSystem(HttpSession session, HttpServletRequest request, @RequestParam Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -221,11 +219,11 @@ public class DormitoryManagerAction extends BaseAction {
      * @param response 前台响应对象
      * @param data     传递数据
      */
-    @GetMapping("/save_as_excel")
+    @GetMapping("/download")
     public void dormitoryManagerSaveAsExcel(HttpSession session, HttpServletResponse response, @RequestParam String data) {
         try {
             List<Map<String, Object>> userData = getDecodeData(session, data);
-            //获取属性-列头
+            // 获取属性-列头
             Map<String, String> headMap = dormitoryManagerService.findPartStatHead();
             String excelDormitoryTitleUp = CommonUtils.convertConfigurationString(configurationsMap.get("excel_dormitory_title_up"));
             String excelDormitoryTitle = CommonUtils.convertConfigurationString(configurationsMap.get("excel_dormitory_title"));
@@ -255,7 +253,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param phone       社区楼长联系方式
      * @return Ajax消息
      */
-    @PostMapping("/ajax_list")
+    @GetMapping("/list")
     @ResponseBody
     public Map<String, Object> findDormitoryManagersForAjax(HttpSession session, Integer page, Boolean isSearch, Long companyId, Integer companyType, String name, Integer sex, String address, String phone) {
         getSessionRoleId(session);
@@ -286,7 +284,7 @@ public class DormitoryManagerAction extends BaseAction {
      * @param subdistrictName 街道办事处名称
      * @return JSON数据
      */
-    @PostMapping("/ajax_id")
+    @PostMapping("/last_id")
     @ResponseBody
     public Map<String, Object> loadDormitoryManagerLastIdForAjax(@RequestParam Long communityId, String communityName, String subdistrictName) {
         Map<String, Object> jsonMap = new HashMap<>(3);

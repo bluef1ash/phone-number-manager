@@ -34,9 +34,7 @@ public class SubdistrictAction extends BaseAction {
 
     @InitBinder
     public void initBinder(DataBinder binder) {
-        StringBuffer requestUrl = request.getRequestURL();
-        String url = requestUrl.substring(requestUrl.lastIndexOf("/"));
-        if (VALID_URL.equals(url)) {
+        if (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod())) {
             binder.replaceValidators(new SubdistrictInputValidator(subdistrictService, request));
         }
     }
@@ -48,8 +46,8 @@ public class SubdistrictAction extends BaseAction {
      * @param page  分页对象
      * @return 视图页面
      */
-    @GetMapping("/list")
-    public String subdistrictList(Model model, Integer page) {
+    @GetMapping({"", "/{page}"})
+    public String subdistrictList(Model model, @PathVariable(required = false) Integer page) {
         try {
             Map<String, Object> subdistricts = subdistrictService.find(page, null);
             model.addAttribute("subdistricts", subdistricts.get("data"));
@@ -77,8 +75,8 @@ public class SubdistrictAction extends BaseAction {
      * @param id    编辑的对应编号
      * @return 视图页面
      */
-    @GetMapping("/edit")
-    public String editSubdistrict(Model model, @RequestParam Long id) {
+    @GetMapping("/edit/{id}")
+    public String editSubdistrict(Model model, @PathVariable Long id) {
         try {
             Subdistrict subdistrict = subdistrictService.find(id);
             model.addAttribute("subdistrict", subdistrict);
@@ -97,7 +95,7 @@ public class SubdistrictAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     public String subdistrictCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Subdistrict subdistrict, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
@@ -118,7 +116,7 @@ public class SubdistrictAction extends BaseAction {
                 throw new BusinessException("修改街道失败！", e);
             }
         }
-        return "redirect:/subdistrict/list";
+        return "redirect:/subdistrict";
     }
 
     /**
@@ -127,9 +125,9 @@ public class SubdistrictAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @DeleteMapping("/ajax_delete")
+    @DeleteMapping("/{id}")
     @ResponseBody
-    public Map<String, Object> deleteSubdistrictForAjax(@RequestParam Long id) {
+    public Map<String, Object> deleteSubdistrictForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             subdistrictService.delete(id);
@@ -150,7 +148,7 @@ public class SubdistrictAction extends BaseAction {
      *
      * @return 街道信息
      */
-    @PostMapping("/ajax_load")
+    @GetMapping("/load")
     @ResponseBody
     public Map<String, Object> getSubdistrictForAjax() {
         Map<String, Object> jsonMap = new HashMap<>(3);

@@ -38,7 +38,6 @@ abstract class BaseAction {
     SystemUser systemUser;
     Map<String, Object> configurationsMap;
     Long systemAdministratorId;
-    static final String VALID_URL = "/handle";
 
     /**
      * 获取Session内的角色编号

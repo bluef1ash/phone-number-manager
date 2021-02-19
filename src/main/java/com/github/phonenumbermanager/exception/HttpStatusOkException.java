@@ -7,8 +7,6 @@ package com.github.phonenumbermanager.exception;
  */
 public class HttpStatusOkException extends RuntimeException {
 
-    private static final long serialVersionUID = -2242010762244365156L;
-
     public HttpStatusOkException() {
         super();
     }

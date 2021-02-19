@@ -7,6 +7,7 @@
             var messageErrors = /*[[${messageErrors}]]*/null;
             var subcontractor = /*[[${subcontractor}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/subcontractor-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/subcontractor-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -23,16 +24,16 @@
                     <a href="javascript:" title="社区分包人管理">社区分包人管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/community/subcontractor/' + ${subcontractor == null ? 'create' : 'edit?id=' + subcontractor.id}}" th:title="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'"></a>
+                    <a th:href="@{'/community/subcontractor/' + ${subcontractor == null ? 'create' : 'edit/' + subcontractor.id}}" th:title="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_subcontractor" v-cloak>
                     <div class="card-header" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人' + ${subcontractor.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/community/subcontractor/handle'}" method="post" @submit="submit">
+                    <form class="form-horizontal" th:action="@{'/community/subcontractor'}" method="post" @submit="submit">
                         <div class="card-body">
                             <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>

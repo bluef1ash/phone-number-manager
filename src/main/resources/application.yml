@@ -19,6 +19,11 @@ spring:
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
         driver-class-name: com.mysql.cj.jdbc.Driver
+        host: 127.0.0.1
+        port: 3306
+        url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/phone_number?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+        username: root
+        password: root
         initial-size: 25
         min-idle: 5
         max-active: 100
@@ -30,12 +35,14 @@ spring:
         test-on-borrow: false
         test-on-return: false
         initialization-mode: always
-        continue-on-error: false
-        schema: classpath:schema.sql
+        continue-on-error: true
         sql-script-encoding: UTF-8
 
     mvc:
         throw-exception-if-no-handler-found: true
+        hiddenmethod:
+            filter:
+                enabled: true
 
     thymeleaf:
         prefix: classpath:/templates/
@@ -59,9 +66,8 @@ pagehelper:
     params: count=countSql
 
 logging:
-    config: classpath:logback-spring.xml
     pattern:
-        console: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
+        console: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n %ex{5}"
         file: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
     file:
         path: /var/log/phone-number-manager

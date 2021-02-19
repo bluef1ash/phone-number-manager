@@ -7,6 +7,7 @@
             var messageErrors = /*[[${messageErrors}]]*/null;
             var community = /*[[${community}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/community-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/community-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -26,10 +27,10 @@
             <div class="container-fluid">
                 <div class="card" id="edit_community" v-cloak>
                     <div class="card-header" th:text="${community} == null ? '社区添加' : '社区' + ${community.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/community/handle'}" method="post" @submit="submit">
+                    <form class="form-horizontal" th:action="@{'/community'}" method="post" @submit="submit">
                         <div class="card-body">
                             <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>
@@ -54,8 +55,7 @@
                                 <label class="col-md-3 col-form-label" for="actual_number">社区总人数</label>
                                 <div class="col-md-9">
                                     <el-input-number :class="{'is-invalid': errorClasses[2]}" :min="1" name="actualNumber" id="actual_number" placeholder="请输入社区总人数" v-model="community.actualNumber"></el-input-number>
-                                    <br>
-                                    <span class="help-block">社区总人数只允许输入数字</span>
+                                    <br> <span class="help-block">社区总人数只允许输入数字</span>
                                     <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
                                 </div>
                             </div>
@@ -81,7 +81,8 @@
                                 <label class="col-md-3 col-form-label" for="subdistrict_id">所属街道</label>
                                 <div class="col-md-9">
                                     <select :class="['form-control', {'is-invalid': errorClasses[3]}]" id="subdistrict_id" name="subdistrictId" v-model="community.subdistrictId">
-                                        <option :value="0">请选择</option>                                    <!--/*@thymesVar id="subdistricts" type="java.util.List"*/-->
+                                        <option :value="0">请选择</option>
+                                        <!--/*@thymesVar id="subdistricts" type="java.util.List"*/-->
                                         <!--/*@thymesVar id="subdistrict" type="com.github.phonenumbermanager.entity.Subdistrict"*/-->
                                         <option th:each="subdistrict, status : ${subdistricts}" th:attr="':value'=${subdistrict.id}" th:text="${subdistrict.name}"></option>
                                     </select>

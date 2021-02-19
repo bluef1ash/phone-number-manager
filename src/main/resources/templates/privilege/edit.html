@@ -8,6 +8,7 @@
             var userPrivilege = /*[[${userPrivilege}]]*/null;
             var userPrivileges = /*[[${userPrivileges}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/privilege-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/privilege-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -24,16 +25,16 @@
                     <a href="javascript:" title="系统用户权限管理">系统用户权限管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/user_role/privilege/' + ${userPrivilege == null ? 'create' : 'edit?id=' + userPrivilege.id}}" th:title="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'" th:text="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'"></a>
+                    <a th:href="@{'/system/user_role/privilege/' + ${userPrivilege == null ? 'create' : 'edit/' + userPrivilege.id}}" th:title="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'" th:text="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_privilege" v-cloak>
                     <div class="card-header" th:text="${userPrivilege} == null ? '用户权限添加' : '用户权限' + ${userPrivilege.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/system/user_role/privilege/handle'}" method="post" @submit="submit">
+                    <form class="form-horizontal" th:action="@{'/system/user_role/privilege'}" method="post" @submit="submit">
                         <div class="card-body">
                             <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>

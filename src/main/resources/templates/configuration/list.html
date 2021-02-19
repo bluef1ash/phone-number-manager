@@ -4,8 +4,9 @@
         <title></title>
         <script type="text/javascript" th:inline="javascript">
             var configurations = /*[[${configurations}]]*/null;
-            var deleteUrl = /*[[@{'/system/configuration/ajax_delete'}]]*/null;
+            var deleteUrl = /*[[@{'/system/configuration'}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/configuration-list-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/configuration-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -22,7 +23,7 @@
                     <a href="javascript:" title="系统配置项">系统配置项</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/configuration/list'}" title="系统配置项列表">系统配置项列表</a>
+                    <a th:href="@{'/system/configuration'}" title="系统配置项列表">系统配置项列表</a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -52,7 +53,7 @@
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <a th:attr="':href'='\'' + @{'/system/configuration/edit?key='} + '\' + configuration.key'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                        <a th:attr="':href'='\'' + @{'/system/configuration/edit/'} + '\' + configuration.key'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
                                                         <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(configuration.key)">删除</button>
@@ -63,7 +64,7 @@
                                     </tbody>
                                 </table>
                                 <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
-                                <nav th:replace="layouts/pagination :: pagination('/system/configuration/list', ${pageInfo})"></nav>
+                                <nav th:replace="layouts/pagination :: pagination('/system/configuration/', ${pageInfo})"></nav>
                             </div>
                         </div>
                     </div>

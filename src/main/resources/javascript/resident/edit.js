@@ -90,13 +90,9 @@ $(document).ready(() => {
             loadSubcontractors() {
                 if (this.communityResident.communityId !== 0) {
                     $ajax({
-                        url: loadSubcontractorsUrl,
-                        method: "post",
+                        url: loadSubcontractorsUrl + "/" + this.communityResident.communityId,
                         headers: {
                             "X-CSRF-TOKEN": this.csrf.prop("content")
-                        },
-                        data: {
-                            communityId: this.communityResident.communityId
                         }
                     }, item => {
                         if (item.state) {

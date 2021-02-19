@@ -8,6 +8,7 @@
             var configuration = /*[[${configuration}]]*/null;
             var messageErrors = /*[[${messageErrors}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/configuration-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/configuration-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -24,16 +25,16 @@
                     <a href="javascript:" title="系统配置项">系统配置项</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/configuration/' + ${configuration == null ? 'create' : 'edit?key=' + configuration.key}}" th:text="${configuration} == null ? '系统配置项添加' : '系统配置项编辑'"></a>
+                    <a th:href="@{'/system/configuration/' + ${configuration == null ? 'create' : 'edit/' + configuration.key}}" th:text="${configuration} == null ? '系统配置项添加' : '系统配置项编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_configuration" v-cloak>
                     <div class="card-header" th:text="${configuration} == null ? '系统配置项添加' : '系统配置项' + ${configuration.key} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/system/configuration/handle'}" method="post" @submit="submit">
+                    <form class="form-horizontal" th:action="@{'/system/configuration'}" method="post" @submit="submit">
                         <div class="card-body">
                             <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>

@@ -15,6 +15,6 @@ import org.springframework.http.HttpStatus;
 public class ApplicationConfig {
     @Bean
     public ErrorPageRegistrar containerCustomizer() {
-        return (errorPageRegistry -> errorPageRegistry.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/exception"), new ErrorPage(HttpStatus.FORBIDDEN, "/exception")));
+        return (errorPageRegistry -> errorPageRegistry.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/404"), new ErrorPage(HttpStatus.FORBIDDEN, "/exception")));
     }
 }

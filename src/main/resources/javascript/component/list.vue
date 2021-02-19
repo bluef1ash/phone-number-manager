@@ -143,7 +143,7 @@
                                 <label for="subdistrict_id">选择导入的街道</label>
                                 <select class="form-control" id="subdistrict_id" v-model="subdistrictId">
                                     <option :value="0">请选择</option>
-                                    <option :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>
+                                    <option :value="subdistrict.id" v-for="subdistrict in subdistricts" :key="subdistrict.id" v-text="subdistrict.name"></option>
                                 </select>
                             </div>
                             <el-upload :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :headers="{'X-CSRF-TOKEN': csrf.prop('content')}" :data="{subdistrictId}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo" ref="uploadExcel">
@@ -165,484 +165,482 @@
     </div>
 </template>
 <script>
-    import { $ajax, deleteObject } from "@library/javascript/common";
-    import { Base64 } from "js-base64";
-    import elementTablePopover from "@jsSrc/component/element-table-popover";
+import { $ajax, deleteObject } from "@library/javascript/common";
+import { Base64 } from "js-base64";
+import elementTablePopover from "@jsSrc/component/element-table-popover";
 
-    export default {
-        data() {
-            return {
-                csrf: $("meta[name='X-CSRF-TOKEN']"),
-                publicParams: publicPrams,
-                data: data.data,
-                dataType: data.dataType,
-                dataTypeName: null,
-                pageInfo: data.pageInfo,
-                companyTypes: data.companyTypes,
-                companyType: data.companyType,
-                companies: [],
-                cascaderProps: {
-                    checkStrictly: true
-                },
-                companies2: [],
-                subdistricts: [],
-                subdistrictId: 0,
-                loading: null,
-                isLoading: false,
-                pagination: 1,
-                searchParams: {
-                    sex: -1
-                },
-                searchCompanyIds: null,
-                isDownload: false,
-                timeout: new Date().getTime(),
-                exportExcelIds: [],
-                commitCommunityIds: [],
-                exportExcelUrl: null,
-                isStrictly: false
-            };
+export default {
+    data() {
+        return {
+            csrf: $("meta[name='X-CSRF-TOKEN']"),
+            publicParams: publicPrams,
+            data: data.data,
+            dataType: data.dataType,
+            dataTypeName: null,
+            pageInfo: data.pageInfo,
+            companyTypes: data.companyTypes,
+            companyType: data.companyType,
+            companies: [],
+            cascaderProps: {
+                checkStrictly: true
+            },
+            companies2: [],
+            subdistricts: [],
+            subdistrictId: 0,
+            loading: null,
+            isLoading: false,
+            pagination: 1,
+            searchParams: {
+                sex: -1
+            },
+            searchCompanyIds: null,
+            isDownload: false,
+            timeout: new Date().getTime(),
+            exportExcelIds: [],
+            commitCommunityIds: [],
+            exportExcelUrl: null,
+            isStrictly: false
+        };
+    },
+    created() {
+        this.dataTypeName = this.dataType === 0 ? "居民" : "楼长";
+        if (this.pagination !== null && this.pagination > 1) {
+            this.loadData();
+        }
+        this.loadCompanies();
+    },
+    components: {
+        elementTablePopover
+    },
+    methods: {
+        /**
+         * 删除条目
+         * @param id
+         */
+        deleteObject(id) {
+            deleteObject(this, this.publicParams.deleteUrl, id);
         },
-        created() {
-            this.dataTypeName = this.dataType === 0 ? "居民" : "楼长";
-            if (this.pagination !== null && this.pagination > 1) {
-                this.loadData();
-            }
-            this.loadCompanies();
-        },
-        components: {
-            elementTablePopover
-        },
-        methods: {
-            /**
-             * 删除条目
-             * @param id
-             */
-            deleteObject(id) {
-                deleteObject(this, this.publicParams.deleteUrl, id);
-            },
-            /**
-             * 加载单位
-             */
-            loadCompanies() {
-                if (this.companies.length === 0) {
-                    $ajax({
-                        url: this.publicParams.companySelectUrl,
-                        method: "post",
-                        headers: {
-                            "X-CSRF-TOKEN": this.csrf.prop("content")
-                        }
-                    }, result => {
-                        if (result.state === 1) {
-                            let disabled = false;
-                            this.isStrictly = false;
-                            if (this.companyType === this.companyTypes.communityCompanyType) {
-                                disabled = true;
-                                this.isStrictly = true;
-                            }
-                            result.subdistricts.forEach(item => {
-                                let node1 = { value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType };
-                                let node2 = { value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType, disabled };
-                                if (item.communities) {
-                                    node1.children = [];
-                                    node2.children = [];
-                                    item.communities.forEach(community => {
-                                        let children = { value: community.id, label: community.name, companyType: this.companyTypes.communityCompanyType };
-                                        node1.children.push(children);
-                                        node2.children.push(children);
-                                    });
-                                }
-                                this.companies.push(node1);
-                                this.companies2.push(node2);
-                            });
-                        }
-                    });
-                }
-            },
-            /**
-             * 选中单位级联器事件
-             * @param checkedValue
-             */
-            companiesCascaderChanged(checkedValue) {
-                if (checkedValue) {
-                    this.$refs.companiesCascader.dropDownVisible = false;
-                }
-            },
-            /**
-             * 搜索
-             */
-            search() {
-                this.searchParams.isSearch = true;
-                this.searchParams.isFrist = true;
-                if (this.searchCompanyIds !== null) {
-                    if (this.searchCompanyIds.length === 1) {
-                        this.searchParams.companyId = this.searchCompanyIds[0];
-                        this.searchParams.companyType = this.companyTypes.subdistrictCompanyType;
-                    } else if (this.searchCompanyIds.length > 1) {
-                        this.searchParams.companyId = this.searchCompanyIds[1];
-                        this.searchParams.companyType = this.companyTypes.communityCompanyType;
-                    }
-                }
-                this.pagination = 1;
-                if (this.$route.path !== "/") {
-                    this.$router.push({ path: "/" });
-                }
-                this.loadData();
-            },
-            /**
-             * 搜索重置
-             */
-            searchClear() {
-                this.searchParams = {
-                    sex: -1
-                };
-                this.searchCompanyIds = null;
-                this.pagination = 1;
-                this.$router.push("/");
-                this.loadData();
-            },
-            /**
-             * 加载街道
-             */
-            loadSubdistricts() {
-                if (this.subdistricts.length === 0) {
-                    $ajax({
-                        url: this.publicParams.loadSubdistrictsUrl,
-                        method: "post",
-                        headers: {
-                            "X-CSRF-TOKEN": this.csrf.prop("content")
-                        }
-                    }, result => {
-                        if (result.state === 1) {
-                            this.subdistricts = result.subdistricts;
-                        }
-                    });
-                }
-            },
-            /**
-             * 上传Excel
-             */
-            uploadExcel() {
-                this.$refs.uploadExcel.submit();
-            },
-            /**
-             * Excel上传前
-             * @param file
-             * @return {boolean}
-             */
-            beforeUploadExcel(file) {
-                if (this.subdistrictId === 0) {
-                    this.$message({
-                        message: "请选择导入的街道！",
-                        type: "error"
-                    });
-                    return false;
-                }
-                if (!file) {
-                    this.$message({
-                        message: "请选择需要导入的Excel文件！",
-                        type: "error"
-                    });
-                    return false;
-                }
-                this.loading = this.$loading({
-                    lock: true,
-                    text: "正在上传数据，请稍等。。。",
-                    spinner: "el-icon-loading",
-                    background: "rgba(0, 0, 0, 0.8)"
-                });
-            },
-            /**
-             * 上传时回调
-             * @param event
-             * @param file
-             * @param fileList
-             */
-            uploadProgress(event, file, fileList) {
-                if (event.percent < 100) {
-                    this.loading.text = "正在上传数据，请稍等。。。已上传" + Math.round(event.percent) + "%";
-                } else {
-                    this.loading.text = "已上传完成，正在处理数据，请稍等。。。";
-                }
-            },
-            /**
-             * 上传成功时回调
-             * @param response
-             * @param file
-             * @param fileList
-             */
-            uploadSuccess(response, file, fileList) {
-                this.loading.close();
-                if (response.state === 0) {
-                    this.$message.error(response.message);
-                } else {
-                    this.$message.success(response.message);
-                    $("#import_as_system_modal").modal("hide");
-                    this.loadData();
-                }
-            },
-            /**
-             * 上传Excel失败回调
-             * @param error
-             * @param file
-             * @param fileList
-             */
-            uploadError(error, file, fileList) {
-                this.loading.close();
-                this.$message({
-                    message: "上传Excel文件失败！",
-                    type: "error"
-                });
-            },
-            /**
-             * 加载数据
-             */
-            loadData() {
-                this.pagination = this.$route.path.substring(1) === "" ? 1 : parseInt(this.$route.path.substring(1));
-                let data = {
-                    page: this.pagination
-                };
-                if (Object.keys(this.searchParams).length > 0 && this.searchParams.isSearch) {
-                    this.searchParams.isFrist = false;
-                    data = Object.assign(data, this.searchParams);
-                }
+        /**
+         * 加载单位
+         */
+        loadCompanies() {
+            if (this.companies.length === 0) {
                 $ajax({
-                    url: this.publicParams.loadDataUrl,
-                    method: "post",
-                    data: data,
-                    beforeSend: xmlHttpRequest => {
-                        xmlHttpRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf.prop("content"));
-                        this.isLoading = true;
+                    url: this.publicParams.companySelectUrl,
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
                     }
                 }, result => {
-                    this.isLoading = false;
                     if (result.state === 1) {
-                        this.data = result.data;
-                        this.pageInfo = result.pageInfo;
-                    } else {
-                        this.$message.error(result.messageErrors[0].defaultMessage);
-                    }
-                });
-            },
-            /**
-             * 页码切换回调
-             * @param currentPageNumber
-             */
-            paginationCurrentChange(currentPageNumber) {
-                this.pagination = currentPageNumber;
-                this.$router.push({ path: "/" + currentPageNumber });
-            },
-            /**
-             * 导出Excel
-             */
-            exportExcel() {
-                if (this.companyType === this.companyTypes.communityCompanyType) {
-                    this.exportExcelIds = [
-                        {
-                            companyType: this.companyTypes.communityCompanyType,
-                            companyId: this.data[0].communityId
-                        }];
-                }
-                if (this.exportExcelIds.length === 0) {
-                    this.$message.error("请选择导出单位！");
-                    return;
-                }
-                this.$cookie.set("exportExcel", "wait", { expires: "5m" });
-                this.loading = this.$loading({
-                    lock: true,
-                    text: "正在生成Excel，请稍后。。。",
-                    spinner: "el-icon-loading",
-                    background: "rgba(0, 0, 0, 0.8)"
-                });
-                this.exportExcelUrl = this.publicParams.downloadExcelUrl + "?data=" + Base64.encodeURI(JSON.stringify(this.exportExcelIds));
-                this.isDownload = true;
-                let interval = setInterval(() => {
-                    if (this.isDownload && this.$cookie.get("exportExcel") === "success") {
-                        this.stopExportExcel(interval, "导出Excel文件完成！", "success");
-                    } else if (this.isDownload && this.$cookie.get("exportExcel") === "error") {
-                        this.stopExportExcel(interval, "导出Excel文件失败！", "error");
-                    }
-                }, 5000);
-            },
-            /**
-             * 停止导出Excel页面
-             * @param interval
-             * @param message
-             * @param messageType
-             */
-            stopExportExcel(interval, message, messageType) {
-                this.loading.close();
-                this.$message({
-                    message: message,
-                    type: messageType
-                });
-                this.isDownload = false;
-                this.$cookie.delete("exportExcel");
-                clearInterval(interval);
-            },
-            /**
-             * 选择导出Excel
-             * @param obj
-             * @param isChecked
-             * @param childrenIsChecked
-             */
-            chooseExportExcel(obj, isChecked, childrenIsChecked) {
-                this.chooseIds(obj, this.exportExcelIds, isChecked, childrenIsChecked);
-            },
-            /**
-             * 选择提交社区
-             * @param obj
-             * @param isChecked
-             * @param childrenIsChecked
-             */
-            chooseCommitCommunity(obj, isChecked, childrenIsChecked) {
-                this.chooseIds(obj, this.commitCommunityIds, isChecked, childrenIsChecked);
-            },
-            /**
-             * 选择编号
-             * @param obj
-             * @param objIds
-             * @param isChecked
-             * @param childrenIsChecked
-             */
-            chooseIds(obj, objIds, isChecked, childrenIsChecked) {
-                if (isChecked) {
-                    new Date().getTime() - this.timeout > 5 && objIds.push({ companyId: obj.value, companyType: obj.companyType });
-                    this.timeout = new Date().getTime();
-                } else {
-                    objIds.splice(objIds.findIndex(item => item.companyId === obj.value && item.companyType === obj.companyType), 1);
-                }
-            },
-            /**
-             * 提交社区停止增删改操作
-             */
-            commitCommunity() {
-                if (this.companyType === this.companyTypes.communityCompanyType) {
-                    this.commitCommunityIds = {
-                        companyType: this.companyTypes.communityCompanyType,
-                        companyId: this.data[0].communityId
-                    };
-                }
-                if (this.commitCommunityIds.length === 0) {
-                    this.$message.error("请选择提交单位！");
-                    return;
-                }
-                this.$confirm("是否确定提交更改？一经提交，将无法更改、删除。", "警告", {
-                    confirmButtonText: "确定",
-                    cancelButtonText: "取消",
-                    type: "warning"
-                }).then(() => {
-                    $ajax({
-                        url: this.publicParams.chooseSubmitUrl,
-                        method: "post",
-                        headers: {
-                            "X-CSRF-TOKEN": this.csrf.prop("content")
-                        },
-                        data: {
-                            data: Base64.encodeURI(JSON.stringify(this.commitCommunityIds)),
-                            changeType: this.dataType
+                        let disabled = false;
+                        this.isStrictly = false;
+                        if (this.companyType === this.companyTypes.communityCompanyType) {
+                            disabled = true;
+                            this.isStrictly = true;
                         }
-                    }, result => {
-                        if (result.state) {
-                            this.$message.success(result.message);
-                            setTimeout(() => {
-                                location.reload();
-                            }, 3000);
-                        } else {
-                            this.$message.error(result.message);
-                        }
-                    });
+                        result.subdistricts.forEach(item => {
+                            let node1 = { value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType };
+                            let node2 = { value: item.id, label: item.name, companyType: this.companyTypes.subdistrictCompanyType, disabled };
+                            if (item.communities) {
+                                node1.children = [];
+                                node2.children = [];
+                                item.communities.forEach(community => {
+                                    let children = { value: community.id, label: community.name, companyType: this.companyTypes.communityCompanyType };
+                                    node1.children.push(children);
+                                    node2.children.push(children);
+                                });
+                            }
+                            this.companies.push(node1);
+                            this.companies2.push(node2);
+                        });
+                    }
                 });
             }
         },
-        watch: {
-            "$route"() {
-                if (!this.searchParams.isFrist) {
-                    this.loadData();
+        /**
+         * 选中单位级联器事件
+         * @param checkedValue
+         */
+        companiesCascaderChanged(checkedValue) {
+            if (checkedValue) {
+                this.$refs.companiesCascader.dropDownVisible = false;
+            }
+        },
+        /**
+         * 搜索
+         */
+        search() {
+            this.searchParams.isSearch = true;
+            this.searchParams.isFrist = true;
+            if (this.searchCompanyIds !== null) {
+                if (this.searchCompanyIds.length === 1) {
+                    this.searchParams.companyId = this.searchCompanyIds[0];
+                    this.searchParams.companyType = this.companyTypes.subdistrictCompanyType;
+                } else if (this.searchCompanyIds.length > 1) {
+                    this.searchParams.companyId = this.searchCompanyIds[1];
+                    this.searchParams.companyType = this.companyTypes.communityCompanyType;
                 }
             }
+            this.pagination = 1;
+            if (this.$route.path !== "/") {
+                this.$router.push({ path: "/" });
+            }
+            this.loadData();
+        },
+        /**
+         * 搜索重置
+         */
+        searchClear() {
+            this.searchParams = {
+                sex: -1
+            };
+            this.searchCompanyIds = null;
+            this.pagination = 1;
+            this.$router.push("/");
+            this.loadData();
+        },
+        /**
+         * 加载街道
+         */
+        loadSubdistricts() {
+            if (this.subdistricts.length === 0) {
+                $ajax({
+                    url: this.publicParams.loadSubdistrictsUrl,
+                    method: "get",
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                    }
+                }, result => {
+                    if (result.state === 1) {
+                        this.subdistricts = result.subdistricts;
+                    }
+                });
+            }
+        },
+        /**
+         * 上传Excel
+         */
+        uploadExcel() {
+            this.$refs.uploadExcel.submit();
+        },
+        /**
+         * Excel上传前
+         * @param file
+         * @return {boolean}
+         */
+        beforeUploadExcel(file) {
+            if (this.subdistrictId === 0) {
+                this.$message({
+                    message: "请选择导入的街道！",
+                    type: "error"
+                });
+                return false;
+            }
+            if (!file) {
+                this.$message({
+                    message: "请选择需要导入的Excel文件！",
+                    type: "error"
+                });
+                return false;
+            }
+            this.loading = this.$loading({
+                lock: true,
+                text: "正在上传数据，请稍等。。。",
+                spinner: "el-icon-loading",
+                background: "rgba(0, 0, 0, 0.8)"
+            });
+        },
+        /**
+         * 上传时回调
+         * @param event
+         * @param file
+         * @param fileList
+         */
+        uploadProgress(event, file, fileList) {
+            if (event.percent < 100) {
+                this.loading.text = "正在上传数据，请稍等。。。已上传" + Math.round(event.percent) + "%";
+            } else {
+                this.loading.text = "已上传完成，正在处理数据，请稍等。。。";
+            }
+        },
+        /**
+         * 上传成功时回调
+         * @param response
+         * @param file
+         * @param fileList
+         */
+        uploadSuccess(response, file, fileList) {
+            this.loading.close();
+            if (response.state === 0) {
+                this.$message.error(response.message);
+            } else {
+                this.$message.success(response.message);
+                $("#import_as_system_modal").modal("hide");
+                this.loadData();
+            }
+        },
+        /**
+         * 上传Excel失败回调
+         * @param error
+         * @param file
+         * @param fileList
+         */
+        uploadError(error, file, fileList) {
+            this.loading.close();
+            this.$message({
+                message: "上传Excel文件失败！",
+                type: "error"
+            });
+        },
+        /**
+         * 加载数据
+         */
+        loadData() {
+            this.pagination = this.$route.path.substring(1) === "" ? 1 : parseInt(this.$route.path.substring(1));
+            let data = {
+                page: this.pagination
+            };
+            if (Object.keys(this.searchParams).length > 0 && this.searchParams.isSearch) {
+                this.searchParams.isFrist = false;
+                data = Object.assign(data, this.searchParams);
+            }
+            $ajax({
+                url: this.publicParams.loadDataUrl,
+                data: data,
+                beforeSend: xmlHttpRequest => {
+                    xmlHttpRequest.setRequestHeader("X-CSRF-TOKEN", this.csrf.prop("content"));
+                    this.isLoading = true;
+                }
+            }, result => {
+                this.isLoading = false;
+                if (result.state === 1) {
+                    this.data = result.data;
+                    this.pageInfo = result.pageInfo;
+                } else {
+                    this.$message.error(result.messageErrors[0].defaultMessage);
+                }
+            });
+        },
+        /**
+         * 页码切换回调
+         * @param currentPageNumber
+         */
+        paginationCurrentChange(currentPageNumber) {
+            this.pagination = currentPageNumber;
+            this.$router.push({ path: "/" + currentPageNumber });
+        },
+        /**
+         * 导出Excel
+         */
+        exportExcel() {
+            if (this.companyType === this.companyTypes.communityCompanyType) {
+                this.exportExcelIds = [
+                    {
+                        companyType: this.companyTypes.communityCompanyType,
+                        companyId: this.data[0].communityId
+                    }];
+            }
+            if (this.exportExcelIds.length === 0) {
+                this.$message.error("请选择导出单位！");
+                return;
+            }
+            this.$cookie.set("exportExcel", "wait", { expires: "5m" });
+            this.loading = this.$loading({
+                lock: true,
+                text: "正在生成Excel，请稍后。。。",
+                spinner: "el-icon-loading",
+                background: "rgba(0, 0, 0, 0.8)"
+            });
+            this.exportExcelUrl = this.publicParams.downloadExcelUrl + "?data=" + Base64.encodeURI(JSON.stringify(this.exportExcelIds));
+            this.isDownload = true;
+            let interval = setInterval(() => {
+                if (this.isDownload && this.$cookie.get("exportExcel") === "success") {
+                    this.stopExportExcel(interval, "导出Excel文件完成！", "success");
+                } else if (this.isDownload && this.$cookie.get("exportExcel") === "error") {
+                    this.stopExportExcel(interval, "导出Excel文件失败！", "error");
+                }
+            }, 5000);
+        },
+        /**
+         * 停止导出Excel页面
+         * @param interval
+         * @param message
+         * @param messageType
+         */
+        stopExportExcel(interval, message, messageType) {
+            this.loading.close();
+            this.$message({
+                message: message,
+                type: messageType
+            });
+            this.isDownload = false;
+            this.$cookie.delete("exportExcel");
+            clearInterval(interval);
+        },
+        /**
+         * 选择导出Excel
+         * @param obj
+         * @param isChecked
+         * @param childrenIsChecked
+         */
+        chooseExportExcel(obj, isChecked, childrenIsChecked) {
+            this.chooseIds(obj, this.exportExcelIds, isChecked, childrenIsChecked);
+        },
+        /**
+         * 选择提交社区
+         * @param obj
+         * @param isChecked
+         * @param childrenIsChecked
+         */
+        chooseCommitCommunity(obj, isChecked, childrenIsChecked) {
+            this.chooseIds(obj, this.commitCommunityIds, isChecked, childrenIsChecked);
+        },
+        /**
+         * 选择编号
+         * @param obj
+         * @param objIds
+         * @param isChecked
+         * @param childrenIsChecked
+         */
+        chooseIds(obj, objIds, isChecked, childrenIsChecked) {
+            if (isChecked) {
+                new Date().getTime() - this.timeout > 5 && objIds.push({ companyId: obj.value, companyType: obj.companyType });
+                this.timeout = new Date().getTime();
+            } else {
+                objIds.splice(objIds.findIndex(item => item.companyId === obj.value && item.companyType === obj.companyType), 1);
+            }
+        },
+        /**
+         * 提交社区停止增删改操作
+         */
+        commitCommunity() {
+            if (this.companyType === this.companyTypes.communityCompanyType) {
+                this.commitCommunityIds = {
+                    companyType: this.companyTypes.communityCompanyType,
+                    companyId: this.data[0].communityId
+                };
+            }
+            if (this.commitCommunityIds.length === 0) {
+                this.$message.error("请选择提交单位！");
+                return;
+            }
+            this.$confirm("是否确定提交更改？一经提交，将无法更改、删除。", "警告", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "warning"
+            }).then(() => {
+                $ajax({
+                    url: this.publicParams.chooseSubmitUrl,
+                    method: "post",
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                    },
+                    data: {
+                        data: Base64.encodeURI(JSON.stringify(this.commitCommunityIds)),
+                        changeType: this.dataType
+                    }
+                }, result => {
+                    if (result.state) {
+                        this.$message.success(result.message);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+                    } else {
+                        this.$message.error(result.message);
+                    }
+                });
+            });
         }
-    };
+    },
+    watch: {
+        "$route"() {
+            if (!this.searchParams.isFrist) {
+                this.loadData();
+            }
+        }
+    }
+};
 </script>
 <style lang="scss" scoped>
-    .resident-list-buttons {
-        justify-content: flex-end;
-        margin-bottom: 2rem;
+.resident-list-buttons {
+    justify-content: flex-end;
+    margin-bottom: 2rem;
 
-        a, button {
-            margin-right: 1.5rem;
-        }
-
-        .is-dropdown {
-            margin-right: 0;
-            border-bottom-right-radius: unset;
-            border-top-right-radius: unset;
-        }
-
-        .dropdown-toggle {
-            border-radius: unset;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            will-change: transform;
-            top: 0;
-            left: 0;
-            transform: translate3d(0px, 35px, 0);
-            padding: 0.4rem;
-        }
+    a, button {
+        margin-right: 1.5rem;
     }
 
-    .list-search {
-        justify-content: space-between;
+    .is-dropdown {
+        margin-right: 0;
+        border-bottom-right-radius: unset;
+        border-top-right-radius: unset;
+    }
 
-        div.form-group {
-            margin: 0 0.5rem 0.8rem 0.5rem;
+    .dropdown-toggle {
+        border-radius: unset;
+    }
 
-            label {
-                margin-right: 0.5rem;
+    .dropdown-menu {
+        position: absolute;
+        will-change: transform;
+        top: 0;
+        left: 0;
+        transform: translate3d(0px, 35px, 0);
+        padding: 0.4rem;
+    }
+}
+
+.list-search {
+    justify-content: space-between;
+
+    div.form-group {
+        margin: 0 0.5rem 0.8rem 0.5rem;
+
+        label {
+            margin-right: 0.5rem;
+        }
+
+        &:first-of-type {
+            position: relative;
+
+            input {
+                cursor: pointer;
             }
 
-            &:first-of-type {
-                position: relative;
-
-                input {
-                    cursor: pointer;
-                }
-
-                button {
-                    position: absolute;
-                    right: 0;
-                }
+            button {
+                position: absolute;
+                right: 0;
             }
+        }
 
-            &:last-of-type {
-                button {
-                    margin: 0 0.4rem;
-                }
+        &:last-of-type {
+            button {
+                margin: 0 0.4rem;
             }
         }
     }
+}
 
-    nav {
-        margin-top: 2rem;
-    }
+nav {
+    margin-top: 2rem;
+}
 
-    .modal {
-        .modal-dialog {
-            .modal-content {
-                .modal-body {
-                    width: 85%;
-                    margin: 0 auto;
+.modal {
+    .modal-dialog {
+        .modal-content {
+            .modal-body {
+                width: 85%;
+                margin: 0 auto;
 
-                    .form-inline {
-                        .form-group {
-                            label, select {
-                                margin-right: 1.6rem;
-                            }
+                .form-inline {
+                    .form-group {
+                        label, select {
+                            margin-right: 1.6rem;
                         }
                     }
                 }
             }
         }
     }
+}
 </style>

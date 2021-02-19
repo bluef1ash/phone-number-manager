@@ -1,8 +1,8 @@
 import "@scss";
 import "bootstrap";
 import "@coreui/coreui";
-import Pace from "pace-progress";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 
-Pace.start({
-    document: false
-});
+$(window).on("load", () => NProgress.done());
+$(document).ready(() => NProgress.start());

@@ -31,16 +31,12 @@ public final class SystemConstant {
      */
     public static final String SUBDISTRICT_ALIAS_NAME = "办事处";
     /**
-     * 数据库中开始的时间戳字符串
-     */
-    public static final String DATABASE_START_TIMESTAMP_STRING = "1000-00-00 00:00:00";
-    /**
      * 毫秒时间差
      */
     public static final int TIMESTAMP_MILLISECONDS_DIFFERENCE = 1000 * 10;
     /**
      * 权限通过
      */
-    public static final String[] PRIVILEGE_PERMITS = {"/", "permitAll", "/exception", "/index/getmenu", "/community/ajax_select", "/index/getcomputedcount", "/community/subcontractor/ajax_load", "system/user_role/user/edit"};
-    public static final String[] LOGGED_PERMITS = {"/getcsrf", "permitAll", "/exception"};
+    public static final String[] PRIVILEGE_PERMITS = {"/", "permitAll", "/404", "/index/getmenu", "/community/select", "/index/getcomputed", "/community/subcontractor/load", "system/user_role/user/edit"};
+    public static final String[] LOGGED_PERMITS = {"/getcsrf", "permitAll", "/404"};
 }

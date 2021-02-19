@@ -7,6 +7,7 @@
             var messageErrors = /*[[${messageErrors}]]*/null;
             var subdistrict = /*[[${subdistrict}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/subdistrict-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/subdistrict-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -20,16 +21,16 @@
                     <a href="javascript:" title="街道办事处管理">街道办事处管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/subdistrict/' + ${subdistrict == null ? 'create' : 'edit?id=' + subdistrict.id}}" th:title="${subdistrict} == null ? '街道办事处添加' : '街道办事处编辑'" th:text="${subdistrict} == null ? '街道办事处添加' : '街道办事处编辑'"></a>
+                    <a th:href="@{'/subdistrict/' + ${subdistrict == null ? 'create' : 'edit/' + subdistrict.id}}" th:title="${subdistrict} == null ? '街道办事处添加' : '街道办事处编辑'" th:text="${subdistrict} == null ? '街道办事处添加' : '街道办事处编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_subdistrict" v-cloak>
                     <div class="card-header" th:text="${subdistrict} == null ? '街道办事处添加' : '街道办事处' + ${subdistrict.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/subdistrict/handle'}" method="post" @submit="submit">
+                    <form class="form-horizontal" th:action="@{'/subdistrict'}" method="post" @submit="submit">
                         <div class="card-body">
                             <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>

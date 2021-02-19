@@ -5,9 +5,10 @@
         <script type="text/javascript" th:inline="javascript">
             var systemAdministratorId = /*[[${systemAdministratorId}]]*/null;
             var systemUsers = /*[[${systemUsers}]]*/null;
-            var deleteUrl = /*[[@{'/system/user_role/user/ajax_delete'}]]*/null;
-            var userLockUrl = /*[[@{'/system/user_role/user/ajax_user_lock'}]]*/null;
+            var deleteUrl = /*[[@{'/system/user_role/user'}]]*/null;
+            var userLockUrl = /*[[@{'/system/user_role/user/lock'}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/user-list-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/user-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -24,7 +25,7 @@
                     <a href="javascript:" title="系统用户管理">系统用户管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/user_role/user/list'}" title="系统用户列表">系统用户列表</a>
+                    <a th:href="@{'/system/user_role/user'}" title="系统用户列表">系统用户列表</a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -62,7 +63,7 @@
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <a th:attr="':href'='\'' + @{'/system/user_role/user/edit?id='} + '\' + systemUser.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                        <a th:attr="':href'='\'' + @{'/system/user_role/user/edit/'} + '\' + systemUser.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
                                                         <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(systemUser.id)">删除</button>
@@ -73,7 +74,7 @@
                                     </tbody>
                                 </table>
                                 <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
-                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/user/list', ${pageInfo})"></nav>
+                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/user/', ${pageInfo})"></nav>
                             </div>
                         </div>
                     </div>

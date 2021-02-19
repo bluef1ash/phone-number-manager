@@ -45,9 +45,7 @@ public class CommunityResidentAction extends BaseAction {
 
     @InitBinder
     public void initBinder(DataBinder binder) {
-        StringBuffer requestUrl = request.getRequestURL();
-        String url = requestUrl.substring(requestUrl.lastIndexOf("/"));
-        if (VALID_URL.equals(url)) {
+        if (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod())) {
             binder.replaceValidators(new CommunityResidentInputValidator(communityResidentService, request));
         }
     }
@@ -59,7 +57,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param model   前台模型
      * @return 视图页面
      */
-    @GetMapping("/list")
+    @GetMapping
     public String communityResidentList(HttpSession session, Model model) {
         setPersonVariable(session, model);
         try {
@@ -102,8 +100,8 @@ public class CommunityResidentAction extends BaseAction {
      * @param id      需要编辑的社区居民的编号
      * @return 视图页面
      */
-    @GetMapping("/edit")
-    public String editCommunityResident(HttpSession session, Model model, Long id) {
+    @GetMapping("/edit/{id}")
+    public String editCommunityResident(HttpSession session, Model model, @PathVariable Long id) {
         getSessionRoleId(session);
         try {
             CommunityResident communityResident = communityResidentService.findCorrelation(id);
@@ -127,7 +125,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param bindingResult      错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/handle", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     public String communityResidentCreateOrEditHandle(HttpServletRequest httpServletRequest, HttpSession session, Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
@@ -160,7 +158,7 @@ public class CommunityResidentAction extends BaseAction {
                 throw new BusinessException("修改社区居民失败！", e);
             }
         }
-        return "redirect:/resident/list";
+        return "redirect:/resident";
     }
 
     /**
@@ -169,9 +167,9 @@ public class CommunityResidentAction extends BaseAction {
      * @param id 对应编号
      * @return Ajax信息
      */
-    @DeleteMapping("/ajax_delete")
+    @DeleteMapping("/{id}")
     @ResponseBody
-    public Map<String, Object> deleteCommunityResidentForAjax(Long id) {
+    public Map<String, Object> deleteCommunityResidentForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             communityResidentService.delete(id);
@@ -192,7 +190,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param subdistrictId 导入的街道编号
      * @return Ajax信息
      */
-    @PostMapping("/import_as_system")
+    @PostMapping("/import")
     @ResponseBody
     public Map<String, Object> communityResidentImportAsSystem(HttpSession session, HttpServletRequest request, Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -217,10 +215,10 @@ public class CommunityResidentAction extends BaseAction {
      * @param response 前台响应对象
      * @param data     传递数据
      */
-    @GetMapping("/save_as_excel")
+    @GetMapping("/download")
     public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response, String data) {
         List<Map<String, Object>> userData = getDecodeData(session, data);
-        //获取属性-列头
+        // 获取属性-列头
         Map<String, String> headMap = communityResidentService.findPartStatHead();
         String excelResidentTitleUp = CommonUtils.convertConfigurationString(configurationsMap.get("excel_resident_title_up"));
         String excelResidentTitle = CommonUtils.convertConfigurationString(configurationsMap.get("excel_resident_title"));
@@ -250,7 +248,7 @@ public class CommunityResidentAction extends BaseAction {
      * @param isSearch    是否搜索
      * @return Ajax消息
      */
-    @PostMapping("/ajax_list")
+    @GetMapping("/list")
     @ResponseBody
     public Map<String, Object> findCommunityResidentsForAjax(HttpSession session, Integer page, Long companyId, Long companyType, String name, String address, String phone, Boolean isSearch) {
         getSessionRoleId(session);

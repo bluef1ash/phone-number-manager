@@ -1,16 +1,16 @@
 import "@jsSrc/common/public";
 import "@jsSrc/common/sidebar";
-import "bootstrap";
-import Vue from "vue";
 import {
     $ajax,
     formatNumber,
     generateHexadecimalColors
 } from "@library/javascript/common";
-import countTo from "vue-count-to";
+import "bootstrap";
 import { Loading, Switch } from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
 import { VeHistogram, VePie } from "v-charts/lib/index.esm";
+import Vue from "vue";
+import countTo from "vue-count-to";
 
 $(document).ready(() => {
     Vue.prototype.$loading = Loading;
@@ -196,26 +196,28 @@ $(document).ready(() => {
             this.dormitoryBarChartExtend.grid = this.subcontractorBarChartExtend.grid = this.barChartExtend.grid;
             this.dormitoryBarChartExtend.tooltip = this.subcontractorBarChartExtend.tooltip = this.barChartExtend.tooltip;
             this.dormitoryBarChartExtend.xAxis.axisLabel = this.subcontractorBarChartExtend.xAxis.axisLabel = this.barChartExtend.xAxis.axisLabel;
-            $ajax({
-                url: companySelectUrl,
-                method: "post",
-                headers: {
-                    "X-CSRF-TOKEN": this.csrf.prop("content")
-                }
-            }, data => {
-                if (data.state === 1) {
-                    this.allSubdistricts = data.subdistricts;
-                    data.subdistricts.forEach(item => {
-                        this.subdistricts.push({
-                            id: item.id,
-                            name: item.name
+            $ajax(
+                {
+                    url: companySelectUrl,
+                    headers: {
+                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                    }
+                },
+                data => {
+                    if (data.state === 1) {
+                        this.allSubdistricts = data.subdistricts;
+                        data.subdistricts.forEach(item => {
+                            this.subdistricts.push({
+                                id: item.id,
+                                name: item.name
+                            });
                         });
-                    });
-                    if (this.systemUser.companyType === this.subdistrictCompanyType) {
-                        this.communities = this.allSubdistricts[0].communities;
+                        if (this.systemUser.companyType === this.subdistrictCompanyType) {
+                            this.communities = this.allSubdistricts[0].communities;
+                        }
                     }
                 }
-            });
+            );
             if (this.systemUser.companyType === this.systemCompanyType) {
                 this.baseMessageSubdistrictId = this.baseMessageCommunityId = this.barChartSubdistrictId = this.barChartSubcontractorSubdistrictId = this.barChartSubcontractorCommunityId = this.baseMessageDormitorySubdistrictId = this.baseMessageDormitoryCommunityId = this.barChartDormitorySubdistrictId = 0;
                 this.loadMessageAndChart();
@@ -286,7 +288,6 @@ $(document).ready(() => {
                 };
                 if (companyId === 0) {
                     if (companyType === this.subdistrictCompanyType) {
-
                     } else if (companyType === this.communityCompanyType) {
                         params.companyType = this.subdistrictCompanyType;
                         params.companyId = parentId;
@@ -321,66 +322,74 @@ $(document).ready(() => {
                         params.barChartTypeParam = this.barChartDormitoryType;
                         break;
                 }
-                $ajax({
-                    url: getComputedUrl,
-                    method: "post",
-                    headers: {
-                        "X-CSRF-TOKEN": this.csrf.prop("content")
+                $ajax(
+                    {
+                        url: getComputedUrl,
+                        headers: {
+                            "X-CSRF-TOKEN": this.csrf.prop("content")
+                        },
+                        data: params
                     },
-                    data: params
-                }, data => {
-                    this.percentCountTitle = "";
-                    if (data.state === 1) {
-                        if (data.resident.baseMessage) {
-                            this.addCount = data.resident.baseMessage.addCount;
-                            this.haveToCount = data.resident.baseMessage.haveToCount;
-                            this.remnantCount = (this.haveToCount - this.addCount) * 0.8;
-                            this.percentCount = this.addCount / this.haveToCount * 100;
-                            if (this.percentCount < 80) {
-                                this.percentCountTitle = "录入与核定比例不能低于80%！";
+                    data => {
+                        this.percentCountTitle = "";
+                        if (data.state === 1) {
+                            if (data.resident.baseMessage) {
+                                this.addCount = data.resident.baseMessage.addCount;
+                                this.haveToCount = data.resident.baseMessage.haveToCount;
+                                this.remnantCount = (this.haveToCount - this.addCount) * 0.8;
+                                this.percentCount = (this.addCount / this.haveToCount) * 100;
+                                if (this.percentCount < 80) {
+                                    this.percentCountTitle = "录入与核定比例不能低于80%！";
+                                }
+                                this.$set(this.loadings, 0, false);
                             }
-                            this.$set(this.loadings, 0, false);
-                        }
-                        if (data.resident.barChart) {
-                            this.barChartExtend.color = generateHexadecimalColors();
-                            this.barChart = data.resident.barChart.data;
-                            this.barChartExtend.xAxis.data = data.resident.barChart.titleLabel;
-                            this.barChartExtend.series.label.normal.formatter = (formatterData) => formatNumber(formatterData.value) + data.resident.barChart.formatter;
-                            this.barChartExtend.yAxis.axisLabel.formatter = (formatterData) => formatNumber(formatterData) + data.resident.barChart.formatter;
-                            this.$set(this.loadings, 1, false);
-                        }
-                        if (data.subcontractor.barChart) {
-                            this.subcontractorBarChartExtend.color = generateHexadecimalColors();
-                            this.barChartSubcontractor = data.subcontractor.barChart.data;
-                            this.subcontractorBarChartExtend.xAxis.data = data.subcontractor.barChart.titleLabel;
-                            this.subcontractorBarChartExtend.series.label.normal.formatter = (formatterData) => formatNumber(formatterData.value) + data.subcontractor.barChart.formatter;
-                            this.subcontractorBarChartExtend.yAxis.axisLabel.formatter = (formatterData) => formatNumber(formatterData) + data.subcontractor.barChart.formatter;
-                            this.$set(this.loadings, 4, false);
-                        }
-                        if (data.dormitory.baseMessage) {
-                            this.dormitorySex = data.dormitory.baseMessage.sex;
-                            let sexCount = this.dormitorySex.male + this.dormitorySex.female;
-                            if (sexCount > 0) {
-                                this.dormitorySex.maleParent = Math.ceil(this.dormitorySex.male / sexCount * 100);
-                                this.dormitorySex.femaleParent = 100 - this.dormitorySex.maleParent;
+                            if (data.resident.barChart) {
+                                this.barChartExtend.color = generateHexadecimalColors();
+                                this.barChart = data.resident.barChart.data;
+                                this.barChartExtend.xAxis.data = data.resident.barChart.titleLabel;
+                                this.barChartExtend.series.label.normal.formatter = formatterData =>
+                                    formatNumber(formatterData.value) + data.resident.barChart.formatter;
+                                this.barChartExtend.yAxis.axisLabel.formatter = formatterData =>
+                                    formatNumber(formatterData) + data.resident.barChart.formatter;
+                                this.$set(this.loadings, 1, false);
                             }
-                            this.dormitoryAge = data.dormitory.baseMessage.age;
-                            this.dormitoryEducation = data.dormitory.baseMessage.education;
-                            this.dormitoryPoliticalStatus = data.dormitory.baseMessage.politicalStatus;
-                            this.dormitoryWorkStatus = data.dormitory.baseMessage.workStatus;
-                            this.dormitoryPieExtend.color = generateHexadecimalColors();
-                            this.$set(this.loadings, 2, false);
-                        }
-                        if (data.dormitory.barChart) {
-                            this.dormitoryBarChartExtend.color = generateHexadecimalColors();
-                            this.dormitoryBarChart = data.dormitory.barChart.data;
-                            this.dormitoryBarChartExtend.yAxis.formatter = (formatterData) => formatNumber(formatterData) + data.dormitory.barChart.formatter;
-                            this.dormitoryBarChartExtend.series.label.normal.formatter = (formatterData) => formatNumber(formatterData.value) + data.dormitory.barChart.formatter;
-                            this.dormitoryBarChartExtend.xAxis.data = data.dormitory.barChart.titleLabel;
-                            this.$set(this.loadings, 3, false);
+                            if (data.subcontractor.barChart) {
+                                this.subcontractorBarChartExtend.color = generateHexadecimalColors();
+                                this.barChartSubcontractor = data.subcontractor.barChart.data;
+                                this.subcontractorBarChartExtend.xAxis.data = data.subcontractor.barChart.titleLabel;
+                                this.subcontractorBarChartExtend.series.label.normal.formatter = formatterData =>
+                                    formatNumber(formatterData.value) + data.subcontractor.barChart.formatter;
+                                this.subcontractorBarChartExtend.yAxis.axisLabel.formatter = formatterData =>
+                                    formatNumber(formatterData) + data.subcontractor.barChart.formatter;
+                                this.$set(this.loadings, 4, false);
+                            }
+                            if (data.dormitory.baseMessage) {
+                                this.dormitorySex = data.dormitory.baseMessage.sex;
+                                let sexCount = this.dormitorySex.male + this.dormitorySex.female;
+                                if (sexCount > 0) {
+                                    this.dormitorySex.maleParent = Math.ceil((this.dormitorySex.male / sexCount) * 100);
+                                    this.dormitorySex.femaleParent = 100 - this.dormitorySex.maleParent;
+                                }
+                                this.dormitoryAge = data.dormitory.baseMessage.age;
+                                this.dormitoryEducation = data.dormitory.baseMessage.education;
+                                this.dormitoryPoliticalStatus = data.dormitory.baseMessage.politicalStatus;
+                                this.dormitoryWorkStatus = data.dormitory.baseMessage.workStatus;
+                                this.dormitoryPieExtend.color = generateHexadecimalColors();
+                                this.$set(this.loadings, 2, false);
+                            }
+                            if (data.dormitory.barChart) {
+                                this.dormitoryBarChartExtend.color = generateHexadecimalColors();
+                                this.dormitoryBarChart = data.dormitory.barChart.data;
+                                this.dormitoryBarChartExtend.yAxis.formatter = formatterData =>
+                                    formatNumber(formatterData) + data.dormitory.barChart.formatter;
+                                this.dormitoryBarChartExtend.series.label.normal.formatter = formatterData =>
+                                    formatNumber(formatterData.value) + data.dormitory.barChart.formatter;
+                                this.dormitoryBarChartExtend.xAxis.data = data.dormitory.barChart.titleLabel;
+                                this.$set(this.loadings, 3, false);
+                            }
                         }
                     }
-                });
+                );
             },
             /**
              * 切换饼图显示

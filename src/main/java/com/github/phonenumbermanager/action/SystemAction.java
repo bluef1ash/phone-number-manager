@@ -34,9 +34,7 @@ public class SystemAction extends BaseAction {
 
     @InitBinder
     public void initBinder(DataBinder binder) {
-        StringBuffer requestUrl = request.getRequestURL();
-        String url = requestUrl.substring(requestUrl.lastIndexOf("/"));
-        if (VALID_URL.equals(url)) {
+        if (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod())) {
             binder.replaceValidators(new ConfigurationInputValidator(configurationService, request));
         }
     }
@@ -48,7 +46,7 @@ public class SystemAction extends BaseAction {
      * @param page  分页页码
      * @return 视图页面
      */
-    @GetMapping("/configuration/list")
+    @GetMapping("/configuration")
     public String configurationList(Model model, Integer page) {
         try {
             Map<String, Object> configurationsMap = configurationService.find(page, null);
@@ -78,8 +76,8 @@ public class SystemAction extends BaseAction {
      * @param key   编辑的对应系统配置项关键字名称
      * @return 视图页面
      */
-    @GetMapping("/configuration/edit")
-    public String editConfiguration(Model model, @RequestParam String key) {
+    @GetMapping("/configuration/edit/{key}")
+    public String editConfiguration(Model model, @PathVariable String key) {
         try {
             Configuration configuration = configurationService.find(key);
             model.addAttribute("configuration", configuration);
@@ -99,7 +97,7 @@ public class SystemAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/configuration/handle", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/configuration", method = {RequestMethod.POST, RequestMethod.PUT})
     public String configurationCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Configuration configuration, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             try {
@@ -127,7 +125,7 @@ public class SystemAction extends BaseAction {
                 throw new BusinessException("修改系统配置失败！", e);
             }
         }
-        return "redirect:/system/configuration/list";
+        return "redirect:/system/configuration";
     }
 
     /**
@@ -136,9 +134,9 @@ public class SystemAction extends BaseAction {
      * @param key 对应系统配置项关键字名称
      * @return Ajax信息
      */
-    @DeleteMapping("/configuration/ajax_delete")
+    @DeleteMapping("/configuration/{key}")
     @ResponseBody
-    public Map<String, Object> deleteConfigurationForAjax(@RequestParam String key) {
+    public Map<String, Object> deleteConfigurationForAjax(@PathVariable String key) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             configurationService.delete(key);

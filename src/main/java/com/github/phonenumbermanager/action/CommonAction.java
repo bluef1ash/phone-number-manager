@@ -2,15 +2,14 @@ package com.github.phonenumbermanager.action;
 
 import com.alibaba.fastjson.JSON;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.exception.NotfoundException;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,17 +51,10 @@ public class CommonAction extends BaseAction {
     /**
      * 403异常页面
      *
-     * @param model    前台模型
-     * @param request  HTTP请求对象
-     * @param response HTTP响应对象
-     * @return 异常页面
+     * @throws NotfoundException 404异常
      */
-    @GetMapping("/exception")
-    public String exception(Model model, HttpServletRequest request, HttpServletResponse response) {
-        Map<String, String> exception = new HashMap<>(2);
-        exception.put("message", (String) request.getAttribute("errorMessage"));
-        model.addAttribute("status", response.getStatus());
-        model.addAttribute("exception", exception);
-        return "exception/default";
+    @GetMapping("/404")
+    public String exception() {
+        throw new NotfoundException();
     }
 }

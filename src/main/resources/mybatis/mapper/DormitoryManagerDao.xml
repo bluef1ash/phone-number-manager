@@ -353,13 +353,14 @@
             COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 41
                                 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
                                 &lt;
-                                    50, 1, 0)), 0) AS '41岁~50岁', COALESCE(SUM(
-                                                                              IF(
-                                                                                      TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51
-                                                                                      AND
-                                                                                      TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
-                                                                                          &lt;
-                                                                                      60, 1, 0)), 0) AS '51岁~60岁',
+                                    50, 1, 0)), 0) AS '41岁~50岁',
+            COALESCE(SUM(
+                         IF(
+                                 TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51
+                                 AND
+                                 TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                                     &lt;
+                                 60, 1, 0)), 0) AS '51岁~60岁',
             COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61
                                 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
                                 &lt;

@@ -9,6 +9,7 @@
             var userRoles = /*[[${userRoles}]]*/null;
             var userPrivileges = /*[[${userPrivileges}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/role-edit-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/role-edit-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -25,16 +26,16 @@
                     <a href="javascript:" title="系统用户角色管理">系统用户角色管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/user_role/role/' + ${userRole == null ? 'create' : 'edit?id=' + userRole.id}}" th:title="${userRole} == null ? '系统用户角色添加' : '系统用户角色编辑'" th:text="${userRole} == null ? '系统用户角色添加' : '系统用户角色编辑'"></a>
+                    <a th:href="@{'/system/user_role/role/' + ${userRole == null ? 'create' : 'edit/' + userRole.id}}" th:title="${userRole} == null ? '系统用户角色添加' : '系统用户角色编辑'" th:text="${userRole} == null ? '系统用户角色添加' : '系统用户角色编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_role" v-cloak>
                     <div class="card-header" th:text="${userRole} == null ? '用户角色添加' : '用户角色' + ${userRole.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/system/user_role/role/handle'}" method="post" @submit="submit">
+                    <form class="form-horizontal" th:action="@{'/system/user_role/role'}" method="post" @submit="submit">
                         <div class="card-body">
                             <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
-                                {{messageError.defaultMessage}}
+                                {{ messageError.defaultMessage }}
                                 <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">×</span>
                                 </button>

@@ -17,7 +17,6 @@ export function isURL(str_url) {
         "((/?)|" + // a slash isn't required if there is no file name
         "(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$";
     let re = new RegExp(strRegex);
-    //re.test()
     return re.test(str_url);
 }
 
@@ -26,26 +25,22 @@ export function isURL(str_url) {
  * @param vueObj
  * @param url
  * @param id
- * @param idField
  */
-export function deleteObject(vueObj, url, id, idField = "id") {
+export function deleteObject(vueObj, url, id) {
     if (id !== null && id !== "") {
         vueObj.$confirm("是否确定要删除此数据？", "警告", {
             confirmButtonText: "确定",
             cancelButtonText: "取消",
             type: "warning"
         }).then(() => {
-            this.$ajax(
+            $ajax(
                 {
-                    url: url,
+                    url: url + "/" + id,
                     method: "delete",
                     headers: {
                         "X-CSRF-TOKEN": $("meta[name='X-CSRF-TOKEN']").prop(
                             "content"
                         )
-                    },
-                    data: {
-                        [idField]: id
                     }
                 },
                 data => {
@@ -154,23 +149,25 @@ export function companyHandler(communities, communityId) {
         subdistricts: [],
         newCommunities: []
     };
-    companies.subdistricts.push(communities[0].subdistrict);
-    communities.forEach(item => {
-        if (item.id === communityId) {
-            companies.subdistrictId = item.subdistrictId;
-        }
-        if (companies.subdistrictId === item.subdistrictId) {
-            companies.newCommunities.push({
-                id: item.id,
-                name: item.name
-            });
-        }
-        companies.subdistricts.forEach(subdistrict => {
-            if (subdistrict.id !== item.subdistrict.id) {
-                companies.subdistricts.push(item.subdistrict);
+    if (communities !== null && communities.length > 0) {
+        companies.subdistricts.push(communities[0].subdistrict);
+        communities.forEach(item => {
+            if (item.id === communityId) {
+                companies.subdistrictId = item.subdistrictId;
             }
+            if (companies.subdistrictId === item.subdistrictId) {
+                companies.newCommunities.push({
+                    id: item.id,
+                    name: item.name
+                });
+            }
+            companies.subdistricts.forEach(subdistrict => {
+                if (subdistrict.id !== item.subdistrict.id) {
+                    companies.subdistricts.push(item.subdistrict);
+                }
+            });
         });
-    });
+    }
     return companies;
 }
 

@@ -3,9 +3,10 @@
     <head th:replace="layouts/header :: commonHead('社区居民列表 - 社区居民管理', ~{::script})">
         <title></title>
         <script type="text/javascript" th:inline="javascript">
-            var publicPrams = {createUrl: /*[[@{'/resident/create'}]]*/null, editUrl: /*[[@{'/resident/edit?id='}]]*/null, deleteUrl: /*[[@{'/resident/ajax_delete'}]]*/null, companySelectUrl: /*[[@{'/community/ajax_select'}]]*/null, importAsSystemUrl: /*[[@{'/resident/import_as_system'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/ajax_load'}]]*/null, loadDataUrl: /*[[@{'/resident/ajax_list'}]]*/null, downloadExcelUrl: /*[[@{'/resident/save_as_excel'}]]*/null, chooseSubmitUrl: /*[[@{'/community/choose_submit'}]]*/null};
-            var data = {data: /*[[${communityResidents}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, companyTypes: /*[[${companyTypes}]]*/null, companyType: /*[[${companyType}]]*/null};
+            var publicPrams = { createUrl: /*[[@{'/resident/create'}]]*/null, editUrl: /*[[@{'/resident/edit/'}]]*/null, deleteUrl: /*[[@{'/resident'}]]*/null, companySelectUrl: /*[[@{'/community/select'}]]*/null, importAsSystemUrl: /*[[@{'/resident/import'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/load'}]]*/null, loadDataUrl: /*[[@{'/resident/list'}]]*/null, downloadExcelUrl: /*[[@{'/resident/download'}]]*/null, chooseSubmitUrl: /*[[@{'/community/submit'}]]*/null };
+            var data = { data: /*[[${communityResidents}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, companyTypes: /*[[${companyTypes}]]*/null, companyType: /*[[${companyType}]]*/null };
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/resident-list-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/resident-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -22,7 +23,7 @@
                     <a href="javascript:" title="社区居民管理">社区居民管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/resident/list'}" title="社区居民列表">社区居民列表</a>
+                    <a th:href="@{'/resident'}" title="社区居民列表">社区居民列表</a>
                 </li>
             </ol>
             <div id="resident_list" v-cloak></div>

@@ -4,8 +4,9 @@
         <title></title>
         <script type="text/javascript" th:inline="javascript">
             var subcontractors = /*[[${subcontractors}]]*/null;
-            var deleteUrl = /*[[@{'/community/subcontractor/ajax_delete'}]]*/null;
+            var deleteUrl = /*[[@{'/community/subcontractor'}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/subcontractor-list-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/subcontractor-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -22,7 +23,7 @@
                     <a href="javascript:" title="社区分包人管理">社区分包人管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/community/subcontractor/list'}" title="社区分包人列表">社区分包人列表</a>
+                    <a th:href="@{'/community/subcontractor'}" title="社区分包人列表">社区分包人列表</a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -54,7 +55,7 @@
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <a th:attr="':href'='\'' + @{'/community/subcontractor/edit?id='} + '\' + subcontractor.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                        <a th:attr="':href'='\'' + @{'/community/subcontractor/edit/'} + '\' + subcontractor.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
                                                         <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(subcontractor.id)">删除</button>
@@ -65,7 +66,7 @@
                                     </tbody>
                                 </table>
                                 <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
-                                <nav th:replace="layouts/pagination :: pagination('/community/subcontractor/list', ${pageInfo})"></nav>
+                                <nav th:replace="layouts/pagination :: pagination('/community/subcontractor/', ${pageInfo})"></nav>
                             </div>
                         </div>
                     </div>

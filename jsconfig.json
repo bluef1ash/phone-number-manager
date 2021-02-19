@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "experimentalDecorators": true,
+        "outDir": "./src/main/resources/static/javascript",
+        "noImplicitAny": true,
+        "module": "es6",
+        "target": "es6",
+        "jsx": "react",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "paths": {
+            "@base/*": ["./src/main/resources/javascript/*"],
+            "@image/*": ["./src/main/resources/static/images/*"],
+            "@font/*": ["./src/main/resources/static/fonts/*"],
+            "@scss/*": ["./src/main/resources/scss/*"]
+        }
+    },
+    "include": ["./src/main/resources/javascript"],
+    "exclude": [
+        "node_modules",
+        "build",
+        "dist",
+        "scripts",
+        "acceptance-tests",
+        "webpack",
+        "jest",
+        "./src/main/resources/static/javascript"
+    ]
+}

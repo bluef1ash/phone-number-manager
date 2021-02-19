@@ -7,9 +7,10 @@
             var systemCompanyType = /*[[${systemCompanyType}]]*/null;
             var communityCompanyType = /*[[${communityCompanyType}]]*/null;
             var subdistrictCompanyType = /*[[${subdistrictCompanyType}]]*/null;
-            var getComputedUrl = /*[[@{'/index/getcomputedcount'}]]*/null;
-            var companySelectUrl = /*[[@{'/community/ajax_select'}]]*/null;
+            var getComputedUrl = /*[[@{'/index/getcomputed'}]]*/null;
+            var companySelectUrl = /*[[@{'/community/select'}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/index-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/index-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>

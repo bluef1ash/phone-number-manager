@@ -113,13 +113,9 @@ $(document).ready(() => {
             loadSubcontractors() {
                 if (this.dormitoryManager.communityId !== 0) {
                     $ajax({
-                        url: loadSubcontractorsUrl,
-                        method: "post",
+                        url: loadSubcontractorsUrl + "/" + this.dormitoryManager.communityId,
                         headers: {
                             "X-CSRF-TOKEN": this.csrf.prop("content")
-                        },
-                        data: {
-                            communityId: this.dormitoryManager.communityId
                         }
                     }, result => {
                         if (result.state) {

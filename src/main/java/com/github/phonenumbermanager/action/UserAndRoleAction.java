@@ -48,11 +48,14 @@ public class UserAndRoleAction extends BaseAction {
     @InitBinder
     public void initBinder(DataBinder binder) {
         StringBuffer requestUrl = request.getRequestURL();
-        if (requestUrl.toString().contains("/user/handle")) {
+        boolean isUser = requestUrl.toString().contains("/user") && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
+        boolean isRole = requestUrl.toString().contains("/role") && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
+        boolean isPrivilege = requestUrl.toString().contains("/privilege") && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
+        if (isUser) {
             binder.replaceValidators(new SystemUserInputValidator(systemUserService, request));
-        } else if (requestUrl.toString().contains("/role/handle")) {
+        } else if (isRole) {
             binder.replaceValidators(new UserRoleInputValidator(userRoleService, request));
-        } else if (requestUrl.toString().contains("/privilege/handle")) {
+        } else if (isPrivilege) {
             binder.replaceValidators(new UserPrivilegeInputValidator(userPrivilegeService, request));
         }
     }
@@ -64,8 +67,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param page  分页对象
      * @return 视图页面
      */
-    @GetMapping("/user/list")
-    public String systemUserList(HttpSession session, Model model, Integer page) {
+    @GetMapping({"/user", "/user/{page}"})
+    public String systemUserList(HttpSession session, Model model, @PathVariable(required = false) Integer page) {
         getSessionRoleId(session);
         try {
             Map<String, Object> systemUsers = systemUserService.findCorrelation(page, null);
@@ -87,7 +90,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param locked  锁定与解锁的标记
      * @return Ajax信息
      */
-    @PostMapping("/user/ajax_user_lock")
+    @PostMapping("/user/lock")
     @ResponseBody
     public Map<String, Object> systemUserLockedForAjax(HttpSession session, @RequestParam Long id, @RequestParam Boolean locked) {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -144,8 +147,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param id      编辑的对应编号
      * @return 视图页面
      */
-    @GetMapping("/user/edit")
-    public String editSystemUser(HttpSession session, Model model, Long id) {
+    @GetMapping("/user/edit/{id}")
+    public String editSystemUser(HttpSession session, Model model, @PathVariable Long id) {
         getSessionRoleId(session);
         model.addAttribute("communityCompanyType", communityCompanyType);
         model.addAttribute("subdistrictCompanyType", subdistrictCompanyType);
@@ -177,7 +180,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/user/handle", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/user", method = {RequestMethod.POST, RequestMethod.PUT})
     public String systemUserAddOrEditHandle(HttpSession session, HttpServletRequest request, Model model, @Validated SystemUser systemUser, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
@@ -206,7 +209,7 @@ public class UserAndRoleAction extends BaseAction {
                 throw new BusinessException("修改用户失败！", e);
             }
         }
-        return "redirect:/system/user_role/user/list";
+        return "redirect:/system/user_role/user";
     }
 
     /**
@@ -216,9 +219,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param id      对应编号
      * @return Ajax信息
      */
-    @DeleteMapping("/user/ajax_delete")
+    @DeleteMapping("/user/{id}")
     @ResponseBody
-    public Map<String, Object> deleteSystemUserForAjax(HttpSession session, @RequestParam Long id) {
+    public Map<String, Object> deleteSystemUserForAjax(HttpSession session, @PathVariable Long id) {
         getSessionRoleId(session);
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
@@ -242,7 +245,7 @@ public class UserAndRoleAction extends BaseAction {
      *
      * @return Ajax信息
      */
-    @PostMapping("/user/ajax_get")
+    @GetMapping("/user/load")
     @ResponseBody
     public Map<String, Object> getSystemUsersForAjax() {
         Map<String, Object> jsonMap = new HashMap<>(3);
@@ -264,8 +267,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param page  分页页数
      * @return 视图页面
      */
-    @GetMapping("/role/list")
-    public String systemUserRoleList(Model model, Integer page) {
+    @GetMapping({"/role", "/role/{page}"})
+    public String systemUserRoleList(Model model, @PathVariable(required = false) Integer page) {
         try {
             Map<String, Object> userRoles = userRoleService.find(page, null);
             model.addAttribute("userRoles", userRoles.get("data"));
@@ -304,8 +307,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param id    角色编号
      * @return 视图页面
      */
-    @GetMapping("/role/edit")
-    public String editSystemUserRole(Model model, @RequestParam Long id) {
+    @GetMapping("/role/edit/{id}")
+    public String editSystemUserRole(Model model, @PathVariable Long id) {
         try {
             List<UserRole> userRoles = userRoleService.find();
             UserRole userRole = userRoleService.findCorrelation(id);
@@ -330,7 +333,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/role/handle", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/role", method = {RequestMethod.POST, RequestMethod.PUT})
     public String systemUserRoleCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserRole userRole, @RequestParam Long[] privilegeIds, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
@@ -360,7 +363,7 @@ public class UserAndRoleAction extends BaseAction {
                 throw new BusinessException("修改角色失败！", e);
             }
         }
-        return "redirect:/system/user_role/role/list";
+        return "redirect:/system/user_role/role";
     }
 
     /**
@@ -370,9 +373,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param id      对应编号
      * @return Ajax信息
      */
-    @DeleteMapping("/role/ajax_delete")
+    @DeleteMapping("/role/{id}")
     @ResponseBody
-    public Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, @RequestParam Long id) {
+    public Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, @PathVariable Long id) {
         getSessionRoleId(session);
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
@@ -396,8 +399,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param page  分页页码
      * @return 视图页面
      */
-    @GetMapping("/privilege/list")
-    public String systemUserPrivilegeList(Model model, Integer page) {
+    @GetMapping({"/privilege", "/privilege/{page}"})
+    public String systemUserPrivilegeList(Model model, @PathVariable(required = false) Integer page) {
         try {
             Map<String, Object> userPrivileges = userPrivilegeService.find(page, null);
             model.addAttribute("userPrivileges", userPrivileges.get("data"));
@@ -435,8 +438,8 @@ public class UserAndRoleAction extends BaseAction {
      * @param id    权限编号
      * @return 视图页面
      */
-    @GetMapping("/privilege/edit")
-    public String editSystemUserPrivilege(Model model, @RequestParam Long id) {
+    @GetMapping("/privilege/edit/{id}")
+    public String editSystemUserPrivilege(Model model, @PathVariable Long id) {
         try {
             List<UserPrivilege> userPrivileges = userPrivilegeService.find();
             UserPrivilege userPrivilege = userPrivilegeService.find(id);
@@ -458,7 +461,7 @@ public class UserAndRoleAction extends BaseAction {
      * @param bindingResult 错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/privilege/handle", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/privilege", method = {RequestMethod.POST, RequestMethod.PUT})
     public String systemUserPrivilegeCreateOrEditHandle(HttpServletRequest request, Model model, @Validated UserPrivilege userPrivilege, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // 输出错误信息
@@ -483,7 +486,7 @@ public class UserAndRoleAction extends BaseAction {
                 throw new BusinessException("修改权限失败！", e);
             }
         }
-        return "redirect:/system/user_role/privilege/list";
+        return "redirect:/system/user_role/privilege";
     }
 
     /**
@@ -492,9 +495,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param id 系统用户权限编号
      * @return Ajax消息
      */
-    @DeleteMapping("/privilege/ajax_delete")
+    @DeleteMapping("/privilege/{id}")
     @ResponseBody
-    public Map<String, Object> deleteSystemUserPrivilegeForAjax(@RequestParam Long id) {
+    public Map<String, Object> deleteSystemUserPrivilegeForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             userPrivilegeService.delete(id);
@@ -513,9 +516,9 @@ public class UserAndRoleAction extends BaseAction {
      * @param roleId 系统用户角色编号
      * @return Ajax消息
      */
-    @PostMapping("/privilege/ajax_get_privileges")
+    @GetMapping("/privilege/load/{roleId}")
     @ResponseBody
-    public Map<String, Object> getPrivilegesByRoleIdForAjax(@RequestParam Long roleId) {
+    public Map<String, Object> getPrivilegesByRoleIdForAjax(@PathVariable Long roleId) {
         try {
             Map<String, Object> jsonMap = new HashMap<>(3);
             jsonMap.put("state", 1);

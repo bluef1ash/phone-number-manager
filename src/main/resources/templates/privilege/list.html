@@ -4,8 +4,9 @@
         <title></title>
         <script type="text/javascript" th:inline="javascript">
             var userPrivileges = /*[[${userPrivileges}]]*/null;
-            var deleteUrl = /*[[@{'/system/user_role/privilege/ajax_delete'}]]*/null;
+            var deleteUrl = /*[[@{'/system/user_role/privilege'}]]*/null;
         </script>
+        <script type="text/javascript" src="http://127.0.0.1:3000/privilege-list-bundle.js" th:if="${debug}"></script>
         <script type="text/javascript" th:src="@{'/javascript/privilege-list-bundle.js'}" th:if="${!debug}"></script>
     </head>
     <body>
@@ -22,7 +23,7 @@
                     <a href="javascript:" title="系统用户权限管理">系统用户权限管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/user_role/privilege/list'}" title="系统用户权限列表">系统用户权限列表</a>
+                    <a th:href="@{'/system/user_role/privilege'}" title="系统用户权限列表">系统用户权限列表</a>
                 </li>
             </ol>
             <div class="container-fluid">
@@ -50,7 +51,7 @@
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <a th:attr="':href'='\'' + @{'/system/user_role/privilege/edit?id='} + '\' + userPrivilege.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                        <a th:attr="':href'='\'' + @{'/system/user_role/privilege/edit/'} + '\' + userPrivilege.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
                                                         <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(userPrivilege.id)">删除</button>
@@ -61,7 +62,7 @@
                                     </tbody>
                                 </table>
                                 <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
-                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/privilege/list', ${pageInfo})"></nav>
+                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/privilege/', ${pageInfo})"></nav>
                             </div>
                         </div>
                     </div>

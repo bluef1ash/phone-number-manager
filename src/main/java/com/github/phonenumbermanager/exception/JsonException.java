@@ -7,7 +7,6 @@ package com.github.phonenumbermanager.exception;
  * @author 廿二月的天
  */
 public class JsonException extends RuntimeException {
-    private static final long serialVersionUID = -5847549478257193367L;
 
     public JsonException() {
         super();

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.CompanyMapper">
+    <resultMap type="company" id="baseResultMap">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+    <resultMap type="company" id="aliasResultMap">
+        <id column="company_id" property="id"/>
+        <result column="company_name" property="name"/>
+        <result column="company_parent_id" property="parentId"/>
+        <result column="company_create_time" property="createTime"/>
+        <result column="company_update_time" property="updateTime"/>
+        <result column="company_version" property="version"/>
+    </resultMap>
+    <resultMap type="company" id="collectionResultMap" extends="aliasResultMap">
+        <collection property="phoneNumbers"
+                    resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
+        <collection property="companyExtras"
+                    resultMap="com.github.phonenumbermanager.mapper.CompanyExtraMapper.aliasResultMap"/>
+        <collection property="systemPermissions"
+                    resultMap="com.github.phonenumbermanager.mapper.SystemPermissionMapper.aliasResultMap"/>
+    </resultMap>
+    <select id="selectCorrelation" resultMap="collectionResultMap">
+        SELECT pm_company.id AS 'company_id',
+            pm_company.name AS 'company_name',
+            pm_company.create_time AS 'company_create_time',
+            pm_company.update_time AS 'company_update_time',
+            pm_company.parent_id AS 'company_parent_id',
+            pm_phone_number.phone_number
+        FROM pm_company
+                 LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+                 LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
+    </select>
+    <select id="selectCorrelationById" resultMap="collectionResultMap">
+        SELECT pm_company.id AS 'company_id',
+            pm_company.name AS 'company_name',
+            pm_company.create_time AS 'company_create_time',
+            pm_company.update_time AS 'company_update_time',
+            pm_company.parent_id AS 'company_parent_id',
+            pm_company_extra.id AS 'company_extra_id',
+            pm_company_extra.title,
+            pm_company_extra.description,
+            pm_company_extra.name AS 'company_extra_name',
+            pm_company_extra.content,
+            pm_company_extra.field_type,
+            pm_phone_number.id AS 'phone_number_id',
+            pm_phone_number.phone_number,
+            pm_company_permission.permission_id
+        FROM pm_company
+                 LEFT JOIN pm_company_extra ON pm_company.id = pm_company_extra.company_id
+                 LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+                 LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
+                 LEFT JOIN pm_company_permission ON pm_company.id = pm_company_permission.company_id
+        WHERE pm_company.id = #{id}
+    </select>
+    <select id="selectCorrelationByCompanies" resultMap="collectionResultMap">
+        SELECT pm_company.id AS 'company_id',
+        pm_company.name AS 'company_name',
+        pm_company.parent_id AS 'company_parent_id',
+        pm_company.create_time AS 'company_create_time',
+        pm_company.update_time AS 'company_update_time',
+        pm_phone_number.id AS 'phone_number_id',
+        pm_phone_number.phone_number,
+        pm_phone_number.phone_type
+        FROM pm_company
+        LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+        LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <select id="selectCorrelationCountByCompanies" resultType="long">
+        SELECT COUNT(DISTINCT pm_company.id)
+        FROM pm_company
+        LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+        LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <sql id="selectCorrelationSearch">
+        <where>
+            <if test="companies != null and companies.size() > 0">
+                <foreach collection="companies" item="company" separator="OR">
+                    (pm_company.id = #{company.id} OR pm_company.parent_id = #{company.id})
+                </foreach>
+            </if>
+            <if test="search != null">
+                <foreach collection="search" index="key" item="value" separator="AND" open="AND">
+                    (
+                    <choose>
+                        <when test="key eq 'name'">pm_company.name</when>
+                        <when test="key eq 'phoneNumbers'">pm_phone_number.phone_number</when>
+                    </choose>
+                    LIKE CONCAT('%', #{value}, '%')
+                    )
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null">
+            ORDER BY
+            <foreach collection="sort" index="key" item="value" separator="," open=",">
+                CONVERT(${key} USING gbk) COLLATE gbk_chinese_ci
+                <if test="value eq 'descend'">
+                    DESC
+                </if>
+            </foreach>
+        </if>
+    </sql>
+</mapper>

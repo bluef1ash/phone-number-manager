@@ -1,0 +1,50 @@
+version: '3.5'
+
+services:
+  database:
+    image: library/mysql:latest
+    container_name: "mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    command: [
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci'
+    ]
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    command: redis-server /etc/redis/redis.conf
+    privileged: true
+
+  phone-number-manager-backend:
+    image: bluef1ash/phone-number-manager-backend:latest
+    container_name: "phone-number-manager-backend"
+    environment:
+      - SERVER_PORT=80
+      - DATABASE_HOST=127.0.0.1
+      - DATABASE_PORT=3306
+      - DATABASE_NAME=phone_number_manager
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=root
+      - REDIS_HOST=127.0.0.1
+      - REDIS_PORT=6379
+    depends_on:
+      - database
+      - redis
+
+  phone-number-manager-frontend:
+    image: bluef1ash/phone-number-manager-frontend:latest
+    container_name: "phone-number-manager-frontend"
+    environment:
+      - BASE_URL=http://phone-number-manager-backend
+    ports:
+      - "80:80"
+    volumes:
+      - dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - phone-number-manager-backend
+
+volumes:
+  dist:

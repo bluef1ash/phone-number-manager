@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.SystemUserMapper">
+    <resultMap type="systemUser" id="commonResultMap">
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="login_time" property="loginTime"/>
+        <result column="login_ip" property="loginIp"/>
+        <result column="is_locked" property="isLocked"/>
+        <result column="is_enabled" property="isEnabled"/>
+        <result column="account_expire_time" property="accountExpireTime"/>
+        <result column="credential_expire_time" property="credentialExpireTime"/>
+    </resultMap>
+    <resultMap type="systemUser" id="baseResultMap" extends="commonResultMap">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+    <resultMap type="systemUser" id="aliasResultMap" extends="commonResultMap">
+        <id column="system_user_id" property="id"/>
+        <result column="system_user_create_time" property="createTime"/>
+        <result column="system_user_update_time" property="updateTime"/>
+        <result column="system_user_version" property="version"/>
+    </resultMap>
+    <resultMap type="systemUser" id="collectionResultMap" extends="aliasResultMap">
+        <collection property="companies"
+                    resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.collectionResultMap"/>
+    </resultMap>
+    <select id="selectCorrelationByCompanyIds" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+        pm_system_user.username,
+        pm_system_user.login_time,
+        pm_system_user.login_ip,
+        pm_system_user.is_locked,
+        pm_system_user.is_enabled,
+        pm_system_user.account_expire_time,
+        pm_system_user.credential_expire_time,
+        pm_system_user.create_time AS 'system_user_create_time',
+        pm_system_user.update_time AS 'system_user_update_time',
+        pm_company.id AS 'company_id',
+        pm_company.name AS 'company_name'
+        FROM pm_system_user
+        LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+        <where>
+            <foreach collection="companyIds" item="companyId" open=" pm_company.id IN (" separator="," close=")">
+                #{companyId}
+            </foreach>
+            <if test="search != null">
+                <foreach collection="search" index="key" item="value" separator=" AND " open=" AND ">
+                    #{key} LIKE CONCAT('%', #{value}, '%')
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null">
+            <foreach collection="sort" index="key" item="value" open="ORDER BY" separator=",">
+                CONVERT(${key} USING gbk) COLLATE gbk_chinese_ci
+                <if test="value eq 'descend'">
+                    DESC
+                </if>
+            </foreach>
+        </if>
+    </select>
+    <select id="selectAndCompanyById" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+            pm_system_user.username,
+            pm_system_user.login_time,
+            pm_system_user.login_ip,
+            pm_system_user.is_locked,
+            pm_system_user.is_enabled,
+            pm_system_user.account_expire_time,
+            pm_system_user.credential_expire_time,
+            pm_system_user.create_time AS 'system_user_create_time',
+            pm_system_user.update_time AS 'system_user_update_time',
+            pm_company.id AS 'company_id',
+            pm_company.name AS 'company_name',
+            pm_company.parent_id AS 'company_parent_id',
+            pm_system_permission.id AS 'permission_id',
+            pm_system_permission.name AS 'permission_name',
+            pm_system_permission.function_name,
+            pm_system_permission.http_methods,
+            pm_system_permission.uri,
+            pm_system_permission.parent_id AS 'permission_parent_id'
+        FROM pm_system_user
+                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+                 LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+                 LEFT JOIN pm_company_permission ON pm_company.id = pm_company_permission.company_id
+                 LEFT JOIN pm_system_permission ON pm_company_permission.permission_id = pm_system_permission.id
+        WHERE pm_system_user.id = #{id}
+    </select>
+    <select id="selectAndCompaniesByUsername" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+            pm_system_user.username,
+            pm_system_user.password,
+            pm_system_user.login_time,
+            pm_system_user.login_ip,
+            pm_system_user.is_locked,
+            pm_system_user.is_enabled,
+            pm_system_user.account_expire_time,
+            pm_system_user.credential_expire_time,
+            pm_system_user.create_time AS 'system_user_create_time',
+            pm_system_user.update_time AS 'system_user_update_time',
+            pm_company.id AS 'company_id',
+            pm_company.name AS 'company_name',
+            pm_company.parent_id AS 'company_parent_id',
+            pm_system_permission.id AS 'permission_id',
+            pm_system_permission.name AS 'permission_name',
+            pm_system_permission.function_name,
+            pm_system_permission.http_methods,
+            pm_system_permission.uri,
+            pm_system_permission.parent_id AS 'permission_parent_id'
+        FROM pm_system_user
+                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+                 LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+                 LEFT JOIN pm_company_permission ON pm_company.id = pm_company_permission.company_id
+                 LEFT JOIN pm_system_permission ON pm_company_permission.permission_id = pm_system_permission.id
+        WHERE pm_system_user.username = #{username}
+    </select>
+    <select id="selectByCompanyId" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+            pm_system_user.username,
+            pm_system_user.password,
+            pm_system_user.login_time,
+            pm_system_user.login_ip,
+            pm_system_user.is_locked,
+            pm_system_user.is_enabled,
+            pm_system_user.account_expire_time,
+            pm_system_user.credential_expire_time,
+            pm_system_user.create_time AS 'system_user_create_time',
+            pm_system_user.update_time AS 'system_user_update_time',
+            pm_system_user_company.company_id
+        FROM pm_system_user
+                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        WHERE pm_system_user_company.company_id = #{companyId}
+    </select>
+    <select id="selectListByCompanyIds" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+        pm_system_user.username,
+        pm_system_user.login_time,
+        pm_system_user.login_ip,
+        pm_system_user.is_locked,
+        pm_system_user.is_enabled,
+        pm_system_user.account_expire_time,
+        pm_system_user.credential_expire_time,
+        pm_system_user.create_time AS 'system_user_create_time',
+        pm_system_user.update_time AS 'system_user_update_time',
+        pm_company.id AS 'company_id',
+        pm_company.name AS 'company_name'
+        FROM pm_system_user
+        LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+        <where>
+            <foreach collection="companyIds" item="companyId" open="pm_company.id IN (" separator="," close=")">
+                #{companyId}
+            </foreach>
+        </where>
+    </select>
+</mapper>

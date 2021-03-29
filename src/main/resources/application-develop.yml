@@ -1,9 +1,0 @@
-# 开发环境配置文件
-debug: true
-
-custom:
-    debug: true
-
-spring:
-    thymeleaf:
-        cache: false

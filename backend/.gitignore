@@ -1,0 +1,13 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**
+!**/src/test/**
+.mvn/
+error/
+info/
+debug/
+warn/
+mvnw
+mvnw.cmd
+.env
+**/rebel.xml

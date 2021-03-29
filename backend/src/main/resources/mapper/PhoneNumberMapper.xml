@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.PhoneNumberMapper">
+    <resultMap type="phoneNumber" id="commonResultMap">
+        <result column="phone_number" property="phoneNumber"/>
+        <result column="phone_type" property="phoneType"/>
+    </resultMap>
+    <resultMap type="phoneNumber" id="baseResultMap" extends="commonResultMap">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+    <resultMap type="phoneNumber" id="aliasResultMap" extends="commonResultMap">
+        <id column="phone_number_id" property="id"/>
+        <result column="phone_number_create_time" property="createTime"/>
+        <result column="phone_number_update_time" property="updateTime"/>
+        <result column="phone_number_version" property="version"/>
+    </resultMap>
+</mapper>

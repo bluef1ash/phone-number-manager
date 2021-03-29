@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.CommunityResidentMapper">
+    <resultMap type="communityResident" id="commonResultMap">
+        <result column="address" property="address"/>
+        <result column="subcontractor_id" property="subcontractorId"/>
+        <result column="company_id" property="companyId"/>
+    </resultMap>
+    <resultMap type="communityResident" id="baseResultMap" extends="commonResultMap">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+    <resultMap type="communityResident" id="aliasResultMap" extends="commonResultMap">
+        <id column="community_resident_id" property="id"/>
+        <result column="community_resident_name" property="name"/>
+        <result column="community_resident_create_time" property="createTime"/>
+        <result column="community_resident_update_time" property="updateTime"/>
+        <result column="community_resident_version" property="version"/>
+    </resultMap>
+    <resultMap type="communityResident" id="collectionResultMap" extends="aliasResultMap">
+        <association property="company"
+                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.aliasResultMap"/>
+        <association property="subcontractor"
+                     resultMap="com.github.phonenumbermanager.mapper.SubcontractorMapper.aliasResultMap"/>
+        <collection property="phoneNumbers"
+                    resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
+    </resultMap>
+    <select id="selectAndCompanyById" resultMap="collectionResultMap">
+        SELECT pm_community_resident.id AS 'community_resident_id',
+            pm_community_resident.name AS 'community_resident_name',
+            pm_community_resident.address,
+            pm_phone_number.phone_number,
+            pm_community_resident.create_time AS 'community_resident_create_time',
+            pm_community_resident.update_time AS 'community_resident_update_time',
+            pm_subcontractor.id AS 'subcontractor_id',
+            pm_subcontractor.name AS 'subcontractor_name',
+            pm_community_resident.company_id,
+            pm_company.name AS 'company_name'
+        FROM pm_community_resident
+                 LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+                 LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
+                 LEFT JOIN pm_community_resident_phone_number
+        ON pm_community_resident.id = pm_community_resident_phone_number.community_resident_id
+                 LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
+        WHERE pm_community_resident.id = #{id}
+    </select>
+    <select id="selectCountForGroupCompany" resultType="map">
+        SELECT pm_company.id AS 'company_id', COUNT(pm_community_resident.id) AS 'person_count'
+        FROM pm_community_resident
+        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+        <where>
+            <foreach collection="companyIds" item="companyId" open="pm_community_resident.company_id IN (" separator=","
+                     close=")">
+                #{companyId}
+            </foreach>
+        </where>
+        GROUP BY pm_company.id
+    </select>
+    <select id="selectListByCompanyIds" resultMap="collectionResultMap">
+        SELECT pm_community_resident.id AS 'community_resident_id',
+        pm_community_resident.name AS 'community_resident_name',
+        pm_community_resident.address,
+        pm_subcontractor.name AS 'subcontractor_name',
+        pm_community_resident.company_id,
+        pm_company.name AS 'company_name',
+        pm_company.parent_id AS 'company_parent_id',
+        pm_phone_number.phone_number
+        FROM pm_community_resident
+        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+        LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
+        LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
+        pm_community_resident_phone_number.community_resident_id
+        LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
+        <where>
+            <if test="companyIds != null and companyIds.size() gt 0">
+                <foreach collection="companyIds" item="companyId" open="pm_community_resident.company_id IN ("
+                         separator="," close=")">
+                    #{companyId}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY pm_community_resident.company_id, CONVERT(pm_community_resident.name USING GBK)
+    </select>
+    <select id="selectCorrelationByCompanies" resultMap="collectionResultMap">
+        SELECT
+        pm_community_resident.id AS 'community_resident_id',
+        pm_community_resident.name AS 'community_resident_name',
+        pm_community_resident.address,
+        pm_phone_number.phone_number,
+        pm_community_resident.create_time AS 'community_resident_create_time',
+        pm_community_resident.update_time AS 'community_resident_update_time',
+        pm_community_resident.company_id,
+        pm_company.name AS 'company_name',
+        pm_subcontractor.name AS 'subcontractor_name'
+        FROM
+        pm_community_resident
+        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+        LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
+        pm_community_resident_phone_number.community_resident_id
+        LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
+        LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <select id="selectCorrelationCountByCompanies" resultType="long">
+        SELECT COUNT(DISTINCT pm_community_resident.id)
+        FROM
+        pm_community_resident
+        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+        LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
+        pm_community_resident_phone_number.community_resident_id
+        LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
+        LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <select id="selectCorrelationByPhoneNumbers" resultMap="collectionResultMap">
+        SELECT
+        pm_community_resident.id AS 'community_resident_id',
+        pm_community_resident.name AS 'community_resident_name',
+        pm_community_resident.company_id,
+        pm_company.name AS 'company_name'
+        FROM
+        pm_community_resident
+        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+        LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
+        pm_community_resident_phone_number.community_resident_id
+        <where>
+            pm_community_resident_phone_number.phone_number_id IN (
+            SELECT id FROM pm_phone_number
+            <where>
+                <foreach collection="phoneNumbers" item="phoneNumber" open="phone_number IN (" separator="," close=")">
+                    #{phoneNumber.phoneNumber}
+                </foreach>
+            </where>
+            )
+            <if test="id != null">
+                AND pm_community_resident.id != #{id}
+            </if>
+        </where>
+    </select>
+    <sql id="selectCorrelationSearch">
+        <where>
+            <if test="companies != null and companies.size() gt 0">
+                <foreach collection="companies" item="company" open="pm_community_resident.company_id IN ("
+                         separator="," close=")">
+                    #{company.id}
+                </foreach>
+            </if>
+            <if test="search != null">
+                <foreach collection="search" index="key" item="value" separator="AND" open="AND">
+                    <choose>
+                        <when test="key eq 'phoneNumbers'">
+                            pm_phone_number.phone_number LIKE CONCAT('%', #{value}, '%')
+                        </when>
+                        <when test="key eq 'subcontractor.name'">
+                            <foreach collection="value" item="v" open="(" separator="OR" close=")">
+                                pm_subcontractor.id = #{v} OR pm_company.id = #{v}
+                            </foreach>
+                        </when>
+                        <otherwise>pm_community_resident.${key} LIKE CONCAT('%', #{value}, '%')</otherwise>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        <choose>
+            <when test="sort != null">
+                <foreach collection="sort" index="key" item="value" separator=",">
+                    <choose>
+                        <when test="key eq 'company,name'">
+                            CONVERT(pm_company.name USING gbk) COLLATE gbk_chinese_ci
+                        </when>
+                        <when test="key eq 'subcontractor,name'">
+                            CONVERT(dormitory_manager_name USING gbk) COLLATE gbk_chinese_ci
+                        </when>
+                        <otherwise>
+                            CONVERT(pm_community_resident.${key} USING gbk) COLLATE gbk_chinese_ci
+                        </otherwise>
+                    </choose>
+                    <if test="value eq 'descend'">
+                        DESC
+                    </if>
+                </foreach>
+            </when>
+            <otherwise>
+                pm_community_resident.company_id, CONVERT(pm_community_resident.name USING GBK)
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

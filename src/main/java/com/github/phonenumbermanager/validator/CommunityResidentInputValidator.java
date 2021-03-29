@@ -1,11 +1,10 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.constant.PhoneCheckedTypes;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.CommunityResident;
-import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.service.CommunityResidentService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.StringCheckedRegexUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -35,12 +34,12 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
         ValidationUtils.rejectIfEmpty(errors, "address", "communityResident.address.required", "社区居民地址不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "subcontractorId", "communityResident.subcontractorId.required", "社区分包人不能为空！");
         CommunityResident communityResident = (CommunityResident) target;
-        String name = CommonUtils.replaceBlank(communityResident.getName()).replaceAll("—", "-");
+        String name = CommonUtil.replaceBlank(communityResident.getName()).replaceAll("—", "-");
         if (name.length() > 10) {
             message = "社区居民姓名不能超过10个字符！";
             return false;
         }
-        String address = CommonUtils.replaceBlank(communityResident.getAddress()).replaceAll("—", "-");
+        String address = CommonUtil.replaceBlank(communityResident.getAddress()).replaceAll("—", "-");
         if (address.length() > 255) {
             message = "社区居民地址不能超过255个字符！";
             return false;
@@ -52,57 +51,31 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
         Long id = communityResident.getId();
         // 验证姓名+地址重复
         String nameAddress = name + address;
-        List<String> phones = new ArrayList<>();
-        if (StringUtils.isNotEmpty(communityResident.getPhone1())) {
-            phones.add(CommonUtils.qj2bj(CommonUtils.replaceBlank(communityResident.getPhone1()).replaceAll("—", "-")));
+        for (PhoneNumber phoneNumber : communityResident.getPhoneNumbers()) {
+            if (StringUtils.isNotEmpty(phoneNumber.getPhoneNumber())) {
+                phoneNumber.setPhoneNumber(CommonUtil.qj2bj(CommonUtil.replaceBlank(phoneNumber.getPhoneNumber()).replaceAll("—", "-")));
+            }
         }
-        if (StringUtils.isNotEmpty(communityResident.getPhone2())) {
-            phones.add(CommonUtils.qj2bj(CommonUtils.replaceBlank(communityResident.getPhone2()).replaceAll("—", "-")));
+        field = "phoneNumbers";
+        List<PhoneNumber> phoneNumbers = new ArrayList<>();
+        for (PhoneNumber phoneNumber : communityResident.getPhoneNumbers()) {
+            if (StringUtils.isNotEmpty(phoneNumber.getPhoneNumber())) {
+                phoneNumbers.add(phoneNumber);
+            }
         }
-        if (StringUtils.isNotEmpty(communityResident.getPhone3())) {
-            phones.add(CommonUtils.qj2bj(CommonUtils.replaceBlank(communityResident.getPhone3()).replaceAll("—", "-")));
-        }
-        field = "phones";
+        communityResident.setPhoneNumbers(phoneNumbers);
         // 联系方式合法
-        if (!checkedPhone(phones)) {
+        if (!checkedPhones(communityResident.getPhoneNumbers())) {
             return false;
         }
         Long subdistrictId = Long.valueOf(request.getParameter("subdistrictId"));
-        try {
-            List<CommunityResident> isNameAndAddressRepeat = communityResidentService.find(nameAddress, id, subdistrictId);
-            if (!checkedListData(isNameAndAddressRepeat, false, null)) {
-                return false;
-            }
-            // 联系方式重复
-            List<CommunityResident> isPhonesRepeat = communityResidentService.find(phones, id, subdistrictId);
-            return checkedListData(isPhonesRepeat, true, communityResident);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("社区居民验证失败！", e);
+        List<CommunityResident> isNameAndAddressRepeat = communityResidentService.get(nameAddress, id, subdistrictId);
+        if (!checkedListData(isNameAndAddressRepeat, false, null)) {
+            return false;
         }
-    }
-
-    /**
-     * 验证联系方式是否合法
-     *
-     * @param residentPhones 社区居民联系方式的集合
-     * @return 是否验证成功
-     */
-    private boolean checkedPhone(List<String> residentPhones) {
-        String tmpPhone = null;
-        for (String residentPhone : residentPhones) {
-            if (StringUtils.isNotEmpty(tmpPhone) && tmpPhone.equals(residentPhone)) {
-                message = "不允许重复输入相同的输入方式，请检查后重试！";
-                return false;
-            }
-            // 验证固定电话与手机
-            if (StringCheckedRegexUtils.checkPhone(residentPhone) == PhoneCheckedTypes.FAILED) {
-                message = "输入的联系方式不合法，请检查后重试！";
-                return false;
-            }
-            tmpPhone = residentPhone;
-        }
-        return true;
+        // 联系方式重复
+        List<CommunityResident> isPhonesRepeat = communityResidentService.get(communityResident.getPhoneNumbers(), id, subdistrictId, PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT);
+        return checkedListData(isPhonesRepeat, true, communityResident);
     }
 
     /**
@@ -119,20 +92,15 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
         if (isNameAndAddressRepeat.size() > 0) {
             String checkType = null;
             if (isCheckedPhone) {
+                loopRepeat:
                 for (CommunityResident resident : isNameAndAddressRepeat) {
                     if (RequestMethod.PUT.toString().equals(request.getMethod()) && communityResident.getId() != null) {
-                        boolean isRepeat = false;
-                        if (StringUtils.isNotEmpty(communityResident.getPhone1()) && resident.getPhones().contains(communityResident.getPhone1()) && !resident.getId().equals(communityResident.getId())) {
-                            isRepeat = true;
-                        }
-                        if (StringUtils.isNotEmpty(communityResident.getPhone2()) && resident.getPhones().contains(communityResident.getPhone2()) && !resident.getId().equals(communityResident.getId())) {
-                            isRepeat = true;
-                        }
-                        if (StringUtils.isNotEmpty(communityResident.getPhone3()) && resident.getPhones().contains(communityResident.getPhone3()) && !resident.getId().equals(communityResident.getId())) {
-                            isRepeat = true;
-                        }
-                        if (!isRepeat) {
-                            continue;
+                        for (PhoneNumber phoneNumber : resident.getPhoneNumbers()) {
+                            for (PhoneNumber pm : resident.getPhoneNumbers()) {
+                                if (StringUtils.isNotEmpty(phoneNumber.getPhoneNumber()) && pm.getPhoneNumber().equals(phoneNumber.getPhoneNumber()) && !resident.getId().equals(communityResident.getId())) {
+                                    continue loopRepeat;
+                                }
+                            }
                         }
                     }
                     if (communityNames.length() > 0) {

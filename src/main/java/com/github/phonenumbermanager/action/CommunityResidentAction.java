@@ -2,14 +2,17 @@ package com.github.phonenumbermanager.action;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.CommunityService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.ExcelUtils;
+import com.github.phonenumbermanager.service.PhoneNumberService;
+import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.phonenumbermanager.validator.CommunityResidentInputValidator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Controller;
@@ -24,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +45,8 @@ public class CommunityResidentAction extends BaseAction {
     private CommunityResidentService communityResidentService;
     @Resource
     private CommunityService communityService;
+    @Resource
+    private PhoneNumberService phoneNumberService;
     @Resource
     private HttpServletRequest request;
 
@@ -60,16 +67,9 @@ public class CommunityResidentAction extends BaseAction {
     @GetMapping
     public String communityResidentList(HttpSession session, Model model) {
         setPersonVariable(session, model);
-        try {
-            Map<String, Object> communityResidentMap = communityResidentService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, null, null);
-            model.addAttribute("communityResidents", communityResidentMap.get("data"));
-            model.addAttribute("pageInfo", communityResidentMap.get("pageInfo"));
-            model.addAttribute("dataType", 0);
-            return "resident/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("communityResidents", communityResidentService.getCorrelation(systemUser, PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, communityCompanyType, subdistrictCompanyType, null, null));
+        model.addAttribute("dataType", 0);
+        return "resident/list";
     }
 
     /**
@@ -82,14 +82,9 @@ public class CommunityResidentAction extends BaseAction {
     @GetMapping("/create")
     public String createCommunityResident(HttpSession session, Model model) {
         getSessionRoleId(session);
-        try {
-            List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
-            model.addAttribute("communities", JSON.toJSON(communities));
-            return "resident/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
+        model.addAttribute("communities", JSON.toJSON(communities));
+        return "resident/edit";
     }
 
     /**
@@ -103,16 +98,11 @@ public class CommunityResidentAction extends BaseAction {
     @GetMapping("/edit/{id}")
     public String editCommunityResident(HttpSession session, Model model, @PathVariable Long id) {
         getSessionRoleId(session);
-        try {
-            CommunityResident communityResident = communityResidentService.findCorrelation(id);
-            model.addAttribute("communityResident", communityResident);
-            List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
-            model.addAttribute("communities", communities);
-            return "resident/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        CommunityResident communityResident = communityResidentService.getCorrelation(id);
+        model.addAttribute("communityResident", communityResident);
+        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
+        model.addAttribute("communities", communities);
+        return "resident/edit";
     }
 
     /**
@@ -129,33 +119,26 @@ public class CommunityResidentAction extends BaseAction {
     public String communityResidentCreateOrEditHandle(HttpServletRequest httpServletRequest, HttpSession session, Model model, @Validated CommunityResident communityResident, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
-            try {
-                throwsError(communityService, model, bindingResult);
-                return "resident/edit";
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("系统出现错误，请联系管理员！");
-            }
+            throwsError(communityService, model, bindingResult);
+            return "resident/edit";
         }
         if (RequestMethod.POST.toString().equals(httpServletRequest.getMethod())) {
-            try {
-                communityResidentService.create(communityResident);
-            } catch (BusinessException be) {
-                be.printStackTrace();
-                throw new BusinessException(be.getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加社区居民失败！", e);
+            if (communityService.isSubmittedById(0, communityResident.getCommunityId())) {
+                throw new BusinessException("此社区已经提报，不允许添加！");
+            }
+            multiplePhoneHandler(communityResident);
+            if (communityResidentService.save(communityResident)) {
+                setPhoneNumbers(communityResident.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, String.valueOf(communityResident.getId()));
+                phoneNumberService.saveBatch(communityResident.getPhoneNumbers());
+            } else {
+                throw new BusinessException("添加社区居民失败！");
             }
         } else {
-            try {
-                communityResidentService.update(communityResident);
-            } catch (BusinessException be) {
-                be.printStackTrace();
-                throw new BusinessException(be.getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改社区居民失败！", e);
+            if (communityResidentService.updateById(communityResident)) {
+                setPhoneNumbers(communityResident.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, String.valueOf(communityResident.getId()));
+                phoneNumberService.saveOrUpdateBatch(communityResident.getPhoneNumbers());
+            } else {
+                throw new BusinessException("修改社区居民失败！");
             }
         }
         return "redirect:/resident";
@@ -171,15 +154,12 @@ public class CommunityResidentAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> deleteCommunityResidentForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            communityResidentService.delete(id);
+        if (communityResidentService.removeById(id)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除社区居民成功！");
             return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除社区居民失败！", e);
         }
+        throw new JsonException("删除社区居民失败！");
     }
 
     /**
@@ -197,12 +177,9 @@ public class CommunityResidentAction extends BaseAction {
         try {
             Workbook workbook = uploadExcel(request, session, "excel_resident_title");
             jsonMap.put("state", 1);
-            jsonMap.put("create", communityResidentService.create(workbook, subdistrictId, configurationsMap));
+            jsonMap.put("create", communityResidentService.save(workbook, subdistrictId, configurationsMap));
             return jsonMap;
-        } catch (BusinessException be) {
-            be.printStackTrace();
-            throw new JsonException(be.getMessage());
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             throw new JsonException("上传文件失败！", e);
         }
@@ -219,16 +196,16 @@ public class CommunityResidentAction extends BaseAction {
     public void communityResidentSaveAsExcel(HttpSession session, HttpServletResponse response, String data) {
         List<Map<String, Object>> userData = getDecodeData(session, data);
         // 获取属性-列头
-        Map<String, String> headMap = communityResidentService.findPartStatHead();
-        String excelResidentTitleUp = CommonUtils.convertConfigurationString(configurationsMap.get("excel_resident_title_up"));
-        String excelResidentTitle = CommonUtils.convertConfigurationString(configurationsMap.get("excel_resident_title"));
-        ExcelUtils.DataHandler dataHandler = communityResidentService.setExcelHead(new String[]{excelResidentTitleUp, excelResidentTitle});
+        Map<String, String> headMap = communityResidentService.getPartStatHead();
+        String excelResidentTitleUp = CommonUtil.convertConfigurationString(configurationsMap.get("excel_resident_title_up"));
+        String excelResidentTitle = CommonUtil.convertConfigurationString(configurationsMap.get("excel_resident_title"));
+        ExcelUtil.DataHandler dataHandler = communityResidentService.setExcelHead(new String[]{excelResidentTitleUp, excelResidentTitle});
+        // 获取业务数据集
+        JSONArray dataJson = communityResidentService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData);
         try {
-            // 获取业务数据集
-            JSONArray dataJson = communityResidentService.findCorrelation(communityCompanyType, subdistrictCompanyType, userData);
-            ByteArrayOutputStream byteArrayOutputStream = ExcelUtils.exportExcelX(excelResidentTitle, headMap, dataJson, 0, dataHandler);
-            ExcelUtils.downloadExcelFile(response, request, excelResidentTitle, byteArrayOutputStream);
-        } catch (Exception e) {
+            ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelResidentTitle, headMap, dataJson, 0, dataHandler);
+            ExcelUtil.downloadExcelFile(response, request, excelResidentTitle, byteArrayOutputStream);
+        } catch (IOException e) {
             e.printStackTrace();
             setCookieError(request, response);
             throw new BusinessException("导出Excel文件失败！");
@@ -252,21 +229,31 @@ public class CommunityResidentAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> findCommunityResidentsForAjax(HttpSession session, Integer page, Long companyId, Long companyType, String name, String address, String phone, Boolean isSearch) {
         getSessionRoleId(session);
-        Map<String, Object> communityResidentMap;
-        try {
-            if (isSearch != null && isSearch) {
-                CommunityResident communityResident = new CommunityResident();
-                communityResident.setName(name);
-                communityResident.setAddress(address);
-                communityResident.setPhones(phone);
-                communityResidentMap = communityResidentService.find(systemUser, systemAdministratorId, communityCompanyType, subdistrictCompanyType, communityResident, companyId, companyType, page, null);
-            } else {
-                communityResidentMap = communityResidentService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, page, null);
-            }
-            return setJsonMap(communityResidentMap);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("查找社区居民失败！", e);
+        IPage<CommunityResident> communityResidentMap;
+        if (isSearch != null && isSearch) {
+            CommunityResident communityResident = new CommunityResident();
+            communityResident.setName(name);
+            communityResident.setAddress(address);
+            List<String> phoneNumbers = new ArrayList<>();
+            phoneNumbers.add(phone);
+            communityResident.setPhoneNumbers(CommonUtil.setPhoneNumbers(phoneNumbers));
+            communityResidentMap = communityResidentService.get(systemUser, systemAdministratorId, communityCompanyType, subdistrictCompanyType, communityResident, companyId, companyType, page, null);
+        } else {
+            communityResidentMap = communityResidentService.getCorrelation(systemUser, PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, communityCompanyType, subdistrictCompanyType, page, null);
         }
+        return setJsonMap(communityResidentMap);
+    }
+
+
+    /**
+     * 添加、修改到数据库前处理
+     *
+     * @param communityResident 需要处理的社区居民对象
+     */
+    private void multiplePhoneHandler(CommunityResident communityResident) {
+        // 社区居民姓名
+        communityResident.setName(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getName())).replaceAll("—", "-"));
+        // 社区居民地址
+        communityResident.setAddress(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getAddress())).replaceAll("—", "-"));
     }
 }

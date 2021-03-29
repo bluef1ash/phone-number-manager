@@ -1,9 +1,10 @@
 package com.github.phonenumbermanager.service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.utils.ExcelUtils;
+import com.github.phonenumbermanager.util.ExcelUtil;
 
 import java.io.Serializable;
 import java.util.List;
@@ -20,9 +21,9 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      *
      * @param id 楼长编号
      * @return 楼长对象
-     * @throws Exception SERVICE层异常
      */
-    DormitoryManager findCorrelation(Serializable id) throws Exception;
+    @Override
+    DormitoryManager getCorrelation(Serializable id);
 
     /**
      * 通过系统用户角色编号与定位角色编号查找社区楼长及所属社区
@@ -32,9 +33,8 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      * @param userData               用户数据
      * @param titles                 标题数组
      * @return 社区楼长与所属社区集合转换的JSON对象
-     * @throws Exception SERVICE层异常
      */
-    JSONArray findCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData, String[] titles) throws Exception;
+    JSONArray getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData, String[] titles);
 
     /**
      * 通过社区楼长查找匹配的社区楼长
@@ -49,9 +49,8 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      * @param pageNumber             分页页码
      * @param pageDataSize           每页展示的数量
      * @return 查找到的社区楼长集合与分页对象
-     * @throws Exception SERVICE层异常
      */
-    Map<String, Object> find(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, DormitoryManager dormitoryManager, Serializable companyId, Serializable companyRoleId, Integer pageNumber, Integer pageDataSize) throws Exception;
+    IPage<DormitoryManager> get(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, DormitoryManager dormitoryManager, Serializable companyId, Serializable companyRoleId, Integer pageNumber, Integer pageDataSize);
 
     /**
      * 通过社区编号查找最后一个编号
@@ -60,9 +59,8 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      * @param communityName   社区名称
      * @param subdistrictName 街道办事处名称
      * @return 最后一个编号
-     * @throws Exception SERVICE层异常
      */
-    String find(Serializable communityId, String communityName, String subdistrictName) throws Exception;
+    String get(Serializable communityId, String communityName, String subdistrictName);
 
     /**
      * 获取社区楼长柱状图数据
@@ -75,9 +73,8 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      * @param communityCompanyType   社区单位类型编号
      * @param subdistrictCompanyType 街道单位类型编号
      * @return 柱状图数据
-     * @throws Exception SERVICE层异常
      */
-    Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Boolean typeParam, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) throws Exception;
+    Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Boolean typeParam, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType);
 
     /**
      * 获取文件标题
@@ -91,5 +88,5 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      *
      * @return Excel数据处理匿名类
      */
-    ExcelUtils.DataHandler getExcelDataHandler();
+    ExcelUtil.DataHandler getExcelDataHandler();
 }

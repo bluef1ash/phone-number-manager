@@ -2,17 +2,19 @@ package com.github.phonenumbermanager.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.github.phonenumbermanager.constant.PhoneCheckedTypes;
-import com.github.phonenumbermanager.constant.SystemConstant;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.*;
 import com.github.phonenumbermanager.entity.DormitoryManager;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.DateUtils;
-import com.github.phonenumbermanager.utils.ExcelUtils;
-import com.github.phonenumbermanager.utils.StringCheckedRegexUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.DateUtil;
+import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.promeg.pinyinhelper.Pinyin;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -20,7 +22,6 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,12 +30,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 社区楼长Service实现
+ * 社区楼长业务实现
  *
  * @author 廿二月的天
  */
 @Service("dormitoryManagerService")
-public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManager> implements DormitoryManagerService {
+public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManagerMapper, DormitoryManager> implements DormitoryManagerService {
 
     private static final String SUBDISTRICT_NAME_PLACEHOLDER = "${subdistrictName}";
     private static final String SUBDISTRICT_NAME_REGEX = "(?Us)[${]{2}subdistrictName[}]";
@@ -42,7 +43,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private Integer excelDormitoryCommunityNameCellNumber;
     private Integer excelDormitoryIdCellNumber;
     private Integer excelDormitoryNameCellNumber;
-    private Integer excelDormitorySexCellNumber;
+    private Integer excelDormitoryGenderCellNumber;
     private Integer excelDormitoryBirthCellNumber;
     private Integer excelDormitoryPoliticalStatusCellNumber;
     private Integer excelDormitoryWorkStatusCellNumber;
@@ -57,13 +58,13 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private String fileTitle = "XX";
     private String[] titles;
     private final Pattern idPatten = Pattern.compile("(?iUs)([A-Za-z]+)(\\d+)");
-    private final ExcelUtils.DataHandler excelDataHandler = (params, headers) -> {
+    private final ExcelUtil.DataHandler excelDataHandler = (params, headers) -> {
         Integer rowIndex = (Integer) params.get("rowIndex");
         Workbook workbook = (Workbook) params.get("workbook");
         Sheet sheet = (Sheet) params.get("sheet");
         // 附件格式
         if (StringUtils.isNotEmpty(titles[0])) {
-            CellStyle attachStyle = ExcelUtils.setCellStyle(workbook, "宋体", (short) 12, false, false, false);
+            CellStyle attachStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 12, false, false, false);
             Row attachTitle = sheet.createRow(rowIndex);
             attachTitle.createCell(0).setCellValue(titles[0]);
             attachTitle.getCell(0).setCellStyle(attachStyle);
@@ -73,13 +74,13 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         }
         // 表头
         Row titleRow = sheet.createRow(rowIndex);
-        CellStyle titleStyle = ExcelUtils.setCellStyle(workbook, "方正小标宋简体", (short) 18, false, false, false);
+        CellStyle titleStyle = ExcelUtil.setCellStyle(workbook, "方正小标宋简体", (short) 18, false, false, false);
         titleRow.createCell(0).setCellValue(fileTitle);
         titleRow.getCell(0).setCellStyle(titleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, findPartStatHead().size() - 1));
+        sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, getPartStatHead().size() - 1));
         sheet.getRow(rowIndex).setHeight((short) (48 * 20));
         rowIndex++;
-        CellStyle dateStyle = ExcelUtils.setCellStyle(workbook, "宋体", (short) 11, false, false, false);
+        CellStyle dateStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 11, false, false, false);
         // 单位、日期
         Row dateRow = sheet.createRow(rowIndex);
         int unitCellIndex = 10;
@@ -87,14 +88,14 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         dateRow.createCell(unitCellIndex).setCellValue("单位：户");
         dateRow.getCell(unitCellIndex).setCellStyle(dateStyle);
         sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, unitCellIndex, unitCellIndex + 1));
-        dateRow.createCell(dateCellIndex).setCellValue("时间：" + DateUtils.date2Str("yyyy年MM月dd日", new Date()));
+        dateRow.createCell(dateCellIndex).setCellValue("时间：" + DateUtil.date2Str("yyyy年MM月dd日", new Date()));
         dateRow.getCell(dateCellIndex).setCellStyle(dateStyle);
         sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, dateCellIndex, dateCellIndex + 3));
         sheet.getRow(rowIndex).setHeight((short) (26.1 * 20));
         rowIndex++;
         // 列头
         Row headerRow = sheet.createRow(rowIndex);
-        CellStyle headerStyle = ExcelUtils.setCellStyle(workbook, "宋体", (short) 11, false, true, false);
+        CellStyle headerStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 11, false, true, false);
         Row subcontractorRow = sheet.createRow(rowIndex + 1);
         int subcontractorStartCellIndex = headers.length - 2;
         for (int i = 0; i < headers.length; i++) {
@@ -115,7 +116,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             }
         }
         sheet.setAutoFilter(new CellRangeAddress(rowIndex, rowIndex, 0, headers.length - 1));
-        CellStyle contentStyle = ExcelUtils.setCellStyle(workbook, "宋体", (short) 9, false, true, true);
+        CellStyle contentStyle = ExcelUtil.setCellStyle(workbook, "宋体", (short) 9, false, true, true);
         rowIndex += 2;
         sheet.createFreezePane(0, rowIndex);
         params.put("rowIndex", rowIndex);
@@ -125,61 +126,29 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     };
 
     @Override
-    public long update(DormitoryManager dormitoryManager) {
-        if (communityDao.selectSubmittedById(0, dormitoryManager.getCommunityId())) {
-            throw new BusinessException("此社区已经提报，不允许修改！");
-        }
-        dormitoryManager.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.update(dormitoryManager);
+    public DormitoryManager getCorrelation(Serializable id) {
+        return dormitoryManagerMapper.selectAndCommunityById(id);
     }
 
     @Override
-    public DormitoryManager findCorrelation(Serializable id) {
-        DormitoryManager dormitoryManager = dormitoryManagerDao.selectAndCommunityById(id);
-        String[] phones = dormitoryManager.getPhones().split(",");
-        return phoneTypeHandler(phones, dormitoryManager);
-    }
-
-    @Override
-    public long create(DormitoryManager dormitoryManager) {
-        if (communityDao.selectSubmittedById(0, dormitoryManager.getCommunityId())) {
-            throw new BusinessException("此社区已经提报，不允许添加！");
-        }
-        StringBuilder phones = new StringBuilder();
-        if (StringUtils.isNotEmpty(dormitoryManager.getMobile())) {
-            phones.append(dormitoryManager.getMobile());
-        }
-        if (StringUtils.isNotEmpty(dormitoryManager.getLandline())) {
-            if (phones.length() > 0) {
-                phones.append(",");
-            }
-            phones.append(dormitoryManager.getLandline());
-        }
-        dormitoryManager.setPhones(phones.toString());
-        dormitoryManager.setCreateTime(DateUtils.getTimestamp(new Date()));
-        dormitoryManager.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.create(dormitoryManager);
-    }
-
-    @Override
-    public long create(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) throws Exception {
+    public boolean save(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
-        long readDormitoryExcelStartRowNumber = CommonUtils.convertConfigurationLong(configurationsMap.get("read_dormitory_excel_start_row_number"));
-        excelDormitoryCommunityNameCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_community_name_cell_number"));
-        excelDormitoryIdCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_id_cell_number"));
-        excelDormitoryNameCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_name_cell_number"));
-        excelDormitorySexCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_sex_cell_number"));
-        excelDormitoryBirthCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_birth_cell_number"));
-        excelDormitoryPoliticalStatusCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_political_status_cell_number"));
-        excelDormitoryWorkStatusCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_work_status_cell_number"));
-        excelDormitoryEducationCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_education_cell_number"));
-        excelDormitoryAddressCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_address_cell_number"));
-        excelDormitoryManagerAddressCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_address_cell_number"));
-        excelDormitoryManagerCountCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_count_cell_number"));
-        excelDormitoryTelephoneCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_telephone_cell_number"));
-        excelDormitoryLandlineCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_landline_cell_number"));
-        excelDormitorySubcontractorNameCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_name_cell_number"));
-        excelDormitorySubcontractorTelephoneCellNumber = CommonUtils.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_telephone_cell_number"));
+        long readDormitoryExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_dormitory_excel_start_row_number"));
+        excelDormitoryCommunityNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_community_name_cell_number"));
+        excelDormitoryIdCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_id_cell_number"));
+        excelDormitoryNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_name_cell_number"));
+        excelDormitoryGenderCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_gender_cell_number"));
+        excelDormitoryBirthCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_birth_cell_number"));
+        excelDormitoryPoliticalStatusCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_political_status_cell_number"));
+        excelDormitoryWorkStatusCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_work_status_cell_number"));
+        excelDormitoryEducationCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_education_cell_number"));
+        excelDormitoryAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_address_cell_number"));
+        excelDormitoryManagerAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_address_cell_number"));
+        excelDormitoryManagerCountCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_count_cell_number"));
+        excelDormitoryTelephoneCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_telephone_cell_number"));
+        excelDormitoryLandlineCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_landline_cell_number"));
+        excelDormitorySubcontractorNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_name_cell_number"));
+        excelDormitorySubcontractorTelephoneCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_telephone_cell_number"));
         setCommunityVariables(subdistrictId);
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             Sheet sheet = workbook.getSheetAt(i);
@@ -193,20 +162,20 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             }
         }
         if (dormitoryManagers.size() > 0) {
-            dormitoryManagerDao.deleteBySubdistrictId(subdistrictId);
-            return dormitoryManagerDao.insertBatch(dormitoryManagers);
+            dormitoryManagerMapper.deleteBySubdistrictId(subdistrictId);
+            return saveBatch(dormitoryManagers);
         }
-        return 0;
+        return false;
     }
 
     @Override
-    public Map<String, String> findPartStatHead() {
+    public Map<String, String> getPartStatHead() {
         Map<String, String> tableHead = new LinkedHashMap<>();
         tableHead.put("sequenceNumber", "序号");
         tableHead.put("communityName", "社区名称");
         tableHead.put("id", "编号");
         tableHead.put("name", "姓名");
-        tableHead.put("sexName", "性别");
+        tableHead.put("genderName", "性别");
         tableHead.put("birthString", "出生年月");
         tableHead.put("politicalStatusName", "政治面貌");
         tableHead.put("workStatusName", "工作状况");
@@ -222,60 +191,48 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public JSONArray findCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData, String[] titles) {
+    public JSONArray getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData, String[] titles) {
         this.titles = titles;
-        List<DormitoryManager> dormitoryManagers = dormitoryManagerDao.selectByUserData(userData, communityCompanyType, subdistrictCompanyType);
+        List<DormitoryManager> dormitoryManagers = dormitoryManagerMapper.selectByUserData(userData, communityCompanyType, subdistrictCompanyType);
+        JSONArray jsonArray = new JSONArray();
         if (dormitoryManagers != null) {
             long index = 1L;
-            Subdistrict subdistrict = subdistrictDao.selectById(dormitoryManagers.get(0).getCommunity().getSubdistrictId());
+            Subdistrict subdistrict = subdistrictMapper.selectById(dormitoryManagers.get(0).getCommunity().getSubdistrictId());
             if (titles[1].contains(SUBDISTRICT_NAME_PLACEHOLDER) && StringUtils.isNotEmpty(subdistrict.getName())) {
                 String subdistrictName = subdistrict.getName();
                 fileTitle = titles[1].replaceAll(SUBDISTRICT_NAME_REGEX, subdistrictName.replaceAll("(?iUs)[街道办事处]", ""));
             }
             for (DormitoryManager dormitoryManager : dormitoryManagers) {
+                JSONObject jsonObject = new JSONObject();
                 // 序号
-                dormitoryManager.setSequenceNumber(index);
+                jsonObject.put("sequenceNumber", index);
                 // 处理社区名称
                 String communityName = dormitoryManager.getCommunity().getName().replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
-                dormitoryManager.setCommunityName(communityName);
-                // 性别处理
-                dormitoryManager.setSexName(DormitoryManager.SEXES[dormitoryManager.getSex()]);
+                jsonObject.put("communityName", communityName);
                 // 出生年月
                 DateFormat dateFormat = new SimpleDateFormat("yyyy.MM");
-                dormitoryManager.setBirthString(dateFormat.format(dormitoryManager.getBirth()));
-                // 政治面貌
-                dormitoryManager.setPoliticalStatusName(DormitoryManager.POLITICAL_STATUSES[dormitoryManager.getPoliticalStatus()]);
-                // 工作状况
-                dormitoryManager.setWorkStatusName(DormitoryManager.WORK_STATUSES[dormitoryManager.getWorkStatus()]);
-                // 文化程度
-                dormitoryManager.setEducationName(DormitoryManager.EDUCATIONS[dormitoryManager.getEducation()]);
-                // 处理多个联系方式
-                if (dormitoryManager.getPhones().contains(",")) {
-                    String[] phones = dormitoryManager.getPhones().split(",");
-                    phoneTypeHandler(phones, dormitoryManager);
-                } else {
-                    phoneTypeHandler(new String[]{dormitoryManager.getPhones()}, dormitoryManager);
-                }
+                jsonObject.put("birth", dateFormat.format(dormitoryManager.getBirth()));
                 // 处理分包人
-                dormitoryManager.setSubcontractorName(dormitoryManager.getSubcontractor().getName());
-                dormitoryManager.setSubcontractorTelephone(dormitoryManager.getSubcontractor().getMobile());
+                jsonObject.put("subcontractorName", dormitoryManager.getSubcontractor().getName());
+                jsonObject.put("subcontractorTelephone", JSON.toJSON(dormitoryManager.getSubcontractor().getPhoneNumbers()));
+                jsonArray.add(jsonObject);
                 index++;
             }
         }
-        return (JSONArray) JSON.toJSON(dormitoryManagers);
+        return jsonArray;
     }
 
     @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, DormitoryManager dormitoryManager, Serializable companyId, Serializable companyRoleId, Integer pageNumber, Integer pageDataSize) {
-        Map<String, Object> company = getCompany(systemUser, companyId, companyRoleId, pageNumber, pageDataSize);
-        List<DormitoryManager> dormitoryManagers = dormitoryManagerDao.selectByUserRole((Serializable) company.get("companyType"), (Serializable) company.get("companyId"), systemCompanyType, communityCompanyType, subdistrictCompanyType, dormitoryManager);
-        return find(dormitoryManagers);
+    public IPage<DormitoryManager> get(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, DormitoryManager dormitoryManager, Serializable companyId, Serializable companyRoleId, Integer pageNumber, Integer pageDataSize) {
+        Map<String, Object> company = getCompany(systemUser, companyId, companyRoleId);
+        Page<DormitoryManager> page = new Page<>(pageNumber, pageDataSize);
+        return dormitoryManagerMapper.selectByUserRole(page, (Serializable) company.get("companyType"), (Serializable) company.get("companyId"), systemCompanyType, communityCompanyType, subdistrictCompanyType, dormitoryManager);
     }
 
     @Override
-    public String find(Serializable communityId, String communityName, String subdistrictName) {
+    public String get(Serializable communityId, String communityName, String subdistrictName) {
         StringBuilder lastId = new StringBuilder();
-        String id = dormitoryManagerDao.selectLastIdByCommunityId(communityId);
+        String id = dormitoryManagerMapper.selectLastIdByCommunityId(communityId);
         long idNumber = 0L;
         if (StringUtils.isNotEmpty(id)) {
             Matcher matcher = idPatten.matcher(id);
@@ -303,9 +260,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public Map<String, Object> find(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         Map<String, Object> baseMessage = new HashMap<>(3);
-        Map<String, Long> sexCount;
+        Map<String, Long> genderCount;
         Map<String, Long> ageData = null;
         Map<String, Long> educationData = null;
         Map<String, Long> politicalStatusData = null;
@@ -313,29 +270,29 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         long ct = (long) (companyType == null ? 0L : companyType);
         boolean isSystemRole = companyType == null || companyId == null || ct == (int) systemCompanyType;
         if (isSystemRole) {
-            sexCount = dormitoryManagerDao.countSexAll();
-            ageData = dormitoryManagerDao.countAgeRangeAll();
-            educationData = dormitoryManagerDao.countEducationRangeAll();
-            politicalStatusData = dormitoryManagerDao.countPoliticalStatusRangeAll();
-            workStatusData = dormitoryManagerDao.countWorkStatusRangeAll();
+            genderCount = dormitoryManagerMapper.countGenderAll();
+            ageData = dormitoryManagerMapper.countAgeRangeAll();
+            educationData = dormitoryManagerMapper.countEducationRangeAll();
+            politicalStatusData = dormitoryManagerMapper.countPoliticalStatusRangeAll();
+            workStatusData = dormitoryManagerMapper.countWorkStatusRangeAll();
         } else if (ct == (int) communityCompanyType) {
-            sexCount = dormitoryManagerDao.countSexByCommunityId(companyId);
-            ageData = dormitoryManagerDao.countAgeRangeCommunityId(companyId);
-            educationData = dormitoryManagerDao.countEducationRangeCommunityId(companyId);
-            politicalStatusData = dormitoryManagerDao.countPoliticalStatusRangeCommunityId(companyId);
-            workStatusData = dormitoryManagerDao.countWorkStatusRangeCommunityId(companyId);
+            genderCount = dormitoryManagerMapper.countGenderByCommunityId(companyId);
+            ageData = dormitoryManagerMapper.countAgeRangeCommunityId(companyId);
+            educationData = dormitoryManagerMapper.countEducationRangeCommunityId(companyId);
+            politicalStatusData = dormitoryManagerMapper.countPoliticalStatusRangeCommunityId(companyId);
+            workStatusData = dormitoryManagerMapper.countWorkStatusRangeCommunityId(companyId);
         } else if (ct == (int) subdistrictCompanyType) {
-            sexCount = dormitoryManagerDao.countSexBySubdistrictId(companyId);
-            ageData = dormitoryManagerDao.countAgeRangeSubdistrictId(companyId);
-            educationData = dormitoryManagerDao.countEducationRangeSubdistrictId(companyId);
-            politicalStatusData = dormitoryManagerDao.countPoliticalStatusRangeSubdistrictId(companyId);
-            workStatusData = dormitoryManagerDao.countWorkStatusRangeSubdistrictId(companyId);
+            genderCount = dormitoryManagerMapper.countGenderBySubdistrictId(companyId);
+            ageData = dormitoryManagerMapper.countAgeRangeSubdistrictId(companyId);
+            educationData = dormitoryManagerMapper.countEducationRangeSubdistrictId(companyId);
+            politicalStatusData = dormitoryManagerMapper.countPoliticalStatusRangeSubdistrictId(companyId);
+            workStatusData = dormitoryManagerMapper.countWorkStatusRangeSubdistrictId(companyId);
         } else {
-            sexCount = new HashMap<>(3);
-            sexCount.put("male", 0L);
-            sexCount.put("female", 0L);
+            genderCount = new HashMap<>(3);
+            genderCount.put("male", 0L);
+            genderCount.put("female", 0L);
         }
-        baseMessage.put("sex", sexCount);
+        baseMessage.put("gender", genderCount);
         if (ageData != null) {
             Map<String, Object> agePieData = getPieData(ageData, "年龄范围");
             baseMessage.put("age", agePieData);
@@ -356,40 +313,35 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Boolean typeParam, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Boolean typeParam, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         String label = "社区楼长分包总户数";
         String companyLabel = null;
         LinkedList<Map<String, Object>> dormitoryManager;
         long ct = (long) (companyType == null ? 0L : companyType);
-        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getCompanyType()) || (systemCompanyType.equals(systemUser.getCompanyType()) && ct == (int) subdistrictCompanyType);
+        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue()) || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int) subdistrictCompanyType);
         if (companyType == null || ct == (int) systemCompanyType) {
             companyLabel = "街道";
             if (typeParam) {
                 label = "社区楼长总人数";
-                dormitoryManager = dormitoryManagerDao.countForGroupSubdistrict();
+                dormitoryManager = dormitoryManagerMapper.countForGroupSubdistrict();
             } else {
-                dormitoryManager = dormitoryManagerDao.sumManagerCountForGroupSubdistrict();
+                dormitoryManager = dormitoryManagerMapper.sumManagerCountForGroupSubdistrict();
             }
         } else if (isSystemRoleCount) {
             companyLabel = "社区";
             if (typeParam) {
                 label = "社区楼长总人数";
-                dormitoryManager = dormitoryManagerDao.countForGroupCommunity(companyId);
+                dormitoryManager = dormitoryManagerMapper.countForGroupCommunity(companyId);
             } else {
-                dormitoryManager = dormitoryManagerDao.sumManagerCountForGroupCommunity(companyId);
+                dormitoryManager = dormitoryManagerMapper.sumManagerCountForGroupCommunity(companyId);
             }
-        } else if ((int) communityCompanyType == systemUser.getCompanyType()) {
+        } else if ((int) communityCompanyType == systemUser.getLevel().getValue()) {
             companyLabel = "社区";
             if (typeParam) {
                 label = "社区楼长总人数";
-                dormitoryManager = dormitoryManagerDao.countForGroupByCommunityId(companyId);
+                dormitoryManager = dormitoryManagerMapper.countForGroupByCommunityId(companyId);
             } else {
-                dormitoryManager = dormitoryManagerDao.sumManagerCountForGroupByCommunityId(companyId);
+                dormitoryManager = dormitoryManagerMapper.sumManagerCountForGroupByCommunityId(companyId);
             }
         } else {
             dormitoryManager = new LinkedList<>();
@@ -403,7 +355,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public ExcelUtils.DataHandler getExcelDataHandler() {
+    public ExcelUtil.DataHandler getExcelDataHandler() {
         return excelDataHandler;
     }
 
@@ -435,49 +387,54 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
      * @return 处理完成的楼片长对象
      * @throws ParseException 日期转换异常
      */
-    private DormitoryManager importExcelHandler(Row row) throws ParseException {
+    private DormitoryManager importExcelHandler(Row row) {
         DormitoryManager dormitoryManager = new DormitoryManager();
-        dormitoryManager.setId(convertCellString(row.getCell(excelDormitoryIdCellNumber)));
+        String id = convertCellString(row.getCell(excelDormitoryIdCellNumber));
+        dormitoryManager.setId(id);
         String communityName = convertCellString(row.getCell(excelDormitoryCommunityNameCellNumber));
         Long communityId = getCommunityId(communityMap, communityName);
         dormitoryManager.setCommunityId(communityId);
         dormitoryManager.setName(convertCellString(row.getCell(excelDormitoryNameCellNumber)));
-        int sex = 0;
-        String sexName = convertCellString(row.getCell(excelDormitorySexCellNumber));
-        if (DormitoryManager.SEXES[1].equals(sexName)) {
-            sex = 1;
-        } else if (!DormitoryManager.SEXES[0].equals(sexName)) {
-            sex = 2;
+        String genderName = convertCellString(row.getCell(excelDormitoryGenderCellNumber));
+        if (GenderEnum.MALE.getDescription().equals(genderName)) {
+            dormitoryManager.setGender(GenderEnum.MALE);
+        } else if (GenderEnum.FEMALE.getDescription().equals(genderName)) {
+            dormitoryManager.setGender(GenderEnum.FEMALE);
+        } else {
+            dormitoryManager.setGender(GenderEnum.UNKNOWN);
         }
-        dormitoryManager.setSex(sex);
         Cell birthCell = row.getCell(excelDormitoryBirthCellNumber);
-        Date birth;
-        if (ExcelUtils.DEFAULT_DATE_PATTERN_EN.equals(birthCell.getCellStyle().getDataFormatString())) {
+        Date birth = null;
+        if (ExcelUtil.DEFAULT_DATE_PATTERN_EN.equals(birthCell.getCellStyle().getDataFormatString())) {
             birth = birthCell.getDateCellValue();
         } else {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
             String birthString = convertCellString(birthCell).replaceAll("(?iUs)^(\\d{4})[.-/年]?(\\d{1,2})[.-/月]?(?:\\d{1,2})?[日]?$", "$1-$2");
-            birth = dateFormat.parse(birthString);
+            try {
+                birth = dateFormat.parse(birthString);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         dormitoryManager.setBirth(birth);
         String political = convertCellString(row.getCell(excelDormitoryPoliticalStatusCellNumber));
-        for (int i = 0; i < DormitoryManager.POLITICAL_STATUSES.length; i++) {
-            if (DormitoryManager.POLITICAL_STATUSES[i].contains(political)) {
-                dormitoryManager.setPoliticalStatus(i);
+        for (PoliticalStatusEnum politicalStatusEnum : PoliticalStatusEnum.values()) {
+            if (politicalStatusEnum.getDescription().contains(political)) {
+                dormitoryManager.setPoliticalStatus(politicalStatusEnum);
                 break;
             }
         }
-        String workStatus = convertCellString(row.getCell(excelDormitoryWorkStatusCellNumber));
-        for (int i = 0; i < DormitoryManager.WORK_STATUSES.length; i++) {
-            if (DormitoryManager.WORK_STATUSES[i].contains(workStatus)) {
-                dormitoryManager.setWorkStatus(i);
+        String employmentStatus = convertCellString(row.getCell(excelDormitoryWorkStatusCellNumber));
+        for (EmploymentStatusEnum employmentStatusEnum : EmploymentStatusEnum.values()) {
+            if (employmentStatusEnum.getDescription().contains(employmentStatus)) {
+                dormitoryManager.setEmploymentStatus(employmentStatusEnum);
                 break;
             }
         }
         String education = convertCellString(row.getCell(excelDormitoryEducationCellNumber));
-        for (int k = 0; k < DormitoryManager.EDUCATIONS.length; k++) {
-            if (DormitoryManager.EDUCATIONS[k].contains(education)) {
-                dormitoryManager.setEducation(k);
+        for (EducationStatusEnum educationStatusEnum : EducationStatusEnum.values()) {
+            if (educationStatusEnum.getDescription().contains(education)) {
+                dormitoryManager.setEducation(educationStatusEnum);
                 break;
             }
         }
@@ -486,42 +443,18 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         dormitoryManager.setManagerCount(convertCell(row.getCell(excelDormitoryManagerCountCellNumber)));
         String telephone = convertCellString(row.getCell(excelDormitoryTelephoneCellNumber));
         String landline = convertCellString(row.getCell(excelDormitoryLandlineCellNumber));
-        StringBuilder phones = new StringBuilder();
-        if (StringUtils.isNotEmpty(telephone)) {
-            phones.append(telephone);
-        }
-        if (StringUtils.isNotEmpty(landline)) {
-            if (phones.length() > 0) {
-                phones.append(",");
-            }
-            phones.append(landline);
-        }
-        dormitoryManager.setPhones(phones.toString());
-        Timestamp timestamp = DateUtils.getTimestamp(new Date());
+        List<PhoneNumber> phoneNumbers = new ArrayList<>();
+        PhoneNumber phoneNumber1 = new PhoneNumber();
+        phoneNumber1.setPhoneNumber(telephone).setPhoneType(PhoneTypeEnum.MOBILE).setSourceType(PhoneNumberSourceTypeEnum.DORMITORY_MANAGER).setSourceId(id);
+        PhoneNumber phoneNumber2 = new PhoneNumber();
+        phoneNumber2.setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.LANDLINE).setSourceType(PhoneNumberSourceTypeEnum.DORMITORY_MANAGER).setSourceId(id);
+        phoneNumbers.add(phoneNumber1);
+        phoneNumbers.add(phoneNumber2);
+        dormitoryManager.setPhoneNumbers(phoneNumbers);
         String subcontractorName = convertCellString(row.getCell(excelDormitorySubcontractorNameCellNumber));
         String subcontractorPhone = convertCellString(row.getCell(excelDormitorySubcontractorTelephoneCellNumber));
         Long subcontractorId = addSubcontractorHandler(subcontractorName, subcontractorPhone, subcontractors, communityId);
         dormitoryManager.setSubcontractorId(subcontractorId);
-        dormitoryManager.setCreateTime(timestamp);
-        dormitoryManager.setUpdateTime(timestamp);
-        return dormitoryManager;
-    }
-
-    /**
-     * 根据联系方式类型设置
-     *
-     * @param phones           联系方式数组
-     * @param dormitoryManager 楼长对象
-     * @return 社区居民楼长对象
-     */
-    private DormitoryManager phoneTypeHandler(String[] phones, DormitoryManager dormitoryManager) {
-        for (String phone : phones) {
-            if (StringCheckedRegexUtils.checkPhone(phone) == PhoneCheckedTypes.MOBILE) {
-                dormitoryManager.setMobile(phone);
-            } else if (StringCheckedRegexUtils.checkPhone(phone) == PhoneCheckedTypes.LANDLINE) {
-                dormitoryManager.setLandline(phone);
-            }
-        }
         return dormitoryManager;
     }
 }

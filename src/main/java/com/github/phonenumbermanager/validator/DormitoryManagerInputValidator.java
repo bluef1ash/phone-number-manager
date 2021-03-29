@@ -1,18 +1,16 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.constant.PhoneCheckedTypes;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.DormitoryManager;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.StringCheckedRegexUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,7 +19,7 @@ import java.util.List;
  * @author 廿二月的天
  */
 public class DormitoryManagerInputValidator extends BaseInputValidator<DormitoryManager> implements Validator {
-    private DormitoryManagerService dormitoryManagerService;
+    private final DormitoryManagerService dormitoryManagerService;
 
     public DormitoryManagerInputValidator(DormitoryManagerService dormitoryManagerService, HttpServletRequest request) {
         this.request = request;
@@ -32,10 +30,10 @@ public class DormitoryManagerInputValidator extends BaseInputValidator<Dormitory
     protected boolean checkInput(Object target, Errors errors) {
         ValidationUtils.rejectIfEmpty(errors, "id", "dormitoryManager.id.required", "社区楼长编号不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "name", "dormitoryManager.name.required", "社区楼长姓名不能为空！");
-        ValidationUtils.rejectIfEmpty(errors, "sex", "dormitoryManager.sex.required", "请选择社区楼长的性别！");
+        ValidationUtils.rejectIfEmpty(errors, "gender", "dormitoryManager.gender.required", "请选择社区楼长的性别！");
         ValidationUtils.rejectIfEmpty(errors, "birth", "dormitoryManager.birth.required", "请选择社区楼长的出生年月！");
         ValidationUtils.rejectIfEmpty(errors, "politicalStatus", "dormitoryManager.politicalStatus.required", "请选择社区楼长的政治面貌！");
-        ValidationUtils.rejectIfEmpty(errors, "workStatus", "dormitoryManager.workStatus.required", "请选择社区楼长的工作状况！");
+        ValidationUtils.rejectIfEmpty(errors, "employmentStatus", "dormitoryManager.employmentStatus.required", "请选择社区楼长的工作状况！");
         ValidationUtils.rejectIfEmpty(errors, "education", "dormitoryManager.education.required", "请选择社区楼长的文化程度！");
         ValidationUtils.rejectIfEmpty(errors, "address", "dormitoryManager.address.required", "社区楼长的家庭地址不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "managerAddress", "dormitoryManager.managerAddress.required", "社区楼长的分包楼栋不能为空！");
@@ -49,37 +47,23 @@ public class DormitoryManagerInputValidator extends BaseInputValidator<Dormitory
             return false;
         }
         field = "telephone";
-        if (StringUtils.isEmpty(dormitoryManager.getMobile()) && StringUtils.isEmpty(dormitoryManager.getLandline())) {
+        if (dormitoryManager.getPhoneNumbers().size() > 0) {
             message = "社区楼长的联系方式必须填写一项！";
             return false;
         }
-        if (StringUtils.isNotEmpty(dormitoryManager.getMobile()) && StringCheckedRegexUtils.checkPhone(dormitoryManager.getMobile()) != PhoneCheckedTypes.MOBILE) {
-            message = "社区楼长的移动联系方式不合法！";
-            return false;
-        }
-        if (StringUtils.isNotEmpty(dormitoryManager.getLandline()) && StringCheckedRegexUtils.checkPhone(dormitoryManager.getLandline()) != PhoneCheckedTypes.LANDLINE) {
-            field = "landline";
-            message = "社区楼长的固定联系方式不合法！";
+        if (!checkedPhones(dormitoryManager.getPhoneNumbers())) {
             return false;
         }
         // 验证姓名+地址重复
         String nameAddress = dormitoryManager.getName() + dormitoryManager.getAddress();
-        List<String> phones = new ArrayList<>();
-        if (StringUtils.isNotEmpty(dormitoryManager.getMobile())) {
-            phones.add(CommonUtils.qj2bj(CommonUtils.replaceBlank(dormitoryManager.getMobile())));
-        }
-        if (StringUtils.isNotEmpty(dormitoryManager.getLandline())) {
-            phones.add(CommonUtils.qj2bj(CommonUtils.replaceBlank(dormitoryManager.getLandline()).replaceAll("—", "-")));
-        }
-        field = "phones";
         Long subdistrictId = Long.valueOf(request.getParameter("subdistrictId"));
         try {
-            List<DormitoryManager> isNameAndAddressRepeat = dormitoryManagerService.find(nameAddress, dormitoryManager.getId(), subdistrictId);
+            List<DormitoryManager> isNameAndAddressRepeat = dormitoryManagerService.get(nameAddress, dormitoryManager.getId(), subdistrictId);
             if (!checkedListData(isNameAndAddressRepeat, false, null)) {
                 return false;
             }
             // 联系方式重复
-            List<DormitoryManager> isPhonesRepeat = dormitoryManagerService.find(phones, dormitoryManager.getId(), subdistrictId);
+            List<DormitoryManager> isPhonesRepeat = dormitoryManagerService.get(dormitoryManager.getPhoneNumbers(), dormitoryManager.getId(), subdistrictId, PhoneNumberSourceTypeEnum.DORMITORY_MANAGER);
             return checkedListData(isPhonesRepeat, true, dormitoryManager);
         } catch (Exception e) {
             throw new BusinessException("社区楼长验证失败！", e);
@@ -100,12 +84,13 @@ public class DormitoryManagerInputValidator extends BaseInputValidator<Dormitory
         if (isNameAndAddressRepeat.size() > 0) {
             String checkType = null;
             if (isCheckedPhone) {
+                loopDormitoryManagers:
                 for (int i = 0; i < isNameAndAddressRepeat.size(); i++) {
                     if ("PUT".equals(request.getMethod()) && dormitoryManager.getId() != null) {
-                        boolean isPhone1 = StringUtils.isNotEmpty(dormitoryManager.getMobile()) && isNameAndAddressRepeat.toString().contains(dormitoryManager.getMobile());
-                        boolean isPhone2 = StringUtils.isNotEmpty(dormitoryManager.getLandline()) && isNameAndAddressRepeat.toString().contains(dormitoryManager.getLandline());
-                        if (isPhone1 || isPhone2) {
-                            continue;
+                        for (PhoneNumber phoneNumber : dormitoryManager.getPhoneNumbers()) {
+                            if (phoneNumber.getPhoneNumber() != null && StringUtils.isNotEmpty(phoneNumber.getPhoneNumber()) && isNameAndAddressRepeat.toString().contains(phoneNumber.getPhoneNumber())) {
+                                continue loopDormitoryManagers;
+                            }
                         }
                     }
                     if (i > 0) {

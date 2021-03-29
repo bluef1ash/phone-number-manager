@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author 廿二月的天
  */
 public class SystemUserInputValidator extends BaseInputValidator<SystemUser> implements Validator {
-    private SystemUserService systemUserService;
+    private final SystemUserService systemUserService;
 
     public SystemUserInputValidator(SystemUserService systemUserService, HttpServletRequest request) {
         this.systemUserService = systemUserService;
@@ -31,7 +31,7 @@ public class SystemUserInputValidator extends BaseInputValidator<SystemUser> imp
             ValidationUtils.rejectIfEmpty(errors, "roleId", "systemUser.roleId.required", "系统用户角色不能为空！");
             SystemUser systemUser = (SystemUser) target;
             if (RequestMethod.POST.toString().equals(request.getMethod())) {
-                SystemUser systemUserDb = systemUserService.find(systemUser.getUsername());
+                SystemUser systemUserDb = systemUserService.getById(systemUser.getUsername());
                 if (systemUserDb != null && systemUserDb.getId() > 0) {
                     errors.rejectValue("username", "systemUser.username.exists", "此用户已存在，请更改用户名称！");
                 }

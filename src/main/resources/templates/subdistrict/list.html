@@ -46,7 +46,7 @@
                                         <tr v-for="(subdistrict, index) in subdistricts" :key="subdistrict.id">
                                             <td v-text="index + 1"></td>
                                             <td v-text="subdistrict.name"></td>
-                                            <td v-text="subdistrict.landline"></td>
+                                            <td v-text="subdistrict.phoneNumbers[0].phoneNumber"></td>
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">

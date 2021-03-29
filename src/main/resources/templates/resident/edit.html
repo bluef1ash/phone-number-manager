@@ -59,23 +59,23 @@
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="phone1">社区居民联系方式一</label>
                                 <div class="col-md-9">
-                                    <input id="phone1" type="text" name="phone1" :class="['form-control', {'is-invalid': errorClasses[2]}]" placeholder="请输入社区居民联系方式一" v-model="communityResident.phone1" :disabled="communityResident.community.residentSubmitted" @blur="showPhone(communityResident.phone1, 'isShowPhone2')">
+                                    <input id="phone1" type="text" name="phoneNumbers[0].phoneNumber" :class="['form-control', {'is-invalid': errorClasses[2]}]" placeholder="请输入社区居民联系方式一" v-model="communityResident.phoneNumbers[0].phoneNumber" :disabled="communityResident.community.residentSubmitted" @blur="showPhoneInput(communityResident.phoneNumbers)">
                                     <span class="help-block">必填项，社区居民联系方式不允许重复</span>
                                     <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
                                 </div>
                             </div>
-                            <div class="form-group row" v-if="isShowPhone2">
+                            <div class="form-group row" v-if="showPhoneInputs[0]">
                                 <label class="col-md-3 col-form-label" for="phone2">社区居民联系方式二</label>
                                 <div class="col-md-9">
-                                    <input id="phone2" type="text" name="phone2" :class="['form-control', {'is-invalid': errorClasses[3]}]" placeholder="请输入社区居民联系方式二" v-model="communityResident.phone2" :disabled="communityResident.community.residentSubmitted" @blur="showPhone(communityResident.phone2, 'isShowPhone3')">
+                                    <input id="phone2" type="text" name="phoneNumbers[1].phoneNumber" :class="['form-control', {'is-invalid': errorClasses[3]}]" placeholder="请输入社区居民联系方式二" v-model="communityResident.phoneNumbers[1].phoneNumber" :disabled="communityResident.community.residentSubmitted" @blur="showPhoneInputs(communityResident.phoneNumbers)">
                                     <span class="help-block">社区居民联系方式不允许重复</span>
                                     <div class="invalid-feedback" :style="errorClasses[3] && {'display': 'block'}" v-text="errorMessages[3]"></div>
                                 </div>
                             </div>
-                            <div class="form-group row" v-if="isShowPhone3">
+                            <div class="form-group row" v-if="showPhoneInputs[1]">
                                 <label class="col-md-3 col-form-label" for="phone3">社区居民联系方式三</label>
                                 <div class="col-md-9">
-                                    <input id="phone3" type="text" name="phone3" :class="['form-control', {'is-invalid': errorClasses[4]}]" placeholder="请输入社区居民联系方式三" v-model="communityResident.phone3" :disabled="communityResident.community.residentSubmitted">
+                                    <input id="phone3" type="text" name="phoneNumbers[2].phoneNumber" :class="['form-control', {'is-invalid': errorClasses[4]}]" placeholder="请输入社区居民联系方式三" v-model="communityResident.phoneNumbers[2].phoneNumber" :disabled="communityResident.community.residentSubmitted">
                                     <span class="help-block">社区居民联系方式不允许重复</span>
                                     <div class="invalid-feedback" :style="errorClasses[4] && {'display': 'block'}" v-text="errorMessages[4]"></div>
                                 </div>

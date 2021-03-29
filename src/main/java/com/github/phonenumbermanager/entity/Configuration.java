@@ -1,13 +1,12 @@
 package com.github.phonenumbermanager.entity;
 
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * 配置项实体
@@ -16,15 +15,18 @@ import java.sql.Timestamp;
  */
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode
-@ToString
 @Accessors(chain = true)
 public class Configuration implements Serializable {
+    @TableId(type = IdType.INPUT, value = "`key`")
     private String key;
     private Integer type;
     private String value;
     private String description;
-    private Boolean keyChanged;
-    private Timestamp createTime;
-    private Timestamp updateTime;
+    private Boolean keyIsChanged;
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+    @Version
+    private Integer version;
 }

@@ -17,7 +17,7 @@ import java.util.List;
  * @author 廿二月的天
  */
 public class UserPrivilegeInputValidator extends BaseInputValidator<UserPrivilege> implements Validator {
-    private UserPrivilegeService userPrivilegeService;
+    private final UserPrivilegeService userPrivilegeService;
 
     public UserPrivilegeInputValidator(UserPrivilegeService userPrivilegeService, HttpServletRequest request) {
         this.userPrivilegeService = userPrivilegeService;
@@ -32,7 +32,7 @@ public class UserPrivilegeInputValidator extends BaseInputValidator<UserPrivileg
             ValidationUtils.rejectIfEmpty(errors, "uri", "userPrivilege.uri.required", "系统用户权限访问地址不能为空！");
             UserPrivilege userPrivilege = (UserPrivilege) target;
             if (RequestMethod.POST.toString().equals(request.getMethod())) {
-                List<UserPrivilege> userPrivileges = userPrivilegeService.find(userPrivilege);
+                List<UserPrivilege> userPrivileges = userPrivilegeService.get(userPrivilege);
                 if (userPrivileges != null && userPrivileges.size() > 0) {
                     field = "id";
                     errorCode = "userPrivilege.id.errorCode";

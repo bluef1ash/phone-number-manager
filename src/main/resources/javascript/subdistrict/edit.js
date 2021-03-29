@@ -17,7 +17,12 @@ $(document).ready(() => {
         created() {
             if (this.subdistrict === null) {
                 this.subdistrict = {
-                    name: ""
+                    name: "",
+                    phoneNumbers: [
+                        {
+                            phoneNumber: ""
+                        }
+                    ]
                 };
             }
         },
@@ -44,7 +49,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.subdistrict.landline === null || this.subdistrict.landline === "") {
+                if (this.subdistrict.phoneNumbers[0].phoneNumber === null || this.subdistrict.phoneNumbers[0].phoneNumber === "") {
                     message = "街道办事处联系方式不能为空！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
@@ -52,7 +57,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (checkPhoneType(this.subdistrict.landline) === -1) {
+                if (checkPhoneType(this.subdistrict.phoneNumbers[0].phoneNumber) === -1) {
                     message = "街道办事处联系方式非法！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);

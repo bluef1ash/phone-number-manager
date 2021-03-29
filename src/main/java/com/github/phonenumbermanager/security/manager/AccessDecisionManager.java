@@ -3,7 +3,7 @@ package com.github.phonenumbermanager.security.manager;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
-import com.github.phonenumbermanager.utils.CommonUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -32,7 +32,7 @@ public class AccessDecisionManager implements org.springframework.security.acces
             return;
         }
         SystemUser systemUser = (SystemUser) principal;
-        Long systemAdministratorId = CommonUtils.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
         if (systemAdministratorId.equals(systemUser.getId())) {
             return;
         }

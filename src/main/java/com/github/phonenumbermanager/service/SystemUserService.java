@@ -17,15 +17,14 @@ public interface SystemUserService extends BaseService<SystemUser> {
      *
      * @param id 系统用户编号
      * @return 查找到的系统用户对象
-     * @throws Exception SERVICE层异常
      */
-    SystemUser findCorrelation(Serializable id) throws Exception;
+    @Override
+    SystemUser getCorrelation(Serializable id);
 
     /**
      * 查找系统用户编号与名称
      *
      * @return 查找到的系统用户对象集合
-     * @throws Exception SERVICE层异常
      */
-    List<SystemUser> findIdAndName() throws Exception;
+    List<SystemUser> getIdAndName();
 }

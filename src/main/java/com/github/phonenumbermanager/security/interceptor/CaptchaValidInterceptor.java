@@ -3,8 +3,8 @@ package com.github.phonenumbermanager.security.interceptor;
 import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.GeetestLibUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.GeetestLibUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.FilterInvocation;
@@ -42,10 +42,10 @@ public class CaptchaValidInterceptor implements Filter {
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
             httpServletResponse.sendRedirect(loginUri);
         }
-        GeetestLibUtils gtSdk = new GeetestLibUtils(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
-        String challenge = request.getParameter(GeetestLibUtils.FN_GEETEST_CHALLENGE);
-        String validate = request.getParameter(GeetestLibUtils.FN_GEETEST_VALIDATE);
-        String secCode = request.getParameter(GeetestLibUtils.FN_GEETEST_SECCODE);
+        GeetestLibUtil gtSdk = new GeetestLibUtil(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
+        String challenge = request.getParameter(GeetestLibUtil.FN_GEETEST_CHALLENGE);
+        String validate = request.getParameter(GeetestLibUtil.FN_GEETEST_VALIDATE);
+        String secCode = request.getParameter(GeetestLibUtil.FN_GEETEST_SECCODE);
         if (StringUtils.isEmpty(challenge) || StringUtils.isEmpty(validate) || StringUtils.isEmpty(secCode)) {
             FilterInvocation filterInvocation = new FilterInvocation(request, response, filterChain);
             filterInvocation.getChain().doFilter(filterInvocation.getRequest(), filterInvocation.getResponse());
@@ -54,7 +54,7 @@ public class CaptchaValidInterceptor implements Filter {
         int gtServerStatusCode = (Integer) httpServletRequest.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
         Map<String, String> param = new HashMap<>(3);
         param.put("client_type", request.getParameter("browserType"));
-        param.put("ip_address", CommonUtils.getIp(httpServletRequest));
+        param.put("ip_address", CommonUtil.getIp(httpServletRequest));
         int gtResult;
         if (gtServerStatusCode == 1) {
             gtResult = gtSdk.enhencedValidateRequest(challenge, validate, secCode, param);

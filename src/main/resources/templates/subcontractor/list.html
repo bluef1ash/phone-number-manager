@@ -50,7 +50,7 @@
                                         <tr v-for="(subcontractor, index) in subcontractors" :key="subcontractor.subcontractorId">
                                             <td v-text="index + 1"></td>
                                             <td v-text="subcontractor.name"></td>
-                                            <td v-text="subcontractor.mobile"></td>
+                                            <td v-text="subcontractor.phoneNumbers[0].phoneNumber"></td>
                                             <td v-text="subcontractor.community.name"></td>
                                             <td>
                                                 <div class="row">

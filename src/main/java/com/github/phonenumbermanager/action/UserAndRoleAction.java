@@ -1,6 +1,6 @@
 package com.github.phonenumbermanager.action;
 
-import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -48,9 +48,10 @@ public class UserAndRoleAction extends BaseAction {
     @InitBinder
     public void initBinder(DataBinder binder) {
         StringBuffer requestUrl = request.getRequestURL();
-        boolean isUser = requestUrl.toString().contains("/user") && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
-        boolean isRole = requestUrl.toString().contains("/role") && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
-        boolean isPrivilege = requestUrl.toString().contains("/privilege") && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
+        String s = requestUrl.substring(requestUrl.lastIndexOf("/"));
+        boolean isUser = "user".equals(s) && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
+        boolean isRole = "role".equals(s) && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
+        boolean isPrivilege = "privilege".equals(s) && (RequestMethod.POST.toString().equals(request.getMethod()) || RequestMethod.PUT.toString().equals(request.getMethod()));
         if (isUser) {
             binder.replaceValidators(new SystemUserInputValidator(systemUserService, request));
         } else if (isRole) {
@@ -70,16 +71,9 @@ public class UserAndRoleAction extends BaseAction {
     @GetMapping({"/user", "/user/{page}"})
     public String systemUserList(HttpSession session, Model model, @PathVariable(required = false) Integer page) {
         getSessionRoleId(session);
-        try {
-            Map<String, Object> systemUsers = systemUserService.findCorrelation(page, null);
-            model.addAttribute("systemAdministratorId", systemAdministratorId);
-            model.addAttribute("systemUsers", JSON.toJSON(systemUsers.get("data")));
-            model.addAttribute("pageInfo", systemUsers.get("pageInfo"));
-            return "user/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("systemAdministratorId", systemAdministratorId);
+        model.addAttribute("systemUsers", systemUserService.getCorrelation(page, null));
+        return "user/list";
     }
 
     /**
@@ -98,20 +92,15 @@ public class UserAndRoleAction extends BaseAction {
         SystemUser systemUser = new SystemUser();
         systemUser.setId(id);
         systemUser.setLocked(locked);
-        try {
-            if (!id.equals(systemAdministratorId)) {
-                systemUserService.update(systemUser);
-                jsonMap.put("state", 1);
-                SystemUser user = systemUserService.find(id);
-                jsonMap.put("locked", user.getLocked());
-            } else {
-                jsonMap.put("state", 0);
-            }
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException(e);
+        if (!id.equals(systemAdministratorId)) {
+            systemUserService.updateById(systemUser);
+            jsonMap.put("state", 1);
+            SystemUser user = systemUserService.getById(id);
+            jsonMap.put("locked", user.getLocked());
+        } else {
+            jsonMap.put("state", 0);
         }
+        return jsonMap;
     }
 
     /**
@@ -127,16 +116,11 @@ public class UserAndRoleAction extends BaseAction {
         model.addAttribute("communityCompanyType", communityCompanyType);
         model.addAttribute("subdistrictCompanyType", subdistrictCompanyType);
         model.addAttribute("systemAdministratorId", systemAdministratorId);
-        try {
-            List<UserRole> userRoles = userRoleService.find();
-            List<Subdistrict> subdistricts = subdistrictService.find();
-            model.addAttribute("userRoles", userRoles);
-            model.addAttribute("subdistricts", subdistricts);
-            return "user/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<UserRole> userRoles = userRoleService.list();
+        List<Subdistrict> subdistricts = subdistrictService.list();
+        model.addAttribute("userRoles", userRoles);
+        model.addAttribute("subdistricts", subdistricts);
+        return "user/edit";
     }
 
     /**
@@ -156,18 +140,13 @@ public class UserAndRoleAction extends BaseAction {
         if (id == null) {
             id = systemUser.getId();
         }
-        try {
-            List<UserRole> userRoles = userRoleService.find();
-            SystemUser user = systemUserService.findCorrelation(id);
-            List<Subdistrict> subdistricts = subdistrictService.find();
-            model.addAttribute("user", user);
-            model.addAttribute("userRoles", userRoles);
-            model.addAttribute("subdistricts", subdistricts);
-            return "user/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<UserRole> userRoles = userRoleService.list();
+        SystemUser user = systemUserService.getCorrelation(id);
+        List<Subdistrict> subdistricts = subdistrictService.list();
+        model.addAttribute("user", user);
+        model.addAttribute("userRoles", userRoles);
+        model.addAttribute("subdistricts", subdistricts);
+        return "user/edit";
     }
 
     /**
@@ -194,19 +173,13 @@ public class UserAndRoleAction extends BaseAction {
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
             // 添加
-            try {
-                systemUserService.create(systemUser);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加用户失败！", e);
+            if (!systemUserService.save(systemUser)) {
+                throw new BusinessException("添加用户失败！");
             }
         } else {
             // 修改
-            try {
-                systemUserService.update(systemUser);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改用户失败！", e);
+            if (!systemUserService.updateById(systemUser)) {
+                throw new BusinessException("修改用户失败！");
             }
         }
         return "redirect:/system/user_role/user";
@@ -224,20 +197,17 @@ public class UserAndRoleAction extends BaseAction {
     public Map<String, Object> deleteSystemUserForAjax(HttpSession session, @PathVariable Long id) {
         getSessionRoleId(session);
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            if (id.equals(systemAdministratorId)) {
-                jsonMap.put("state", 0);
-                jsonMap.put("message", "不允许删除超级管理员！");
-            } else {
-                systemUserService.delete(id);
-                jsonMap.put("state", 1);
-                jsonMap.put("message", "删除系统用户成功！");
+        if (id.equals(systemAdministratorId)) {
+            jsonMap.put("state", 0);
+            jsonMap.put("message", "不允许删除超级管理员！");
+        } else {
+            if (!systemUserService.removeById(id)) {
+                throw new JsonException("删除系统用户失败！");
             }
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除系统用户失败！", e);
+            jsonMap.put("state", 1);
+            jsonMap.put("message", "删除系统用户成功！");
         }
+        return jsonMap;
     }
 
     /**
@@ -249,15 +219,10 @@ public class UserAndRoleAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> getSystemUsersForAjax() {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            List<SystemUser> systemUsers = systemUserService.findIdAndName();
-            jsonMap.put("state", 1);
-            jsonMap.put("systemUsers", systemUsers);
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("获取系统用户失败！", e);
-        }
+        List<SystemUser> systemUsers = systemUserService.getIdAndName();
+        jsonMap.put("state", 1);
+        jsonMap.put("systemUsers", systemUsers);
+        return jsonMap;
     }
 
     /**
@@ -269,15 +234,8 @@ public class UserAndRoleAction extends BaseAction {
      */
     @GetMapping({"/role", "/role/{page}"})
     public String systemUserRoleList(Model model, @PathVariable(required = false) Integer page) {
-        try {
-            Map<String, Object> userRoles = userRoleService.find(page, null);
-            model.addAttribute("userRoles", userRoles.get("data"));
-            model.addAttribute("pageInfo", userRoles.get("pageInfo"));
-            return "role/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("userRoles", userRoleService.getCorrelation(page, null));
+        return "role/list";
     }
 
     /**
@@ -288,16 +246,11 @@ public class UserAndRoleAction extends BaseAction {
      */
     @GetMapping("/role/create")
     public String createSystemUserRole(Model model) {
-        try {
-            List<UserRole> userRoles = userRoleService.find();
-            Set<UserPrivilege> userPrivileges = userPrivilegeService.findForSub();
-            model.addAttribute("userRoles", userRoles);
-            model.addAttribute("userPrivileges", userPrivileges);
-            return "role/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<UserRole> userRoles = userRoleService.list();
+        Set<UserPrivilege> userPrivileges = userPrivilegeService.getForSub();
+        model.addAttribute("userRoles", userRoles);
+        model.addAttribute("userPrivileges", userPrivileges);
+        return "role/edit";
     }
 
     /**
@@ -309,18 +262,13 @@ public class UserAndRoleAction extends BaseAction {
      */
     @GetMapping("/role/edit/{id}")
     public String editSystemUserRole(Model model, @PathVariable Long id) {
-        try {
-            List<UserRole> userRoles = userRoleService.find();
-            UserRole userRole = userRoleService.findCorrelation(id);
-            Set<UserPrivilege> userPrivileges = userPrivilegeService.findForSub();
-            model.addAttribute("userRoles", userRoles);
-            model.addAttribute("userRole", userRole);
-            model.addAttribute("userPrivileges", userPrivileges);
-            return "role/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<UserRole> userRoles = userRoleService.list();
+        UserRole userRole = userRoleService.getCorrelation(id);
+        Set<UserPrivilege> userPrivileges = userPrivilegeService.getForSub();
+        model.addAttribute("userRoles", userRoles);
+        model.addAttribute("userRole", userRole);
+        model.addAttribute("userPrivileges", userPrivileges);
+        return "role/edit";
     }
 
     /**
@@ -343,24 +291,16 @@ public class UserAndRoleAction extends BaseAction {
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
             // 添加
-            try {
-                userRoleService.create(userRole);
-                userRolePrivilegeService.create(userRole, privilegeIds);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加角色失败！", e);
+            if (!userRoleService.save(userRole) && !userRolePrivilegeService.save(userRole, privilegeIds)) {
+                throw new BusinessException("添加角色失败！");
             }
         } else {
             // 修改
-            try {
-                UserRolePrivilege oldUserRolePrivilege = new UserRolePrivilege();
-                oldUserRolePrivilege.setRoleId(userRole.getId());
-                userRolePrivilegeService.delete(oldUserRolePrivilege);
-                userRoleService.update(userRole);
-                userRolePrivilegeService.create(userRole, privilegeIds);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改角色失败！", e);
+            UserRolePrivilege oldUserRolePrivilege = new UserRolePrivilege();
+            oldUserRolePrivilege.setRoleId(userRole.getId());
+            userRolePrivilegeService.remove(oldUserRolePrivilege);
+            if (!userRoleService.updateById(userRole) && !userRolePrivilegeService.save(userRole, privilegeIds)) {
+                throw new BusinessException("修改角色失败！");
             }
         }
         return "redirect:/system/user_role/role";
@@ -378,18 +318,12 @@ public class UserAndRoleAction extends BaseAction {
     public Map<String, Object> deleteSystemUserRoleForAjax(HttpSession session, @PathVariable Long id) {
         getSessionRoleId(session);
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            userRoleService.delete(id);
+        if (userRoleService.removeById(id)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除用户角色成功！");
             return jsonMap;
-        } catch (BusinessException be) {
-            be.printStackTrace();
-            throw new JsonException(be.getMessage(), be);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除用户角色失败！", e);
         }
+        throw new JsonException("删除用户角色失败！");
     }
 
     /**
@@ -401,15 +335,10 @@ public class UserAndRoleAction extends BaseAction {
      */
     @GetMapping({"/privilege", "/privilege/{page}"})
     public String systemUserPrivilegeList(Model model, @PathVariable(required = false) Integer page) {
-        try {
-            Map<String, Object> userPrivileges = userPrivilegeService.find(page, null);
-            model.addAttribute("userPrivileges", userPrivileges.get("data"));
-            model.addAttribute("pageInfo", userPrivileges.get("pageInfo"));
-            return "privilege/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        page = page == null ? 1 : page;
+        Page<UserPrivilege> userPrivilegePage = new Page<>(page, 10);
+        model.addAttribute("userPrivileges", userPrivilegeService.page(userPrivilegePage, null));
+        return "privilege/list";
     }
 
     /**
@@ -420,15 +349,9 @@ public class UserAndRoleAction extends BaseAction {
      */
     @GetMapping("/privilege/create")
     public String createSystemUserPrivilege(Model model) {
-        List<UserPrivilege> userPrivileges;
-        try {
-            userPrivileges = userPrivilegeService.findAndHandler();
-            model.addAttribute("userPrivileges", userPrivileges);
-            return "privilege/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<UserPrivilege> userPrivileges = userPrivilegeService.getAndHandler();
+        model.addAttribute("userPrivileges", userPrivileges);
+        return "privilege/edit";
     }
 
     /**
@@ -440,16 +363,11 @@ public class UserAndRoleAction extends BaseAction {
      */
     @GetMapping("/privilege/edit/{id}")
     public String editSystemUserPrivilege(Model model, @PathVariable Long id) {
-        try {
-            List<UserPrivilege> userPrivileges = userPrivilegeService.find();
-            UserPrivilege userPrivilege = userPrivilegeService.find(id);
-            model.addAttribute("userPrivileges", userPrivileges);
-            model.addAttribute("userPrivilege", userPrivilege);
-            return "privilege/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<UserPrivilege> userPrivileges = userPrivilegeService.list();
+        UserPrivilege userPrivilege = userPrivilegeService.getById(id);
+        model.addAttribute("userPrivileges", userPrivileges);
+        model.addAttribute("userPrivilege", userPrivilege);
+        return "privilege/edit";
     }
 
     /**
@@ -471,19 +389,13 @@ public class UserAndRoleAction extends BaseAction {
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
             // 添加
-            try {
-                userPrivilegeService.create(userPrivilege);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加权限失败！", e);
+            if (!userPrivilegeService.save(userPrivilege)) {
+                throw new BusinessException("添加权限失败！");
             }
         } else {
             // 修改
-            try {
-                userPrivilegeService.update(userPrivilege);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改权限失败！", e);
+            if (!userPrivilegeService.updateById(userPrivilege)) {
+                throw new BusinessException("修改权限失败！");
             }
         }
         return "redirect:/system/user_role/privilege";
@@ -499,15 +411,12 @@ public class UserAndRoleAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> deleteSystemUserPrivilegeForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            userPrivilegeService.delete(id);
+        if (userPrivilegeService.removeById(id)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除用户权限成功！");
             return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除用户权限失败！", e);
         }
+        throw new JsonException("删除用户权限失败！");
     }
 
     /**
@@ -519,14 +428,9 @@ public class UserAndRoleAction extends BaseAction {
     @GetMapping("/privilege/load/{roleId}")
     @ResponseBody
     public Map<String, Object> getPrivilegesByRoleIdForAjax(@PathVariable Long roleId) {
-        try {
-            Map<String, Object> jsonMap = new HashMap<>(3);
-            jsonMap.put("state", 1);
-            jsonMap.put("privileges", userPrivilegeService.findByRoleId(roleId));
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        Map<String, Object> jsonMap = new HashMap<>(3);
+        jsonMap.put("state", 1);
+        jsonMap.put("privileges", userPrivilegeService.getByRoleId(roleId));
+        return jsonMap;
     }
 }

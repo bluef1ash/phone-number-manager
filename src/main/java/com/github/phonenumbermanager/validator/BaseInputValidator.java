@@ -1,10 +1,14 @@
 package com.github.phonenumbermanager.validator;
 
+import com.github.phonenumbermanager.constant.PhoneTypeEnum;
+import com.github.phonenumbermanager.entity.PhoneNumber;
+import com.github.phonenumbermanager.util.StringCheckedRegexUtil;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.ParameterizedType;
+import java.util.List;
 
 /**
  * 基础表单验证
@@ -39,4 +43,20 @@ public abstract class BaseInputValidator<T> implements Validator {
      * @return 验证是否成功
      */
     protected abstract boolean checkInput(Object target, Errors errors);
+
+    /**
+     * 验证联系方式是否合法
+     *
+     * @param phoneNumbers 需要验证的联系方式集合对象
+     * @return 联系方式是否合法
+     */
+    protected boolean checkedPhones(List<PhoneNumber> phoneNumbers) {
+        for (PhoneNumber phoneNumber : phoneNumbers) {
+            if (StringCheckedRegexUtil.checkPhone(phoneNumber.getPhoneNumber()) == PhoneTypeEnum.UNKNOWN) {
+                message = "输入的联系方式不合法，请检查后重试！";
+                return false;
+            }
+        }
+        return true;
+    }
 }

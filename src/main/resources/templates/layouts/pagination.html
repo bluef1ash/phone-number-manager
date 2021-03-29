@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
     <body>
-        <nav th:fragment="pagination(pageLink, pageInfo)">
-            <div class="pagination-custom" th:text="'共' + ${pageInfo.getTotal()} + '条'"></div>
+        <nav th:fragment="pagination(pageLink, page)">
+            <div class="pagination-custom" th:text="'共' + ${page.getTotal()} + '条'"></div>
             <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
             <ul class="pagination float-left">
                 <li class="page-item" th:classappend="${pageInfo.isIsFirstPage()} ? 'disabled' : ''">

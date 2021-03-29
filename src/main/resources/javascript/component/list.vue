@@ -38,8 +38,8 @@
                                         <input :placeholder="'请输入查找的社区' + dataTypeName + '姓名'" class="form-control" id="name" type="text" v-model="searchParams.name">
                                     </div>
                                     <div class="form-group" v-if="dataType === 1">
-                                        <label for="sex">社区楼长性别</label>
-                                        <select class="form-control" id="sex" v-model="searchParams.sex">
+                                        <label for="gender">社区楼长性别</label>
+                                        <select class="form-control" id="gender" v-model="searchParams.gender">
                                             <option :value="-1">请选择</option>
                                             <option :value="0">男</option>
                                             <option :value="1">女</option>
@@ -77,9 +77,9 @@
                                     <element-table-popover :data="scope.row.name" :row="scope.row"></element-table-popover>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="社区楼长性别" prop="sexName" v-if="dataType === 1">
+                            <el-table-column label="社区楼长性别" prop="genderName" v-if="dataType === 1">
                                 <template v-slot="scope">
-                                    <element-table-popover :data="scope.row.sexName" :row="scope.row"></element-table-popover>
+                                    <element-table-popover :data="scope.row.genderName" :row="scope.row"></element-table-popover>
                                 </template>
                             </el-table-column>
                             <el-table-column label="家庭住址" prop="address" v-if="dataType === 0">
@@ -191,7 +191,7 @@ export default {
             isLoading: false,
             pagination: 1,
             searchParams: {
-                sex: -1
+                gender: -1
             },
             searchCompanyIds: null,
             isDownload: false,
@@ -292,7 +292,7 @@ export default {
          */
         searchClear() {
             this.searchParams = {
-                sex: -1
+                gender: -1
             };
             this.searchCompanyIds = null;
             this.pagination = 1;

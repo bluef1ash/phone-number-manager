@@ -1,17 +1,18 @@
 package com.github.phonenumbermanager.service.impl;
 
-import com.github.pagehelper.PageHelper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.service.CommunityService;
-import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -21,86 +22,83 @@ import java.util.Map;
  * @author 廿二月的天
  */
 @Service("communityService")
-public class CommunityServiceImpl extends BaseServiceImpl<Community> implements CommunityService {
+public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Community> implements CommunityService {
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
-    public long create(Community community) {
-        community.setCreateTime(DateUtils.getTimestamp(new Date()));
-        community.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        community.setDormitorySubmitted(false);
-        community.setResidentSubmitted(false);
-        return super.create(community);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long update(Community community) {
-        community.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.update(community);
+    public Community getCorrelation(Serializable communityId) {
+        return communityMapper.selectAndSubdistrictById(communityId);
     }
 
     @Override
-    public Community findCorrelation(Serializable communityId) {
-        return communityDao.selectAndSubdistrictById(communityId);
-    }
-
-    @Override
-    public Map<String, Object> findCorrelation(Integer pageNumber, Integer pageDataSize) {
+    public IPage<Community> getCorrelation(Integer pageNumber, Integer pageDataSize) {
         pageNumber = pageNumber == null ? 1 : pageNumber;
         pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        PageHelper.startPage(pageNumber, pageDataSize);
-        List<Community> data = communityDao.selectAndSubdistrictAll();
-        return find(data);
+        Page<Community> page = new Page<>(pageNumber, pageDataSize);
+        return communityMapper.selectAndSubdistrictAll(page);
     }
 
     @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return null;
+    public List<Community> getCorrelation() {
+        return communityMapper.selectAndSubdistrictAll();
     }
 
     @Override
-    public List<Community> findCorrelation() {
-        return communityDao.selectAndSubdistrictAll();
-    }
-
-    @Override
-    public List<Community> find(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public List<Community> get(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         List<Community> communities;
-        if (communityCompanyType.equals(systemUser.getCompanyType())) {
+        if (communityCompanyType.equals(systemUser.getLevel().getValue())) {
             communities = new ArrayList<>();
-            Community community = communityDao.selectCorrelationById(systemUser.getCompanyId());
+            Community community = communityMapper.selectCorrelationById(systemUser.getCompanyId());
             communities.add(community);
-        } else if (subdistrictCompanyType.equals(systemUser.getCompanyType())) {
-            communities = communityDao.selectCorrelationBySubdistrictId(systemUser.getCompanyId());
+        } else if (subdistrictCompanyType.equals(systemUser.getLevel().getValue())) {
+            communities = communityMapper.selectCorrelationBySubdistrictId(systemUser.getCompanyId());
         } else {
-            communities = communityDao.selectCorrelationSubdistrictsAll();
+            communities = communityMapper.selectCorrelationSubdistrictsAll();
         }
         return communities;
     }
 
     @Override
-    public List<Community> findBySubdistrictId(Serializable subdistrictId) {
-        return communityDao.selectBySubdistrictId(subdistrictId);
+    public List<Community> getBySubdistrictId(Serializable subdistrictId) {
+        return communityMapper.selectBySubdistrictId(subdistrictId);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long update(List<Map<String, Object>> data, Integer changeType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return communityDao.updateSubmitted(data, changeType, systemCompanyType, communityCompanyType, subdistrictCompanyType);
+    public boolean update(List<Map<String, Object>> data, Integer changeType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        Community community = new Community();
+        if (changeType == 0) {
+            community.setResidentSubmitted(true);
+        } else {
+            community.setDormitorySubmitted(true);
+        }
+        UpdateWrapper<Community> wrapper = new UpdateWrapper<>();
+        for (Map<String, Object> item : data) {
+            if (communityCompanyType.equals(item.get("companyType"))) {
+                wrapper.eq("id", item.get("companyId"));
+            } else if (subdistrictCompanyType.equals(item.get("companyType"))) {
+                wrapper.eq("subdistrict_id", item.get("companyType"));
+            }
+        }
+        return super.update(community, wrapper);
+    }
+
+    @Override
+    public boolean isSubmittedById(Integer submitType, Serializable id) {
+        return communityMapper.selectSubmittedById(submitType, id);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long delete(Serializable id) {
-        Long communityResidentCount = communityResidentDao.countByCommunityId(id);
+    public boolean removeById(Serializable id) {
+        Long communityResidentCount = communityResidentMapper.countByCommunityId(id);
         if (communityResidentCount != null && communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
         }
-        Long dormitoryManagerCount = dormitoryManagerDao.countByCommunityId(id);
+        Long dormitoryManagerCount = dormitoryManagerMapper.countByCommunityId(id);
         if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
-        return super.delete(id);
+        communityMapper.deleteById(id);
+        return true;
     }
 }

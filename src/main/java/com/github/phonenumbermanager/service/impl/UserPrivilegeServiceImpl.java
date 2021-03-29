@@ -1,10 +1,9 @@
 package com.github.phonenumbermanager.service.impl;
 
-import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.entity.UserRolePrivilege;
+import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
-import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,49 +16,29 @@ import java.util.*;
  * @author 廿二月的天
  */
 @Service("userPrivilegeService")
-public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> implements UserPrivilegeService {
+public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMapper, UserPrivilege> implements UserPrivilegeService {
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
-    public long create(UserPrivilege userPrivilege) {
-        userPrivilege.setCreateTime(DateUtils.getTimestamp(new Date()));
-        userPrivilege.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.create(userPrivilege);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long update(UserPrivilege userPrivilege) {
-        userPrivilege.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.update(userPrivilege);
+    public Set<UserPrivilege> getByRoleId(Serializable roleId) {
+        return userPrivilegeMapper.selectByRoleId(roleId);
     }
 
     @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return null;
+    public Set<UserPrivilege> get(Boolean display, Set<UserPrivilege> userPrivileges) {
+        return getAndSubPrivileges(userPrivileges, display, 0L);
     }
 
     @Override
-    public Set<UserPrivilege> findByRoleId(Serializable roleId) {
-        return userPrivilegeDao.selectByRoleId(roleId);
+    public Set<UserPrivilege> getForSub() {
+        Set<UserPrivilege> userPrivileges = new HashSet<>(userPrivilegeMapper.selectList(null));
+        return getAndSubPrivileges(userPrivileges, null, 0L);
     }
 
     @Override
-    public Set<UserPrivilege> find(Boolean display, Set<UserPrivilege> userPrivileges) {
-        return findAndSubPrivileges(userPrivileges, display, 0L);
-    }
-
-    @Override
-    public Set<UserPrivilege> findForSub() {
-        Set<UserPrivilege> userPrivileges = new HashSet<>(userPrivilegeDao.selectAll());
-        return findAndSubPrivileges(userPrivileges, null, 0L);
-    }
-
-    @Override
-    public LinkedList<UserPrivilege> findAndHandler() {
-        List<UserPrivilege> userPrivileges = userPrivilegeDao.selectAll();
+    public LinkedList<UserPrivilege> getAndHandler() {
+        List<UserPrivilege> userPrivileges = userPrivilegeMapper.selectList(null);
         LinkedList<UserPrivilege> privileges = new LinkedList<>();
-        findAndSubPrivileges(privileges, userPrivileges, 0L, 0);
+        getAndSubPrivileges(privileges, userPrivileges, 0L, 0);
         for (UserPrivilege userPrivilege : privileges) {
             StringBuilder name = new StringBuilder();
             name.append("|");
@@ -74,14 +53,16 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long delete(Serializable id) {
-        if (systemUserDao.selectByRoleId(id).size() > 0) {
-            return 0;
+    public boolean removeById(Serializable id) {
+        if (systemUserMapper.selectByRoleId(id).size() > 0) {
+            return false;
         }
         UserRolePrivilege userRolePrivilege = new UserRolePrivilege();
         userRolePrivilege.setPrivilegeId((Long) id);
-        userRolePrivilegeDao.deleteByUserRolePrivilege(userRolePrivilege);
-        return super.delete(id);
+        if (userRolePrivilegeMapper.deleteByUserRolePrivilege(userRolePrivilege) > 0) {
+            return userPrivilegeMapper.deleteById(id) > 0;
+        }
+        return false;
     }
 
     /**
@@ -91,7 +72,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
      * @param display        是否在导航栏中显示
      * @return 排列成功的统用户权限对象集合
      */
-    private Set<UserPrivilege> findAndSubPrivileges(Set<UserPrivilege> userPrivileges, Boolean display, Serializable parentId) {
+    private Set<UserPrivilege> getAndSubPrivileges(Set<UserPrivilege> userPrivileges, Boolean display, Serializable parentId) {
         Set<UserPrivilege> newUserPrivileges = new LinkedHashSet<>();
         Long parentId1 = (Long) parentId;
         boolean isAll = true;
@@ -109,7 +90,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
                 newUserPrivilege.setDisplay(userPrivilege.getDisplay());
                 newUserPrivilege.setOrders(userPrivilege.getOrders());
                 newUserPrivilege.setUri(userPrivilege.getUri());
-                newUserPrivilege.setSubUserPrivileges(findAndSubPrivileges(userPrivileges, display, userPrivilege.getId()));
+                newUserPrivilege.setSubUserPrivileges(getAndSubPrivileges(userPrivileges, display, userPrivilege.getId()));
                 newUserPrivileges.add(newUserPrivilege);
             }
         }
@@ -124,13 +105,13 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilege> imp
      * @param parentId          父级编号
      * @param level             层数，显示缩进
      */
-    private void findAndSubPrivileges(List<UserPrivilege> newUserPrivileges, List<UserPrivilege> userPrivileges, Serializable parentId, Integer level) {
+    private void getAndSubPrivileges(List<UserPrivilege> newUserPrivileges, List<UserPrivilege> userPrivileges, Serializable parentId, Integer level) {
         Long parentId1 = (Long) parentId;
         for (UserPrivilege userPrivilege : userPrivileges) {
             if (parentId1.equals(userPrivilege.getParentId())) {
                 userPrivilege.setLevel(level);
                 newUserPrivileges.add(userPrivilege);
-                findAndSubPrivileges(newUserPrivileges, userPrivileges, userPrivilege.getId(), level + 1);
+                getAndSubPrivileges(newUserPrivileges, userPrivileges, userPrivilege.getId(), level + 1);
             }
         }
     }

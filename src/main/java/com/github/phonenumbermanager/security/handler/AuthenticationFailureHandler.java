@@ -2,7 +2,7 @@ package com.github.phonenumbermanager.security.handler;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.utils.CommonUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -47,7 +47,7 @@ public class AuthenticationFailureHandler implements org.springframework.securit
         httpServletRequest.getSession().invalidate();
         CsrfToken csrfToken = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         httpServletResponse.setCharacterEncoding("UTF-8");
-        if (CommonUtils.isRequestAjax(httpServletRequest)) {
+        if (CommonUtil.isRequestAjax(httpServletRequest)) {
             httpServletResponse.setContentType("text/json; charset=utf-8");
             httpServletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             JSONObject returnObj = new JSONObject();

@@ -1,5 +1,9 @@
 package com.github.phonenumbermanager.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -13,108 +17,23 @@ import java.util.Map;
  * @param <T> SERVICE接口泛型
  * @author 廿二月的天
  */
-public interface BaseService<T> {
-    /**
-     * 新建对象到DAO层
-     *
-     * @param obj 对象实体
-     * @return 添加的行数
-     * @throws Exception SERVICE层异常
-     */
-    long create(T obj) throws Exception;
-
-    /**
-     * 删除对象到DAO层
-     *
-     * @param id 对象实体编号
-     * @return 删除的行数
-     * @throws Exception SERVICE层异常
-     */
-    long delete(Serializable id) throws Exception;
+public interface BaseService<T> extends IService<T> {
 
     /**
      * 通过名称删除对象到DAO层
      *
      * @param name 对象实体名称
      * @return 删除的行数
-     * @throws Exception SERVICE层异常
      */
-    long delete(String name) throws Exception;
-
-    /**
-     * 更新对象到DAO层
-     *
-     * @param obj 需要更新的对象
-     * @return 更新的行数
-     * @throws Exception SERVICE层异常
-     */
-    long update(T obj) throws Exception;
-
-    /**
-     * 查找所有对象（不含分页）
-     *
-     * @return 查找的对象集合
-     * @throws Exception SERVICE层异常
-     */
-    List<T> find() throws Exception;
-
-    /**
-     * 查找所有对象（含分页）
-     *
-     * @param pageNumber   分页页码
-     * @param pageDataSize 每页展示数量
-     * @return 查找的对象集合与分页对象
-     * @throws Exception SERVICE层异常
-     */
-    Map<String, Object> find(Integer pageNumber, Integer pageDataSize) throws Exception;
-
-    /**
-     * 通过主键编号查找
-     *
-     * @param id 主键编号
-     * @return 查找的对象
-     * @throws Exception SERVICE层异常
-     */
-    T find(Serializable id) throws Exception;
-
-    /**
-     * 通过name查找（含分页）
-     *
-     * @param name         查找的对象名称
-     * @param pageNumber   分页页码
-     * @param pageDataSize 每页展示数量
-     * @return 查找的对象集合与分页对象
-     * @throws Exception SERVICE层异常
-     */
-    Map<String, Object> find(String name, Integer pageNumber, Integer pageDataSize) throws Exception;
-
-    /**
-     * 通过对象查找（含分页）
-     *
-     * @param object       查找的对象
-     * @param pageNumber   分页页码
-     * @param pageDataSize 每页展示数量
-     * @return 查找的对象集合与分页对象
-     * @throws Exception SERVICE层异常
-     */
-    Map<String, Object> find(T object, Integer pageNumber, Integer pageDataSize) throws Exception;
-
-    /**
-     * 查找所有编号和名称
-     *
-     * @return 查找的对象集合
-     * @throws Exception SERVICE层异常
-     */
-    List<T> findForIdAndName() throws Exception;
+    boolean remove(String name);
 
     /**
      * 通过对象查找
      *
      * @param object 对象名称
      * @return 查找的对象集合
-     * @throws Exception SERVICE层异常
      */
-    List<T> find(T object) throws Exception;
+    List<T> get(T object);
 
     /**
      * 通过姓名与地址查找
@@ -123,27 +42,26 @@ public interface BaseService<T> {
      * @param id            编号
      * @param subdistrictId 街道办事处编号
      * @return 对象集合
-     * @throws Exception SERVICE层异常
      */
-    List<T> find(String nameAddress, Serializable id, Serializable subdistrictId) throws Exception;
+    List<T> get(String nameAddress, Serializable id, Serializable subdistrictId);
 
     /**
      * 通过联系方式与地址查找所属社区
      *
-     * @param phones        联系方式集合
+     * @param phoneNumbers  联系方式集合
      * @param id            编号
      * @param subdistrictId 街道办事处编号
+     * @param sourceType    来源类型
      * @return 查找到的对象
-     * @throws Exception SERVICE层异常
      */
-    List<T> find(List<String> phones, Serializable id, Serializable subdistrictId) throws Exception;
+    List<T> get(List<PhoneNumber> phoneNumbers, Serializable id, Serializable subdistrictId, PhoneNumberSourceTypeEnum sourceType);
 
     /**
      * 查找Excel表头
      *
      * @return 表字段名称
      */
-    Map<String, String> findPartStatHead();
+    Map<String, String> getPartStatHead();
 
     /**
      * 获取录入统计信息
@@ -154,9 +72,8 @@ public interface BaseService<T> {
      * @param communityRoleId   社区级用户角色编号
      * @param subdistrictRoleId 街道级用户角色编号
      * @return 统计信息对象
-     * @throws Exception SERVICE层异常
      */
-    Map<String, Object> find(Serializable companyId, Serializable companyType, Serializable systemRoleId, Serializable communityRoleId, Serializable subdistrictRoleId) throws Exception;
+    Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemRoleId, Serializable communityRoleId, Serializable subdistrictRoleId);
 
     /**
      * 关联查找（包含分页）
@@ -164,9 +81,8 @@ public interface BaseService<T> {
      * @param pageNumber   分页页码
      * @param pageDataSize 每页显示的条目数
      * @return 查找到的所有对象与所属对象与分页对象
-     * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findCorrelation(Integer pageNumber, Integer pageDataSize) throws Exception;
+    IPage<T> getCorrelation(Integer pageNumber, Integer pageDataSize);
 
     /**
      * 获取柱状图数据
@@ -178,23 +94,22 @@ public interface BaseService<T> {
      * @param communityCompanyType   社区单位类型编号
      * @param subdistrictCompanyType 街道单位类型编号
      * @return 柱状图数据
-     * @throws Exception SERVICE层异常
      */
-    Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) throws Exception;
+    Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType);
 
 
     /**
      * 查找所有社区居民或楼长及所属社区
      *
-     * @param systemUser             登录的系统用户对象
-     * @param communityCompanyType   社区单位类型编号
-     * @param subdistrictCompanyType 街道单位类型编号
-     * @param pageNumber             分页页码
-     * @param pageDataSize           每页展示的数量
+     * @param systemUser                登录的系统用户对象
+     * @param phoneNumberSourceTypeEnum 联系方式来源类型
+     * @param communityCompanyType      社区单位类型编号
+     * @param subdistrictCompanyType    街道单位类型编号
+     * @param pageNumber                分页页码
+     * @param pageDataSize              每页展示的数量
      * @return 查找到的社区居民集合与分页对象
-     * @throws Exception SERVICE层异常
      */
-    Map<String, Object> findCorrelation(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) throws Exception;
+    IPage<T> getCorrelation(SystemUser systemUser, PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize);
 
 
     /**
@@ -204,7 +119,14 @@ public interface BaseService<T> {
      * @param subdistrictId     导入的街道编号
      * @param configurationsMap 系统配置
      * @return 导入的行数
-     * @throws Exception SERVICE层异常
      */
-    long create(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) throws Exception;
+    boolean save(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap);
+
+    /**
+     * 通过编号关联查找
+     *
+     * @param id 需要查找的对象编号
+     * @return 对应的对象
+     */
+    T getCorrelation(Serializable id);
 }

@@ -1,10 +1,8 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.constant.PhoneCheckedTypes;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.SubcontractorService;
-import com.github.phonenumbermanager.utils.StringCheckedRegexUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -19,7 +17,7 @@ import java.util.List;
  * @author 廿二月的天
  */
 public class SubcontractorInputValidator extends BaseInputValidator<Subcontractor> implements Validator {
-    private SubcontractorService subcontractorService;
+    private final SubcontractorService subcontractorService;
 
     public SubcontractorInputValidator(SubcontractorService subcontractorService, HttpServletRequest request) {
         this.subcontractorService = subcontractorService;
@@ -29,34 +27,20 @@ public class SubcontractorInputValidator extends BaseInputValidator<Subcontracto
     @Override
     protected boolean checkInput(Object target, Errors errors) {
         ValidationUtils.rejectIfEmpty(errors, "name", "subcontractor.name.required", "社区分包人名称不能为空！");
-        ValidationUtils.rejectIfEmpty(errors, "mobile", "subcontractor.mobile.required", "社区分包人联系方式不能为空！");
+        ValidationUtils.rejectIfEmpty(errors, "phoneNumbers", "subcontractor.phoneNumbers.required", "社区分包人联系方式不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "communityId", "subcontractor.communityId.required", "社区分包人所属社区不能为空！");
         Subcontractor subcontractor = (Subcontractor) target;
         // 联系方式合法
-        if (!checkedPhone(subcontractor.getMobile())) {
+        if (!checkedPhones(subcontractor.getPhoneNumbers())) {
             return false;
         }
         try {
-            List<Subcontractor> isPhonesRepeat = subcontractorService.find(subcontractor);
+            List<Subcontractor> isPhonesRepeat = subcontractorService.get(subcontractor);
             return checkedListData(isPhonesRepeat, subcontractor.getId());
         } catch (Exception e) {
             e.printStackTrace();
             throw new BusinessException("社区分包人验证失败！");
         }
-    }
-
-    /**
-     * 验证联系方式是否合法
-     *
-     * @param phone 需要验证的联系方式
-     * @return 联系方式是否合法
-     */
-    private boolean checkedPhone(String phone) {
-        if (StringCheckedRegexUtils.checkPhone(phone) == PhoneCheckedTypes.FAILED) {
-            message = "输入的联系方式不合法，请检查后重试！";
-            return false;
-        }
-        return true;
     }
 
     /**

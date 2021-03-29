@@ -1,10 +1,8 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.constant.PhoneCheckedTypes;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.SubdistrictService;
-import com.github.phonenumbermanager.utils.StringCheckedRegexUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -19,7 +17,7 @@ import java.util.List;
  * @author 廿二月的天
  */
 public class SubdistrictInputValidator extends BaseInputValidator<Subdistrict> implements Validator {
-    private SubdistrictService subdistrictService;
+    private final SubdistrictService subdistrictService;
 
     public SubdistrictInputValidator(SubdistrictService subdistrictService, HttpServletRequest request) {
         this.subdistrictService = subdistrictService;
@@ -28,36 +26,20 @@ public class SubdistrictInputValidator extends BaseInputValidator<Subdistrict> i
 
     @Override
     protected boolean checkInput(Object target, Errors errors) {
+        ValidationUtils.rejectIfEmpty(errors, "name", "subdistrict.name.required", "街道名称不能为空！");
+        ValidationUtils.rejectIfEmpty(errors, "phoneNumbers", "subdistrict.phoneNumbers.required", "街道联系方式不能为空！");
+        Subdistrict subdistrict = (Subdistrict) target;
+        // 联系方式合法
+        if (!checkedPhones(subdistrict.getPhoneNumbers())) {
+            return false;
+        }
         try {
-            ValidationUtils.rejectIfEmpty(errors, "name", "subdistrict.name.required", "街道名称不能为空！");
-            ValidationUtils.rejectIfEmpty(errors, "landline", "subdistrict.landline.required", "街道联系方式不能为空！");
-            Subdistrict subdistrict = (Subdistrict) target;
-            // 联系方式合法
-            if (!checkedPhone(subdistrict.getLandline())) {
-                return false;
-            }
             // 联系方式重复
-            List<Subdistrict> isPhonesRepeat = subdistrictService.find(subdistrict);
+            List<Subdistrict> isPhonesRepeat = subdistrictService.get(subdistrict);
             return checkedListData(isPhonesRepeat, subdistrict.getId());
         } catch (Exception e) {
             throw new BusinessException("街道验证失败！");
         }
-    }
-
-    /**
-     * 验证联系方式是否合法
-     *
-     * @param phone 需要验证的联系方式
-     * @return 是否验证成功
-     */
-    private boolean checkedPhone(String phone) {
-        if (StringCheckedRegexUtils.checkPhone(phone) == PhoneCheckedTypes.FAILED) {
-            field = "landline";
-            errorCode = "subdistrict.landline.errorCode";
-            message = "输入的联系方式不合法，请检查后重试！";
-            return false;
-        }
-        return true;
     }
 
     /**

@@ -1,13 +1,15 @@
 package com.github.phonenumbermanager.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * 用户角色与用户权限中间实体
@@ -16,12 +18,15 @@ import java.sql.Timestamp;
  */
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode
-@ToString
 @Accessors(chain = true)
+@TableName("pm_role_privilege")
 public class UserRolePrivilege implements Serializable {
     private Long roleId;
     private Long privilegeId;
-    private Timestamp createTime;
-    private Timestamp updateTime;
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+    @Version
+    private Integer version;
 }

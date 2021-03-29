@@ -1,9 +1,10 @@
 package com.github.phonenumbermanager.service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.utils.ExcelUtils;
+import com.github.phonenumbermanager.util.ExcelUtil;
 
 import java.io.Serializable;
 import java.util.List;
@@ -21,9 +22,9 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      *
      * @param id 社区居民编号
      * @return 查找到的社区居民
-     * @throws Exception SERVICE层异常
      */
-    CommunityResident findCorrelation(Serializable id) throws Exception;
+    @Override
+    CommunityResident getCorrelation(Serializable id);
 
     /**
      * 通过社区居民查找匹配的社区居民
@@ -38,9 +39,8 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @param pageNumber             分页页码
      * @param pageDataSize           每页展示的数量
      * @return 查找到的社区居民集合与分页对象
-     * @throws Exception SERVICE层异常
      */
-    Map<String, Object> find(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, CommunityResident communityResident, Serializable companyId, Serializable companyType, Integer pageNumber, Integer pageDataSize) throws Exception;
+    IPage<CommunityResident> get(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, CommunityResident communityResident, Serializable companyId, Serializable companyType, Integer pageNumber, Integer pageDataSize);
 
     /**
      * 通过系统用户角色编号与定位角色编号查找社区居民及所属社区
@@ -49,9 +49,8 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @param subdistrictCompanyType 街道单位类型编号
      * @param userData               用户数据
      * @return 社区居民与所属社区集合转换的JSON对象
-     * @throws Exception SERVICE层异常
      */
-    JSONArray findCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData) throws Exception;
+    JSONArray getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData);
 
     /**
      * 设置Excel头部
@@ -59,5 +58,5 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @param titles 标题数组
      * @return 设置接口
      */
-    ExcelUtils.DataHandler setExcelHead(String[] titles);
+    ExcelUtil.DataHandler setExcelHead(String[] titles);
 }

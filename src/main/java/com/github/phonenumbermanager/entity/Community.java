@@ -1,13 +1,14 @@
 package com.github.phonenumbermanager.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,19 +18,24 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode
-@ToString
 @Accessors(chain = true)
 public class Community implements Serializable {
     private Long id;
     private String name;
-    private String landline;
     private Integer actualNumber;
     private Boolean dormitorySubmitted;
     private Boolean residentSubmitted;
-    private Timestamp createTime;
-    private Timestamp updateTime;
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+    @Version
+    private Integer version;
     private Long subdistrictId;
+    @TableField(exist = false)
+    private List<PhoneNumber> phoneNumbers;
+    @TableField(exist = false)
     private List<CommunityResident> communityResidents;
+    @TableField(exist = false)
     private Subdistrict subdistrict;
 }

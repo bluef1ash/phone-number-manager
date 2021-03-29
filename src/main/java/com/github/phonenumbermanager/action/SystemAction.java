@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.action;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -46,17 +47,12 @@ public class SystemAction extends BaseAction {
      * @param page  分页页码
      * @return 视图页面
      */
-    @GetMapping("/configuration")
-    public String configurationList(Model model, Integer page) {
-        try {
-            Map<String, Object> configurationsMap = configurationService.find(page, null);
-            model.addAttribute("configurations", configurationsMap.get("data"));
-            model.addAttribute("pageInfo", configurationsMap.get("pageInfo"));
-            return "configuration/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+    @GetMapping({"/configuration", "/configuration/{page}"})
+    public String configurationList(Model model, @PathVariable(required = false) Integer page) {
+        page = page == null ? 1 : page;
+        Page<Configuration> configurationPage = new Page<>(page, 10);
+        model.addAttribute("configurations", configurationService.page(configurationPage, null));
+        return "configuration/list";
     }
 
     /**
@@ -78,14 +74,8 @@ public class SystemAction extends BaseAction {
      */
     @GetMapping("/configuration/edit/{key}")
     public String editConfiguration(Model model, @PathVariable String key) {
-        try {
-            Configuration configuration = configurationService.find(key);
-            model.addAttribute("configuration", configuration);
-            return "configuration/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("configuration", configurationService.getById(key));
+        return "configuration/edit";
     }
 
     /**
@@ -100,29 +90,18 @@ public class SystemAction extends BaseAction {
     @RequestMapping(value = "/configuration", method = {RequestMethod.POST, RequestMethod.PUT})
     public String configurationCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Configuration configuration, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            try {
-                // 输出错误信息
-                List<ObjectError> allErrors = bindingResult.getAllErrors();
-                model.addAttribute("messageErrors", allErrors);
-                return "configuration/edit";
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("展示系统配置失败！", e);
-            }
+            // 输出错误信息
+            List<ObjectError> allErrors = bindingResult.getAllErrors();
+            model.addAttribute("messageErrors", allErrors);
+            return "configuration/edit";
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            try {
-                configurationService.create(configuration);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加系统配置失败！", e);
+            if (!configurationService.save(configuration)) {
+                throw new BusinessException("添加系统配置失败！");
             }
         } else {
-            try {
-                configurationService.update(configuration);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改系统配置失败！", e);
+            if (!configurationService.updateById(configuration)) {
+                throw new BusinessException("修改系统配置失败！");
             }
         }
         return "redirect:/system/configuration";
@@ -138,17 +117,11 @@ public class SystemAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> deleteConfigurationForAjax(@PathVariable String key) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            configurationService.delete(key);
+        if (configurationService.remove(key)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除系统配置成功！");
             return jsonMap;
-        } catch (BusinessException be) {
-            be.printStackTrace();
-            throw new JsonException(be.getMessage(), be);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除系统配置失败！", e);
         }
+        throw new JsonException("删除系统配置失败！");
     }
 }

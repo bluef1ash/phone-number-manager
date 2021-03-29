@@ -31,7 +31,7 @@ $(document).ready(() => {
             this.csrfToken = this.csrf.prop("content");
             if (this.dormitoryManager === null) {
                 this.dormitoryManager = {
-                    sex: -1,
+                    gender: -1,
                     politicalStatus: -1,
                     workStatus: -1,
                     education: -1,
@@ -141,7 +141,7 @@ $(document).ready(() => {
                 if (this.dormitoryManager.name.length > 10) {
                     return this.stopSubmit(event, "社区楼长姓名不允许超过10个字符！", 1);
                 }
-                if (this.dormitoryManager.sex === null || this.dormitoryManager.sex === -1) {
+                if (this.dormitoryManager.gender === null || this.dormitoryManager.gender === -1) {
                     return this.stopSubmit(event, "请选择社区楼长的性别！", 2);
                 }
                 if (this.dormitoryManager.birth === null || this.dormitoryManager.birth === "") {
@@ -178,7 +178,7 @@ $(document).ready(() => {
              */
             resetClass() {
                 this.dormitoryManager = {
-                    sex: -1,
+                    gender: -1,
                     politicalStatus: -1,
                     workStatus: -1,
                     education: -1,

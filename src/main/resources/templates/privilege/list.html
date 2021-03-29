@@ -45,7 +45,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(userPrivilege, index) in userPrivileges" :key="userPrivilege.id">
+                                        <tr v-for="(userPrivilege, index) in userPrivileges.records" :key="userPrivilege.id">
                                             <td v-text="index + 1"></td>
                                             <td v-text="userPrivilege.name"></td>
                                             <td>
@@ -62,7 +62,7 @@
                                     </tbody>
                                 </table>
                                 <!--/*@thymesVar id="pageInfo" type="com.github.pagehelper"*/-->
-                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/privilege/', ${pageInfo})"></nav>
+                                <nav th:replace="layouts/pagination :: pagination('/system/user_role/privilege/', ${userPrivileges})"></nav>
                             </div>
                         </div>
                     </div>

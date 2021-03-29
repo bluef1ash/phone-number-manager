@@ -2,15 +2,18 @@ package com.github.phonenumbermanager.action;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.phonenumbermanager.constant.GenderEnum;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.DateUtils;
-import com.github.phonenumbermanager.utils.ExcelUtils;
+import com.github.phonenumbermanager.service.PhoneNumberService;
+import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.phonenumbermanager.validator.DormitoryManagerInputValidator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.format.datetime.DateFormatter;
@@ -26,8 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.ByteArrayOutputStream;
-import java.io.Serializable;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,8 @@ public class DormitoryManagerAction extends BaseAction {
     private DormitoryManagerService dormitoryManagerService;
     @Resource
     private CommunityService communityService;
+    @Resource
+    private PhoneNumberService phoneNumberService;
     @Resource
     private HttpServletRequest request;
 
@@ -65,16 +69,9 @@ public class DormitoryManagerAction extends BaseAction {
     @GetMapping
     public String dormitoryManagerList(HttpSession session, Model model) {
         setPersonVariable(session, model);
-        try {
-            Map<String, Object> dormitoryManagerMap = dormitoryManagerService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, null, null);
-            model.addAttribute("dormitoryManagers", dormitoryManagerMap.get("data"));
-            model.addAttribute("pageInfo", dormitoryManagerMap.get("pageInfo"));
-            model.addAttribute("dataType", 1);
-            return "dormitory/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("dormitoryManagers", dormitoryManagerService.getCorrelation(systemUser, PhoneNumberSourceTypeEnum.DORMITORY_MANAGER, communityCompanyType, subdistrictCompanyType, null, null));
+        model.addAttribute("dataType", 1);
+        return "dormitory/list";
     }
 
     /**
@@ -87,14 +84,9 @@ public class DormitoryManagerAction extends BaseAction {
     @GetMapping("/create")
     public String createDormitoryManager(HttpSession session, Model model) {
         getSessionRoleId(session);
-        try {
-            List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
-            model.addAttribute("communities", JSON.toJSON(communities));
-            return "dormitory/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
+        model.addAttribute("communities", JSON.toJSON(communities));
+        return "dormitory/edit";
     }
 
     /**
@@ -108,16 +100,11 @@ public class DormitoryManagerAction extends BaseAction {
     @GetMapping("/edit/{id}")
     public String editDormitoryManager(HttpSession session, Model model, @PathVariable String id) {
         getSessionRoleId(session);
-        try {
-            DormitoryManager dormitoryManager = dormitoryManagerService.findCorrelation(id);
-            model.addAttribute("dormitoryManager", dormitoryManager);
-            List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
-            model.addAttribute("communities", communities);
-            return "dormitory/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        DormitoryManager dormitoryManager = dormitoryManagerService.getCorrelation(id);
+        model.addAttribute("dormitoryManager", dormitoryManager);
+        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
+        model.addAttribute("communities", communities);
+        return "dormitory/edit";
     }
 
     /**
@@ -134,34 +121,25 @@ public class DormitoryManagerAction extends BaseAction {
     public String dormitoryManagerCreateOrEditHandle(HttpServletRequest httpServletRequest, HttpSession session, Model model, @Validated DormitoryManager dormitoryManager, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
-            try {
-                throwsError(communityService, model, bindingResult);
-                return "dormitory/edit";
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("系统出现错误，请联系管理员！");
-            }
+            throwsError(communityService, model, bindingResult);
+            return "dormitory/edit";
         }
-        dormitoryManager.setUpdateTime(DateUtils.getTimestamp(new Date()));
         if (RequestMethod.POST.toString().equals(httpServletRequest.getMethod())) {
-            try {
-                dormitoryManagerService.create(dormitoryManager);
-            } catch (BusinessException be) {
-                be.printStackTrace();
-                throw new BusinessException(be.getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加社区楼长失败！", e);
+            if (communityService.isSubmittedById(1, dormitoryManager.getCommunityId())) {
+                throw new BusinessException("此社区已经提报，不允许添加！");
+            }
+            if (dormitoryManagerService.save(dormitoryManager)) {
+                setPhoneNumbers(dormitoryManager.getPhoneNumbers(), PhoneNumberSourceTypeEnum.DORMITORY_MANAGER, dormitoryManager.getId());
+                phoneNumberService.saveBatch(dormitoryManager.getPhoneNumbers());
+            } else {
+                throw new BusinessException("添加社区楼长失败！");
             }
         } else {
-            try {
-                dormitoryManagerService.update(dormitoryManager);
-            } catch (BusinessException be) {
-                be.printStackTrace();
-                throw new BusinessException(be.getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改社区楼长失败！", e);
+            if (dormitoryManagerService.updateById(dormitoryManager)) {
+                setPhoneNumbers(dormitoryManager.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY, dormitoryManager.getId());
+                phoneNumberService.saveOrUpdateBatch(dormitoryManager.getPhoneNumbers());
+            } else {
+                throw new BusinessException("修改社区楼长失败！");
             }
         }
         return "redirect:/dormitory";
@@ -176,16 +154,13 @@ public class DormitoryManagerAction extends BaseAction {
     @DeleteMapping("/{id}")
     @ResponseBody
     public Map<String, Object> deleteDormitoryManagerForAjax(@PathVariable String id) {
-        try {
-            Map<String, Object> jsonMap = new HashMap<>(3);
-            dormitoryManagerService.delete((Serializable) id);
+        Map<String, Object> jsonMap = new HashMap<>(3);
+        if (dormitoryManagerService.removeById(id)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除社区楼长成功！");
             return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除社区楼长失败！", e);
         }
+        throw new JsonException("删除社区楼长失败！");
     }
 
     /**
@@ -202,7 +177,7 @@ public class DormitoryManagerAction extends BaseAction {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
             Workbook workbook = uploadExcel(request, session, "excel_dormitory_title");
-            dormitoryManagerService.create(workbook, subdistrictId, configurationsMap);
+            dormitoryManagerService.save(workbook, subdistrictId, configurationsMap);
             jsonMap.put("state", 1);
             jsonMap.put("message", "上传成功！");
             return jsonMap;
@@ -221,17 +196,17 @@ public class DormitoryManagerAction extends BaseAction {
      */
     @GetMapping("/download")
     public void dormitoryManagerSaveAsExcel(HttpSession session, HttpServletResponse response, @RequestParam String data) {
+        List<Map<String, Object>> userData = getDecodeData(session, data);
+        // 获取属性-列头
+        Map<String, String> headMap = dormitoryManagerService.getPartStatHead();
+        String excelDormitoryTitleUp = CommonUtil.convertConfigurationString(configurationsMap.get("excel_dormitory_title_up"));
+        String excelDormitoryTitle = CommonUtil.convertConfigurationString(configurationsMap.get("excel_dormitory_title"));
+        ExcelUtil.DataHandler excelDataHandler = dormitoryManagerService.getExcelDataHandler();
+        // 获取业务数据集
+        JSONArray dataJson = dormitoryManagerService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData, new String[]{excelDormitoryTitleUp, excelDormitoryTitle});
         try {
-            List<Map<String, Object>> userData = getDecodeData(session, data);
-            // 获取属性-列头
-            Map<String, String> headMap = dormitoryManagerService.findPartStatHead();
-            String excelDormitoryTitleUp = CommonUtils.convertConfigurationString(configurationsMap.get("excel_dormitory_title_up"));
-            String excelDormitoryTitle = CommonUtils.convertConfigurationString(configurationsMap.get("excel_dormitory_title"));
-            ExcelUtils.DataHandler excelDataHandler = dormitoryManagerService.getExcelDataHandler();
-            // 获取业务数据集
-            JSONArray dataJson = dormitoryManagerService.findCorrelation(communityCompanyType, subdistrictCompanyType, userData, new String[]{excelDormitoryTitleUp, excelDormitoryTitle});
-            ByteArrayOutputStream byteArrayOutputStream = ExcelUtils.exportExcelX(excelDormitoryTitle, headMap, dataJson, 0, excelDataHandler);
-            ExcelUtils.downloadExcelFile(response, request, dormitoryManagerService.getFileTitle(), byteArrayOutputStream);
+            ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelDormitoryTitle, headMap, dataJson, 0, excelDataHandler);
+            ExcelUtil.downloadExcelFile(response, request, dormitoryManagerService.getFileTitle(), byteArrayOutputStream);
         } catch (Exception e) {
             setCookieError(request, response);
             e.printStackTrace();
@@ -248,32 +223,29 @@ public class DormitoryManagerAction extends BaseAction {
      * @param companyId   单位编号
      * @param companyType 单位类别编号
      * @param name        社区楼长姓名
-     * @param sex         社区楼长性别
+     * @param gender      社区楼长性别
      * @param address     社区楼长家庭地址
      * @param phone       社区楼长联系方式
      * @return Ajax消息
      */
     @GetMapping("/list")
     @ResponseBody
-    public Map<String, Object> findDormitoryManagersForAjax(HttpSession session, Integer page, Boolean isSearch, Long companyId, Integer companyType, String name, Integer sex, String address, String phone) {
+    public Map<String, Object> findDormitoryManagersForAjax(HttpSession session, Integer page, Boolean isSearch, Long companyId, Integer companyType, String name, GenderEnum gender, String address, String phone) {
         getSessionRoleId(session);
-        Map<String, Object> dormitoryManagerMap;
-        try {
-            if (isSearch != null && isSearch) {
-                DormitoryManager dormitoryManager = new DormitoryManager();
-                dormitoryManager.setName(name);
-                dormitoryManager.setSex(sex);
-                dormitoryManager.setAddress(address);
-                dormitoryManager.setPhones(phone);
-                dormitoryManagerMap = dormitoryManagerService.find(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, dormitoryManager, companyId, companyType, page, null);
-            } else {
-                dormitoryManagerMap = dormitoryManagerService.findCorrelation(systemUser, communityCompanyType, subdistrictCompanyType, page, null);
-            }
-            return setJsonMap(dormitoryManagerMap);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("查找社区楼长失败！", e);
+        IPage<DormitoryManager> dormitoryManagerMap;
+        if (isSearch != null && isSearch) {
+            DormitoryManager dormitoryManager = new DormitoryManager();
+            dormitoryManager.setName(name);
+            dormitoryManager.setGender(gender);
+            dormitoryManager.setAddress(address);
+            List<String> phoneNumbers = new ArrayList<>();
+            phoneNumbers.add(phone);
+            dormitoryManager.setPhoneNumbers(CommonUtil.setPhoneNumbers(phoneNumbers));
+            dormitoryManagerMap = dormitoryManagerService.get(systemUser, systemCompanyType, communityCompanyType, subdistrictCompanyType, dormitoryManager, companyId, companyType, page, null);
+        } else {
+            dormitoryManagerMap = dormitoryManagerService.getCorrelation(systemUser, PhoneNumberSourceTypeEnum.DORMITORY_MANAGER, communityCompanyType, subdistrictCompanyType, page, null);
         }
+        return setJsonMap(dormitoryManagerMap);
     }
 
     /**
@@ -288,14 +260,9 @@ public class DormitoryManagerAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> loadDormitoryManagerLastIdForAjax(@RequestParam Long communityId, String communityName, String subdistrictName) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            String lastId = dormitoryManagerService.find(communityId, communityName, subdistrictName);
-            jsonMap.put("state", 1);
-            jsonMap.put("id", lastId);
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("加载编号失败！", e);
-        }
+        String lastId = dormitoryManagerService.get(communityId, communityName, subdistrictName);
+        jsonMap.put("state", 1);
+        jsonMap.put("id", lastId);
+        return jsonMap;
     }
 }

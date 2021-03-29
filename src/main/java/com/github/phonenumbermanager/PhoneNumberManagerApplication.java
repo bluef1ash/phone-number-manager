@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication
 @EnableScheduling
 @EnableTransactionManagement
-@MapperScan("com.github.phonenumbermanager.dao")
+@MapperScan("com.github.phonenumbermanager.mapper")
 public class PhoneNumberManagerApplication {
     public static void main(String[] args) {
         SpringApplication.run(PhoneNumberManagerApplication.class, args);

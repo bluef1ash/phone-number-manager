@@ -1,17 +1,19 @@
 package com.github.phonenumbermanager.service.impl;
 
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.github.phonenumbermanager.dao.*;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.BaseService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.DateUtils;
-import com.github.phonenumbermanager.utils.ExcelUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.ExcelUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -25,183 +27,114 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.sql.Timestamp;
 import java.util.*;
 
 /**
- * 基础Service实现
+ * 基础业务实现
  *
- * @param <T> SERVICE泛型
+ * @param <M> <T> SERVICE泛型
  * @author 廿二月的天
  */
-abstract class BaseServiceImpl<T> implements BaseService<T> {
-    private BaseDao<T> baseDao;
+public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends ServiceImpl<M, T> implements BaseService<T> {
+    private CommonMapper<T> commonMapper;
     @Resource
-    protected SystemUserDao systemUserDao;
+    protected SystemUserMapper systemUserMapper;
     @Resource
-    protected DormitoryManagerDao dormitoryManagerDao;
+    protected DormitoryManagerMapper dormitoryManagerMapper;
     @Resource
-    protected UserRoleDao userRoleDao;
+    protected UserRoleMapper userRoleMapper;
     @Resource
-    protected UserPrivilegeDao userPrivilegeDao;
+    protected UserPrivilegeMapper userPrivilegeMapper;
     @Resource
-    protected UserRolePrivilegeDao userRolePrivilegeDao;
+    protected UserRolePrivilegeMapper userRolePrivilegeMapper;
     @Resource
-    protected SubdistrictDao subdistrictDao;
+    protected SubdistrictMapper subdistrictMapper;
     @Resource
-    protected CommunityDao communityDao;
+    protected CommunityMapper communityMapper;
     @Resource
-    protected CommunityResidentDao communityResidentDao;
+    protected CommunityResidentMapper communityResidentMapper;
     @Resource
-    protected ConfigurationDao configurationDao;
+    protected ConfigurationMapper configurationMapper;
     @Resource
-    protected SubcontractorDao subcontractorDao;
+    protected SubcontractorMapper subcontractorMapper;
+    @Resource
+    protected PhoneNumberMapper phoneNumberMapper;
     List<Subcontractor> subcontractors;
     Map<String, Long> communityMap;
 
 
     /**
-     * 最先运行的方法，自动加载对应类型的DAO
+     * 最先运行的方法，自动加载对应类型的Mapper
      *
      * @throws NoSuchFieldException   找不到参数异常
      * @throws IllegalAccessException 错误转换异常
      */
     @PostConstruct
-    private void initBaseDao() throws NoSuchFieldException, IllegalAccessException {
+    private void initBaseMapper() throws NoSuchFieldException, IllegalAccessException {
         ParameterizedType type = (ParameterizedType) this.getClass().getGenericSuperclass();
         Class<?> clazz = (Class<?>) type.getActualTypeArguments()[0];
-        String className = clazz.getSimpleName();
-        String localField = className.substring(0, 1).toLowerCase() + className.substring(1) + "Dao";
+        String localField = clazz.getSimpleName().substring(0, 1).toLowerCase() + clazz.getSimpleName().substring(1);
         Field field = this.getClass().getSuperclass().getDeclaredField(localField);
-        Field baseField = this.getClass().getSuperclass().getDeclaredField("baseDao");
+        Field baseField = this.getClass().getSuperclass().getDeclaredField("commonMapper");
         baseField.set(this, field.get(this));
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long create(T obj) {
-        return baseDao.insert(obj);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long delete(Serializable id) {
-        return baseDao.deleteById(id);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long delete(String name) {
-        return baseDao.deleteByName(name);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long update(T obj) {
-        return baseDao.update(obj);
+    public boolean remove(String name) {
+        return commonMapper.deleteByName(name) > 0;
     }
 
     @Override
-    public List<T> find() {
-        return baseDao.selectAll();
+    public List<T> get(T object) {
+        return commonMapper.selectByObject(object);
     }
 
     @Override
-    public Map<String, Object> find(Integer pageNumber, Integer pageDataSize) {
-        setPageHelper(pageNumber, pageDataSize);
-        List<T> data = baseDao.selectAll();
-        return find(data);
+    public List<T> get(String nameAddress, Serializable id, Serializable subdistrictId) {
+        return commonMapper.selectByNameAndAddress(nameAddress, id, subdistrictId);
     }
 
     @Override
-    public T find(Serializable id) {
-        return baseDao.selectById(id);
+    public List<T> get(List<PhoneNumber> phoneNumbers, Serializable id, Serializable subdistrictId, PhoneNumberSourceTypeEnum sourceType) {
+        return commonMapper.selectByPhones(phoneNumbers, id, subdistrictId, sourceType);
     }
 
     @Override
-    public Map<String, Object> find(String name, Integer pageNumber, Integer pageDataSize) {
-        setPageHelper(pageNumber, pageDataSize);
-        List<T> data = baseDao.selectByName(name);
-        return find(data);
-    }
-
-    @Override
-    public Map<String, Object> find(T object, Integer pageNumber, Integer pageDataSize) {
-        setPageHelper(pageNumber, pageDataSize);
-        List<T> data = baseDao.selectByObject(object);
-        return find(data);
-    }
-
-    @Override
-    public List<T> findForIdAndName() {
-        return baseDao.selectForIdAndName();
-    }
-
-    @Override
-    public List<T> find(T object) {
-        return baseDao.selectByObject(object);
-    }
-
-    @Override
-    public List<T> find(String nameAddress, Serializable id, Serializable subdistrictId) {
-        return baseDao.selectByNameAndAddress(nameAddress, id, subdistrictId);
-    }
-
-    @Override
-    public List<T> find(List<String> phones, Serializable id, Serializable subdistrictId) {
-        return baseDao.selectByPhones(phones, id, subdistrictId);
-    }
-
-    @Override
-    public Map<String, String> findPartStatHead() {
+    public Map<String, String> getPartStatHead() {
         return null;
     }
 
     @Override
-    public Map<String, Object> find(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         return null;
     }
 
     @Override
-    public Map<String, Object> findCorrelation(Integer pageNumber, Integer pageDataSize) {
+    public IPage<T> getCorrelation(Integer pageNumber, Integer pageDataSize) {
         return null;
     }
 
     @Override
-    public long create(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) throws Exception {
-        return 0;
+    public boolean save(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) {
+        return false;
     }
 
     @Override
-    public Map<String, Object> findCorrelation(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
-        List<Serializable> companyIds = findCommunityIds(systemUser, communityCompanyType, subdistrictCompanyType, pageNumber, pageDataSize);
-        List<T> data = baseDao.selectAndCommunityByCommunityIds(companyIds);
-        return find(data);
+    public IPage<T> getCorrelation(SystemUser systemUser, PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
+        List<Serializable> companyIds = getCommunityIds(systemUser, communityCompanyType, subdistrictCompanyType);
+        Page<T> page = new Page<>(pageNumber, pageDataSize);
+        return commonMapper.selectAndCommunityByCommunityIds(page, companyIds, phoneNumberSourceTypeEnum);
     }
 
-    /**
-     * 配置PageHelper
-     *
-     * @param pageNumber   分页页码
-     * @param pageDataSize 每页显示数量
-     */
-    void setPageHelper(Integer pageNumber, Integer pageDataSize) {
-        pageNumber = pageNumber == null ? 1 : pageNumber;
-        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        PageHelper.startPage(pageNumber, pageDataSize);
+    @Override
+    public T getCorrelation(Serializable id) {
+        return null;
     }
 
-    /**
-     * 查找对象的方法
-     *
-     * @param data 对象集合
-     * @return 查找到的对象集合与分页对象
-     */
-    Map<String, Object> find(List<T> data) {
-        Map<String, Object> map = new HashMap<>(3);
-        map.put("data", data);
-        map.put("pageInfo", new PageInfo<>(data));
-        return map;
+    @Override
+    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return null;
     }
 
     /**
@@ -210,27 +143,22 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
      * @param systemUser             系统用户对象
      * @param communityCompanyType   社区单位类型编号
      * @param subdistrictCompanyType 街道单位类型编号
-     * @param pageNumber             页面页码
-     * @param pageDataSize           页面展示数据数量
      * @return 社区编号数组
      */
-    List<Serializable> findCommunityIds(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
-        pageNumber = pageNumber == null ? 1 : pageNumber;
-        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        Integer companyType = systemUser.getCompanyType();
+    List<Serializable> getCommunityIds(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        Integer level = systemUser.getLevel().getValue();
         Long companyId = systemUser.getCompanyId();
         List<Serializable> communityIds = new ArrayList<>();
-        if (companyType.equals(communityCompanyType)) {
+        if (level.equals(communityCompanyType)) {
             communityIds.add(companyId);
-        } else if (companyType.equals(subdistrictCompanyType)) {
-            List<Community> communities = communityDao.selectCorrelationBySubdistrictId(companyId);
+        } else if (level.equals(subdistrictCompanyType)) {
+            List<Community> communities = communityMapper.selectCorrelationBySubdistrictId(companyId);
             for (Community community : communities) {
                 communityIds.add(community.getId());
             }
         } else {
             communityIds = null;
         }
-        PageHelper.startPage(pageNumber, pageDataSize);
         return communityIds;
     }
 
@@ -244,7 +172,7 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
         if (cell == null) {
             return null;
         }
-        return CommonUtils.qj2bj(CommonUtils.replaceBlank(String.valueOf(ExcelUtils.getCellValue(cell, CellType.STRING))));
+        return CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(cell, CellType.STRING))));
     }
 
     /**
@@ -254,7 +182,7 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
      * @return 转换成功的字符串
      */
     Integer convertCell(Cell cell) {
-        return Integer.parseInt(String.valueOf(ExcelUtils.getCellValue(cell, CellType.NUMERIC)));
+        return Integer.parseInt(String.valueOf(ExcelUtil.getCellValue(cell, CellType.NUMERIC)));
     }
 
     /**
@@ -269,16 +197,16 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
     @Transactional(rollbackFor = Exception.class)
     Long addSubcontractorHandler(String name, String mobile, List<Subcontractor> subcontractors, Serializable communityId) {
         Long id = null;
-        Timestamp timestamp = DateUtils.getTimestamp(new Date());
         for (Subcontractor subcontractor : subcontractors) {
             if (name.equals(subcontractor.getName())) {
                 id = subcontractor.getId();
-                if (StringUtils.isEmpty(subcontractor.getMobile())) {
-                    subcontractor.setMobile(mobile);
-                    subcontractor.setUpdateTime(timestamp);
+                if (StringUtils.isEmpty(subcontractor.getPhoneNumbers().get(0).getPhoneNumber())) {
+                    PhoneNumber phoneNumber = phoneNumberMapper.selectBySourceTypeAndSourceId(PhoneNumberSourceTypeEnum.SUBCONTRACTOR, subcontractor.getId());
+                    phoneNumber.setPhoneNumber(mobile);
                     DefaultTransactionDefinition def = new DefaultTransactionDefinition();
                     def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-                    subcontractorDao.update(subcontractor);
+                    subcontractorMapper.updateById(subcontractor);
+                    phoneNumberMapper.updateById(phoneNumber);
                 }
                 break;
             }
@@ -286,13 +214,14 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
         if (id == null) {
             Subcontractor newSubcontractor = new Subcontractor();
             newSubcontractor.setName(name);
-            newSubcontractor.setMobile(mobile);
             newSubcontractor.setCommunityId((Long) communityId);
-            newSubcontractor.setCreateTime(timestamp);
-            newSubcontractor.setUpdateTime(timestamp);
+            List<String> numbers = new ArrayList<>();
+            numbers.add(mobile);
+            List<PhoneNumber> phoneNumbers = CommonUtil.setPhoneNumbers(numbers);
+            newSubcontractor.setPhoneNumbers(phoneNumbers);
             DefaultTransactionDefinition def = new DefaultTransactionDefinition();
             def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-            subcontractorDao.insert(newSubcontractor);
+            subcontractorMapper.insert(newSubcontractor);
             subcontractors.add(newSubcontractor);
         }
         return id;
@@ -308,7 +237,7 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
     Long getCommunityId(Map<String, Long> communityMap, String communityName) {
         Long communityId;
         if (!communityMap.containsKey(communityName)) {
-            communityId = (Long) communityDao.selectIdByName(communityName);
+            communityId = (Long) communityMapper.selectIdByName(communityName);
             if (communityId == null) {
                 throw new BusinessException("找不到社区名称为“" + communityName + "”的社区，请创建此社区后，重新导入！");
             }
@@ -325,8 +254,8 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
      * @param subdistrictId 街道编号
      */
     void setCommunityVariables(Serializable subdistrictId) {
-        subcontractors = subcontractorDao.selectAll();
-        List<Community> communities = communityDao.selectBySubdistrictId(subdistrictId);
+        subcontractors = subcontractorMapper.selectList(null);
+        List<Community> communities = communityMapper.selectBySubdistrictId(subdistrictId);
         communityMap = new HashMap<>(communities.size() + 1);
     }
 
@@ -365,24 +294,19 @@ abstract class BaseServiceImpl<T> implements BaseService<T> {
     /**
      * 获取单位类型和单位编号
      *
-     * @param systemUser   登录的系统用户对象
-     * @param companyId    查找的范围单位的编号
-     * @param companyType  查找的范围单位的类别编号
-     * @param pageNumber   分页页码
-     * @param pageDataSize 每页展示的数量
+     * @param systemUser  登录的系统用户对象
+     * @param companyId   查找的范围单位的编号
+     * @param companyType 查找的范围单位的类别编号
      * @return 单位类型和单位编号集合
      */
-    Map<String, Object> getCompany(SystemUser systemUser, Serializable companyId, Serializable companyType, Integer pageNumber, Integer pageDataSize) {
-        pageNumber = pageNumber == null ? 1 : pageNumber;
-        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+    Map<String, Object> getCompany(SystemUser systemUser, Serializable companyId, Serializable companyType) {
         if (companyType == null || companyId == null) {
-            companyType = systemUser.getCompanyType();
+            companyType = systemUser.getLevel();
             companyId = systemUser.getCompanyId();
         }
         Map<String, Object> company = new HashMap<>(3);
         company.put("companyId", companyId);
         company.put("companyType", companyType);
-        PageHelper.startPage(pageNumber, pageDataSize);
         return company;
     }
 }

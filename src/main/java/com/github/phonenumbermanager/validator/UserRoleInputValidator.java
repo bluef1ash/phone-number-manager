@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author 廿二月的天
  */
 public class UserRoleInputValidator extends BaseInputValidator<UserRole> implements Validator {
-    private UserRoleService userRoleService;
+    private final UserRoleService userRoleService;
 
     public UserRoleInputValidator(UserRoleService userRoleService, HttpServletRequest request) {
         this.userRoleService = userRoleService;
@@ -35,7 +35,7 @@ public class UserRoleInputValidator extends BaseInputValidator<UserRole> impleme
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
             try {
-                UserRole userRoleDb = userRoleService.find(userRole.getName());
+                UserRole userRoleDb = userRoleService.getById(userRole.getName());
                 if (userRoleDb != null && userRoleDb.getId() != null) {
                     field = "name";
                     errorCode = "userRole.name.errorCode";

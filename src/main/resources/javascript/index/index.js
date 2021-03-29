@@ -106,7 +106,7 @@ $(document).ready(() => {
                 },
                 color: []
             },
-            dormitorySex: {
+            dormitoryGender: {
                 male: 0,
                 female: 0,
                 maleParent: "0%",
@@ -238,6 +238,8 @@ $(document).ready(() => {
                 this.baseMessageCommunityId = this.baseMessageDormitoryCommunityId = this.barChartSubcontractorCommunityId = this.systemUser.companyId;
                 this.isDisplayChooseChart = false;
                 this.loadMessageAndChart(null, this.systemUser.companyId, this.systemUser.companyType);
+            } else {
+                this.loadings = [false, false, false, false, false];
             }
         },
         components: {
@@ -364,11 +366,11 @@ $(document).ready(() => {
                                 this.$set(this.loadings, 4, false);
                             }
                             if (data.dormitory.baseMessage) {
-                                this.dormitorySex = data.dormitory.baseMessage.sex;
-                                let sexCount = this.dormitorySex.male + this.dormitorySex.female;
-                                if (sexCount > 0) {
-                                    this.dormitorySex.maleParent = Math.ceil((this.dormitorySex.male / sexCount) * 100);
-                                    this.dormitorySex.femaleParent = 100 - this.dormitorySex.maleParent;
+                                this.dormitoryGender = data.dormitory.baseMessage.gender;
+                                let genderCount = this.dormitoryGender.male + this.dormitoryGender.female;
+                                if (genderCount > 0) {
+                                    this.dormitoryGender.maleParent = Math.ceil((this.dormitoryGender.male / genderCount) * 100);
+                                    this.dormitoryGender.femaleParent = 100 - this.dormitoryGender.maleParent;
                                 }
                                 this.dormitoryAge = data.dormitory.baseMessage.age;
                                 this.dormitoryEducation = data.dormitory.baseMessage.education;

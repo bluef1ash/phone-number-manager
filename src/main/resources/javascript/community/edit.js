@@ -21,7 +21,12 @@ $(document).ready(() => {
             if (this.community === null) {
                 this.community = {
                     name: "",
-                    subdistrictId: 0
+                    subdistrictId: 0,
+                    phoneNumbers: [
+                        {
+                            phoneNumber: ""
+                        }
+                    ]
                 };
             } else {
                 if (this.community.residentSubmitted) {
@@ -55,7 +60,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.community.landline === null || this.community.landline === "") {
+                if (this.community.phoneNumbers === null || this.community.phoneNumbers[0].phoneNumber === "") {
                     message = "社区联系方式不能为空！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
@@ -63,7 +68,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (checkPhoneType(this.community.landline) === -1) {
+                if (checkPhoneType(this.community.phoneNumbers[0].phoneNumber) === -1) {
                     message = "社区联系方式非法！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);

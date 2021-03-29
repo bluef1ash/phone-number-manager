@@ -1,17 +1,15 @@
 package com.github.phonenumbermanager.service.impl;
 
-import com.github.phonenumbermanager.entity.SystemUser;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.UserRole;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.mapper.UserRoleMapper;
 import com.github.phonenumbermanager.service.UserRoleService;
-import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 系统用户角色业务实现
@@ -19,54 +17,32 @@ import java.util.Map;
  * @author 廿二月的天
  */
 @Service("userRoleService")
-public class UserRoleServiceImpl extends BaseServiceImpl<UserRole> implements UserRoleService {
+public class UserRoleServiceImpl extends BaseServiceImpl<UserRoleMapper, UserRole> implements UserRoleService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long create(UserRole userRole) {
-        userRole.setCreateTime(DateUtils.getTimestamp(new Date()));
-        userRole.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.create(userRole);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long update(UserRole userRole) {
-        userRole.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.update(userRole);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long delete(Serializable id) {
-        Long systemUserCount = systemUserDao.countByRoleId(id);
+    public boolean removeById(Serializable id) {
+        Long systemUserCount = systemUserMapper.countByRoleId(id);
         if (systemUserCount == null || systemUserCount == 0) {
             throw new BusinessException("不允许删除存在有下属系统用户的系统用户角色！");
         }
-        return super.delete(id);
+        return userRoleMapper.deleteById(id) > 0;
     }
 
     @Override
-    public Map<String, Object> findCorrelation(Integer pageNumber, Integer pageDataSize) {
-        setPageHelper(pageNumber, pageDataSize);
-        List<UserRole> data = userRoleDao.selectAndSystemUsers();
-        return find(data);
+    public IPage<UserRole> getCorrelation(Integer pageNumber, Integer pageDataSize) {
+        Page<UserRole> page = new Page<>(pageNumber, pageDataSize);
+        return userRoleMapper.selectAndSystemUsers(page);
     }
 
     @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return null;
+    public IPage<UserRole> getAndPrivileges(Integer pageNumber, Integer pageDataSize) {
+        Page<UserRole> page = new Page<>(pageNumber, pageDataSize);
+        return userRoleMapper.selectAndPrivileges(page);
     }
 
     @Override
-    public Map<String, Object> findAndPrivileges(Integer pageNumber, Integer pageDataSize) {
-        setPageHelper(pageNumber, pageDataSize);
-        List<UserRole> data = userRoleDao.selectAndPrivileges();
-        return find(data);
-    }
-
-    @Override
-    public UserRole findCorrelation(Serializable id) {
-        return userRoleDao.selectAndPrivilegesById(id);
+    public UserRole getCorrelation(Serializable id) {
+        return userRoleMapper.selectAndPrivilegesById(id);
     }
 }

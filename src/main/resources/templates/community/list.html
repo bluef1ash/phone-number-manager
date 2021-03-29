@@ -47,7 +47,7 @@
                                         <tr v-for="(community, index) in communities" :key="community.id">
                                             <td v-text="index + 1"></td>
                                             <td v-text="community.name"></td>
-                                            <td v-text="community.landline"></td>
+                                            <td v-text="community.phoneNumbers[0].phoneNumber"></td>
                                             <td v-text="community.subdistrict.name"></td>
                                             <td>
                                                 <div class="row">

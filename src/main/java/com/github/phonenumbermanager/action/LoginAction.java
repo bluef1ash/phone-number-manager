@@ -3,8 +3,8 @@ package com.github.phonenumbermanager.action;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.GeetestLibUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.GeetestLibUtil;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -48,10 +48,10 @@ public class LoginAction extends BaseAction {
     @GetMapping("/captcha")
     @ResponseBody
     public JSONObject captcha(HttpServletRequest request, String browserType) {
-        GeetestLibUtils gtSdk = new GeetestLibUtils(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
+        GeetestLibUtil gtSdk = new GeetestLibUtil(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
         Map<String, String> param = new HashMap<>(3);
         param.put("client_type", browserType);
-        param.put("ip_address", CommonUtils.getIp(request));
+        param.put("ip_address", CommonUtil.getIp(request));
         int gtServerStatus = gtSdk.preProcess(param);
         request.getSession().setAttribute(gtSdk.gtServerStatusSessionKey, gtServerStatus);
         return JSON.parseObject(gtSdk.getResponseStr());

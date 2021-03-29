@@ -1,12 +1,14 @@
 package com.github.phonenumbermanager.action;
 
 import com.alibaba.fastjson.JSON;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityService;
+import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.service.SubdistrictService;
 import com.github.phonenumbermanager.validator.CommunityInputValidator;
@@ -42,6 +44,8 @@ public class CommunityAction extends BaseAction {
     @Resource
     private SubdistrictService subdistrictService;
     @Resource
+    private PhoneNumberService phoneNumberService;
+    @Resource
     private HttpServletRequest request;
 
     @InitBinder
@@ -65,15 +69,8 @@ public class CommunityAction extends BaseAction {
      */
     @GetMapping({"", "/{page}"})
     public String communityList(Model model, @PathVariable(required = false) Integer page) {
-        try {
-            Map<String, Object> communityMap = communityService.findCorrelation(page, null);
-            model.addAttribute("communities", communityMap.get("data"));
-            model.addAttribute("pageInfo", communityMap.get("pageInfo"));
-            return "community/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("communities", communityService.getCorrelation(page, null));
+        return "community/list";
     }
 
     /**
@@ -84,14 +81,9 @@ public class CommunityAction extends BaseAction {
      */
     @GetMapping("/create")
     public String createCommunity(Model model) {
-        try {
-            List<Subdistrict> subdistricts = subdistrictService.find();
-            model.addAttribute("subdistricts", subdistricts);
-            return "community/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<Subdistrict> subdistricts = subdistrictService.list();
+        model.addAttribute("subdistricts", subdistricts);
+        return "community/edit";
     }
 
     /**
@@ -103,16 +95,11 @@ public class CommunityAction extends BaseAction {
      */
     @GetMapping("/edit/{id}")
     public String editCommunity(Model model, @PathVariable Long id) {
-        try {
-            Community community = communityService.findCorrelation(id);
-            List<Subdistrict> subdistricts = subdistrictService.find();
-            model.addAttribute("subdistricts", subdistricts);
-            model.addAttribute("community", community);
-            return "community/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        Community community = communityService.getCorrelation(id);
+        List<Subdistrict> subdistricts = subdistrictService.list();
+        model.addAttribute("subdistricts", subdistricts);
+        model.addAttribute("community", community);
+        return "community/edit";
     }
 
     /**
@@ -127,31 +114,26 @@ public class CommunityAction extends BaseAction {
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     public String communityCreateOrEditHandle(HttpServletRequest request, Model model, @Validated Community community, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            try {
-                // 输出错误信息
-                List<ObjectError> allErrors = bindingResult.getAllErrors();
-                model.addAttribute("messageErrors", allErrors);
-                List<Subdistrict> subdistricts = subdistrictService.find();
-                model.addAttribute("subdistricts", subdistricts);
-                return "community/edit";
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("展示社区失败！", e);
-            }
+            // 输出错误信息
+            List<ObjectError> allErrors = bindingResult.getAllErrors();
+            model.addAttribute("messageErrors", allErrors);
+            List<Subdistrict> subdistricts = subdistrictService.list();
+            model.addAttribute("subdistricts", subdistricts);
+            return "community/edit";
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            try {
-                communityService.create(community);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加社区失败！", e);
+            if (communityService.save(community)) {
+                setPhoneNumbers(community.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY, String.valueOf(community.getId()));
+                phoneNumberService.saveBatch(community.getPhoneNumbers());
+            } else {
+                throw new BusinessException("添加社区失败！");
             }
         } else {
-            try {
-                communityService.update(community);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改社区失败！", e);
+            if (communityService.updateById(community)) {
+                setPhoneNumbers(community.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY, String.valueOf(community.getId()));
+                phoneNumberService.saveOrUpdateBatch(community.getPhoneNumbers());
+            } else {
+                throw new BusinessException("修改社区失败！");
             }
         }
         return "redirect:/community";
@@ -167,18 +149,12 @@ public class CommunityAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> deleteCommunityForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            communityService.delete(id);
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除社区成功！");
-            return jsonMap;
-        } catch (BusinessException be) {
-            be.printStackTrace();
-            throw new JsonException(be.getMessage(), be);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除社区失败！", e);
+        if (!communityService.removeById(id) || !phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.COMMUNITY, id)) {
+            throw new JsonException("删除社区失败！");
         }
+        jsonMap.put("state", 1);
+        jsonMap.put("message", "删除社区成功！");
+        return jsonMap;
     }
 
     /**
@@ -193,22 +169,15 @@ public class CommunityAction extends BaseAction {
     public Map<String, Object> findCommunitiesForAjax(HttpSession session, @PathVariable(required = false) Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         getSessionRoleId(session);
-        try {
-            if (subdistrictId == null) {
-                Integer companyType = systemUser.getCompanyType();
-                Long companyId = systemUser.getCompanyId();
-                Set<Subdistrict> subdistricts = subdistrictService.findCorrelation(systemCompanyType, communityCompanyType, subdistrictCompanyType, companyType, companyId);
-                jsonMap.put("subdistricts", subdistricts);
-            } else {
-                List<Community> communities = communityService.findBySubdistrictId(subdistrictId);
-                jsonMap.put("communities", communities);
-            }
-            jsonMap.put("state", 1);
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("查找社区失败！", e);
+        if (subdistrictId == null) {
+            Set<Subdistrict> subdistricts = subdistrictService.getCorrelation(systemCompanyType, communityCompanyType, subdistrictCompanyType, systemUser.getLevel(), systemUser.getCompanyId());
+            jsonMap.put("subdistricts", subdistricts);
+        } else {
+            List<Community> communities = communityService.getBySubdistrictId(subdistrictId);
+            jsonMap.put("communities", communities);
         }
+        jsonMap.put("state", 1);
+        return jsonMap;
     }
 
     /**
@@ -223,15 +192,12 @@ public class CommunityAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> chooseSubmitForAjax(HttpSession session, @RequestParam String data, @RequestParam Integer changeType) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            communityService.update(getDecodeData(session, data), changeType, systemCompanyType, communityCompanyType, subdistrictCompanyType);
+        if (communityService.update(getDecodeData(session, data), changeType, communityCompanyType, subdistrictCompanyType)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "上报成功！");
             return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("更改失败，请稍后再试！", e);
         }
+        throw new JsonException("更改失败，请稍后再试！");
     }
 
     /**
@@ -243,16 +209,11 @@ public class CommunityAction extends BaseAction {
     @GetMapping("/load/{id}")
     @ResponseBody
     public Map<String, Object> loadCommunityForAjax(@PathVariable Long id) {
-        try {
-            Community community = communityService.find(id);
-            Map<String, Object> jsonMap = new HashMap<>(3);
-            jsonMap.put("state", 1);
-            jsonMap.put("community", community);
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("加载社区失败！", e);
-        }
+        Community community = communityService.getById(id);
+        Map<String, Object> jsonMap = new HashMap<>(3);
+        jsonMap.put("state", 1);
+        jsonMap.put("community", community);
+        return jsonMap;
     }
 
     /**
@@ -266,15 +227,8 @@ public class CommunityAction extends BaseAction {
     @GetMapping({"/subcontractor", "/subcontractor/{page}"})
     public String subcontractorList(HttpSession session, Model model, @PathVariable(required = false) Integer page) {
         getSessionRoleId(session);
-        try {
-            Map<String, Object> subcontractorMap = subcontractorService.find(page, null, systemUser.getCompanyType(), systemUser.getCompanyId(), systemCompanyType, communityCompanyType, subdistrictCompanyType);
-            model.addAttribute("subcontractors", subcontractorMap.get("data"));
-            model.addAttribute("pageInfo", subcontractorMap.get("pageInfo"));
-            return "subcontractor/list";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("subcontractors", subcontractorService.get(page, null, systemUser.getLevel(), systemUser.getCompanyId(), systemCompanyType, communityCompanyType, subdistrictCompanyType));
+        return "subcontractor/list";
     }
 
     /**
@@ -286,14 +240,9 @@ public class CommunityAction extends BaseAction {
     @GetMapping("/subcontractor/create")
     public String createSubcontractor(Model model, HttpSession session) {
         getSessionRoleId(session);
-        try {
-            List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
-            model.addAttribute("communities", JSON.toJSON(communities));
-            return "subcontractor/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
+        model.addAttribute("communities", JSON.toJSON(communities));
+        return "subcontractor/edit";
     }
 
     /**
@@ -306,17 +255,12 @@ public class CommunityAction extends BaseAction {
     @GetMapping("/subcontractor/edit/{id}")
     public String editSubcontractor(HttpSession session, Model model, @PathVariable Long id) {
         getSessionRoleId(session);
-        try {
-            Subcontractor subcontractor = subcontractorService.find(id);
-            List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
-            model.addAttribute("communities", JSON.toJSON(communities));
-            model.addAttribute("communities", communities);
-            model.addAttribute("subcontractor", subcontractor);
-            return "subcontractor/edit";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        Subcontractor subcontractor = subcontractorService.getCorrelation(id);
+        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
+        model.addAttribute("communities", JSON.toJSON(communities));
+        model.addAttribute("communities", communities);
+        model.addAttribute("subcontractor", subcontractor);
+        return "subcontractor/edit";
     }
 
     /**
@@ -333,31 +277,26 @@ public class CommunityAction extends BaseAction {
     public String subcontractorCreateOrEditHandle(HttpServletRequest request, HttpSession session, Model model, @Validated Subcontractor subcontractor, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             getSessionRoleId(session);
-            try {
-                // 输出错误信息
-                List<ObjectError> allErrors = bindingResult.getAllErrors();
-                model.addAttribute("messageErrors", allErrors);
-                List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
-                model.addAttribute("communities", JSON.toJSON(communities));
-                return "subcontractor/edit";
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("展示社区分包人失败！", e);
-            }
+            // 输出错误信息
+            List<ObjectError> allErrors = bindingResult.getAllErrors();
+            model.addAttribute("messageErrors", allErrors);
+            List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
+            model.addAttribute("communities", JSON.toJSON(communities));
+            return "subcontractor/edit";
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            try {
-                subcontractorService.create(subcontractor);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("添加社区分包人失败！", e);
+            if (subcontractorService.save(subcontractor)) {
+                setPhoneNumbers(subcontractor.getPhoneNumbers(), PhoneNumberSourceTypeEnum.SUBCONTRACTOR, String.valueOf(subcontractor.getId()));
+                phoneNumberService.saveBatch(subcontractor.getPhoneNumbers());
+            } else {
+                throw new BusinessException("添加社区分包人失败！");
             }
         } else {
-            try {
-                subcontractorService.update(subcontractor);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BusinessException("修改社区分包人失败！", e);
+            if (subcontractorService.updateById(subcontractor)) {
+                setPhoneNumbers(subcontractor.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY, String.valueOf(subcontractor.getId()));
+                phoneNumberService.saveOrUpdateBatch(subcontractor.getPhoneNumbers());
+            } else {
+                throw new BusinessException("修改社区分包人失败！");
             }
         }
         return "redirect:/community/subcontractor";
@@ -373,18 +312,12 @@ public class CommunityAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> deleteSubcontractorForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            subcontractorService.delete(id);
+        if (subcontractorService.removeById(id) || !phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.SUBCONTRACTOR, id)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除社区分包人成功！");
             return jsonMap;
-        } catch (BusinessException be) {
-            be.printStackTrace();
-            throw new JsonException(be.getMessage(), be);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除社区分包人失败！", e);
         }
+        throw new JsonException("删除社区分包人失败！");
     }
 
     /**
@@ -397,14 +330,9 @@ public class CommunityAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> loadSubcontractorForAjax(@PathVariable Long communityId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            List<Subcontractor> subcontractors = subcontractorService.findByCommunityId(communityId);
-            jsonMap.put("state", 1);
-            jsonMap.put("subcontractors", subcontractors);
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("加载社区分包人失败！", e);
-        }
+        List<Subcontractor> subcontractors = subcontractorService.getByCommunityId(communityId);
+        jsonMap.put("state", 1);
+        jsonMap.put("subcontractors", subcontractors);
+        return jsonMap;
     }
 }

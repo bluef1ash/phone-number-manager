@@ -1,10 +1,11 @@
 package com.github.phonenumbermanager.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.phonenumbermanager.constant.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Subcontractor;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 社区分包人Service接口
@@ -17,15 +18,14 @@ public interface SubcontractorService extends BaseService<Subcontractor> {
      *
      * @param pageNumber             分页页码
      * @param pageDataSize           每页展示数据数量
-     * @param companyType            系统用户单位类型
+     * @param userLevel              系统用户单位类型
      * @param companyId              系统用户单位编号
      * @param systemCompanyType      系统单位类型编号
      * @param communityCompanyType   社区单位类型编号
      * @param subdistrictCompanyType 街道单位类型编号
      * @return 社区分包人对象集合与分页对象
-     * @throws Exception Service异常
      */
-    Map<String, Object> find(Integer pageNumber, Integer pageDataSize, Serializable companyType, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) throws Exception;
+    IPage<Subcontractor> get(Integer pageNumber, Integer pageDataSize, UserLevelEnum userLevel, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType);
 
     /**
      * 通过系统用户角色查找
@@ -36,16 +36,14 @@ public interface SubcontractorService extends BaseService<Subcontractor> {
      * @param communityCompanyType   社区单位类型编号
      * @param subdistrictCompanyType 街道单位类型编号
      * @return 社区分包人对象集合
-     * @throws Exception Service异常
      */
-    List<Subcontractor> findCorrelation(Serializable companyType, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) throws Exception;
+    List<Subcontractor> getCorrelation(Serializable companyType, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType);
 
     /**
      * 通过社区编号查找
      *
      * @param communityId 社区编号
      * @return 社区分包人对象集合
-     * @throws Exception Service异常
      */
-    List<Subcontractor> findByCommunityId(Serializable communityId) throws Exception;
+    List<Subcontractor> getByCommunityId(Serializable communityId);
 }

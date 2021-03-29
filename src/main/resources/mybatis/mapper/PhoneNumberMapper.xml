@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.PhoneNumberMapper">
+    <resultMap type="com.github.phonenumbermanager.entity.PhoneNumber" id="commonResultMap">
+        <id column="phone_number" property="phoneNumber"/>
+        <id column="source_type" property="sourceType"
+            typeHandler="com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler"/>
+        <id column="source_id" property="sourceId"/>
+        <result column="phone_type" property="phoneType"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.PhoneNumber" id="baseResultMap" extends="commonResultMap">
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.PhoneNumber" id="aliasResultMap" extends="commonResultMap">
+        <result column="community_create_time" property="createTime"/>
+        <result column="community_update_time" property="updateTime"/>
+    </resultMap>
+    <select id="selectByObject" resultMap="baseResultMap">
+        SELECT `phone_number`, `source_type`, `source_id`, `phone_type`, `create_time`, `update_time`
+        FROM `pm_phone_number`
+        <where>
+            <if test="phoneNumber != null">
+                `phone_number` = #{phoneNumber}
+            </if>
+            <if test="sourceType != null">
+                AND `source_type` = #{sourceType}
+            </if>
+            <if test="sourceId != null">
+                AND `source_id` = #{sourceId}
+            </if>
+            <if test="phoneType != null">
+                AND `phone_type` = #{phoneType}
+            </if>
+            <if test="createTime != null">
+                AND `create_time` = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                AND `update_time` = #{updateTime}
+            </if>
+        </where>
+    </select>
+    <select id="selectBySourceTypeAndSourceId" resultMap="baseResultMap">
+        SELECT `phone_number`, `source_type`, `source_id`, `phone_type`, `create_time`, `update_time`
+        FROM `pm_phone_number`
+        WHERE `source_type` = #{source_type} AND `source_id` = #{source_id}
+    </select>
+</mapper>

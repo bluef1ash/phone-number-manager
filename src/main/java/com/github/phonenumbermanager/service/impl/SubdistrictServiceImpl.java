@@ -1,16 +1,22 @@
 package com.github.phonenumbermanager.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.mapper.SubdistrictMapper;
 import com.github.phonenumbermanager.service.SubdistrictService;
-import com.github.phonenumbermanager.utils.DateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 街道业务实现
@@ -18,53 +24,51 @@ import java.util.*;
  * @author 廿二月的天
  */
 @Service("subdistrictService")
-public class SubdistrictServiceImpl extends BaseServiceImpl<Subdistrict> implements SubdistrictService {
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long create(Subdistrict subdistrict) {
-        subdistrict.setCreateTime(DateUtils.getTimestamp(new Date()));
-        subdistrict.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.create(subdistrict);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public long update(Subdistrict subdistrict) {
-        subdistrict.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.update(subdistrict);
-    }
+public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, Subdistrict> implements SubdistrictService {
 
     @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         return null;
     }
 
     @Override
-    public Set<Subdistrict> findCorrelation(Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, Serializable companyType, Serializable companyId) {
+    public IPage<Subdistrict> getCorrelation(Integer pageNumber, Integer pageDataSize) {
+        pageNumber = pageNumber == null ? 1 : pageNumber;
+        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
+        Page<Subdistrict> page = new Page<>(pageNumber, pageDataSize);
+        return subdistrictMapper.selectAndPhoneNumbersAll(page);
+    }
+
+    @Override
+    public Set<Subdistrict> getCorrelation(Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, UserLevelEnum userLevel, Serializable companyId) {
         Set<Subdistrict> subdistricts;
-        if (companyType.equals(communityCompanyType)) {
+        if (communityCompanyType.equals(userLevel.getValue())) {
             // 社区角色
             subdistricts = new HashSet<>();
-            Subdistrict subdistrict = subdistrictDao.selectOneAndCommunityByCommunityId(companyId);
+            Subdistrict subdistrict = subdistrictMapper.selectOneAndCommunityByCommunityId(companyId);
             subdistricts.add(subdistrict);
-        } else if (companyType.equals(subdistrictCompanyType)) {
+        } else if (subdistrictCompanyType.equals(userLevel.getValue())) {
             // 街道角色
-            subdistricts = subdistrictDao.selectCorrelationAndCommunityById(companyId);
+            subdistricts = subdistrictMapper.selectCorrelationAndCommunityById(companyId);
         } else {
             // 管理员角色
-            subdistricts = subdistrictDao.selectAndCommunities();
+            subdistricts = subdistrictMapper.selectAndCommunities();
         }
         return subdistricts;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long delete(Serializable id) {
-        List<Community> communities = communityDao.selectBySubdistrictId(id);
+    public boolean removeById(Serializable id) {
+        List<Community> communities = communityMapper.selectBySubdistrictId(id);
         if (communities != null && communities.size() > 0) {
             throw new BusinessException("不允许删除存在下属社区的街道单位！");
         }
-        return super.delete(id);
+        return subdistrictMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public Subdistrict getCorrelation(Serializable id) {
+        return subdistrictMapper.selectCorrelationAndPhoneNumbersById(id);
     }
 }

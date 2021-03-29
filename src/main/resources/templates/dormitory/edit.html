@@ -81,16 +81,16 @@
                                 <label class="col-md-3 col-form-label">社区楼长性别</label>
                                 <div class="col-md-9 col-form-label">
                                     <div class="form-check form-check-inline mr-1">
-                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="sex_male" name="sex" type="radio" v-model="dormitoryManager.sex" value="0" :disabled="dormitoryManager.community.dormitorySubmitted">
-                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="sex_male">男性</label>
+                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="gender_male" name="gender" type="radio" v-model="dormitoryManager.gender" value="0" :disabled="dormitoryManager.community.dormitorySubmitted">
+                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="gender_male">男性</label>
                                     </div>
                                     <div class="form-check form-check-inline mr-1">
-                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="sex_female" name="sex" type="radio" v-model="dormitoryManager.sex" value="1" :disabled="dormitoryManager.community.dormitorySubmitted">
-                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="sex_female">女性</label>
+                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="gender_female" name="gender" type="radio" v-model="dormitoryManager.gender" value="1" :disabled="dormitoryManager.community.dormitorySubmitted">
+                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="gender_female">女性</label>
                                     </div>
                                     <div class="form-check form-check-inline mr-1">
-                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="sex_other" name="sex" type="radio" v-model="dormitoryManager.sex" value="2" :disabled="dormitoryManager.community.dormitorySubmitted">
-                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="sex_other">未知</label>
+                                        <input :class="['form-check-input', {'is-invalid': errorClasses[2]}]" id="gender_other" name="gender" type="radio" v-model="dormitoryManager.gender" value="2" :disabled="dormitoryManager.community.dormitorySubmitted">
+                                        <label :class="['form-check-label', {'is-invalid': errorClasses[2]}]" for="gender_other">未知</label>
                                     </div>
                                     <br> <br> <span class="help-block">必填项，请选择楼长性别</span>
                                     <div :style="errorClasses[2] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[2]"></div>

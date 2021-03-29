@@ -15,7 +15,7 @@ public enum SecurityConfigType {
      */
     NOT_MATCH(1);
 
-    private int code;
+    private final int code;
 
     SecurityConfigType(int code) {
         this.code = code;

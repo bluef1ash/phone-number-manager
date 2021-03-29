@@ -1,7 +1,7 @@
 package com.github.phonenumbermanager.security.handler;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.phonenumbermanager.utils.CommonUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -30,7 +30,7 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
         if (e instanceof MissingCsrfTokenException || e instanceof InvalidCsrfTokenException) {
             errorMessage = "CSRF验证失败，请刷新后再试！";
         }
-        if (CommonUtils.isRequestAjax(httpServletRequest)) {
+        if (CommonUtil.isRequestAjax(httpServletRequest)) {
             httpServletResponse.setContentType("text/json; charset=utf-8");
             httpServletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             JSONObject returnObj = new JSONObject();

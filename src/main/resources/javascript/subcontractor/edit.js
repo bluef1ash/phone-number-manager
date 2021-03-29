@@ -18,7 +18,12 @@ $(document).ready(() => {
             if (this.subcontractor === null) {
                 this.subcontractor = {
                     name: "",
-                    communityId: 0
+                    communityId: 0,
+                    phoneNumbers: [
+                        {
+                            phoneNumber: ""
+                        }
+                    ]
                 };
             }
         },
@@ -45,7 +50,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (this.subcontractor.mobile === null || this.subcontractor.mobile === "") {
+                if (this.subcontractor.phoneNumbers === null || this.subcontractor.phoneNumbers[0].phoneNumber === "") {
                     message = "社区分包人联系方式不能为空！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
@@ -53,7 +58,7 @@ $(document).ready(() => {
                     event.preventDefault();
                     return;
                 }
-                if (checkPhoneType(this.subcontractor.mobile) === -1) {
+                if (checkPhoneType(this.subcontractor.phoneNumbers[0].phoneNumber) === -1) {
                     message = "社区分包人联系方式非法！";
                     this.$message.error(message);
                     this.$set(this.errorClasses, 1, true);
@@ -75,7 +80,12 @@ $(document).ready(() => {
             resetClass() {
                 this.subcontractor = {
                     name: "",
-                    communityId: 0
+                    communityId: 0,
+                    phoneNumbers: [
+                        {
+                            phoneNumber: ""
+                        }
+                    ]
                 };
                 this.errorClasses = [false, false, false];
                 this.errorMessages = ["", "", ""];

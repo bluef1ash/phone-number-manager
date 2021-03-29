@@ -27,7 +27,7 @@ public enum ComputedDataTypes {
      */
     DORMITORY_BAR_CHART(4);
 
-    private int code;
+    private final int code;
 
     ComputedDataTypes(int code) {
         this.code = code;

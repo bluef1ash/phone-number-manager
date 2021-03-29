@@ -1,11 +1,13 @@
 package com.github.phonenumbermanager.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
+import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.SystemUserService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.DateUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,34 +24,34 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * 系统用户Service实现
+ * 系统用户业务实现
  *
  * @author 廿二月的天
  */
 @Service("systemUserService")
-public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implements SystemUserService, UserDetailsService {
+public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, SystemUser> implements SystemUserService, UserDetailsService {
 
     @Resource
     private HttpServletRequest request;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        SystemUser systemUser = systemUserDao.selectAndRoleAndPrivilegesByName(username);
+        SystemUser systemUser = systemUserMapper.selectAndRoleAndPrivilegesByName(username);
         if (systemUser == null) {
             throw new UsernameNotFoundException(username + "系统用户不存在！");
         }
-        List<Configuration> configurations = configurationDao.selectAll();
+        List<Configuration> configurations = configurationMapper.selectList(null);
         Map<String, Object> configurationsMap = new HashMap<>(configurations.size() + 1);
         for (Configuration configuration : configurations) {
             configurationsMap.put(configuration.getKey(), configuration.getValue());
         }
-        Integer systemIsActive = CommonUtils.convertConfigurationInteger(configurationsMap.get("system_is_active"));
-        Long systemAdministratorId = CommonUtils.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        Integer systemIsActive = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_is_active"));
+        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
         if (systemIsActive == 0 && !systemAdministratorId.equals(systemUser.getId())) {
             throw new LockedException("该系统已经禁止登录，请联系管理员！");
         }
         // 系统用户权限
-        Set<UserPrivilege> userPrivilegesAll = new LinkedHashSet<>(userPrivilegeDao.selectAll());
+        Set<UserPrivilege> userPrivilegesAll = new LinkedHashSet<>(userPrivilegeMapper.selectList(null));
         Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
         if (systemAdministratorId.equals(systemUser.getId())) {
             userPrivileges = userPrivilegesAll;
@@ -70,46 +72,37 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUser> implement
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long create(SystemUser systemUser) {
+    public boolean save(SystemUser systemUser) {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
-        systemUser.setLoginTime(DateUtils.getTimestamp(new Date(0)));
-        systemUser.setCreateTime(DateUtils.getTimestamp(new Date()));
-        systemUser.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.create(systemUser);
+        systemUser.setLoginTime(new Date(0));
+        return systemUserMapper.insert(systemUser) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public long update(SystemUser systemUser) {
+    public boolean updateById(SystemUser systemUser) {
         if (StringUtils.isNotEmpty(systemUser.getPassword())) {
             BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
             systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
         }
-        systemUser.setUpdateTime(DateUtils.getTimestamp(new Date()));
-        return super.update(systemUser);
+        return systemUserMapper.updateById(systemUser) > 0;
     }
 
     @Override
-    public Map<String, Object> findCorrelation(Integer pageNumber, Integer pageDataSize) {
-        setPageHelper(pageNumber, pageDataSize);
-        List<SystemUser> data = systemUserDao.selectAndRoles();
-        return find(data);
+    public IPage<SystemUser> getCorrelation(Integer pageNumber, Integer pageDataSize) {
+        Page<SystemUser> page = new Page<>(pageNumber, pageDataSize);
+        return systemUserMapper.selectAndRoles(page);
     }
 
     @Override
-    public Map<String, Object> find(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return null;
+    public SystemUser getCorrelation(Serializable id) {
+        return systemUserMapper.selectAndRoleById(id);
     }
 
     @Override
-    public SystemUser findCorrelation(Serializable id) {
-        return systemUserDao.selectAndRoleById(id);
-    }
-
-    @Override
-    public List<SystemUser> findIdAndName() {
-        return systemUserDao.selectIdAndName();
+    public List<SystemUser> getIdAndName() {
+        return systemUserMapper.selectIdAndName();
     }
 
     /**

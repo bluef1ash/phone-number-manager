@@ -64,7 +64,7 @@ public class IndexAction extends BaseAction {
         try {
             Map<String, Object> jsonMap = new HashMap<>(3);
             jsonMap.put("state", 1);
-            jsonMap.put("userPrivileges", userPrivilegeService.find(display, userPrivileges));
+            jsonMap.put("userPrivileges", userPrivilegeService.get(display, userPrivileges));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,21 +92,21 @@ public class IndexAction extends BaseAction {
         Map<String, Object> dormitory = new HashMap<>(3);
         try {
             if (getType == null || getType == 0) {
-                resident.put("baseMessage", communityResidentService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
-                resident.put("barChart", communityResidentService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
-                subcontractor.put("barChart", subcontractorService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
-                dormitory.put("baseMessage", dormitoryManagerService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
-                dormitory.put("barChart", dormitoryManagerService.find(systemUser, companyId, companyType, barChartTypeParam, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                resident.put("baseMessage", communityResidentService.get(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                resident.put("barChart", communityResidentService.get(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                subcontractor.put("barChart", subcontractorService.get(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                dormitory.put("baseMessage", dormitoryManagerService.get(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                dormitory.put("barChart", dormitoryManagerService.get(systemUser, companyId, companyType, barChartTypeParam, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.RESIDENT_BASE_MESSAGE.getCode()) {
-                resident.put("baseMessage", communityResidentService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                resident.put("baseMessage", communityResidentService.get(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.RESIDENT_BAR_CHART.getCode()) {
-                resident.put("barChart", communityResidentService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                resident.put("barChart", communityResidentService.get(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.RESIDENT_SUBCONTRACTOR_BAR_CHART.getCode()) {
-                subcontractor.put("barChart", subcontractorService.find(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                subcontractor.put("barChart", subcontractorService.get(systemUser, companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.DORMITORY_BASE_MESSAGE.getCode()) {
-                dormitory.put("baseMessage", dormitoryManagerService.find(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                dormitory.put("baseMessage", dormitoryManagerService.get(companyId, companyType, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             } else if (getType == ComputedDataTypes.DORMITORY_BAR_CHART.getCode()) {
-                dormitory.put("barChart", dormitoryManagerService.find(systemUser, companyId, companyType, barChartTypeParam, systemCompanyType, communityCompanyType, subdistrictCompanyType));
+                dormitory.put("barChart", dormitoryManagerService.get(systemUser, companyId, companyType, barChartTypeParam, systemCompanyType, communityCompanyType, subdistrictCompanyType));
             }
             jsonMap.put("state", 1);
             jsonMap.put("resident", resident);

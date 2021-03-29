@@ -46,7 +46,7 @@
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="landline">社区联系方式</label>
                                 <div class="col-md-9">
-                                    <input id="landline" type="text" name="landline" :class="['form-control', {'is-invalid': errorClasses[1]}]" placeholder="请输入社区联系方式" v-model="community.landline">
+                                    <input id="landline" type="text" name="phoneNumbers[0].phoneNumber" :class="['form-control', {'is-invalid': errorClasses[1]}]" placeholder="请输入社区联系方式" v-model="community.phoneNumbers[0].phoneNumber">
                                     <span class="help-block">社区联系方式允许输入办公电话</span>
                                     <div class="invalid-feedback" :style="errorClasses[1] && {'display': 'block'}" v-text="errorMessages[1]"></div>
                                 </div>

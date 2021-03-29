@@ -3,8 +3,7 @@ package com.github.phonenumbermanager.security.handler;
 import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.service.SystemUserService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.DateUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
 import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,17 +30,15 @@ public class AuthenticationSuccessHandler implements org.springframework.securit
         HttpSession session = httpServletRequest.getSession();
         SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
         systemUser.setPassword(null);
-        systemUser.setLoginTime(DateUtils.getTimestamp(new Date()));
-        systemUser.setLoginIp(CommonUtils.getIp(httpServletRequest));
-        try {
-            systemUserService.update(systemUser);
-        } catch (Exception e) {
-            e.printStackTrace();
+        systemUser.setLoginTime(new Date());
+        systemUser.setLoginIp(CommonUtil.getIp(httpServletRequest));
+        if (!systemUserService.updateById(systemUser)) {
+            return;
         }
         systemUser.setPassword(null);
         session.setAttribute("systemUser", systemUser);
         httpServletResponse.setCharacterEncoding("UTF-8");
-        if (CommonUtils.isRequestAjax(httpServletRequest)) {
+        if (CommonUtil.isRequestAjax(httpServletRequest)) {
             httpServletResponse.setHeader("Content-type", "text/json;charset=UTF-8");
             JSONObject returnObj = new JSONObject();
             returnObj.put("state", 1);

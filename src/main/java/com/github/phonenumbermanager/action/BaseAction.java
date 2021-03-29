@@ -1,12 +1,16 @@
 package com.github.phonenumbermanager.action;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.CommunityService;
-import com.github.phonenumbermanager.utils.CommonUtils;
-import com.github.phonenumbermanager.utils.ExcelUtils;
+import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.ExcelUtil;
+import com.github.phonenumbermanager.util.StringCheckedRegexUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +24,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.HashMap;
@@ -47,10 +53,10 @@ abstract class BaseAction {
     void getSessionRoleId(HttpSession session) {
         systemUser = (SystemUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         configurationsMap = (Map<String, Object>) session.getAttribute("configurationsMap");
-        systemCompanyType = CommonUtils.convertConfigurationInteger(configurationsMap.get("system_company_type"));
-        communityCompanyType = CommonUtils.convertConfigurationInteger(configurationsMap.get("community_company_type"));
-        subdistrictCompanyType = CommonUtils.convertConfigurationInteger(configurationsMap.get("subdistrict_company_type"));
-        systemAdministratorId = CommonUtils.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        systemCompanyType = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_company_type"));
+        communityCompanyType = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_company_type"));
+        subdistrictCompanyType = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_company_type"));
+        systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
     }
 
     /**
@@ -66,7 +72,7 @@ abstract class BaseAction {
         companyTypes.put("communityCompanyType", communityCompanyType);
         companyTypes.put("subdistrictCompanyType", subdistrictCompanyType);
         model.addAttribute("companyTypes", companyTypes);
-        model.addAttribute("companyType", systemUser.getCompanyType());
+        model.addAttribute("companyType", systemUser.getLevel());
     }
 
     /**
@@ -75,10 +81,9 @@ abstract class BaseAction {
      * @param communityService 社区Service对象
      * @param model            前台模型
      * @param bindingResult    错误信息对象
-     * @throws Exception SERVICE层异常
      */
-    void throwsError(CommunityService communityService, Model model, BindingResult bindingResult) throws Exception {
-        List<Community> communities = communityService.find(systemUser, communityCompanyType, subdistrictCompanyType);
+    void throwsError(CommunityService communityService, Model model, BindingResult bindingResult) {
+        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
         model.addAttribute("communities", communities);
         // 输出错误信息
         List<ObjectError> allErrors = bindingResult.getAllErrors();
@@ -92,21 +97,21 @@ abstract class BaseAction {
      * @param session    Session对象
      * @param excelTitle Excel文件标题字段
      * @return Excel工作簿对象
-     * @throws Exception SERVICE层异常
+     * @throws IOException SERVICE层异常
      */
-    Workbook uploadExcel(HttpServletRequest request, HttpSession session, String excelTitle) throws Exception {
+    Workbook uploadExcel(HttpServletRequest request, HttpSession session, String excelTitle) throws IOException {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile file = multipartRequest.getFile("file");
         if (file == null || file.isEmpty()) {
-            throw new BusinessException("文件不存在！");
+            throw new FileNotFoundException("文件不存在！");
         }
         String filename = file.getOriginalFilename();
         if (StringUtils.isEmpty(filename)) {
             getSessionRoleId(session);
-            filename = CommonUtils.convertConfigurationString(configurationsMap.get(excelTitle));
+            filename = CommonUtil.convertConfigurationString(configurationsMap.get(excelTitle));
         }
         InputStream inputStream = file.getInputStream();
-        return ExcelUtils.getWorkbook(inputStream, filename);
+        return ExcelUtil.getWorkbook(inputStream, filename);
     }
 
     /**
@@ -126,14 +131,13 @@ abstract class BaseAction {
     /**
      * 设置返回JSON数据
      *
-     * @param dataMap 数据对象集合
+     * @param data 数据对象集合
      * @return JSON数据
      */
-    Map<String, Object> setJsonMap(Map<String, Object> dataMap) {
+    Map<String, Object> setJsonMap(IPage<?> data) {
         Map<String, Object> jsonMap = new HashMap<>(4);
         jsonMap.put("state", 1);
-        jsonMap.put("data", dataMap.get("data"));
-        jsonMap.put("pageInfo", dataMap.get("pageInfo"));
+        jsonMap.put("data", data);
         return jsonMap;
     }
 
@@ -150,6 +154,34 @@ abstract class BaseAction {
                 cookie.setValue("error");
                 cookie.setPath("/");
                 response.addCookie(cookie);
+            }
+        }
+    }
+
+
+    /**
+     * 设置联系方式集合
+     *
+     * @param phoneNumbers              需要设置的集合
+     * @param phoneNumberSourceTypeEnum 来源类型
+     * @param sourceId                  来源编号
+     */
+    void setPhoneNumbers(List<PhoneNumber> phoneNumbers, PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum, String sourceId) {
+        for (PhoneNumber phoneNumber : phoneNumbers) {
+            phoneNumber.setSourceType(phoneNumberSourceTypeEnum);
+            phoneNumber.setSourceId(sourceId);
+            if (phoneNumber.getPhoneType() == null) {
+                switch (StringCheckedRegexUtil.checkPhone(phoneNumber.getPhoneNumber())) {
+                    case LANDLINE:
+                        phoneNumber.setPhoneType(PhoneTypeEnum.LANDLINE);
+                        break;
+                    case MOBILE:
+                        phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
+                        break;
+                    default:
+                        phoneNumber.setPhoneType(PhoneTypeEnum.UNKNOWN);
+                        break;
+                }
             }
         }
     }

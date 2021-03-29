@@ -1,8 +1,10 @@
 package com.github.phonenumbermanager.action;
 
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
+import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.service.SubdistrictService;
 import com.github.phonenumbermanager.validator.SubdistrictInputValidator;
 import org.springframework.stereotype.Controller;
@@ -30,6 +32,8 @@ public class SubdistrictAction extends BaseAction {
     @Resource
     private SubdistrictService subdistrictService;
     @Resource
+    private PhoneNumberService phoneNumberService;
+    @Resource
     private HttpServletRequest request;
 
     @InitBinder
@@ -48,14 +52,8 @@ public class SubdistrictAction extends BaseAction {
      */
     @GetMapping({"", "/{page}"})
     public String subdistrictList(Model model, @PathVariable(required = false) Integer page) {
-        try {
-            Map<String, Object> subdistricts = subdistrictService.find(page, null);
-            model.addAttribute("subdistricts", subdistricts.get("data"));
-            model.addAttribute("pageInfo", subdistricts.get("pageInfo"));
-            return "subdistrict/list";
-        } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        model.addAttribute("subdistricts", subdistrictService.getCorrelation(page, null));
+        return "subdistrict/list";
     }
 
     /**
@@ -77,13 +75,9 @@ public class SubdistrictAction extends BaseAction {
      */
     @GetMapping("/edit/{id}")
     public String editSubdistrict(Model model, @PathVariable Long id) {
-        try {
-            Subdistrict subdistrict = subdistrictService.find(id);
-            model.addAttribute("subdistrict", subdistrict);
-            return "subdistrict/edit";
-        } catch (Exception e) {
-            throw new BusinessException("系统异常！找不到数据，请稍后再试！", e);
-        }
+        Subdistrict subdistrict = subdistrictService.getCorrelation(id);
+        model.addAttribute("subdistrict", subdistrict);
+        return "subdistrict/edit";
     }
 
     /**
@@ -104,16 +98,18 @@ public class SubdistrictAction extends BaseAction {
             return "subdistrict/edit";
         }
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            try {
-                subdistrictService.create(subdistrict);
-            } catch (Exception e) {
-                throw new BusinessException("添加街道失败！", e);
+            if (subdistrictService.save(subdistrict)) {
+                setPhoneNumbers(subdistrict.getPhoneNumbers(), PhoneNumberSourceTypeEnum.SUBDISTRICT, String.valueOf(subdistrict.getId()));
+                phoneNumberService.saveBatch(subdistrict.getPhoneNumbers());
+            } else {
+                throw new BusinessException("添加街道失败！");
             }
         } else {
-            try {
-                subdistrictService.update(subdistrict);
-            } catch (Exception e) {
-                throw new BusinessException("修改街道失败！", e);
+            if (subdistrictService.updateById(subdistrict)) {
+                setPhoneNumbers(subdistrict.getPhoneNumbers(), PhoneNumberSourceTypeEnum.SUBDISTRICT, String.valueOf(subdistrict.getId()));
+                phoneNumberService.saveOrUpdateBatch(subdistrict.getPhoneNumbers());
+            } else {
+                throw new BusinessException("修改街道失败！");
             }
         }
         return "redirect:/subdistrict";
@@ -129,18 +125,12 @@ public class SubdistrictAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> deleteSubdistrictForAjax(@PathVariable Long id) {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            subdistrictService.delete(id);
+        if (subdistrictService.removeById(id) && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.SUBDISTRICT, id)) {
             jsonMap.put("state", 1);
             jsonMap.put("message", "删除街道成功！");
             return jsonMap;
-        } catch (BusinessException be) {
-            be.printStackTrace();
-            throw new JsonException(be.getMessage(), be);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("删除街道失败！", e);
         }
+        throw new JsonException("删除街道失败！");
     }
 
     /**
@@ -152,13 +142,8 @@ public class SubdistrictAction extends BaseAction {
     @ResponseBody
     public Map<String, Object> getSubdistrictForAjax() {
         Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            jsonMap.put("state", 1);
-            jsonMap.put("subdistricts", subdistrictService.find());
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("获取街道失败！", e);
-        }
+        jsonMap.put("state", 1);
+        jsonMap.put("subdistricts", subdistrictService.list());
+        return jsonMap;
     }
 }

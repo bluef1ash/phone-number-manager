@@ -1,0 +1,17 @@
+#生产环境配置
+spring:
+    datasource:
+        druid:
+            test-while-idle: false
+            stat-view-servlet:
+                enabled: false
+
+debug: false
+
+management:
+    endpoints:
+        enabled-by-default: false
+
+    endpoint:
+        health:
+            enabled: true

@@ -1,0 +1,17 @@
+# 测试环境配置文件
+debug: true
+
+spring:
+    config:
+        import: file:.env[.yml]
+
+management:
+    endpoints:
+        enabled-by-default: true
+        web:
+            exposure:
+                include: "*"
+
+    endpoint:
+        health:
+            show-details: always

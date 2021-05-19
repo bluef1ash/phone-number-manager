@@ -1,0 +1,99 @@
+server:
+    port: ${SERVER_PORT}
+
+    compression:
+        enabled: true
+
+    undertow:
+        buffer-size: 1024
+        direct-buffers: true
+        threads:
+            io: 8
+            worker: 64
+
+spring:
+    application:
+        name: phone-number-manager
+
+    profiles:
+        active: @profileActive@
+
+    main:
+        allow-bean-definition-overriding: true
+
+    datasource:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+        username: ${DATABASE_USERNAME}
+        password: ${DATABASE_PASSWORD}
+        druid:
+            initial-size: 10
+            min-idle: 10
+            max-active: 100
+            max-wait: 60000
+            time-between-eviction-runs-millis: 60000
+            min-evictable-idle-time-millis: 300000
+            validation-query: SELECT 1 FROM DUAL
+            test-while-idle: true
+            test-on-borrow: false
+            test-on-return: false
+            pool-prepared-statements: true
+            max-pool-prepared-statement-per-connection-size: 20
+            #Oracle需要打开注释
+            #validation-query: SELECT 1 FROM DUAL
+            filter:
+                stat:
+                    log-slow-sql: true
+                    slow-sql-millis: 1000
+                    merge-sql: false
+                wall:
+                    config:
+                        multi-statement-allow: true
+
+            web-stat-filter:
+                enabled: true
+                url-pattern: /*
+                exclusions: "*.ico,/druid/*"
+                session-stat-enable: true
+                session-stat-max-count: 1000
+
+            stat-view-servlet:
+                enabled: true
+                url-pattern: /druid/*
+                reset-enable: false
+
+    mvc:
+        throw-exception-if-no-handler-found: true
+        hidden-method:
+            filter:
+                enabled: true
+
+        pathmatch:
+            matching-strategy: ANT_PATH_MATCHER
+
+    servlet:
+        multipart:
+            max-file-size: 10MB
+            max-request-size: 10MB
+
+    cache:
+        type: redis
+        redis:
+            time-to-live: 5184000
+
+    redis:
+        host: ${REDIS_HOST}
+        port: ${REDIS_PORT}
+
+# Mybatis基础配置
+mybatis-plus:
+    type-aliases-package: com.github.phonenumbermanager.entity
+    type-enums-package: com.github.phonenumbermanager.constant.enums
+    configuration:
+        log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
+
+    global-config:
+        db-config:
+            table-prefix: pm_
+            id-type: assign_id

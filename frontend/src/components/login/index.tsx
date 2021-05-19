@@ -1,9 +1,9 @@
-import styles from '@/components/login/style.module.scss'
+import styles from '@/src/components/login/style.module.scss'
 import { Button, Form, Input } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useEffect } from 'react'
-import { account } from '@/config/route'
-import axios from '@/config/axios'
+import { account } from '@/src/config/route'
+import axios from '@/src/config/axios'
 
 export default function Login(): JSX.Element {
   const onFinish = (values: any) => {

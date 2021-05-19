@@ -15,9 +15,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@library/*": [
-        "../library/*"
       ]
     },
     "lib": [
@@ -43,7 +40,8 @@
     "src/setupTests.ts",
     "tslint:latest",
     "tslint-config-prettier",
-    "Assets/javascript"
+    ".next",
+    ".yarn"
   ],
   "include": [
     "next-env.d.ts",

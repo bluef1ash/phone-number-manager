@@ -9,7 +9,7 @@
   const Math = window.Math
   const head = document.getElementsByTagName('head')[0]
 
-  function _Object (obj) {
+  function _Object(obj) {
     //eslint-disable-next-line no-invalid-this
     this._obj = obj
   }
@@ -26,7 +26,7 @@
     }
   }
 
-  function Config (config) {
+  function Config(config) {
     const self = this
     new _Object(config)._each(function (key, value) {
       self[key] = value

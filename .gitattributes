@@ -1,7 +1,11 @@
-*.js linguist-language=Java
-*.css linguist-language=Java
-*.html linguist-language=Java
+*.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+*.css linguist-language=CSS
+*.html linguist-language=HTML
 *.jsp linguist-language=Java
+*.java linguist-language=Java
 
 # Handle line endings automatically for files detected as text and leave all files detected as binary untouched.
 * text=auto
@@ -28,6 +32,9 @@
 *.tagx          text
 *.xml           text
 *.yml           text
+*.ts            text
+*.tsx           text
+*.jsx           text
 
 # These files are binary and should be left untouched
 # (binary is a macro for -text -diff)

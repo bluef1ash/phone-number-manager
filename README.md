@@ -1,6 +1,6 @@
-# 社区居民联系电话管理系统
+# 社区居民联系方式管理系统
 
-此系统使用Spring Boot + Mybatis + Spring Security + Node.js + Webpack + Vue.js架构编写。数据库采用MySQL，提供**强大的**、**安全的**和**完整的**
+此系统使用Spring Boot + Mybatis + Spring Security + Node.js + Webpack + Next.js架构编写。数据库采用MySQL，提供**强大的**、**安全的**和**完整的**
 管理社区居民的信息的功能。
 
 ## 安全性

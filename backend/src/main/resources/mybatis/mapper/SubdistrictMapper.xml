@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.SubdistrictMapper">
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="commonResultMap">
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="baseResultMap">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="aliasResultMap">
+        <id column="subdistrict_id" property="id"/>
+        <result column="subdistrict_name" property="name"/>
+        <result column="subdistrict_create_time" property="createTime"/>
+        <result column="subdistrict_update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="collectionResultMap"
+               extends="aliasResultMap">
+        <collection property="phoneNumbers" ofType="com.github.phonenumbermanager.entity.PhoneNumber"
+                    resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="associationResultMap"
+               extends="aliasResultMap">
+        <collection property="communities" column="subdistrict_id"
+                    resultMap="com.github.phonenumbermanager.mapper.CommunityMapper.aliasResultMap"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.Subdistrict" id="correlationResultMap"
+               extends="collectionResultMap">
+        <collection property="communities" column="subdistrict_id"
+                    resultMap="com.github.phonenumbermanager.mapper.CommunityMapper.aliasResultMap"/>
+    </resultMap>
+    <select id="selectOneAndCommunityByCommunityId" resultMap="correlationResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_subdistrict`.`create_time` AS 'community_resident_create_time',
+            `pm_subdistrict`.`update_time` AS 'community_resident_update_time',
+            `pm_community`.`id` AS 'community_id',
+            `pm_community`.`name` AS 'community_name'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+        WHERE `pm_community`.`id` = #{communityId}
+    </select>
+    <select id="selectCorrelationAndCommunityById" resultMap="correlationResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_community`.`id` AS 'community_id',
+            `pm_community`.`name` AS 'community_name'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+        WHERE `pm_subdistrict`.`id` = #{id}
+    </select>
+    <select id="selectAndCommunities" resultMap="correlationResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_community`.`id` AS 'community_id',
+            `pm_community`.`name` AS 'community_name'
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+    </select>
+    <select id="countCommunityResidents" resultType="java.util.Map">
+        SELECT `pm_subdistrict`.`name` AS 'key',
+            COUNT(`pm_community_resident`.`id`)
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_community` ON `pm_subdistrict`.`id` = `pm_community`.`subdistrict_id`
+                 LEFT JOIN `pm_community_resident`
+        ON `pm_community_resident`.`community_id` = `pm_community`.`id`
+        GROUP BY `pm_subdistrict`.`name`
+    </select>
+    <select id="selectForIdAndName" resultMap="baseResultMap">
+        SELECT `id`, `name`
+        FROM `pm_subdistrict`
+    </select>
+    <select id="selectByObject" resultMap="baseResultMap">
+        SELECT `id`, `name`, `create_time`, `update_time` FROM `pm_subdistrict`
+        <where>
+            <if test="id != null">
+                `id` = #{id}
+            </if>
+            <if test="name != null">
+                AND `name` = #{name}
+            </if>
+            <if test="createTime != null">
+                AND `create_time` = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                AND `update_time` = #{updateTime}
+            </if>
+        </where>
+    </select>
+    <select id="selectAndPhoneNumbersAll" resultMap="collectionResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_phone_number`.`phone_number`
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_phone_number` ON `pm_subdistrict`.`id` = `pm_phone_number`.`source_id`
+        WHERE `pm_phone_number`.`source_type` = 4
+    </select>
+    <select id="selectCorrelationAndPhoneNumbersById" resultMap="collectionResultMap">
+        SELECT `pm_subdistrict`.`id` AS 'subdistrict_id',
+            `pm_subdistrict`.`name` AS 'subdistrict_name',
+            `pm_phone_number`.`phone_number`
+        FROM `pm_subdistrict`
+                 LEFT JOIN `pm_phone_number` ON `pm_subdistrict`.`id` = `pm_phone_number`.`source_id`
+        WHERE `pm_phone_number`.`source_type` = 4 AND `pm_phone_number`.`source_id` = #{id} AND
+            `pm_subdistrict`.`id` = #{id}
+    </select>
+</mapper>

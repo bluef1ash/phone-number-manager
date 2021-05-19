@@ -1,0 +1,32 @@
+{
+  "plugins": [
+    [
+      "inline-import",
+      {
+        "extensions": [".css"]
+      }
+    ],
+    [
+      "import",
+      {
+        "libraryName": "antd"
+      }
+    ],
+    [
+      "module-resolver",
+      {
+        "alias": {
+          "@/components": "./components",
+          "@/constants": "./constants",
+          "@/library": "../library",
+          "@/pages": "./pages",
+          "@/public": "./public",
+          "@/reducers": "./reducers",
+          "@/utils": "./utils"
+        }
+      }
+    ]
+  ],
+  "presets": ["next/babel"],
+  "ignore": []
+}

@@ -1,10 +1,6 @@
 HELP.md
 *.bak
 *.back
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**
-!**/src/test/**
 
 ### STS ###
 .apt_generated
@@ -32,15 +28,5 @@ build/
 ### VS Code ###
 .vscode/
 
-.mvn/
-node_modules/
-src/main/resources/static/fonts/
-src/main/resources/static/javascript/
-
-error/
-info/
-debug/
-warn/
-.yarn/
 .cache/
 .vagrant

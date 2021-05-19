@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.UserPrivilegeMapper">
+    <resultMap type="com.github.phonenumbermanager.entity.UserPrivilege" id="commonResultMap">
+        <result column="constraint_auth" property="constraintAuth"/>
+        <result column="uri" property="uri"/>
+        <result column="icon_name" property="iconName"/>
+        <result column="orders" property="orders"/>
+        <result column="is_display" property="isDisplay"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.UserPrivilege" id="baseResultMap" extends="commonResultMap">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.UserPrivilege" id="aliasResultMap" extends="commonResultMap">
+        <id column="privilege_id" property="id"/>
+        <result column="privilege_name" property="name"/>
+        <result column="privilege_parent_id" property="parentId"/>
+        <result column="privilege_create_time" property="createTime"/>
+        <result column="privilege_update_time" property="updateTime"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.UserPrivilege" id="correlationResultMap"
+               extends="aliasResultMap">
+        <collection property="userRoles" ofType="com.github.phonenumbermanager.entity.UserRole"
+                    resultMap="com.github.phonenumbermanager.mapper.UserRoleMapper.aliasResultMap"/>
+    </resultMap>
+    <select id="selectByDisplay" resultMap="baseResultMap">
+        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+            `update_time`
+        FROM `pm_privilege`
+        WHERE `is_display` = #{display}
+        ORDER BY `id`
+    </select>
+    <select id="selectByDisplayAndConstraintAuth" resultMap="baseResultMap">
+        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+        `update_time`
+        FROM `pm_privilege`
+        <where>
+            `is_display` = #{display} AND
+            `constraint_auth` IN
+            <foreach collection="constraintAuthes" item="constraintAuth" open="(" separator="," close=")">
+                #{constraintAuth}
+            </foreach>
+        </where>
+        ORDER BY `id`
+    </select>
+    <select id="selectByRoleId" resultMap="correlationResultMap">
+        SELECT `pm_privilege`.`id` AS 'privilege_id',
+            `pm_privilege`.`name` AS 'privilege_name',
+            `pm_privilege`.`constraint_auth`,
+            `pm_privilege`.`uri`,
+            `pm_privilege`.`parent_id` AS 'privilege_parent_id',
+            `pm_privilege`.`icon_name`,
+            `pm_privilege`.`orders`,
+            `pm_privilege`.`is_display`,
+            `pm_privilege`.`create_time` AS 'privilege_create_time',
+            `pm_privilege`.`update_time` AS 'privilege_update_time'
+        FROM `pm_privilege`
+                 LEFT JOIN `pm_role_privilege` ON `pm_privilege`.`id` = `pm_role_privilege`.`privilege_id`
+        WHERE `pm_role_privilege`.`role_id` = #{roleId}
+    </select>
+    <select id="selectByParentIdAndDisplay" resultMap="baseResultMap">
+        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+            `update_time`
+        FROM `pm_privilege`
+        WHERE `parent_id` = #{parentId} AND `is_display` = #{display}
+        ORDER BY `id`
+    </select>
+    <select id="selectByParentId" resultMap="baseResultMap">
+        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+            `update_time`
+        FROM `pm_privilege`
+        WHERE `parent_id` = #{parentId}
+        ORDER BY `id`
+    </select>
+    <select id="selectByObject" resultMap="baseResultMap">
+        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+        `update_time`
+        FROM `pm_privilege`
+        <where>
+            <if test="id != null">
+                `id` = #{id}
+            </if>
+            <if test="name != null">
+                AND `name` = #{name}
+            </if>
+            <if test="constraintAuth != null">
+                AND `constraint_auth` = #{constraintAuth}
+            </if>
+            <if test="uri != null">
+                AND `uri` = #{uri}
+            </if>
+            <if test="parentId != null">
+                AND `parent_id` = #{parentId}
+            </if>
+            <if test="iconName != null">
+                AND `icon_name` = #{iconName}
+            </if>
+            <if test="orders != null">
+                AND `orders` = #{orders}
+            </if>
+            <if test="display != null">
+                AND `is_display` = #{display}
+            </if>
+            <if test="createTime != null">
+                AND `create_time` = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                AND `update_time` = #{updateTime}
+            </if>
+        </where>
+    </select>
+</mapper>

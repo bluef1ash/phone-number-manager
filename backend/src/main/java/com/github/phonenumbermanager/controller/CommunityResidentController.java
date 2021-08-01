@@ -1,6 +1,5 @@
 package com.github.phonenumbermanager.controller;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -228,8 +227,8 @@ public class CommunityResidentController extends BaseController {
             excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6,1, new Date(), dateRowStyle);
         }
         try {
-            ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelResidentTitle, headMap, dataJson, 0, dataHandler);
-            ExcelUtil.downloadExcelFile(response, request, excelResidentTitle, byteArrayOutputStream);
+            // ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelResidentTitle, headMap, dataJson, 0, dataHandler);
+            // ExcelUtil.downloadExcelFile(response, request, excelResidentTitle, byteArrayOutputStream);
         } catch (IOException e) {
             e.printStackTrace();
             throw new BusinessException("导出Excel文件失败！");

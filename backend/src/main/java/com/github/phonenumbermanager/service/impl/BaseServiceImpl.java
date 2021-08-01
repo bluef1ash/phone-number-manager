@@ -1,6 +1,8 @@
 package com.github.phonenumbermanager.service.impl;
 
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.poi.excel.cell.CellUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,11 +15,9 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.ExcelUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -95,11 +95,6 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     }
 
     @Override
-    public Map<String, String> getPartStatHead() {
-        return null;
-    }
-
-    @Override
     public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         return null;
     }
@@ -115,7 +110,7 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     }
 
     @Override
-    public boolean save(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) {
+    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         return false;
     }
 
@@ -171,7 +166,7 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
         if (cell == null) {
             return null;
         }
-        return CommonUtil.qj2bj(CommonUtil.replaceBlank(String.valueOf(ExcelUtil.getCellValue(cell, CellType.STRING))));
+        return Convert.toDBC(String.valueOf(CellUtil.getCellValue(cell, CellType.STRING, true)));
     }
 
     /**
@@ -181,7 +176,7 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
      * @return 转换成功的字符串
      */
     Integer convertCell(Cell cell) {
-        return Integer.parseInt(String.valueOf(ExcelUtil.getCellValue(cell, CellType.NUMERIC)));
+        return Integer.parseInt(String.valueOf(CellUtil.getCellValue(cell, CellType.NUMERIC, true)));
     }
 
     /**

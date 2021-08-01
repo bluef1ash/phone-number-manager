@@ -1,7 +1,7 @@
 package com.github.phonenumbermanager.service.impl;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import cn.hutool.core.convert.Convert;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,8 +12,6 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
 import com.github.phonenumbermanager.service.CommunityResidentService;
-import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.DateUtil;
 import com.github.phonenumbermanager.util.ExcelUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -49,16 +47,16 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) {
+    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         List<CommunityResident> residents = new ArrayList<>();
-        long readResidentExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_resident_excel_start_row_number"));
-        int excelCommunityCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_community_name_cell_number"));
-        int excelCommunityResidentNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_name_cell_number"));
-        int excelResidentAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_address_cell_number"));
-        int excelPhone1CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_phone1_cell_number"));
-        int excelPhone2CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_phone2_cell_number"));
-        int excelPhone3CellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_phone3_cell_number"));
-        int excelSubcontractorCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
+        long readResidentExcelStartRowNumber = Convert.toLong(configurationsMap.get("read_resident_excel_start_row_number"));
+        int excelCommunityCellNumber = Convert.toInt(configurationsMap.get("excel_resident_community_name_cell_number"));
+        int excelCommunityResidentNameCellNumber = Convert.toInt(configurationsMap.get("excel_resident_name_cell_number"));
+        int excelResidentAddressCellNumber = Convert.toInt(configurationsMap.get("excel_resident_address_cell_number"));
+        int excelPhone1CellNumber = Convert.toInt(configurationsMap.get("excel_resident_phone1_cell_number"));
+        int excelPhone2CellNumber = Convert.toInt(configurationsMap.get("excel_resident_phone2_cell_number"));
+        int excelPhone3CellNumber = Convert.toInt(configurationsMap.get("excel_resident_phone3_cell_number"));
+        int excelSubcontractorCellNumber = Convert.toInt(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
         setCommunityVariables(subdistrictId);
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             Sheet sheet = workbook.getSheetAt(i);
@@ -100,43 +98,36 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             }
         }
         if (residents.size() > 0) {
-            communityResidentMapper.deleteBySubdistrictId(subdistrictId);
+            QueryWrapper<CommunityResident> wrapper = new QueryWrapper<>();
+            wrapper.eq("subdistrict_id", subdistrictId);
+            communityResidentMapper.delete(wrapper);
             return saveBatch(residents);
         }
         return false;
     }
 
     @Override
-    public JSONArray getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
+    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         List<CommunityResident> communityResidents = communityResidentMapper.selectByUserData(userData, communityCompanyType, subdistrictCompanyType);
-        JSONArray jsonArray = new JSONArray();
         if (communityResidents != null && communityResidents.size() > 0) {
             for (CommunityResident communityResident : communityResidents) {
-                JSONObject jsonObject = new JSONObject();
+                LinkedHashMap<String, Object> hashMap = new LinkedHashMap<>();
                 String communityName = communityResident.getCommunity().getName().replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
                 String subdistrictName = communityResident.getCommunity().getSubdistrict().getName().replaceAll(SystemConstant.SUBDISTRICT_ALIAS_NAME, "").replaceAll(SystemConstant.SUBDISTRICT_NAME, "");
-                jsonObject.put("communityName", communityName);
-                jsonObject.put("subdistrictName", subdistrictName);
+                hashMap.put("街道", subdistrictName);
+                hashMap.put("社区", communityName);
+                hashMap.put("户主姓名", communityResident.getName());
+                hashMap.put("家庭地址", communityResident.getAddress());
+                for (int i = 0; i < communityResident.getPhoneNumbers().size(); i++) {
+                    hashMap.put("电话" + (i + 1), communityResident.getPhoneNumbers().get(i));
+                }
                 // 处理分包人
-                jsonObject.put("subcontractorName", communityName + communityResident.getSubcontractor().getName());
-                jsonArray.add(jsonObject);
+                hashMap.put("分包人", communityName + communityResident.getSubcontractor().getName());
+                list.add(hashMap);
             }
         }
-        return jsonArray;
-    }
-
-    @Override
-    public Map<String, String> getPartStatHead() {
-        Map<String, String> tableHead = new LinkedHashMap<>();
-        tableHead.put("subdistrictName", "街道");
-        tableHead.put("communityName", "社区");
-        tableHead.put("name", "户主姓名");
-        tableHead.put("address", "家庭地址");
-        tableHead.put("phone1", "电话1");
-        tableHead.put("phone2", "电话2");
-        tableHead.put("phone3", "电话3");
-        tableHead.put("subcontractorName", "分包人");
-        return tableHead;
+        return list;
     }
 
     @Override

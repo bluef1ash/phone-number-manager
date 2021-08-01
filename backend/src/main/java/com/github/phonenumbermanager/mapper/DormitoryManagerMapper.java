@@ -1,8 +1,8 @@
 package com.github.phonenumbermanager.mapper;
 
 import com.github.phonenumbermanager.entity.DormitoryManager;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface DormitoryManagerMapper extends CommonMapper<DormitoryManager> {
 
     /**

@@ -64,12 +64,6 @@ public class AccountInputValidator extends BaseInputValidator<SystemUser> {
             message = "该系统已经禁止登录，请联系管理员！";
             return false;
         }
-        if (!systemUserService.authentication(systemUser.getUsername(), systemUser.getPassword())) {
-            errorCode = "systemUser.password.error";
-            field = "password";
-            message = "系统用户密码输入错误！";
-            return false;
-        }
         return true;
     }
 }

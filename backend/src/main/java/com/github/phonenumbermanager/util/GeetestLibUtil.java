@@ -19,6 +19,7 @@ import java.util.Map;
  *
  * @author Geetest
  */
+@SuppressWarnings("all")
 public class GeetestLibUtil {
     protected final String sdkLang = "java";
     private final String apiUrl = "http://api.geetest.com";
@@ -41,17 +42,17 @@ public class GeetestLibUtil {
     /**
      * 公钥
      */
-    private String captchaId = "";
+    private final String captchaId;
 
     /**
      * 私钥
      */
-    private String privateKey = "";
+    private final String privateKey;
 
     /**
      * 是否开启新的failback
      */
-    private boolean newFailback = false;
+    private final boolean newFailback;
 
     /**
      * 返回字符串
@@ -110,7 +111,7 @@ public class GeetestLibUtil {
     /**
      * 预处理成功后的标准串
      *
-     * @param challenge
+     * @param challenge 标准串
      */
     private String getSuccessPreProcessRes(String challenge) {
         gtlog("challenge:" + challenge);
@@ -128,7 +129,7 @@ public class GeetestLibUtil {
     /**
      * 验证初始化预处理
      *
-     * @param data
+     * @param data 初始化的数据
      * @return 1表示初始化成功，0表示初始化失败
      */
     public int preProcess(Map<String, String> data) {
@@ -142,7 +143,7 @@ public class GeetestLibUtil {
     /**
      * 用captchaID进行注册，更新challenge
      *
-     * @param data
+     * @param data 验证码信息
      * @return 1表示注册成功，0表示注册失败
      */
     private int registerChallenge(Map<String, String> data) {
@@ -360,9 +361,10 @@ public class GeetestLibUtil {
 
         URL getUrl = new URL(URL);
         HttpURLConnection connection = (HttpURLConnection) getUrl.openConnection();
-
-        connection.setConnectTimeout(2000);// 设置连接主机超时（单位：毫秒）
-        connection.setReadTimeout(2000);// 设置从主机读取数据超时（单位：毫秒）
+        // 设置连接主机超时（单位：毫秒）
+        connection.setConnectTimeout(2000);
+        // 设置从主机读取数据超时（单位：毫秒）
+        connection.setReadTimeout(2000);
 
         // 建立与服务器的连接，并未发送数据
         connection.connect();

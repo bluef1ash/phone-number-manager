@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -20,7 +20,7 @@ import java.util.Map;
  * @param <T> 实体对象类
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface CommonMapper<T> extends BaseMapper<T> {
 
     /**
@@ -59,14 +59,6 @@ public interface CommonMapper<T> extends BaseMapper<T> {
      * @throws DataAccessException 数据库操作异常
      */
     T selectAndCommunityById(Serializable id) throws DataAccessException;
-
-    /**
-     * 通过所属街道编号删除
-     *
-     * @param subdistrictId 需要删除的所属街道编号
-     * @throws DataAccessException 数据库操作异常
-     */
-    void deleteBySubdistrictId(Serializable subdistrictId) throws DataAccessException;
 
     /**
      * 通过社区编号查询

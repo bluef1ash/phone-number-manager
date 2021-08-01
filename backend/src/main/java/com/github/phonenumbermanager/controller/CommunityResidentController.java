@@ -1,6 +1,18 @@
 package com.github.phonenumbermanager.controller;
 
-import com.alibaba.fastjson.JSONArray;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.CommunityResident;
@@ -10,26 +22,29 @@ import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.phonenumbermanager.validator.CommunityResidentInputValidator;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.apache.poi.ss.usermodel.Workbook;
+
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * 社区居民控制器
@@ -174,10 +189,11 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("导入居民信息进系统")
     public Map<String, Object> communityResidentImportAsSystem(HttpServletRequest request, @ApiParam(name = "导入的街道编号", required = true) Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
+        int startRowNumber = Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number"));
         try {
-            Workbook workbook = uploadExcel(request, "excel_resident_title");
+            List<List<Object>> data = uploadExcel(request, startRowNumber);
             jsonMap.put("state", 1);
-            jsonMap.put("create", communityResidentService.save(workbook, subdistrictId, configurationsMap));
+            jsonMap.put("create", communityResidentService.save(data, subdistrictId, configurationsMap));
             return jsonMap;
         } catch (IOException e) {
             e.printStackTrace();
@@ -194,13 +210,23 @@ public class CommunityResidentController extends BaseController {
     @GetMapping("/download")
     public void communityResidentSaveAsExcel(HttpServletResponse response, String data) {
         List<Map<String, Object>> userData = getDecodeData(data);
-        // 获取属性-列头
-        Map<String, String> headMap = communityResidentService.getPartStatHead();
-        String excelResidentTitleUp = CommonUtil.convertConfigurationString(configurationsMap.get("excel_resident_title_up"));
-        String excelResidentTitle = CommonUtil.convertConfigurationString(configurationsMap.get("excel_resident_title"));
-        ExcelUtil.DataHandler dataHandler = communityResidentService.setExcelHead(new String[]{excelResidentTitleUp, excelResidentTitle});
-        // 获取业务数据集
-        JSONArray dataJson = communityResidentService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData);
+        List<LinkedHashMap<String, Object>> dataResult = communityResidentService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData);
+        String excelResidentTitleUp = Convert.toStr(configurationsMap.get("excel_resident_title_up"));
+        String excelResidentTitle = Convert.toStr(configurationsMap.get("excel_resident_title"));
+        if (dataResult != null && dataResult.size() > 0) {
+            ExcelWriter excelWriter = ExcelUtil.getWriter();
+            CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+            setCellStyle(firstRowStyle, excelWriter, "宋体", (short) 12, false, false, false);
+            excelWriter.writeCellValue(0, 0, excelResidentTitleUp);
+            excelWriter.passCurrentRow();
+            CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+            setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short) 16, false, false, false);
+            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, dataResult.get(0).keySet().size(), excelResidentTitle, titleStyle);
+            excelWriter.passCurrentRow();
+            CellStyle dateRowStyle = excelWriter.getOrCreateCellStyle(6, excelWriter.getCurrentRow());
+            setCellStyle(dateRowStyle, excelWriter, "宋体", (short) 11, false, false, true);
+            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6,1, new Date(), dateRowStyle);
+        }
         try {
             ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelResidentTitle, headMap, dataJson, 0, dataHandler);
             ExcelUtil.downloadExcelFile(response, request, excelResidentTitle, byteArrayOutputStream);
@@ -218,8 +244,8 @@ public class CommunityResidentController extends BaseController {
      */
     private void multiplePhoneHandler(CommunityResident communityResident) {
         // 社区居民姓名
-        communityResident.setName(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getName())).replaceAll("—", "-"));
+        communityResident.setName(Convert.toDBC(StrUtil.cleanBlank(communityResident.getName())).replaceAll("—", "-"));
         // 社区居民地址
-        communityResident.setAddress(CommonUtil.qj2bj(CommonUtil.replaceBlank(communityResident.getAddress())).replaceAll("—", "-"));
+        communityResident.setAddress(Convert.toDBC(StrUtil.cleanBlank(communityResident.getAddress())).replaceAll("—", "-"));
     }
 }

@@ -73,21 +73,6 @@ mybatis-plus:
             table-prefix: pm_
             id-type: assign_id
 
-jwt:
-    header: Authorization
-    base64-secret: ZmQ0ZGI5NjQ0MDQwY2I4MjMxY2Y3ZmI3MjdhN2ZmMjNhODViOTg1ZGE0NTBjMGM4NDA5NzYxMjdjOWMwYWRmZTBlZjlhNGY3ZTg4Y2U3YTE1ODVkZDU5Y2Y3OGYwZWE1NzUzNWQ2YjFjZDc0NGMxZWU2MmQ3MjY1NzJmNTE0MzI=
-    token-validity-in-seconds: 86400
-    token-validity-in-seconds-for-remember-me: 108000
-    route:
-        authentication:
-            path: auth
-            refresh: refresh
-
-pagehelper:
-    helper-dialect: mysql
-    reasonable: false
-    params: count=countSql
-
 logging:
     pattern:
         console: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n %ex{5}"

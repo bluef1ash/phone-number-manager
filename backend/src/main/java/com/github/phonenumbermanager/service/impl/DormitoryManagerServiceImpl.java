@@ -1,8 +1,10 @@
 package com.github.phonenumbermanager.service.impl;
 
+import cn.hutool.core.convert.Convert;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.*;
@@ -12,14 +14,13 @@ import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.DateUtil;
 import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.promeg.pinyinhelper.Pinyin;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -58,7 +59,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private String fileTitle = "XX";
     private String[] titles;
     private final Pattern idPatten = Pattern.compile("(?iUs)([A-Za-z]+)(\\d+)");
-    private final ExcelUtil.DataHandler excelDataHandler = (params, headers) -> {
+    /*private final ExcelUtil.DataHandler excelDataHandler = (params, headers) -> {
         Integer rowIndex = (Integer) params.get("rowIndex");
         Workbook workbook = (Workbook) params.get("workbook");
         Sheet sheet = (Sheet) params.get("sheet");
@@ -123,46 +124,39 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         params.put("workbook", workbook);
         params.put("sheet", sheet);
         params.put("contentStyle", contentStyle);
-    };
+    };*/
 
     @Override
     public DormitoryManager getCorrelation(Serializable id) {
         return dormitoryManagerMapper.selectAndCommunityById(id);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap) {
+    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
-        long readDormitoryExcelStartRowNumber = CommonUtil.convertConfigurationLong(configurationsMap.get("read_dormitory_excel_start_row_number"));
-        excelDormitoryCommunityNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_community_name_cell_number"));
-        excelDormitoryIdCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_id_cell_number"));
-        excelDormitoryNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_name_cell_number"));
-        excelDormitoryGenderCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_gender_cell_number"));
-        excelDormitoryBirthCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_birth_cell_number"));
-        excelDormitoryPoliticalStatusCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_political_status_cell_number"));
-        excelDormitoryWorkStatusCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_work_status_cell_number"));
-        excelDormitoryEducationCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_education_cell_number"));
-        excelDormitoryAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_address_cell_number"));
-        excelDormitoryManagerAddressCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_address_cell_number"));
-        excelDormitoryManagerCountCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_manager_count_cell_number"));
-        excelDormitoryTelephoneCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_telephone_cell_number"));
-        excelDormitoryLandlineCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_landline_cell_number"));
-        excelDormitorySubcontractorNameCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_name_cell_number"));
-        excelDormitorySubcontractorTelephoneCellNumber = CommonUtil.convertConfigurationInteger(configurationsMap.get("excel_dormitory_subcontractor_telephone_cell_number"));
+        excelDormitoryCommunityNameCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_community_name_cell_number"));
+        excelDormitoryIdCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_id_cell_number"));
+        excelDormitoryNameCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_name_cell_number"));
+        excelDormitoryGenderCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_gender_cell_number"));
+        excelDormitoryBirthCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_birth_cell_number"));
+        excelDormitoryPoliticalStatusCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_political_status_cell_number"));
+        excelDormitoryWorkStatusCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_work_status_cell_number"));
+        excelDormitoryEducationCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_education_cell_number"));
+        excelDormitoryAddressCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_address_cell_number"));
+        excelDormitoryManagerAddressCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_manager_address_cell_number"));
+        excelDormitoryManagerCountCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_manager_count_cell_number"));
+        excelDormitoryTelephoneCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_telephone_cell_number"));
+        excelDormitoryLandlineCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_landline_cell_number"));
+        excelDormitorySubcontractorNameCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_subcontractor_name_cell_number"));
+        excelDormitorySubcontractorTelephoneCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_subcontractor_telephone_cell_number"));
         setCommunityVariables(subdistrictId);
-        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-            Sheet sheet = workbook.getSheetAt(i);
-            if (sheet != null) {
-                for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
-                    Row row = sheet.getRow(j);
-                    if (row != null && j >= sheet.getFirstRowNum() + readDormitoryExcelStartRowNumber - 1) {
-                        dormitoryManagers.add(importExcelHandler(row));
-                    }
-                }
-            }
+        for (List<Object> column : data) {
+
         }
         if (dormitoryManagers.size() > 0) {
-            dormitoryManagerMapper.deleteBySubdistrictId(subdistrictId);
+            QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
+            wrapper.eq("subdistrict_id", subdistrictId);
             return saveBatch(dormitoryManagers);
         }
         return false;
@@ -352,11 +346,6 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Override
     public String getFileTitle() {
         return fileTitle;
-    }
-
-    @Override
-    public ExcelUtil.DataHandler getExcelDataHandler() {
-        return excelDataHandler;
     }
 
     /**

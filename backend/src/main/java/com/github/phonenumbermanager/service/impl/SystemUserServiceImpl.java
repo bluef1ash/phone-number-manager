@@ -1,23 +1,26 @@
 package com.github.phonenumbermanager.service.impl;
 
+import cn.hutool.core.convert.Convert;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.HttpMethodEnum;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.entity.UserRole;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.SystemUserService;
-import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.JwtTokenUtil;
 import com.github.phonenumbermanager.util.RedisUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,59 +42,59 @@ import java.util.*;
 @Service("systemUserService")
 public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, SystemUser> implements SystemUserService {
     @Resource
-    private AuthenticationManager authenticationManager;
+    private AuthenticationManagerBuilder authenticationManagerBuilder;
     @Resource
     private RedisUtil redisUtil;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
-        SystemUser systemUser = systemUserMapper.selectAndRoleAndPrivilegesByName(username);
+        SystemUser systemUser = systemUserMapper.selectAndRolesByName(username);
         @SuppressWarnings("all") Map<String, Object> configurationsMap = (Map<String, Object>) redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
-        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        Long systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id"));
         // 系统用户权限
-        Set<UserPrivilege> userPrivilegesAll = new LinkedHashSet<>(userPrivilegeMapper.selectList(null));
-        Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        Set<UserPrivilege> userPrivileges = null;
         if (systemAdministratorId.equals(systemUser.getId())) {
-            userPrivileges.addAll(userPrivilegesAll);
-            for (UserRole userRole : systemUser.getUserRoles()) {
-                userRole.setUserPrivileges(userPrivileges);
-            }
-        } else {
-            for (UserRole userRole : systemUser.getUserRoles()) {
-                Set<UserPrivilege> privileges = userRole.getUserPrivileges();
-                for (UserPrivilege privilege : privileges) {
-                    userPrivileges.add(privilege);
-                    userPrivileges.addAll(recursionPrivileges(userPrivilegesAll, privilege.getId()));
+            userPrivileges = new LinkedHashSet<>(userPrivilegeMapper.selectList(null));
+            for (UserPrivilege userPrivilege : userPrivileges) {
+                if (StringUtils.isNotEmpty(userPrivilege.getUri())) {
+                    grantedAuthorities.add(new SimpleGrantedAuthority(userPrivilege.getUri() + "|" + HttpMethodEnum.ALL.getDescription()));
                 }
-                userRole.setUserPrivileges(userPrivileges);
             }
         }
-        String[] uri = userPrivileges.stream().map(UserPrivilege::getUri).toArray(String[]::new);
-        systemUser.setAuthorities(AuthorityUtils.createAuthorityList(uri));
+        QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
+        for (UserRole userRole : systemUser.getUserRoles()) {
+            if (!systemAdministratorId.equals(systemUser.getId())) {
+                userPrivileges = userPrivilegeMapper.selectByRoleId(userRole.getId());
+                wrapper.eq("role_id", userRole.getId());
+                List<RolePrivilegeRelation> rolePrivilegeRelations = rolePrivilegeRelationMapper.selectList(wrapper);
+                for (UserPrivilege userPrivilege : userPrivileges) {
+                    for (RolePrivilegeRelation rolePrivilegeRelation : rolePrivilegeRelations) {
+                        if (userPrivilege.getId().equals(rolePrivilegeRelation.getPrivilegeId()) && StringUtils.isNotEmpty(userPrivilege.getUri())) {
+                            grantedAuthorities.add(new SimpleGrantedAuthority(userPrivilege.getUri() + "|" + rolePrivilegeRelation.getMethod().getDescription()));
+                        }
+                    }
+                }
+            }
+            assert userPrivileges != null;
+            userRole.setUserPrivileges(recursionPrivileges(userPrivileges, 0L));
+        }
+        systemUser.setAuthorities(grantedAuthorities);
         return systemUser;
     }
 
     @Override
-    public boolean authentication(String username, String password) {
+    public Authentication authentication(String username, String password) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
         Authentication authenticate;
         try {
-            authenticate = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            authenticate = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
         } catch (AuthenticationException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
         SecurityContextHolder.getContext().setAuthentication(authenticate);
-        System.out.println(SecurityContextHolder.getContext().getAuthentication());
-        return true;
-    }
-
-    @Override
-    public String refreshToken(String token) {
-        if (!JwtTokenUtil.canTokenBeRefreshed(token)) {
-            token = JwtTokenUtil.refreshToken(token);
-        }
-        return token;
+        return authenticate;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -131,10 +134,30 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
 
     @Override
     public boolean hasPermission(HttpServletRequest request, Authentication authentication) {
-        if (authentication.getPrincipal() instanceof UserDetails) {
-            SystemUser systemUser = (SystemUser) authentication.getPrincipal();
-            if (systemUser != null) {
-                return systemUser.getAuthorities().contains(new SimpleGrantedAuthority(request.getRequestURI()));
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+        if (ArrayUtils.contains(SystemConstant.PRIVILEGE_PERMITS, uri)) {
+            return true;
+        }
+        if (authentication != null) {
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            if (authorities != null && authorities.size() > 0) {
+                for (GrantedAuthority authority : authorities) {
+                    String authorityUri = authority.getAuthority();
+                    String authorityMethod = null;
+                    int indexOf = authorityUri.indexOf("|");
+                    if (indexOf > 0) {
+                        authorityUri = authorityUri.substring(0, indexOf - 1);
+                        authorityMethod = authorityUri.substring(indexOf);
+                    }
+                    if (authorityUri.equals(uri)) {
+                        if (authorityMethod != null && authorityMethod.indexOf(",") > 0) {
+                            return ArrayUtils.contains(authorityMethod.split(","), method);
+                        } else {
+                            return true;
+                        }
+                    }
+                }
             }
         }
         return false;
@@ -143,18 +166,18 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     /**
      * 递归系统用户权限
      *
-     * @param userPrivilegesAll 全部的系统权限
-     * @param parentId          上级系统权限编号
+     * @param userPrivileges 需要递归的系统权限
+     * @param parentId       上级系统权限编号
      * @return 处理后的系统权限集合
      */
-    private Set<UserPrivilege> recursionPrivileges(Set<UserPrivilege> userPrivilegesAll, Long parentId) {
-        Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
-        for (UserPrivilege userPrivilege : userPrivilegesAll) {
+    private Set<UserPrivilege> recursionPrivileges(Set<UserPrivilege> userPrivileges, Long parentId) {
+        Set<UserPrivilege> userPrivilegeList = new LinkedHashSet<>();
+        for (UserPrivilege userPrivilege : userPrivileges) {
             if (parentId.equals(userPrivilege.getParentId())) {
-                userPrivileges.add(userPrivilege);
-                userPrivileges.addAll(recursionPrivileges(userPrivilegesAll, userPrivilege.getId()));
+                userPrivilege.setSubUserPrivileges(recursionPrivileges(userPrivileges, userPrivilege.getId()));
+                userPrivilegeList.add(userPrivilege);
             }
         }
-        return userPrivileges;
+        return userPrivilegeList;
     }
 }

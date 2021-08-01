@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import com.github.phonenumbermanager.constant.ComputedDataTypes;
+import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
@@ -9,13 +10,17 @@ import com.github.phonenumbermanager.service.UserPrivilegeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 首页控制器
@@ -44,11 +49,14 @@ public class IndexController extends BaseController {
     @GetMapping("/getmenu")
     @ApiOperation("获取首页菜单栏内容")
     public Map<String, Object> getMenu(@ApiParam(name = "是否显示") Boolean display) {
-        //Set<UserPrivilege> userPrivileges = (Set<UserPrivilege>) session.getAttribute("userPrivileges");
+        Map<String, Object> jsonMap = new HashMap<>(3);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Set<UserPrivilege> systemUser = (Set<UserPrivilege>) authentication.getAuthorities();
+        Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
+        //systemUser.getUserRoles().forEach(userRole -> userPrivileges.addAll(userRole.getUserPrivileges()));
         try {
-            Map<String, Object> jsonMap = new HashMap<>(3);
             jsonMap.put("state", 1);
-            //jsonMap.put("userPrivileges", userPrivilegeService.get(display, userPrivileges));
+            jsonMap.put("userPrivileges", userPrivilegeService.get(display, userPrivileges));
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();

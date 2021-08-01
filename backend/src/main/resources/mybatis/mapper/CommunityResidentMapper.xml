@@ -345,11 +345,13 @@
         `pm_community_resident`.`address`,
         `pm_subcontractor`.`name` AS 'subcontractor_name',
         `pm_subdistrict`.`name` AS 'subdistrict_name',
-        `pm_community`.`name` AS 'community_name'
+        `pm_community`.`name` AS 'community_name',
+        `pm_phone_number`.`phone_number`
         FROM `pm_community_resident`
         LEFT JOIN `pm_community` ON `pm_community_resident`.`community_id` = `pm_community`.`id`
         LEFT JOIN `pm_subdistrict` ON `pm_community`.`subdistrict_id` = `pm_subdistrict`.`id`
-        LEFT JOIN pm_subcontractor ON `pm_community_resident`.`subcontractor_id` = `pm_subcontractor`.`id`
+        LEFT JOIN `pm_subcontractor` ON `pm_community_resident`.`subcontractor_id` = `pm_subcontractor`.`id`
+        LEFT JOIN `pm_phone_number` ON `pm_community_resident`.`id` = `pm_phone_number`.`source_id`
         <where>
             <foreach collection="userData" item="item" separator="OR">
                 <choose>
@@ -361,6 +363,7 @@
                     </when>
                 </choose>
             </foreach>
+            AND `pm_phone_number`.`source_type` = 0
         </where>
     </select>
     <select id="selectByUserRole" resultMap="correlationResultMap">

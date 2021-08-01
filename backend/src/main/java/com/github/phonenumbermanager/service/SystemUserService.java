@@ -5,7 +5,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,15 +13,6 @@ import java.util.List;
  * @author 廿二月的天
  */
 public interface SystemUserService extends BaseService<SystemUser>, UserDetailsService {
-
-    /**
-     * 通过系统用户编号查找系统用户和关联角色
-     *
-     * @param id 系统用户编号
-     * @return 查找到的系统用户对象
-     */
-    @Override
-    SystemUser getCorrelation(Serializable id);
 
     /**
      * 查找系统用户编号与名称
@@ -36,17 +26,16 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
      *
      * @param username 用户名
      * @param password 密码
-     * @return 是否认证通过
+     * @return 认证对象
      */
-    boolean authentication(String username, String password);
+    Authentication authentication(String username, String password);
 
     /**
-     * 刷新Token
+     * 判断权限
      *
-     * @param token 现有的Token
-     * @return 新的Token
+     * @param request        HTTP请求
+     * @param authentication 认证对象
+     * @return 是否享受
      */
-    String refreshToken(String token);
-
     boolean hasPermission(HttpServletRequest request, Authentication authentication);
 }

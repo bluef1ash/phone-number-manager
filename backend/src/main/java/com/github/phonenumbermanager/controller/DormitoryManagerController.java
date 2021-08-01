@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.controller;
 
+import cn.hutool.core.convert.Convert;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.constant.GenderEnum;
@@ -16,7 +17,6 @@ import com.github.phonenumbermanager.validator.DormitoryManagerInputValidator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -179,8 +179,8 @@ public class DormitoryManagerController extends BaseController {
     public Map<String, Object> dormitoryManagerImportAsSystem(HttpServletRequest request, @ApiParam(name = "导入的街道编号", required = true) Long subdistrictId) {
         Map<String, Object> jsonMap = new HashMap<>(3);
         try {
-            Workbook workbook = uploadExcel(request, "excel_dormitory_title");
-            dormitoryManagerService.save(workbook, subdistrictId, configurationsMap);
+            List<List<Object>> data = uploadExcel(request, Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number")));
+            dormitoryManagerService.save(data, subdistrictId, configurationsMap);
             jsonMap.put("state", 1);
             jsonMap.put("message", "上传成功！");
             return jsonMap;
@@ -201,8 +201,8 @@ public class DormitoryManagerController extends BaseController {
         List<Map<String, Object>> userData = getDecodeData(data);
         // 获取属性-列头
         Map<String, String> headMap = dormitoryManagerService.getPartStatHead();
-        String excelDormitoryTitleUp = CommonUtil.convertConfigurationString(configurationsMap.get("excel_dormitory_title_up"));
-        String excelDormitoryTitle = CommonUtil.convertConfigurationString(configurationsMap.get("excel_dormitory_title"));
+        String excelDormitoryTitleUp = Convert.toStr(configurationsMap.get("excel_dormitory_title_up"));
+        String excelDormitoryTitle = Convert.toStr(configurationsMap.get("excel_dormitory_title"));
         ExcelUtil.DataHandler excelDataHandler = dormitoryManagerService.getExcelDataHandler();
         // 获取业务数据集
         JSONArray dataJson = dormitoryManagerService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData, new String[]{excelDormitoryTitleUp, excelDormitoryTitle});

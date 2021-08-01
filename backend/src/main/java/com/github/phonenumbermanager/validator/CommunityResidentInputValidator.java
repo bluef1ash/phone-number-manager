@@ -1,10 +1,12 @@
 package com.github.phonenumbermanager.validator;
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.service.CommunityResidentService;
-import com.github.phonenumbermanager.util.CommonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -33,13 +35,13 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
         ValidationUtils.rejectIfEmpty(errors, "address", "communityResident.address.required", "社区居民地址不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "subcontractorId", "communityResident.subcontractorId.required", "社区分包人不能为空！");
         CommunityResident communityResident = (CommunityResident) target;
-        String name = CommonUtil.replaceBlank(communityResident.getName()).replaceAll("—", "-");
-        if (name.length() > 10) {
+        String name = StrUtil.cleanBlank(communityResident.getName()).replaceAll("—", "-");
+        if (name.length() > SystemConstant.NAME_MAX_LENGTH) {
             message = "社区居民姓名不能超过10个字符！";
             return false;
         }
-        String address = CommonUtil.replaceBlank(communityResident.getAddress()).replaceAll("—", "-");
-        if (address.length() > 255) {
+        String address = StrUtil.cleanBlank(communityResident.getAddress()).replaceAll("—", "-");
+        if (address.length() > SystemConstant.ADDRESS_MAX_LENGTH) {
             message = "社区居民地址不能超过255个字符！";
             return false;
         }
@@ -52,7 +54,7 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
         String nameAddress = name + address;
         for (PhoneNumber phoneNumber : communityResident.getPhoneNumbers()) {
             if (StringUtils.isNotEmpty(phoneNumber.getPhoneNumber())) {
-                phoneNumber.setPhoneNumber(CommonUtil.qj2bj(CommonUtil.replaceBlank(phoneNumber.getPhoneNumber()).replaceAll("—", "-")));
+                phoneNumber.setPhoneNumber(Convert.toDBC(StrUtil.cleanBlank(phoneNumber.getPhoneNumber()).replaceAll("—", "-")));
             }
         }
         field = "phoneNumbers";
@@ -122,7 +124,7 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
                 isChecked = false;
             }
             if (!isChecked) {
-                message = "该" + checkType + "已经存在，现存在于" + communityNames.toString();
+                message = "该" + checkType + "已经存在，现存在于" + communityNames;
             }
         }
         return isChecked;

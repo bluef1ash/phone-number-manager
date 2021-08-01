@@ -3,8 +3,8 @@ package com.github.phonenumbermanager.mapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.SystemUser;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface SystemUserMapper extends CommonMapper<SystemUser> {
     /**
      * 查询所有系统用户与所属角色
@@ -43,13 +43,13 @@ public interface SystemUserMapper extends CommonMapper<SystemUser> {
     SystemUser selectAndRoleById(Serializable id) throws DataAccessException;
 
     /**
-     * 通过用户名称查询系统用户与所属角色以及权限
+     * 通过用户名称查询系统用户
      *
      * @param username 系统用户名称
      * @return 查询到的系统用户与所属角色以及权限
      * @throws DataAccessException 数据库操作异常
      */
-    SystemUser selectAndRoleAndPrivilegesByName(String username) throws DataAccessException;
+    SystemUser selectAndRolesByName(String username) throws DataAccessException;
 
     /**
      * 查询系统用户（不含密码）

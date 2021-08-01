@@ -1,9 +1,9 @@
 package com.github.phonenumbermanager.mapper;
 
 import com.github.phonenumbermanager.entity.CommunityResident;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface CommunityResidentMapper extends CommonMapper<CommunityResident> {
 
     /**

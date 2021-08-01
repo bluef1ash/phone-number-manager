@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.phonenumbermanager.mapper.UserPrivilegeMapper">
     <resultMap type="com.github.phonenumbermanager.entity.UserPrivilege" id="commonResultMap">
-        <result column="constraint_auth" property="constraintAuth"/>
+        <result column="description" property="description"/>
         <result column="uri" property="uri"/>
         <result column="icon_name" property="iconName"/>
         <result column="orders" property="orders"/>
@@ -28,15 +28,15 @@
                     resultMap="com.github.phonenumbermanager.mapper.UserRoleMapper.aliasResultMap"/>
     </resultMap>
     <select id="selectByDisplay" resultMap="baseResultMap">
-        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+        SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
             `update_time`
         FROM `pm_privilege`
         WHERE `is_display` = #{display}
         ORDER BY `id`
     </select>
     <select id="selectByDisplayAndConstraintAuth" resultMap="baseResultMap">
-        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
-        `update_time`
+        SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`,
+        `is_display`,`create_time`,`update_time`
         FROM `pm_privilege`
         <where>
             `is_display` = #{display} AND
@@ -50,7 +50,7 @@
     <select id="selectByRoleId" resultMap="correlationResultMap">
         SELECT `pm_privilege`.`id` AS 'privilege_id',
             `pm_privilege`.`name` AS 'privilege_name',
-            `pm_privilege`.`constraint_auth`,
+            `pm_privilege`.`description`,
             `pm_privilege`.`uri`,
             `pm_privilege`.`parent_id` AS 'privilege_parent_id',
             `pm_privilege`.`icon_name`,
@@ -63,21 +63,21 @@
         WHERE `pm_role_privilege`.`role_id` = #{roleId}
     </select>
     <select id="selectByParentIdAndDisplay" resultMap="baseResultMap">
-        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+        SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
             `update_time`
         FROM `pm_privilege`
         WHERE `parent_id` = #{parentId} AND `is_display` = #{display}
         ORDER BY `id`
     </select>
     <select id="selectByParentId" resultMap="baseResultMap">
-        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+        SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
             `update_time`
         FROM `pm_privilege`
         WHERE `parent_id` = #{parentId}
         ORDER BY `id`
     </select>
     <select id="selectByObject" resultMap="baseResultMap">
-        SELECT `id`, `name`, `constraint_auth`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
+        SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`,`create_time`,
         `update_time`
         FROM `pm_privilege`
         <where>
@@ -87,11 +87,14 @@
             <if test="name != null">
                 AND `name` = #{name}
             </if>
-            <if test="constraintAuth != null">
-                AND `constraint_auth` = #{constraintAuth}
+            <if test="description != null">
+                AND `description` = #{description}
             </if>
             <if test="uri != null">
                 AND `uri` = #{uri}
+            </if>
+            <if test="method != null">
+                AND `method` = #{method}
             </if>
             <if test="parentId != null">
                 AND `parent_id` = #{parentId}

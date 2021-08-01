@@ -1,16 +1,15 @@
 package com.github.phonenumbermanager.config;
 
-import com.github.phonenumbermanager.security.FilterInvocationSecurityMetadataSource;
-import com.github.phonenumbermanager.security.filter.CaptchaValidFilter;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.security.JwtAuthenticationEntryPoint;
 import com.github.phonenumbermanager.security.filter.JwtTokenFilter;
-import com.github.phonenumbermanager.security.manager.AccessDecisionManager;
+import com.github.phonenumbermanager.security.handler.JwtAccessDeniedHandler;
 import com.github.phonenumbermanager.service.SystemUserService;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.BeanIds;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -18,8 +17,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import javax.annotation.Resource;
 
@@ -28,61 +31,79 @@ import javax.annotation.Resource;
  *
  * @author 廿二月的天
  */
-@Configuration
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
-    private static final String[] PERMIT_WHITELIST = {"/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**"};
-    private static final String[] ANONYMOUS_WHITELIST = {"/account/login", "/account/getRecaptcha", "/loginError"};
     @Resource
     private SystemUserService systemUserService;
+    @Resource
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    @Resource
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
+    @SuppressWarnings("all")
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().headers().frameOptions().sameOrigin().cacheControl();
-        http.logout().logoutUrl("/account/logout").and().exceptionHandling().and().addFilterBefore(captchaValidFilter(), UsernamePasswordAuthenticationFilter.class).addFilterAfter(authenticationTokenFilter(), CaptchaValidFilter.class);
-        http.authorizeRequests().antMatchers(PERMIT_WHITELIST).permitAll().antMatchers(ANONYMOUS_WHITELIST).anonymous().anyRequest().access("@systemUserService.hasPermission(request, authentication)");
+        http
+
+            .csrf().disable()
+
+            .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+
+            .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).accessDeniedHandler(jwtAccessDeniedHandler)
+
+            .and().headers().frameOptions().sameOrigin()
+
+            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+            .and().authorizeRequests().antMatchers(SystemConstant.PERMIT_WHITELIST).permitAll().antMatchers(SystemConstant.ANONYMOUS_WHITELIST).anonymous().anyRequest()
+
+            .access("@systemUserService.hasPermission(request, authentication)")
+
+            .and().apply(new JwtConfigurer());
     }
 
-
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) {
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authProvider());
+        super.configure(auth);
     }
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers(PERMIT_WHITELIST);
+        web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**").antMatchers(SystemConstant.PERMIT_WHITELIST);
     }
 
     @Bean
-    AuthenticationProvider authProvider() {
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationProvider authProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
-        daoAuthenticationProvider.setPasswordEncoder(new BCryptPasswordEncoder());
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(systemUserService);
         return daoAuthenticationProvider;
     }
 
-    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/api/**", config);
+        return new CorsFilter(source);
     }
 
-    JwtTokenFilter authenticationTokenFilter() {
-        JwtTokenFilter jwtTokenFilter = new JwtTokenFilter();
-        jwtTokenFilter.setSystemUserService(systemUserService);
-        return jwtTokenFilter;
-    }
+    private static class JwtConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
-    CaptchaValidFilter captchaValidFilter() {
-        return new CaptchaValidFilter();
-    }
-
-    FilterSecurityInterceptor securityFilter() {
-        FilterSecurityInterceptor filterSecurityInterceptor = new FilterSecurityInterceptor();
-        filterSecurityInterceptor.setAccessDecisionManager(new AccessDecisionManager());
-        filterSecurityInterceptor.setSecurityMetadataSource(new FilterInvocationSecurityMetadataSource());
-        return filterSecurityInterceptor;
+        @Override
+        public void configure(HttpSecurity http) {
+            http.addFilterBefore(new JwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        }
     }
 }

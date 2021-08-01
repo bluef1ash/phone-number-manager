@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import org.apache.ibatis.annotations.MapKey;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.Set;
  *
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface SubdistrictMapper extends CommonMapper<Subdistrict> {
     /**
      * 通过社区编号查询所属街道及社区
@@ -65,6 +65,7 @@ public interface SubdistrictMapper extends CommonMapper<Subdistrict> {
     /**
      * 查询所有街道及所属社区
      *
+     * @param page 分页对象
      * @return 所有街道及所属社区
      * @throws DataAccessException 数据库操作异常
      */

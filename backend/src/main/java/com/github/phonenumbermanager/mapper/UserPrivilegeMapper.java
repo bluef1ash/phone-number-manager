@@ -1,9 +1,9 @@
 package com.github.phonenumbermanager.mapper;
 
 import com.github.phonenumbermanager.entity.UserPrivilege;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface UserPrivilegeMapper extends CommonMapper<UserPrivilege> {
     /**
      * 通过角色ID查询

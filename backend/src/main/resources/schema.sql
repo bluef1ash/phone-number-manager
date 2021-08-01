@@ -123,20 +123,20 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_role` (
 -- Table `phone_number`.`pm_privilege`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `phone_number`.`pm_privilege` (
-    `id`              BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
-    `name`            VARCHAR(30)          NOT NULL DEFAULT '' COMMENT '权限名称',
-    `constraint_auth` VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '约束名称',
-    `uri`             VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '访问URI地址',
-    `parent_id`       BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级权限',
-    `icon_name`       VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '图标名称',
-    `orders`          TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单排序',
-    `is_display`      TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '是否在菜单栏中显示，0不显示，1显示',
-    `create_time`     DATETIME             NOT NULL COMMENT '增加时间',
-    `update_time`     DATETIME             NOT NULL COMMENT '更新时间',
-    `version`         SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `id`          BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    `name`        VARCHAR(30)          NOT NULL DEFAULT '' COMMENT '权限名称',
+    `description` VARCHAR(200)         NOT NULL DEFAULT '' COMMENT '约束描述',
+    `uri`         VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '访问URI地址',
+    `method`      TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '方法类型，0get，1post，2HEAD，3 PUT，4PATCH，5DELETE，6OPTIONS，6TRACE',
+    `parent_id`   BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级权限',
+    `icon_name`   VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '图标名称',
+    `orders`      TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单排序',
+    `is_display`  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '是否在菜单栏中显示，0不显示，1显示',
+    `create_time` DATETIME             NOT NULL COMMENT '增加时间',
+    `update_time` DATETIME             NOT NULL COMMENT '更新时间',
+    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
     PRIMARY KEY (`id`),
-    UNIQUE INDEX `uk_name`(`name` ASC) VISIBLE,
-    UNIQUE INDEX `uk_constraint_auth`(`constraint_auth` ASC) VISIBLE
+    UNIQUE INDEX `uk_name`(`name` ASC) VISIBLE
 )
     ENGINE = InnoDB
     COMMENT = '用户权限表';

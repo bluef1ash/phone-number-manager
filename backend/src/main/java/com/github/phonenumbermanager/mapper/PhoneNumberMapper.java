@@ -2,8 +2,8 @@ package com.github.phonenumbermanager.mapper;
 
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 
@@ -12,7 +12,7 @@ import java.io.Serializable;
  *
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface PhoneNumberMapper extends CommonMapper<PhoneNumber> {
     /**
      * 通过来源类型与来源编号查询

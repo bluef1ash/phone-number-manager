@@ -1,8 +1,7 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.constant.PhoneTypeEnum;
+import cn.hutool.core.util.PhoneUtil;
 import com.github.phonenumbermanager.entity.PhoneNumber;
-import com.github.phonenumbermanager.util.StringCheckedRegexUtil;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -52,7 +51,7 @@ public abstract class BaseInputValidator<T> implements Validator {
      */
     protected boolean checkedPhones(List<PhoneNumber> phoneNumbers) {
         for (PhoneNumber phoneNumber : phoneNumbers) {
-            if (StringCheckedRegexUtil.checkPhone(phoneNumber.getPhoneNumber()) == PhoneTypeEnum.UNKNOWN) {
+            if (PhoneUtil.isPhone(phoneNumber.getPhoneNumber())) {
                 message = "输入的联系方式不合法，请检查后重试！";
                 return false;
             }

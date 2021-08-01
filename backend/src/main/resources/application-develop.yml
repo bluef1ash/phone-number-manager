@@ -20,3 +20,14 @@ spring:
                 enabled: true
                 url-pattern: /druid/*
                 reset-enable: false
+
+management:
+    endpoints:
+        enabled-by-default: true
+        web:
+            exposure:
+                include: "*"
+
+    endpoint:
+        health:
+            show-details: always

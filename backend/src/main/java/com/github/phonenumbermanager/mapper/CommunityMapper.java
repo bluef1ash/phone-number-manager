@@ -3,8 +3,8 @@ package com.github.phonenumbermanager.mapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Community;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author 廿二月的天
  */
-@Repository
+@Mapper
 public interface CommunityMapper extends CommonMapper<Community> {
     /**
      * 通过主键ID查询社区和所属街道

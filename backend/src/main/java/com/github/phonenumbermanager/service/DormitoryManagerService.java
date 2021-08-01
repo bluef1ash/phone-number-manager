@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.util.ExcelUtil;
 
 import java.io.Serializable;
 import java.util.List;
@@ -16,15 +15,6 @@ import java.util.Map;
  * @author 廿二月的天
  */
 public interface DormitoryManagerService extends BaseService<DormitoryManager> {
-    /**
-     * 通过楼长编号查找楼长与所属社区
-     *
-     * @param id 楼长编号
-     * @return 楼长对象
-     */
-    @Override
-    DormitoryManager getCorrelation(Serializable id);
-
     /**
      * 通过系统用户角色编号与定位角色编号查找社区楼长及所属社区
      *
@@ -82,11 +72,4 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      * @return 文件标题
      */
     String getFileTitle();
-
-    /**
-     * 获取Excel数据处理匿名类
-     *
-     * @return Excel数据处理匿名类
-     */
-    ExcelUtil.DataHandler getExcelDataHandler();
 }

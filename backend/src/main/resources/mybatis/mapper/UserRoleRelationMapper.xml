@@ -7,21 +7,4 @@
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
-    <delete id="deleteByUserRoleRelation">
-        DELETE FROM `pm_user_role`
-        <where>
-            <if test="userId != null">
-                `user_id` = #{userId}
-            </if>
-            <if test="roleId != null">
-                AND `role_id` = #{roleId}
-            </if>
-            <if test="createTime != null">
-                AND `create_time` = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                AND `update_time` = #{updateTime}
-            </if>
-        </where>
-    </delete>
 </mapper>

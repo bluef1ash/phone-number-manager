@@ -20,9 +20,9 @@
     <properties>
         <skipTests>true</skipTests>
         <java.version>11</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <mybatis-plus-boot-starter.version>3.4.2</mybatis-plus-boot-starter.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <mybatis-plus-boot-starter.version>3.4.1</mybatis-plus-boot-starter.version>
         <swagger.version>3.0.0</swagger.version>
         <poi.version>4.1.2</poi.version>
         <fastjson.version>1.2.75</fastjson.version>
@@ -30,7 +30,7 @@
         <commons-fileupload.version>1.4</commons-fileupload.version>
         <tinypinyin.version>2.0.3</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <jjwt.version>0.9.1</jjwt.version>
+        <hutool.version>5.7.2</hutool.version>
     </properties>
     <repositories>
         <repository>
@@ -56,41 +56,21 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.4.0-b180830.0359</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -151,11 +131,6 @@
             <version>${swagger.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
-            <version>${jjwt.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>${poi.version}</version>
@@ -179,6 +154,11 @@
             <groupId>com.github.promeg</groupId>
             <artifactId>tinypinyin</artifactId>
             <version>${tinypinyin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
         </dependency>
     </dependencies>
     <build>

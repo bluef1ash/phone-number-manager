@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.Serializable;
 import java.util.List;
@@ -46,13 +45,6 @@ public interface BaseService<T> extends IService<T> {
      * @return 查找到的对象
      */
     List<T> get(List<PhoneNumber> phoneNumbers, Serializable id, Serializable subdistrictId, PhoneNumberSourceTypeEnum sourceType);
-
-    /**
-     * 查找Excel表头
-     *
-     * @return 表字段名称
-     */
-    Map<String, String> getPartStatHead();
 
     /**
      * 获取录入统计信息
@@ -113,12 +105,12 @@ public interface BaseService<T> extends IService<T> {
     /**
      * 从Excel导入数据
      *
-     * @param workbook          Excel工作簿对象
+     * @param data              Excel数据
      * @param subdistrictId     导入的街道编号
      * @param configurationsMap 系统配置
      * @return 导入的行数
      */
-    boolean save(Workbook workbook, Serializable subdistrictId, Map<String, Object> configurationsMap);
+    boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap);
 
     /**
      * 通过编号关联查找

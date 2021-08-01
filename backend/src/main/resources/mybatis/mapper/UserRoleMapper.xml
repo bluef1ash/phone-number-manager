@@ -24,6 +24,8 @@
                     resultMap="com.github.phonenumbermanager.mapper.SystemUserMapper.aliasResultMap"/>
         <collection property="userPrivileges" ofType="com.github.phonenumbermanager.entity.UserPrivilege"
                     resultMap="com.github.phonenumbermanager.mapper.UserPrivilegeMapper.aliasResultMap"/>
+        <collection property="rolePrivilegeRelation" ofType="com.github.phonenumbermanager.entity.RolePrivilegeRelation"
+                    resultMap="com.github.phonenumbermanager.mapper.UserRoleRelationMapper.baseResultMap"/>
     </resultMap>
     <select id="selectAndSystemUsers" resultMap="correlationResultMap">
         SELECT `pm_role`.`id` AS 'role_id',
@@ -53,7 +55,7 @@
             `pm_role`.`parent_id` AS 'role_parent_id',
             `pm_privilege`.`id` AS 'privilege_id',
             `pm_privilege`.`name` AS 'privilege_name',
-            `pm_privilege`.`constraint_auth`,
+            `pm_privilege`.description,
             `pm_privilege`.`uri`,
             `pm_privilege`.`parent_id` AS `privilege_parent_id`,
             `pm_privilege`.`icon_name`,
@@ -73,12 +75,13 @@
             `pm_role`.`parent_id` AS 'role_parent_id',
             `pm_privilege`.`id` AS 'privilege_id',
             `pm_privilege`.`name` AS 'privilege_name',
-            `pm_privilege`.`constraint_auth`,
+            `pm_privilege`.description,
             `pm_privilege`.`uri`,
             `pm_privilege`.`parent_id` AS `privilege_parent_id`,
             `pm_privilege`.`icon_name`,
             `pm_privilege`.`orders`,
-            `pm_privilege`.`is_display`
+            `pm_privilege`.`is_display`,
+            `pm_role_privilege`.`method`
         FROM `pm_role`
                  LEFT JOIN `pm_role_privilege` ON `pm_role`.`id` = `pm_role_privilege`.`role_id`
                  LEFT JOIN `pm_privilege` ON `pm_role_privilege`.`privilege_id` = `pm_privilege`.`id`

@@ -1,12 +1,11 @@
 package com.github.phonenumbermanager.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.util.ExcelUtil;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,15 +16,6 @@ import java.util.Map;
  * @author 廿二月的天
  */
 public interface CommunityResidentService extends BaseService<CommunityResident> {
-    /**
-     * 通过社区居民编号查找社区居民与所属社区
-     *
-     * @param id 社区居民编号
-     * @return 查找到的社区居民
-     */
-    @Override
-    CommunityResident getCorrelation(Serializable id);
-
     /**
      * 通过社区居民查找匹配的社区居民
      *
@@ -50,13 +40,5 @@ public interface CommunityResidentService extends BaseService<CommunityResident>
      * @param userData               用户数据
      * @return 社区居民与所属社区集合转换的JSON对象
      */
-    JSONArray getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData);
-
-    /**
-     * 设置Excel头部
-     *
-     * @param titles 标题数组
-     * @return 设置接口
-     */
-    ExcelUtil.DataHandler setExcelHead(String[] titles);
+    List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData);
 }

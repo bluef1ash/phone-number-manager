@@ -10,8 +10,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.security.core.GrantedAuthority;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -26,10 +26,10 @@ import java.util.Set;
 @Accessors(chain = true)
 @TableName("pm_privilege")
 @ApiModel("用户权限对象实体")
-public class UserPrivilege implements Serializable {
+public class UserPrivilege implements GrantedAuthority {
     private Long id;
     private String name;
-    private String constraintAuth;
+    private String description;
     private String uri;
     private Long parentId;
     private String iconName;
@@ -50,4 +50,9 @@ public class UserPrivilege implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private Set<UserPrivilege> subUserPrivileges;
+
+    @Override
+    public String getAuthority() {
+        return uri;
+    }
 }

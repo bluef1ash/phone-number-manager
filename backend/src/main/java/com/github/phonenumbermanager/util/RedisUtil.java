@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author 廿二月的天
  */
+@SuppressWarnings("all")
 @Component
 public class RedisUtil {
     @Resource

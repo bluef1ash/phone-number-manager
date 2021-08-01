@@ -1,23 +1,19 @@
 package com.github.phonenumbermanager.controller;
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.PhoneUtil;
+import cn.hutool.poi.excel.ExcelReader;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.alibaba.fastjson.JSON;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.PhoneTypeEnum;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.service.CommunityService;
-import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.phonenumbermanager.util.RedisUtil;
-import com.github.phonenumbermanager.util.StringCheckedRegexUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -54,61 +50,30 @@ abstract class BaseController {
     void getRoleId() {
         systemUser = (SystemUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         configurationsMap = (Map<String, Object>) redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
-        systemCompanyType = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_company_type"));
-        communityCompanyType = CommonUtil.convertConfigurationInteger(configurationsMap.get("community_company_type"));
-        subdistrictCompanyType = CommonUtil.convertConfigurationInteger(configurationsMap.get("subdistrict_company_type"));
-        systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
-    }
-
-    /**
-     * 设置导入页面Cookie
-     *
-     * @param jsonMap JSON对象
-     */
-    void setPersonVariable(Map<String, Object> jsonMap) {
-        getRoleId();
-        jsonMap.put("systemCompanyType", systemCompanyType);
-        jsonMap.put("communityCompanyType", communityCompanyType);
-        jsonMap.put("subdistrictCompanyType", subdistrictCompanyType);
-        jsonMap.put("companyType", systemUser.getLevel());
-    }
-
-    /**
-     * 居民与楼长保存或更新时出现错误
-     *
-     * @param communityService 社区Service对象
-     * @param model            前台模型
-     * @param bindingResult    错误信息对象
-     */
-    void throwsError(CommunityService communityService, Model model, BindingResult bindingResult) {
-        List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
-        model.addAttribute("communities", communities);
-        // 输出错误信息
-        List<ObjectError> allErrors = bindingResult.getAllErrors();
-        model.addAttribute("messageErrors", allErrors);
+        systemCompanyType = Convert.toInt(configurationsMap.get("system_company_type"));
+        communityCompanyType = Convert.toInt(configurationsMap.get("community_company_type"));
+        subdistrictCompanyType = Convert.toInt(configurationsMap.get("subdistrict_company_type"));
+        systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id"));
     }
 
     /**
      * 上传Excel
      *
-     * @param request    HTTP请求对象
-     * @param excelTitle Excel文件标题字段
+     * @param request        HTTP请求对象
+     * @param startRowNumber 开始读取的行数
      * @return Excel工作簿对象
-     * @throws IOException SERVICE层异常
+     * @throws IOException IO异常
      */
-    Workbook uploadExcel(HttpServletRequest request, String excelTitle) throws IOException {
+    List<List<Object>> uploadExcel(HttpServletRequest request, int startRowNumber) throws IOException {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile file = multipartRequest.getFile("file");
         if (file == null || file.isEmpty()) {
             throw new FileNotFoundException("文件不存在！");
         }
-        String filename = file.getOriginalFilename();
-        if (StringUtils.isEmpty(filename)) {
-            getRoleId();
-            filename = CommonUtil.convertConfigurationString(configurationsMap.get(excelTitle));
-        }
         InputStream inputStream = file.getInputStream();
-        return ExcelUtil.getWorkbook(inputStream, filename);
+        ExcelReader excelReader = ExcelUtil.getReader(inputStream, 0);
+        excelReader.setIgnoreEmptyRow(true);
+        return excelReader.read(startRowNumber);
     }
 
     /**
@@ -118,6 +83,7 @@ abstract class BaseController {
      * @return 解码后用户数据
      * @throws ClassCastException 转换异常
      */
+    @SuppressWarnings("all")
     List<Map<String, Object>> getDecodeData(String encodeData) throws ClassCastException {
         getRoleId();
         byte[] jsonDecode = Base64.getDecoder().decode(encodeData);
@@ -136,18 +102,43 @@ abstract class BaseController {
             phoneNumber.setSourceType(phoneNumberSourceTypeEnum);
             phoneNumber.setSourceId(sourceId);
             if (phoneNumber.getPhoneType() == null) {
-                switch (StringCheckedRegexUtil.checkPhone(phoneNumber.getPhoneNumber())) {
-                    case LANDLINE:
-                        phoneNumber.setPhoneType(PhoneTypeEnum.LANDLINE);
-                        break;
-                    case MOBILE:
-                        phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
-                        break;
-                    default:
-                        phoneNumber.setPhoneType(PhoneTypeEnum.UNKNOWN);
-                        break;
+                if (PhoneUtil.isTel(phoneNumber.getPhoneNumber())) {
+                    phoneNumber.setPhoneType(PhoneTypeEnum.LANDLINE);
+                } else if (PhoneUtil.isMobile(phoneNumber.getPhoneNumber())) {
+                    phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
+                } else {
+                    phoneNumber.setPhoneType(PhoneTypeEnum.UNKNOWN);
                 }
             }
         }
+    }
+
+    /**
+     * 设置单元格样式
+     *
+     * @param cellStyle   单元格对象
+     * @param excelWriter Excel写入器
+     * @param fontName    字体名称
+     * @param fontHeight  字体大小
+     * @param isBold      是否加粗
+     * @param isBorder    是否有边框
+     * @param isWrapText  是否自动换行
+     */
+    public void setCellStyle(CellStyle cellStyle, ExcelWriter excelWriter, String fontName, short fontHeight, boolean isBold, boolean isBorder, boolean isWrapText) {
+        cellStyle.setFillPattern(FillPatternType.NO_FILL);
+        if (isBorder) {
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+        }
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        Font font = excelWriter.createFont();
+        font.setFontName(fontName);
+        font.setFontHeightInPoints(fontHeight);
+        font.setBold(isBold);
+        cellStyle.setFont(font);
+        cellStyle.setWrapText(isWrapText);
     }
 }

@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.RolePrivilegeRelationMapper;
@@ -21,7 +22,10 @@ public class UserRolePrivilegeServiceImpl extends BaseServiceImpl<RolePrivilegeR
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean remove(RolePrivilegeRelation rolePrivilegeRelation) {
-        return rolePrivilegeRelationMapper.deleteByRolePrivilegeRelation(rolePrivilegeRelation) > 0;
+        QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
+        wrapper.eq("privilege_id", rolePrivilegeRelation.getPrivilegeId());
+        wrapper.eq("role_id", rolePrivilegeRelation.getRoleId());
+        return rolePrivilegeRelationMapper.delete(wrapper) > 0;
     }
 
     @Override

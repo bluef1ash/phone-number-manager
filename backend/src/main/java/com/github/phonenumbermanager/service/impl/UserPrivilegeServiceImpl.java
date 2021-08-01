@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
@@ -57,9 +58,9 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
         if (systemUserMapper.selectByRoleId(id).size() > 0) {
             return false;
         }
-        RolePrivilegeRelation rolePrivilegeRelation = new RolePrivilegeRelation();
-        rolePrivilegeRelation.setPrivilegeId((Long) id);
-        if (rolePrivilegeRelationMapper.deleteByRolePrivilegeRelation(rolePrivilegeRelation) > 0) {
+        QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
+        wrapper.eq("privilege_id", id);
+        if (rolePrivilegeRelationMapper.delete(wrapper) > 0) {
             return userPrivilegeMapper.deleteById(id) > 0;
         }
         return false;
@@ -84,7 +85,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
                 UserPrivilege newUserPrivilege = new UserPrivilege();
                 newUserPrivilege.setId(userPrivilege.getId());
                 newUserPrivilege.setName(userPrivilege.getName());
-                newUserPrivilege.setConstraintAuth(userPrivilege.getConstraintAuth());
+                newUserPrivilege.setDescription(userPrivilege.getDescription());
                 newUserPrivilege.setParentId(userPrivilege.getParentId());
                 newUserPrivilege.setIconName(userPrivilege.getIconName());
                 newUserPrivilege.setIsDisplay(userPrivilege.getIsDisplay());

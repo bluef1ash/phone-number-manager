@@ -131,6 +131,11 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
         return null;
     }
 
+    @Override
+    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
+        return null;
+    }
+
     /**
      * 查找社区编号
      *

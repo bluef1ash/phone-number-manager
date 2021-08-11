@@ -2,8 +2,6 @@ package com.github.phonenumbermanager.service.impl;
 
 import cn.hutool.core.convert.Convert;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,7 +12,6 @@ import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.promeg.pinyinhelper.Pinyin;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -162,7 +159,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         return false;
     }
 
-    @Override
+    /*@Override
     public Map<String, String> getPartStatHead() {
         Map<String, String> tableHead = new LinkedHashMap<>();
         tableHead.put("sequenceNumber", "序号");
@@ -182,13 +179,12 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         tableHead.put("subcontractorName", "姓名");
         tableHead.put("subcontractorTelephone", "手机");
         return tableHead;
-    }
+    }*/
 
     @Override
-    public JSONArray getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData, String[] titles) {
-        this.titles = titles;
+    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         List<DormitoryManager> dormitoryManagers = dormitoryManagerMapper.selectByUserData(userData, communityCompanyType, subdistrictCompanyType);
-        JSONArray jsonArray = new JSONArray();
         if (dormitoryManagers != null) {
             long index = 1L;
             Subdistrict subdistrict = subdistrictMapper.selectById(dormitoryManagers.get(0).getCommunity().getSubdistrictId());
@@ -197,23 +193,23 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 fileTitle = titles[1].replaceAll(SUBDISTRICT_NAME_REGEX, subdistrictName.replaceAll("(?iUs)[街道办事处]", ""));
             }
             for (DormitoryManager dormitoryManager : dormitoryManagers) {
-                JSONObject jsonObject = new JSONObject();
+                LinkedHashMap<String, Object> data = new LinkedHashMap<>();
                 // 序号
-                jsonObject.put("sequenceNumber", index);
+                data.put("序号", index);
                 // 处理社区名称
                 String communityName = dormitoryManager.getCommunity().getName().replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
-                jsonObject.put("communityName", communityName);
+                data.put("社区名称", communityName);
                 // 出生年月
                 DateFormat dateFormat = new SimpleDateFormat("yyyy.MM");
-                jsonObject.put("birth", dateFormat.format(dormitoryManager.getBirth()));
+                data.put("出生年月", dateFormat.format(dormitoryManager.getBirth()));
                 // 处理分包人
-                jsonObject.put("subcontractorName", dormitoryManager.getSubcontractor().getName());
-                jsonObject.put("subcontractorTelephone", JSON.toJSON(dormitoryManager.getSubcontractor().getPhoneNumbers()));
-                jsonArray.add(jsonObject);
+                data.put("分包人", dormitoryManager.getSubcontractor().getName());
+                data.put("subcontractorTelephone", JSON.toJSON(dormitoryManager.getSubcontractor().getPhoneNumbers()));
+                list.add(data);
                 index++;
             }
         }
-        return jsonArray;
+        return list;
     }
 
     @Override
@@ -394,7 +390,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         }
         Cell birthCell = row.getCell(excelDormitoryBirthCellNumber);
         Date birth = null;
-        if (ExcelUtil.DEFAULT_DATE_PATTERN_EN.equals(birthCell.getCellStyle().getDataFormatString())) {
+        /*if (ExcelUtil.DEFAULT_DATE_PATTERN_EN.equals(birthCell.getCellStyle().getDataFormatString())) {
             birth = birthCell.getDateCellValue();
         } else {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
@@ -404,7 +400,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         dormitoryManager.setBirth(birth);
         String political = convertCellString(row.getCell(excelDormitoryPoliticalStatusCellNumber));
         for (PoliticalStatusEnum politicalStatusEnum : PoliticalStatusEnum.values()) {

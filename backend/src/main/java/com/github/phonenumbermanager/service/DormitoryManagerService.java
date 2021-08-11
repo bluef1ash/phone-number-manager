@@ -1,12 +1,10 @@
 package com.github.phonenumbermanager.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.entity.SystemUser;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,17 +13,6 @@ import java.util.Map;
  * @author 廿二月的天
  */
 public interface DormitoryManagerService extends BaseService<DormitoryManager> {
-    /**
-     * 通过系统用户角色编号与定位角色编号查找社区楼长及所属社区
-     *
-     * @param communityCompanyType   社区单位类型编号
-     * @param subdistrictCompanyType 街道单位类型编号
-     * @param userData               用户数据
-     * @param titles                 标题数组
-     * @return 社区楼长与所属社区集合转换的JSON对象
-     */
-    JSONArray getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData, String[] titles);
-
     /**
      * 通过社区楼长查找匹配的社区楼长
      *

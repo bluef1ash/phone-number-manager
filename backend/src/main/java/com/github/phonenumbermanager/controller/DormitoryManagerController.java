@@ -1,18 +1,15 @@
 package com.github.phonenumbermanager.controller;
 
 import cn.hutool.core.convert.Convert;
-import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.constant.GenderEnum;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.DormitoryManager;
-import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.ExcelUtil;
 import com.github.phonenumbermanager.validator.DormitoryManagerInputValidator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,11 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 社区楼长控制器
@@ -199,20 +192,17 @@ public class DormitoryManagerController extends BaseController {
     @GetMapping("/download")
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response, @RequestParam String data) {
         List<Map<String, Object>> userData = getDecodeData(data);
-        // 获取属性-列头
-        Map<String, String> headMap = dormitoryManagerService.getPartStatHead();
         String excelDormitoryTitleUp = Convert.toStr(configurationsMap.get("excel_dormitory_title_up"));
         String excelDormitoryTitle = Convert.toStr(configurationsMap.get("excel_dormitory_title"));
-        ExcelUtil.DataHandler excelDataHandler = dormitoryManagerService.getExcelDataHandler();
         // 获取业务数据集
-        JSONArray dataJson = dormitoryManagerService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData, new String[]{excelDormitoryTitleUp, excelDormitoryTitle});
-        try {
+        List<LinkedHashMap<String, Object>> dataJson = dormitoryManagerService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData);
+        /*try {
             ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelDormitoryTitle, headMap, dataJson, 0, excelDataHandler);
             ExcelUtil.downloadExcelFile(response, request, dormitoryManagerService.getFileTitle(), byteArrayOutputStream);
         } catch (Exception e) {
             e.printStackTrace();
             throw new BusinessException("导出Excel文件失败！");
-        }
+        }*/
     }
 
     /**

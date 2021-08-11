@@ -3,7 +3,6 @@ package com.github.phonenumbermanager.service.impl;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.SystemConstant;
@@ -12,16 +11,12 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
 import com.github.phonenumbermanager.service.CommunityResidentService;
-import com.github.phonenumbermanager.util.ExcelUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.usermodel.Cell;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -58,7 +53,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         int excelPhone3CellNumber = Convert.toInt(configurationsMap.get("excel_resident_phone3_cell_number"));
         int excelSubcontractorCellNumber = Convert.toInt(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
         setCommunityVariables(subdistrictId);
-        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+        /*for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             Sheet sheet = workbook.getSheetAt(i);
             if (sheet != null) {
                 for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
@@ -96,7 +91,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                     }
                 }
             }
-        }
+        }*/
         if (residents.size() > 0) {
             QueryWrapper<CommunityResident> wrapper = new QueryWrapper<>();
             wrapper.eq("subdistrict_id", subdistrictId);
@@ -130,7 +125,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return list;
     }
 
-    @Override
+    /*@Override
     public ExcelUtil.DataHandler setExcelHead(String[] titles) {
         return (params, headers) -> {
             Integer rowIndex = (Integer) params.get("rowIndex");
@@ -180,7 +175,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             params.put("sheet", sheet);
             params.put("contentStyle", contentStyle);
         };
-    }
+    }*/
 
     @Override
     public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {

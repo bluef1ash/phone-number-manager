@@ -1,12 +1,12 @@
 package com.github.phonenumbermanager.validator;
 
+import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemUserService;
-import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.util.RedisUtil;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -56,8 +56,8 @@ public class AccountInputValidator extends BaseInputValidator<SystemUser> {
             }
             redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, configurationsMap);
         }
-        Integer systemIsActive = CommonUtil.convertConfigurationInteger(configurationsMap.get("system_is_active"));
-        Long systemAdministratorId = CommonUtil.convertConfigurationLong(configurationsMap.get("system_administrator_id"));
+        Integer systemIsActive = Convert.toInt(configurationsMap.get("system_is_active"));
+        Long systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id"));
         if (systemIsActive == 0 && !systemAdministratorId.equals(user.getId())) {
             errorCode = "systemUser.username.error";
             field = "username";

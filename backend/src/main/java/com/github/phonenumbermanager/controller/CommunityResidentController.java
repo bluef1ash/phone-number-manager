@@ -1,17 +1,10 @@
 package com.github.phonenumbermanager.controller;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.CommunityResident;
@@ -22,28 +15,21 @@ import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.validator.CommunityResidentInputValidator;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * 社区居民控制器
@@ -224,17 +210,24 @@ public class CommunityResidentController extends BaseController {
             excelWriter.passCurrentRow();
             CellStyle dateRowStyle = excelWriter.getOrCreateCellStyle(6, excelWriter.getCurrentRow());
             setCellStyle(dateRowStyle, excelWriter, "宋体", (short) 11, false, false, true);
-            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6,1, new Date(), dateRowStyle);
-        }
-        try {
-            // ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelResidentTitle, headMap, dataJson, 0, dataHandler);
-            // ExcelUtil.downloadExcelFile(response, request, excelResidentTitle, byteArrayOutputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new BusinessException("导出Excel文件失败！");
+            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6, 1, new Date(), dateRowStyle);
+            excelWriter.passCurrentRow();
+            excelWriter.write(dataResult, true);
+            excelWriter.setColumnWidth(-1, 22);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.addHeader("Content-Disposition", "attachment;filename=" + excelResidentTitle + System.currentTimeMillis() + ".xlsx");
+            try {
+                ServletOutputStream outputStream = response.getOutputStream();
+                excelWriter.flush(outputStream, true);
+                IoUtil.close(outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new BusinessException("导出Excel文件失败！");
+            } finally {
+                excelWriter.close();
+            }
         }
     }
-
 
     /**
      * 添加、修改到数据库前处理

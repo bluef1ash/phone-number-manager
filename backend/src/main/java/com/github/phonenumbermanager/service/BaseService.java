@@ -7,6 +7,7 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +88,6 @@ public interface BaseService<T> extends IService<T> {
      */
     Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType);
 
-
     /**
      * 查找所有社区居民或楼长及所属社区
      *
@@ -100,7 +100,6 @@ public interface BaseService<T> extends IService<T> {
      * @return 查找到的社区居民集合与分页对象
      */
     IPage<T> getCorrelation(SystemUser systemUser, PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize);
-
 
     /**
      * 从Excel导入数据
@@ -119,4 +118,14 @@ public interface BaseService<T> extends IService<T> {
      * @return 对应的对象
      */
     T getCorrelation(Serializable id);
+
+    /**
+     * 通过系统用户角色编号与定位角色编号查找社区居民及所属社区
+     *
+     * @param communityCompanyType   社区单位类型编号
+     * @param subdistrictCompanyType 街道单位类型编号
+     * @param userData               用户数据
+     * @return 社区居民与所属社区集合转换的JSON对象
+     */
+    List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData);
 }

@@ -17,10 +17,10 @@ import java.util.LinkedHashMap;
 public class ExcelTest {
 
     private interface Person {
-        public void eat();
+        void eat();
     }
 
-    private class Student implements Person {
+    private static class Student implements Person {
         @Override
         public void eat() {
             System.out.println("111111");
@@ -37,7 +37,9 @@ public class ExcelTest {
             System.out.println("hhhhhhhhhhhhh");
             student = (Student) person;
         }
-        student.sleep();
+        if (student != null) {
+            student.sleep();
+        }
     }
 
     @Test

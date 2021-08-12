@@ -1,9 +1,9 @@
 package com.github.phonenumbermanager.security.filter;
 
+import cn.hutool.extra.servlet.ServletUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -48,7 +48,7 @@ public class CaptchaValidFilter extends OncePerRequestFilter {
         int gtServerStatusCode = (Integer) httpServletRequest.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
         Map<String, String> param = new HashMap<>(3);
         param.put("client_type", httpServletRequest.getParameter("browserType"));
-        param.put("ip_address", CommonUtil.getIp(httpServletRequest));
+        param.put("ip_address", ServletUtil.getClientIP(httpServletRequest));
         int gtResult;
         if (gtServerStatusCode == 1) {
             gtResult = gtSdk.enhencedValidateRequest(challenge, validate, secCode, param);

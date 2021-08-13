@@ -11,7 +11,8 @@ public class HttpStatusOkException extends RuntimeException {
         super();
     }
 
-    public HttpStatusOkException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public HttpStatusOkException(String message, Throwable cause, boolean enableSuppression,
+        boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <head th:replace="layouts/header :: commonHead('系统配置项列表 - 系统管理', ~{::script})">
         <title></title>
-        <script type="text/javascript" th:inline="javascript">
-            var configurations = /*[[${configurations}]]*/null;
-            var deleteUrl = /*[[@{'/system/configuration'}]]*/null;
+        <script th:inline="javascript" type="text/javascript">
+            var configurations = /*[[${configurations}]]*/null
+            var deleteUrl = /*[[@{'/system/configuration'}]]*/null
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/configuration-list-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/configuration-list-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/configuration-list-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/configuration-list-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -32,7 +32,7 @@
                         <div class="card">
                             <div class="card-header">
                                 <div class="col-3 float-right">
-                                    <a th:href="@{'/system/configuration/create'}" class="btn btn-block btn-primary" title="添加系统配置项">添加系统配置项</a>
+                                    <a class="btn btn-block btn-primary" th:href="@{'/system/configuration/create'}" title="添加系统配置项">添加系统配置项</a>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -46,17 +46,17 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(configuration, index) in configurations" :key="configuration.key">
+                                        <tr :key="configuration.key" v-for="(configuration, index) in configurations">
                                             <td v-text="index + 1"></td>
                                             <td v-text="configuration.key"></td>
                                             <td v-text="configuration.description"></td>
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <a th:attr="':href'='\'' + @{'/system/configuration/edit/'} + '\' + configuration.key'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                        <a class="btn btn-sm btn-block btn-pill btn-secondary" th:attr="':href'='\'' + @{'/system/configuration/edit/'} + '\' + configuration.key'" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
-                                                        <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(configuration.key)">删除</button>
+                                                        <button @click="deleteObject(configuration.key)" class="btn btn-sm btn-block btn-pill btn-danger" title="点击删除" type="button">删除</button>
                                                     </div>
                                                 </div>
                                             </td>

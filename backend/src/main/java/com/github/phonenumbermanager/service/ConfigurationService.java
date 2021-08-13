@@ -7,5 +7,4 @@ import com.github.phonenumbermanager.entity.Configuration;
  *
  * @author 廿二月的天
  */
-public interface ConfigurationService extends BaseService<Configuration> {
-}
+public interface ConfigurationService extends BaseService<Configuration> {}

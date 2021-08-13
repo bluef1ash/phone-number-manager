@@ -1,13 +1,14 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.service.SystemUserService;
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.servlet.http.HttpServletRequest;
+import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.service.SystemUserService;
 
 /**
  * 系统用户添加/更新验证
@@ -28,7 +29,7 @@ public class SystemUserInputValidator extends BaseInputValidator<SystemUser> {
             ValidationUtils.rejectIfEmpty(errors, "username", "systemUser.username.required", "系统用户名称不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "locked", "systemUser.locked.required", "系统用户是否锁定不能为空！");
             ValidationUtils.rejectIfEmpty(errors, "roleId", "systemUser.roleId.required", "系统用户角色不能为空！");
-            SystemUser systemUser = (SystemUser) target;
+            SystemUser systemUser = (SystemUser)target;
             if (RequestMethod.POST.toString().equals(request.getMethod())) {
                 SystemUser systemUserDb = systemUserService.getById(systemUser.getUsername());
                 if (systemUserDb != null && systemUserDb.getId() > 0) {

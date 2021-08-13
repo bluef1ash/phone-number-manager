@@ -3,11 +3,11 @@
     <head th:replace="layouts/header :: commonHead('社区楼长列表 - 社区居民管理', ~{::script})">
         <title></title>
         <script th:inline="javascript" type="text/javascript">
-            var publicPrams = { createUrl: /*[[@{'/dormitory/create'}]]*/null, editUrl: /*[[@{'/dormitory/edit/'}]]*/null, deleteUrl: /*[[@{'/dormitory'}]]*/null, companySelectUrl: /*[[@{'/community/select'}]]*/null, importAsSystemUrl: /*[[@{'/dormitory/import'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/load'}]]*/null, loadDataUrl: /*[[@{'/dormitory/list'}]]*/null, downloadExcelUrl: /*[[@{'/dormitory/download'}]]*/null, chooseSubmitUrl: /*[[@{'/community/submit'}]]*/null };
-            var data = { data: /*[[${dormitoryManagers}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, companyTypes: /*[[${companyTypes}]]*/null, companyType: /*[[${companyType}]]*/null };
+            var publicPrams = { createUrl: /*[[@{'/dormitory/create'}]]*/null, editUrl: /*[[@{'/dormitory/edit/'}]]*/null, deleteUrl: /*[[@{'/dormitory'}]]*/null, companySelectUrl: /*[[@{'/community/select'}]]*/null, importAsSystemUrl: /*[[@{'/dormitory/import'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/load'}]]*/null, loadDataUrl: /*[[@{'/dormitory/list'}]]*/null, downloadExcelUrl: /*[[@{'/dormitory/download'}]]*/null, chooseSubmitUrl: /*[[@{'/community/submit'}]]*/null }
+            var data = { data: /*[[${dormitoryManagers}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, companyTypes: /*[[${companyTypes}]]*/null, companyType: /*[[${companyType}]]*/null }
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/dormitory-list-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/dormitory-list-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/dormitory-list-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/dormitory-list-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

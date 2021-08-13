@@ -1,12 +1,13 @@
 package com.github.phonenumbermanager.config;
 
-import com.baomidou.mybatisplus.annotation.IEnum;
+import java.util.Objects;
+import java.util.WeakHashMap;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-import java.util.WeakHashMap;
+import com.baomidou.mybatisplus.annotation.IEnum;
 
 /**
  * 字符串转枚举工厂类

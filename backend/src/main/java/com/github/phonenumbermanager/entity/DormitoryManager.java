@@ -1,19 +1,20 @@
 package com.github.phonenumbermanager.entity;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.*;
 import com.github.phonenumbermanager.constant.EducationStatusEnum;
 import com.github.phonenumbermanager.constant.EmploymentStatusEnum;
 import com.github.phonenumbermanager.constant.GenderEnum;
 import com.github.phonenumbermanager.constant.PoliticalStatusEnum;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /**
  * 楼片长对象实体

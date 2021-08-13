@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <!--/*@thymesVar id="community" type="com.github.phonenumbermanager.entity.Community"*/-->
     <head th:replace="layouts/header :: commonHead('社区' + ${community == null ? '添加' : '编辑'} + ' - 社区管理', ~{::script})">
         <title></title>
-        <script type="text/javascript" th:inline="javascript">
-            var messageErrors = /*[[${messageErrors}]]*/null;
-            var community = /*[[${community}]]*/null;
+        <script th:inline="javascript" type="text/javascript">
+            var messageErrors = /*[[${messageErrors}]]*/null
+            var community = /*[[${community}]]*/null
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/community-edit-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/community-edit-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/community-edit-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/community-edit-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -21,42 +21,42 @@
                     <a href="javascript:" title="社区管理">社区管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/community/' + ${community == null ? 'create' : 'edit?id=' + community.id}}" th:title="${community} == null ? '社区添加' : '社区编辑'" th:text="${community} == null ? '社区添加' : '社区编辑'"></a>
+                    <a th:href="@{'/community/' + ${community == null ? 'create' : 'edit?id=' + community.id}}" th:text="${community} == null ? '社区添加' : '社区编辑'" th:title="${community} == null ? '社区添加' : '社区编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_community" v-cloak>
                     <div class="card-header" th:text="${community} == null ? '社区添加' : '社区' + ${community.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/community'}" method="post" @submit="submit">
+                    <form @submit="submit" class="form-horizontal" method="post" th:action="@{'/community'}">
                         <div class="card-body">
-                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
+                            <div :key="messageError.defaultMessage" class="alert alert-danger" role="alert" v-for="messageError in messageErrors" v-if="messageErrors !== null">
                                 {{ messageError.defaultMessage }}
-                                <button class="close" type="button" data-dismiss="alert" aria-label="Close">
+                                <button aria-label="Close" class="close" data-dismiss="alert" type="button">
                                     <span aria-hidden="true">×</span>
                                 </button>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="name">社区名称</label>
                                 <div class="col-md-9">
-                                    <input type="text" name="name" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="name" placeholder="请输入社区名称" v-model="community.name">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[0]}]" id="name" name="name" placeholder="请输入社区名称" type="text" v-model="community.name">
                                     <span class="help-block">社区名称不允许超过10个字符</span>
-                                    <div class="invalid-feedback" :style="errorClasses[0] && {'display': 'block'}" v-text="errorMessages[0]"></div>
+                                    <div :style="errorClasses[0] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[0]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="landline">社区联系方式</label>
                                 <div class="col-md-9">
-                                    <input id="landline" type="text" name="phoneNumbers[0].phoneNumber" :class="['form-control', {'is-invalid': errorClasses[1]}]" placeholder="请输入社区联系方式" v-model="community.phoneNumbers[0].phoneNumber">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[1]}]" id="landline" name="phoneNumbers[0].phoneNumber" placeholder="请输入社区联系方式" type="text" v-model="community.phoneNumbers[0].phoneNumber">
                                     <span class="help-block">社区联系方式允许输入办公电话</span>
-                                    <div class="invalid-feedback" :style="errorClasses[1] && {'display': 'block'}" v-text="errorMessages[1]"></div>
+                                    <div :style="errorClasses[1] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[1]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="actual_number">社区总人数</label>
                                 <div class="col-md-9">
-                                    <el-input-number :class="{'is-invalid': errorClasses[2]}" :min="1" name="actualNumber" id="actual_number" placeholder="请输入社区总人数" v-model="community.actualNumber"></el-input-number>
+                                    <el-input-number :class="{'is-invalid': errorClasses[2]}" :min="1" id="actual_number" name="actualNumber" placeholder="请输入社区总人数" v-model="community.actualNumber"></el-input-number>
                                     <br> <span class="help-block">社区总人数只允许输入数字</span>
-                                    <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
+                                    <div :style="errorClasses[2] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[2]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -64,7 +64,7 @@
                                 <div class="col-md-9">
                                     <label class="switch switch-3d switch-primary">
                                         <input class="switch-input" type="checkbox" v-model="residentSubmitted">
-                                        <input type="hidden" name="residentSubmitted" v-model="community.residentSubmitted">
+                                        <input name="residentSubmitted" type="hidden" v-model="community.residentSubmitted">
                                         <span class="switch-slider"></span> </label>
                                 </div>
                             </div>
@@ -73,7 +73,7 @@
                                 <div class="col-md-9">
                                     <label class="switch switch-3d switch-primary">
                                         <input class="switch-input" type="checkbox" v-model="dormitorySubmitted">
-                                        <input type="hidden" name="dormitorySubmitted" v-model="community.dormitorySubmitted">
+                                        <input name="dormitorySubmitted" type="hidden" v-model="community.dormitorySubmitted">
                                         <span class="switch-slider"></span> </label>
                                 </div>
                             </div>
@@ -84,20 +84,20 @@
                                         <option :value="0">请选择</option>
                                         <!--/*@thymesVar id="subdistricts" type="java.util.List"*/-->
                                         <!--/*@thymesVar id="subdistrict" type="com.github.phonenumbermanager.entity.Subdistrict"*/-->
-                                        <option th:each="subdistrict, status : ${subdistricts}" th:attr="':value'=${subdistrict.id}" th:text="${subdistrict.name}"></option>
+                                        <option th:attr="':value'=${subdistrict.id}" th:each="subdistrict, status : ${subdistricts}" th:text="${subdistrict.name}"></option>
                                     </select>
-                                    <div class="invalid-feedback" :style="errorClasses[3] && {'display': 'block'}" v-text="errorMessages[3]"></div>
+                                    <div :style="errorClasses[3] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[3]"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <input type="hidden" name="id" v-model="community.id" th:if="${community} != null">
-                            <input type="hidden" name="_method" value="PUT" th:if="${community} != null">
+                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                            <input name="id" th:if="${community} != null" type="hidden" v-model="community.id">
+                            <input name="_method" th:if="${community} != null" type="hidden" value="PUT">
                             <button class="btn btn-sm btn-primary" type="submit">
                                 <i class="fa fa-dot-circle-o"></i>保存
                             </button>
-                            <button class="btn btn-sm btn-danger" type="reset" @click="resetClass">
+                            <button @click="resetClass" class="btn btn-sm btn-danger" type="reset">
                                 <i class="fa fa-ban"></i>重置
                             </button>
                         </div>

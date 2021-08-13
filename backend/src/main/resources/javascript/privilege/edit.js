@@ -41,7 +41,7 @@ $(document).ready(() => {
                     this.$set(this.errorClasses, 0, true
                     this.$set(this.errorMessages, 0, message
                     event.preventDefault(
-                    retur
+                        retur
                 }
                 if (
                     this.userPrivilege.constraintAuth === null &&
@@ -55,7 +55,7 @@ $(document).ready(() => {
                     this.$set(this.errorClasses, 1, true
                     this.$set(this.errorMessages, 1, message
                     event.preventDefault(
-                    retur
+                        retur
                 }
                 if (
                     this.userPrivilege.uri === null ||
@@ -69,7 +69,7 @@ $(document).ready(() => {
                     this.$set(this.errorClasses, 2, true
                     this.$set(this.errorMessages, 2, message
                     event.preventDefault(
-                    retur
+                        retur
                 }
                 if (
                     this.userPrivilege.parentId === null ||
@@ -92,6 +92,6 @@ $(document).ready(() => {
                 this.errorMessages = ['', '', '', '', '']
                 this.privilegeIds = []
             }
-        },
-    });
-});
+        }
+    })
+})

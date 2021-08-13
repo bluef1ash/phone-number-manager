@@ -1,13 +1,15 @@
 package com.github.phonenumbermanager.config;
 
-import com.github.phonenumbermanager.entity.Configuration;
-import com.github.phonenumbermanager.service.ConfigurationService;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.service.ConfigurationService;
 
 /**
  * 数据库数据初始化

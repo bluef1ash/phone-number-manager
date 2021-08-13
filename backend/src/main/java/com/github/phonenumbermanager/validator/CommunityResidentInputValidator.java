@@ -1,20 +1,23 @@
 package com.github.phonenumbermanager.validator;
 
-import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.StrUtil;
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
-import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.CommunityResident;
-import com.github.phonenumbermanager.entity.PhoneNumber;
-import com.github.phonenumbermanager.service.CommunityResidentService;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
+import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.CommunityResident;
+import com.github.phonenumbermanager.entity.PhoneNumber;
+import com.github.phonenumbermanager.service.CommunityResidentService;
+
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 
 /**
  * 社区居民添加/更新验证
@@ -24,7 +27,8 @@ import java.util.List;
 public class CommunityResidentInputValidator extends BaseInputValidator<CommunityResident> {
     private final CommunityResidentService communityResidentService;
 
-    public CommunityResidentInputValidator(CommunityResidentService communityResidentService, HttpServletRequest request) {
+    public CommunityResidentInputValidator(CommunityResidentService communityResidentService,
+        HttpServletRequest request) {
         this.communityResidentService = communityResidentService;
         this.request = request;
     }
@@ -33,8 +37,9 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
     protected boolean checkInput(Object target, Errors errors) {
         ValidationUtils.rejectIfEmpty(errors, "name", "communityResident.name.required", "社区居民姓名不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "address", "communityResident.address.required", "社区居民地址不能为空！");
-        ValidationUtils.rejectIfEmpty(errors, "subcontractorId", "communityResident.subcontractorId.required", "社区分包人不能为空！");
-        CommunityResident communityResident = (CommunityResident) target;
+        ValidationUtils.rejectIfEmpty(errors, "subcontractorId", "communityResident.subcontractorId.required",
+            "社区分包人不能为空！");
+        CommunityResident communityResident = (CommunityResident)target;
         String name = StrUtil.cleanBlank(communityResident.getName()).replaceAll("—", "-");
         if (name.length() > SystemConstant.NAME_MAX_LENGTH) {
             message = "社区居民姓名不能超过10个字符！";
@@ -54,7 +59,8 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
         String nameAddress = name + address;
         for (PhoneNumber phoneNumber : communityResident.getPhoneNumbers()) {
             if (StringUtils.isNotEmpty(phoneNumber.getPhoneNumber())) {
-                phoneNumber.setPhoneNumber(Convert.toDBC(StrUtil.cleanBlank(phoneNumber.getPhoneNumber()).replaceAll("—", "-")));
+                phoneNumber.setPhoneNumber(
+                    Convert.toDBC(StrUtil.cleanBlank(phoneNumber.getPhoneNumber()).replaceAll("—", "-")));
             }
         }
         field = "phoneNumbers";
@@ -75,19 +81,24 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
             return false;
         }
         // 联系方式重复
-        List<CommunityResident> isPhonesRepeat = communityResidentService.get(communityResident.getPhoneNumbers(), id, subdistrictId, PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT);
+        List<CommunityResident> isPhonesRepeat = communityResidentService.get(communityResident.getPhoneNumbers(), id,
+            subdistrictId, PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT);
         return checkedListData(isPhonesRepeat, true, communityResident);
     }
 
     /**
      * 验证数据库返回数据是否为空
      *
-     * @param isNameAndAddressRepeat 需要验证的社区居民对象的集合
-     * @param isCheckedPhone         是否合法的社区居民联系方式
-     * @param communityResident      前台传过来的社区居民对象
+     * @param isNameAndAddressRepeat
+     *            需要验证的社区居民对象的集合
+     * @param isCheckedPhone
+     *            是否合法的社区居民联系方式
+     * @param communityResident
+     *            前台传过来的社区居民对象
      * @return 是否验证成功
      */
-    private boolean checkedListData(List<CommunityResident> isNameAndAddressRepeat, boolean isCheckedPhone, CommunityResident communityResident) {
+    private boolean checkedListData(List<CommunityResident> isNameAndAddressRepeat, boolean isCheckedPhone,
+        CommunityResident communityResident) {
         boolean isChecked = true;
         StringBuilder communityNames = new StringBuilder();
         if (isNameAndAddressRepeat.size() > 0) {
@@ -98,7 +109,9 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
                     if (RequestMethod.PUT.toString().equals(request.getMethod()) && communityResident.getId() != null) {
                         for (PhoneNumber phoneNumber : resident.getPhoneNumbers()) {
                             for (PhoneNumber pm : resident.getPhoneNumbers()) {
-                                if (StringUtils.isNotEmpty(phoneNumber.getPhoneNumber()) && pm.getPhoneNumber().equals(phoneNumber.getPhoneNumber()) && !resident.getId().equals(communityResident.getId())) {
+                                if (StringUtils.isNotEmpty(phoneNumber.getPhoneNumber())
+                                    && pm.getPhoneNumber().equals(phoneNumber.getPhoneNumber())
+                                    && !resident.getId().equals(communityResident.getId())) {
                                     continue loopRepeat;
                                 }
                             }
@@ -107,7 +120,8 @@ public class CommunityResidentInputValidator extends BaseInputValidator<Communit
                     if (communityNames.length() > 0) {
                         communityNames.append("，");
                     }
-                    communityNames.append(resident.getCommunity().getName()).append("的").append(resident.getName()).append("居民");
+                    communityNames.append(resident.getCommunity().getName()).append("的").append(resident.getName())
+                        .append("居民");
                     isChecked = false;
                     checkType = "联系方式";
                     field = "phones";

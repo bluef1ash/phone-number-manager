@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <!--/*@thymesVar id="userPrivilege" type="com.github.phonenumbermanager.entity.UserPrivilege"*/-->
     <head th:replace="layouts/header :: commonHead('系统用户权限' + ${userPrivilege == null ? '添加' : '编辑'} + ' - 系统用户权限管理 - 系统管理', ~{::script})">
         <title></title>
-        <script type="text/javascript" th:inline="javascript">
-            var messageErrors = /*[[${messageErrors}]]*/null;
-            var userPrivilege = /*[[${userPrivilege}]]*/null;
-            var userPrivileges = /*[[${userPrivileges}]]*/null;
+        <script th:inline="javascript" type="text/javascript">
+            var messageErrors = /*[[${messageErrors}]]*/null
+            var userPrivilege = /*[[${userPrivilege}]]*/null
+            var userPrivileges = /*[[${userPrivileges}]]*/null
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/privilege-edit-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/privilege-edit-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/privilege-edit-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/privilege-edit-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -25,59 +25,59 @@
                     <a href="javascript:" title="系统用户权限管理">系统用户权限管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/system/user_role/privilege/' + ${userPrivilege == null ? 'create' : 'edit/' + userPrivilege.id}}" th:title="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'" th:text="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'"></a>
+                    <a th:href="@{'/system/user_role/privilege/' + ${userPrivilege == null ? 'create' : 'edit/' + userPrivilege.id}}" th:text="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'" th:title="${userPrivilege} == null ? '系统用户权限添加' : '系统用户权限编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_privilege" v-cloak>
                     <div class="card-header" th:text="${userPrivilege} == null ? '用户权限添加' : '用户权限' + ${userPrivilege.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/system/user_role/privilege'}" method="post" @submit="submit">
+                    <form @submit="submit" class="form-horizontal" method="post" th:action="@{'/system/user_role/privilege'}">
                         <div class="card-body">
-                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
+                            <div :key="messageError.defaultMessage" class="alert alert-danger" role="alert" v-for="messageError in messageErrors" v-if="messageErrors !== null">
                                 {{ messageError.defaultMessage }}
-                                <button class="close" type="button" data-dismiss="alert" aria-label="Close">
+                                <button aria-label="Close" class="close" data-dismiss="alert" type="button">
                                     <span aria-hidden="true">×</span>
                                 </button>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="name">系统用户权限名称</label>
                                 <div class="col-md-9">
-                                    <input type="text" name="name" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="name" placeholder="请输入系统用户权限名称" v-model="userPrivilege.name">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[0]}]" id="name" name="name" placeholder="请输入系统用户权限名称" type="text" v-model="userPrivilege.name">
                                     <span class="help-block">系统用户权限名称不允许超过10个字符</span>
-                                    <div class="invalid-feedback" :style="errorClasses[0] && {'display': 'block'}" v-text="errorMessages[0]"></div>
+                                    <div :style="errorClasses[0] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[0]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="constraint_auth">权限约束名称</label>
                                 <div class="col-md-9">
-                                    <input id="constraint_auth" type="text" name="constraintAuth" :class="['form-control', {'is-invalid': errorClasses[1]}]" placeholder="请输入系统权限约束名称" v-model="userPrivilege.constraintAuth">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[1]}]" id="constraint_auth" name="constraintAuth" placeholder="请输入系统权限约束名称" type="text" v-model="userPrivilege.constraintAuth">
                                     <span class="help-block">系统权限约束名称不允许多于50位</span>
-                                    <div class="invalid-feedback" :style="errorClasses[1] && {'display': 'block'}" v-text="errorMessages[1]"></div>
+                                    <div :style="errorClasses[1] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[1]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="uri">系统访问地址</label>
                                 <div class="col-md-9">
-                                    <input type="text" name="uri" :class="['form-control', {'is-invalid': errorClasses[2]}]" id="uri" placeholder="请输入系统访问地址" v-model="userPrivilege.uri">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[2]}]" id="uri" name="uri" placeholder="请输入系统访问地址" type="text" v-model="userPrivilege.uri">
                                     <span class="help-block">系统访问地址不允许多于100位</span>
-                                    <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
+                                    <div :style="errorClasses[2] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[2]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label">是否在菜单栏中显示</label>
                                 <div class="col-md-9">
                                     <label class="switch switch-3d switch-primary">
-                                        <input class="switch-input" type="checkbox" name="display" v-model="display">
-                                        <input type="hidden" name="display" v-model="userPrivilege.display">
+                                        <input class="switch-input" name="display" type="checkbox" v-model="display">
+                                        <input name="display" type="hidden" v-model="userPrivilege.display">
                                         <span class="switch-slider"></span> </label>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="icon_name">菜单显示图标</label>
                                 <div class="col-md-9">
-                                    <input type="text" name="iconName" :class="['form-control', {'is-invalid': errorClasses[3]}]" id="icon_name" placeholder="请输入菜单显示图标" v-model="userPrivilege.iconName">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[3]}]" id="icon_name" name="iconName" placeholder="请输入菜单显示图标" type="text" v-model="userPrivilege.iconName">
                                     <span class="help-block">菜单显示图标名称不允许多于50位</span>
-                                    <div class="invalid-feedback" :style="errorClasses[3] && {'display': 'block'}" v-text="errorMessages[3]"></div>
+                                    <div :style="errorClasses[3] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[3]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -88,20 +88,20 @@
                                         <option value="0">顶级系统用户权限</option>
                                         <!--/*@thymesVar id="userPrivileges" type="java.util.List"*/-->
                                         <!--/*@thymesVar id="privilege" type="com.github.phonenumbermanager.entity.UserPrivilege"*/-->
-                                        <option th:each="privilege, status : ${userPrivileges}" th:attr="':value'=${privilege.id}" th:disabled="${userPrivilege != null && userPrivilege.id == privilege.id ? 'disabled' : 'false'}" th:text="${privilege.name}"></option>
+                                        <option th:attr="':value'=${privilege.id}" th:disabled="${userPrivilege != null && userPrivilege.id == privilege.id ? 'disabled' : 'false'}" th:each="privilege, status : ${userPrivileges}" th:text="${privilege.name}"></option>
                                     </select>
-                                    <div class="invalid-feedback" :style="errorClasses[4] && {'display': 'block'}" v-text="errorMessages[4]"></div>
+                                    <div :style="errorClasses[4] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[4]"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <input type="hidden" name="id" v-model="userPrivilege.id" th:if="${userPrivilege} != null">
-                            <input type="hidden" name="_method" value="PUT" th:if="${userPrivilege} != null">
+                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                            <input name="id" th:if="${userPrivilege} != null" type="hidden" v-model="userPrivilege.id">
+                            <input name="_method" th:if="${userPrivilege} != null" type="hidden" value="PUT">
                             <button class="btn btn-sm btn-primary" type="submit">
                                 <i class="fa fa-dot-circle-o"></i>保存
                             </button>
-                            <button class="btn btn-sm btn-danger" type="reset" @click="resetClass">
+                            <button @click="resetClass" class="btn btn-sm btn-danger" type="reset">
                                 <i class="fa fa-ban"></i>重置
                             </button>
                         </div>

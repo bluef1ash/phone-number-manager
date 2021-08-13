@@ -1,15 +1,16 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.util.*;
 
 /**
  * 系统用户权限业务实现
@@ -17,7 +18,8 @@ import java.util.*;
  * @author 廿二月的天
  */
 @Service("userPrivilegeService")
-public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMapper, UserPrivilege> implements UserPrivilegeService {
+public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMapper, UserPrivilege>
+    implements UserPrivilegeService {
 
     @Override
     public Set<UserPrivilege> getByRoleId(Serializable roleId) {
@@ -69,17 +71,20 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
     /**
      * 有序排列用户权限
      *
-     * @param userPrivileges 需要排列的系统用户权限对象集合
-     * @param display        是否在导航栏中显示
+     * @param userPrivileges
+     *            需要排列的系统用户权限对象集合
+     * @param display
+     *            是否在导航栏中显示
      * @return 排列成功的统用户权限对象集合
      */
-    private Set<UserPrivilege> getAndSubPrivileges(Set<UserPrivilege> userPrivileges, Boolean display, Serializable parentId) {
+    private Set<UserPrivilege> getAndSubPrivileges(Set<UserPrivilege> userPrivileges, Boolean display,
+        Serializable parentId) {
         Set<UserPrivilege> newUserPrivileges = new LinkedHashSet<>();
-        Long parentId1 = (Long) parentId;
+        Long parentId1 = (Long)parentId;
         boolean isAll = true;
         for (UserPrivilege userPrivilege : userPrivileges) {
             if (display != null) {
-                isAll = (boolean) display == userPrivilege.getIsDisplay();
+                isAll = (boolean)display == userPrivilege.getIsDisplay();
             }
             if (parentId1.equals(userPrivilege.getParentId()) && isAll) {
                 UserPrivilege newUserPrivilege = new UserPrivilege();
@@ -91,7 +96,8 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
                 newUserPrivilege.setIsDisplay(userPrivilege.getIsDisplay());
                 newUserPrivilege.setOrders(userPrivilege.getOrders());
                 newUserPrivilege.setUri(userPrivilege.getUri());
-                newUserPrivilege.setSubUserPrivileges(getAndSubPrivileges(userPrivileges, display, userPrivilege.getId()));
+                newUserPrivilege
+                    .setSubUserPrivileges(getAndSubPrivileges(userPrivileges, display, userPrivilege.getId()));
                 newUserPrivileges.add(newUserPrivilege);
             }
         }
@@ -101,13 +107,18 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
     /**
      * 有序排列用户权限
      *
-     * @param newUserPrivileges 排列后的系统用户权限对象集合
-     * @param userPrivileges    需要排列的系统用户权限对象集合
-     * @param parentId          父级编号
-     * @param level             层数，显示缩进
+     * @param newUserPrivileges
+     *            排列后的系统用户权限对象集合
+     * @param userPrivileges
+     *            需要排列的系统用户权限对象集合
+     * @param parentId
+     *            父级编号
+     * @param level
+     *            层数，显示缩进
      */
-    private void getAndSubPrivileges(List<UserPrivilege> newUserPrivileges, List<UserPrivilege> userPrivileges, Serializable parentId, Integer level) {
-        Long parentId1 = (Long) parentId;
+    private void getAndSubPrivileges(List<UserPrivilege> newUserPrivileges, List<UserPrivilege> userPrivileges,
+        Serializable parentId, Integer level) {
+        Long parentId1 = (Long)parentId;
         for (UserPrivilege userPrivilege : userPrivileges) {
             if (parentId1.equals(userPrivilege.getParentId())) {
                 userPrivilege.setLevel(level);

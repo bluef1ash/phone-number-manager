@@ -1,24 +1,27 @@
 package com.github.phonenumbermanager.security.filter;
 
-import cn.hutool.extra.servlet.ServletUtil;
-import com.alibaba.fastjson.JSONObject;
-import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.util.GeetestLibUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.web.FilterInvocation;
-import org.springframework.web.filter.OncePerRequestFilter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.FilterInvocation;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.alibaba.fastjson.JSONObject;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.util.GeetestLibUtil;
+
+import cn.hutool.extra.servlet.ServletUtil;
 
 /**
  * 验证码过滤器
@@ -28,9 +31,10 @@ import java.util.Map;
 public class CaptchaValidFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
+        FilterChain filterChain) throws ServletException, IOException {
         HttpSession session = httpServletRequest.getSession();
-        SystemUser systemUser = (SystemUser) session.getAttribute("systemUser");
+        SystemUser systemUser = (SystemUser)session.getAttribute("systemUser");
         String loginUri = "/login";
         String requestUri = httpServletRequest.getRequestURI();
         if (systemUser == null && !requestUri.contains(loginUri)) {
@@ -41,11 +45,12 @@ public class CaptchaValidFilter extends OncePerRequestFilter {
         String validate = httpServletRequest.getParameter(GeetestLibUtil.FN_GEETEST_VALIDATE);
         String secCode = httpServletRequest.getParameter(GeetestLibUtil.FN_GEETEST_SECCODE);
         if (StringUtils.isEmpty(challenge) || StringUtils.isEmpty(validate) || StringUtils.isEmpty(secCode)) {
-            FilterInvocation filterInvocation = new FilterInvocation(httpServletRequest, httpServletResponse, filterChain);
+            FilterInvocation filterInvocation =
+                new FilterInvocation(httpServletRequest, httpServletResponse, filterChain);
             filterInvocation.getChain().doFilter(filterInvocation.getRequest(), filterInvocation.getResponse());
             return;
         }
-        int gtServerStatusCode = (Integer) httpServletRequest.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
+        int gtServerStatusCode = (Integer)httpServletRequest.getSession().getAttribute(gtSdk.gtServerStatusSessionKey);
         Map<String, String> param = new HashMap<>(3);
         param.put("client_type", httpServletRequest.getParameter("browserType"));
         param.put("ip_address", ServletUtil.getClientIP(httpServletRequest));
@@ -56,7 +61,8 @@ public class CaptchaValidFilter extends OncePerRequestFilter {
             gtResult = gtSdk.failbackValidateRequest(challenge, validate, secCode);
         }
         if (gtResult == 1) {
-            FilterInvocation filterInvocation = new FilterInvocation(httpServletRequest, httpServletResponse, filterChain);
+            FilterInvocation filterInvocation =
+                new FilterInvocation(httpServletRequest, httpServletResponse, filterChain);
             filterInvocation.getChain().doFilter(filterInvocation.getRequest(), filterInvocation.getResponse());
         } else {
             httpServletResponse.setCharacterEncoding("UTF-8");

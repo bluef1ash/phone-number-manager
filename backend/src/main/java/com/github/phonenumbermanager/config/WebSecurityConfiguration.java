@@ -1,10 +1,7 @@
 package com.github.phonenumbermanager.config;
 
-import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.security.JwtAuthenticationEntryPoint;
-import com.github.phonenumbermanager.security.filter.JwtTokenFilter;
-import com.github.phonenumbermanager.security.handler.JwtAccessDeniedHandler;
-import com.github.phonenumbermanager.service.SystemUserService;
+import javax.annotation.Resource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -24,7 +21,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import javax.annotation.Resource;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.security.JwtAuthenticationEntryPoint;
+import com.github.phonenumbermanager.security.filter.JwtTokenFilter;
+import com.github.phonenumbermanager.security.handler.JwtAccessDeniedHandler;
+import com.github.phonenumbermanager.service.SystemUserService;
 
 /**
  * Spring Security配置
@@ -49,13 +50,15 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
 
-            .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).accessDeniedHandler(jwtAccessDeniedHandler)
+            .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            .accessDeniedHandler(jwtAccessDeniedHandler)
 
             .and().headers().frameOptions().sameOrigin()
 
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-            .and().authorizeRequests().antMatchers(SystemConstant.PERMIT_WHITELIST).permitAll().antMatchers(SystemConstant.ANONYMOUS_WHITELIST).anonymous().anyRequest()
+            .and().authorizeRequests().antMatchers(SystemConstant.PERMIT_WHITELIST).permitAll()
+            .antMatchers(SystemConstant.ANONYMOUS_WHITELIST).anonymous().anyRequest()
 
             .access("@systemUserService.hasPermission(request, authentication)")
 

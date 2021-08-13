@@ -22,13 +22,12 @@ $(document).ready(() => {
                     phoneNumbers: [
                         {
                             phoneNumber: ''
-                        ,
 
+                        }
                 }
             }
-            }
         ,
-            methods: {
+            {
                 /**
                  * 社区分包人提交保存
                  * @param event

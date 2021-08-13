@@ -253,8 +253,9 @@
     <select id="countAgeRangeAll" resultType="java.util.LinkedHashMap">
         SELECT COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 20, 1, 0)), 0) AS '20岁以下',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 30,
-                    1, 0)), 0) AS '21岁~30岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 30,
+                        1, 0)), 0) AS '21岁~30岁',
             COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 31
                                 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
                                 &lt;
@@ -265,41 +266,48 @@
                                     50, 1, 0)), 0) AS '41岁~50岁',
             COALESCE(SUM(
                          IF(
-                                 TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51
+                                     TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51
                                  AND
-                                 TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
-                                     &lt;
-                                 60, 1, 0)), 0) AS '51岁~60岁',
+                                     TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
+                                         &lt;
+                                     60, 1, 0)), 0) AS '51岁~60岁',
             COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61
                                 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE())
                                 &lt;
                                     70, 1, 0)), 0) AS '61岁~70岁',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) > 71 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 80, 1,
-                    0)), 0) '71岁~80岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) > 71 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 80, 1,
+                        0)), 0) '71岁~80岁',
             COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 81, 1, 0)), 0) '81岁以上'
         FROM `pm_dormitory_manager`
     </select>
     <select id="countAgeRangeCommunityId" resultType="java.util.LinkedHashMap">
         SELECT COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 20, 1, 0)), 0) '20岁以下',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 30,
-                    1, 0)), 0) '21岁~30岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 21 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 30,
+                        1, 0)), 0) '21岁~30岁',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 31 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 40,
-                    1, 0)), 0) '31岁~40岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 31 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 40,
+                        1, 0)), 0) '31岁~40岁',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 41 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 50,
-                    1, 0)), 0) '41岁~50岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 41 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 50,
+                        1, 0)), 0) '41岁~50岁',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 60,
-                    1, 0)), 0) '51岁~60岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 51 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 60,
+                        1, 0)), 0) '51岁~60岁',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 70,
-                    1, 0)), 0) '61岁~70岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 61 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 70,
+                        1, 0)), 0) '61岁~70岁',
             COALESCE(SUM(IF(
-                    TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 71 AND TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 80,
-                    1, 0)), 0) '71岁~80岁',
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 71 AND
+                        TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &lt; 80,
+                        1, 0)), 0) '71岁~80岁',
             COALESCE(SUM(IF(TIMESTAMPDIFF(YEAR, `birth`, CURDATE()) &gt; 81, 1, 0)), 0) '81岁以上'
         FROM `pm_dormitory_manager`
         WHERE `community_id` = #{communityId}

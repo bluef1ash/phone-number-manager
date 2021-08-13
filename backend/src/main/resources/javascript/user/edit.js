@@ -38,7 +38,8 @@ $(document).ready(() => {
                     companyId: -1,
                     locked: fals
 
-            } else
+                }
+            else
                 {
                     this.usernameIsDisabled = true
                 }
@@ -74,7 +75,7 @@ $(document).ready(() => {
                 }
             }
         ,
-            methods: {
+            {
                 /**
                  * 加载单位数据
                  * @param subdistrictId
@@ -193,7 +194,7 @@ $(document).ready(() => {
             ,
             }
         ,
-            watch: {
+            {
                 locked(value)
                 {
                     this.user.locked = value === 'on'

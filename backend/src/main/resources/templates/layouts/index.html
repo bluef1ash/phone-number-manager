@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="zh-CN" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
         <header class="app-header navbar">
-            <button class="navbar-toggler sidebar-toggler d-lg-none mr-auto" type="button" data-toggle="sidebar-show">
+            <button class="navbar-toggler sidebar-toggler d-lg-none mr-auto" data-toggle="sidebar-show" type="button">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand" th:href="@{'/'}" title="社区居民联系方式管理系统">社区居民联系方式管理系统</a>
             <ul class="nav navbar-nav ml-auto">
                 <li class="nav-item dropdown">
-                    <a href="javascript:" class="nav-link" data-toggle="dropdown" data-target="#nav_toggle" role="button" aria-haspopup="true" aria-expanded="false" title="用户菜单">
+                    <a aria-expanded="false" aria-haspopup="true" class="nav-link" data-target="#nav_toggle" data-toggle="dropdown" href="javascript:" role="button" title="用户菜单">
                         <img alt="用户菜单" class="img-avatar" src="" th:src="@{'/images/user.png'}"> </a>
                     <div class="dropdown-menu dropdown-menu-right" id="nav_toggle">
                         <div class="dropdown-header text-center">
@@ -28,11 +28,11 @@
                         <li :class="['nav-item', {'open': currentUri.indexOf('index') > -1 || currentUri.length < 3}]">
                             <a :class="['nav-link', {'active': currentUri.indexOf('index') > -1 || currentUri.length < 3}]" th:href="@{'/'}" title="欢迎来到管理系统首页"><i class="nav-icon icon-speedometer"></i>管理系统首页</a>
                         </li>
-                        <li :class="userPrivilege.constraintAuth.slice(-5) === 'Title' ? 'nav-title' : ['nav-item', {'nav-dropdown': userPrivilege.subUserPrivileges !== null}, 'cursor-pointer', setClassOpen(userPrivilege)]" v-for="userPrivilege in userPrivileges" :key="userPrivilege.id">{{userPrivilege.constraintAuth.slice(-5) === "Title" ? userPrivilege.name : ""}}
-                            <a class="nav-link nav-dropdown-toggle" :href="userPrivilege.uri === '' ? 'javascript:;' : userPrivilege.uri" :title="userPrivilege.name" v-if="userPrivilege.constraintAuth.slice(-5) !== 'Title'">
+                        <li :class="userPrivilege.constraintAuth.slice(-5) === 'Title' ? 'nav-title' : ['nav-item', {'nav-dropdown': userPrivilege.subUserPrivileges !== null}, 'cursor-pointer', setClassOpen(userPrivilege)]" :key="userPrivilege.id" v-for="userPrivilege in userPrivileges">{{userPrivilege.constraintAuth.slice(-5) === "Title" ? userPrivilege.name : ""}}
+                            <a :href="userPrivilege.uri === '' ? 'javascript:;' : userPrivilege.uri" :title="userPrivilege.name" class="nav-link nav-dropdown-toggle" v-if="userPrivilege.constraintAuth.slice(-5) !== 'Title'">
                                 <i :class="['nav-icon', userPrivilege.iconName]"></i>{{userPrivilege.name}} </a>
                             <ul class="nav-dropdown-items" v-if="userPrivilege.constraintAuth.slice(-5) !== 'Title' && userPrivilege.subUserPrivileges !== null">
-                                <li class="nav-item" v-for="privilege in userPrivilege.subUserPrivileges" :key="privilege.id">
+                                <li :key="privilege.id" class="nav-item" v-for="privilege in userPrivilege.subUserPrivileges">
                                     <a :class="['nav-link', {'active': currentUri.indexOf(privilege.uri) > -1}]" :href="privilege.uri" :title="privilege.name">
                                         <i :class="['nav-icon', privilege.iconName]"></i> {{privilege.name}} </a>
                                 </li>
@@ -43,7 +43,7 @@
                 <button class="sidebar-minimizer brand-minimizer" type="button"></button>
             </div>
             <main class="main">
-                <th:block layout:fragment="content"/>
+                <th:block layout:fragment="content" />
             </main>
         </div>
         <footer class="app-footer">

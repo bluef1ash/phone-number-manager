@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.config;
 
+import javax.annotation.Resource;
+
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.ErrorPageRegistrar;
 import org.springframework.context.annotation.Bean;
@@ -8,8 +10,6 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import javax.annotation.Resource;
 
 /**
  * Spring MVC配置
@@ -39,6 +39,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
      */
     @Bean
     public ErrorPageRegistrar containerCustomizer() {
-        return (errorPageRegistry -> errorPageRegistry.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/404"), new ErrorPage(HttpStatus.FORBIDDEN, "/exception")));
+        return (errorPageRegistry -> errorPageRegistry.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/404"),
+            new ErrorPage(HttpStatus.FORBIDDEN, "/exception")));
     }
 }

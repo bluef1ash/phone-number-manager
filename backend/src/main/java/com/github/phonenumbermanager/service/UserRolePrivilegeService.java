@@ -11,7 +11,8 @@ public interface UserRolePrivilegeService extends BaseService<RolePrivilegeRelat
     /**
      * 通过中间表对象删除
      *
-     * @param rolePrivilegeRelation 系统用户角色权限中间对象
+     * @param rolePrivilegeRelation
+     *            系统用户角色权限中间对象
      * @return 数据库删除影响的行数
      */
     boolean remove(RolePrivilegeRelation rolePrivilegeRelation);

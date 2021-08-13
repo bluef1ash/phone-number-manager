@@ -1,17 +1,19 @@
 package com.github.phonenumbermanager.config;
 
-import com.alibaba.fastjson.JSONObject;
-import com.github.phonenumbermanager.exception.HttpStatusOkException;
-import com.github.phonenumbermanager.exception.NotfoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+import com.alibaba.fastjson.JSONObject;
+import com.github.phonenumbermanager.exception.HttpStatusOkException;
+import com.github.phonenumbermanager.exception.NotfoundException;
 
 /**
  * 控制器钩子
@@ -26,7 +28,8 @@ public class RestControllerAdvisor {
     /**
      * 异常显示
      *
-     * @param exception 异常对象
+     * @param exception
+     *            异常对象
      */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -37,7 +40,8 @@ public class RestControllerAdvisor {
     /**
      * 404找不到异常显示
      *
-     * @param exception 异常对象
+     * @param exception
+     *            异常对象
      */
     @ExceptionHandler(NotfoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -48,7 +52,8 @@ public class RestControllerAdvisor {
     /**
      * HTTP正常状态异常显示视图
      *
-     * @param exception 异常对象
+     * @param exception
+     *            异常对象
      */
     @ExceptionHandler(HttpStatusOkException.class)
     @ResponseStatus(HttpStatus.OK)
@@ -59,9 +64,12 @@ public class RestControllerAdvisor {
     /**
      * 输出异常结果
      *
-     * @param exception  异常对象
-     * @param httpStatus HTTP状态
-     * @throws IOException IO异常
+     * @param exception
+     *            异常对象
+     * @param httpStatus
+     *            HTTP状态
+     * @throws IOException
+     *             IO异常
      */
     private void output(Exception exception, int httpStatus) throws IOException {
         exception.printStackTrace();

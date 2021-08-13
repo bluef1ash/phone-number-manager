@@ -1,9 +1,9 @@
 package com.github.phonenumbermanager.util;
 
-import com.github.phonenumbermanager.entity.PhoneNumber;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.github.phonenumbermanager.entity.PhoneNumber;
 
 /**
  * 此类中收集Java编程中WEB开发常用到的一些工具。 为避免生成此类的实例，构造方法被申明为private类型的。
@@ -15,7 +15,8 @@ public class CommonUtil {
     /**
      * 设置联系方式
      *
-     * @param numbers 联系方式集合字符串
+     * @param numbers
+     *            联系方式集合字符串
      * @return 联系方式集合对象
      */
     public static List<PhoneNumber> setPhoneNumbers(List<String> numbers) {

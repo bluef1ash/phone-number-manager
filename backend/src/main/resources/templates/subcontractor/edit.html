@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <!--/*@thymesVar id="subcontractor" type="com.github.phonenumbermanager.entity.Subcontractor"*/-->
     <head th:replace="layouts/header :: commonHead('社区分包人' + ${subcontractor == null ? '添加' : '编辑'} + ' - 社区分包人管理 - 社区管理', ~{::script})">
         <title></title>
-        <script type="text/javascript" th:inline="javascript">
-            var messageErrors = /*[[${messageErrors}]]*/null;
-            var subcontractor = /*[[${subcontractor}]]*/null;
+        <script th:inline="javascript" type="text/javascript">
+            var messageErrors = /*[[${messageErrors}]]*/null
+            var subcontractor = /*[[${subcontractor}]]*/null
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/subcontractor-edit-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/subcontractor-edit-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/subcontractor-edit-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/subcontractor-edit-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -24,34 +24,34 @@
                     <a href="javascript:" title="社区分包人管理">社区分包人管理</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a th:href="@{'/community/subcontractor/' + ${subcontractor == null ? 'create' : 'edit/' + subcontractor.id}}" th:title="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'"></a>
+                    <a th:href="@{'/community/subcontractor/' + ${subcontractor == null ? 'create' : 'edit/' + subcontractor.id}}" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'" th:title="${subcontractor} == null ? '社区分包人添加' : '社区分包人编辑'"></a>
                 </li>
             </ol>
             <div class="container-fluid">
                 <div class="card" id="edit_subcontractor" v-cloak>
                     <div class="card-header" th:text="${subcontractor} == null ? '社区分包人添加' : '社区分包人' + ${subcontractor.name} + '编辑'"></div>
-                    <form class="form-horizontal" th:action="@{'/community/subcontractor'}" method="post" @submit="submit">
+                    <form @submit="submit" class="form-horizontal" method="post" th:action="@{'/community/subcontractor'}">
                         <div class="card-body">
-                            <div class="alert alert-danger" role="alert" v-if="messageErrors !== null" v-for="messageError in messageErrors" :key="messageError.defaultMessage">
+                            <div :key="messageError.defaultMessage" class="alert alert-danger" role="alert" v-for="messageError in messageErrors" v-if="messageErrors !== null">
                                 {{ messageError.defaultMessage }}
-                                <button class="close" type="button" data-dismiss="alert" aria-label="Close">
+                                <button aria-label="Close" class="close" data-dismiss="alert" type="button">
                                     <span aria-hidden="true">×</span>
                                 </button>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="name">社区分包人姓名</label>
                                 <div class="col-md-9">
-                                    <input type="text" name="name" :class="['form-control', {'is-invalid': errorClasses[0]}]" id="name" placeholder="请输入社区分包人姓名" v-model="subcontractor.name">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[0]}]" id="name" name="name" placeholder="请输入社区分包人姓名" type="text" v-model="subcontractor.name">
                                     <span class="help-block">社区分包人姓名不允许超过10个字符</span>
-                                    <div class="invalid-feedback" :style="errorClasses[0] && {'display': 'block'}" v-text="errorMessages[0]"></div>
+                                    <div :style="errorClasses[0] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[0]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-md-3 col-form-label" for="mobile">社区分包人联系方式</label>
                                 <div class="col-md-9">
-                                    <input id="mobile" type="text" name="phoneNumbers[0].phoneNumber" :class="['form-control', {'is-invalid': errorClasses[1]}]" placeholder="请输入社区分包人联系方式" v-model="subcontractor.phoneNumbers[0].phoneNumber">
+                                    <input :class="['form-control', {'is-invalid': errorClasses[1]}]" id="mobile" name="phoneNumbers[0].phoneNumber" placeholder="请输入社区分包人联系方式" type="text" v-model="subcontractor.phoneNumbers[0].phoneNumber">
                                     <span class="help-block">社区分包人联系方式允许输入移动电话</span>
-                                    <div class="invalid-feedback" :style="errorClasses[1] && {'display': 'block'}" v-text="errorMessages[1]"></div>
+                                    <div :style="errorClasses[1] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[1]"></div>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -61,20 +61,20 @@
                                         <option :value="0">请选择</option>
                                         <!--/*@thymesVar id="communities" type="java.util.List"*/-->
                                         <!--/*@thymesVar id="community" type="com.github.phonenumbermanager.entity.Community"*/-->
-                                        <option th:each="community, status : ${communities}" th:attr="':value'=${community.id}" th:text="${community.name}"></option>
+                                        <option th:attr="':value'=${community.id}" th:each="community, status : ${communities}" th:text="${community.name}"></option>
                                     </select>
-                                    <div class="invalid-feedback" :style="errorClasses[2] && {'display': 'block'}" v-text="errorMessages[2]"></div>
+                                    <div :style="errorClasses[2] && {'display': 'block'}" class="invalid-feedback" v-text="errorMessages[2]"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <input type="hidden" name="id" v-model="subcontractor.id" th:if="${subcontractor} != null">
-                            <input type="hidden" name="_method" value="PUT" th:if="${subcontractor} != null">
+                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                            <input name="id" th:if="${subcontractor} != null" type="hidden" v-model="subcontractor.id">
+                            <input name="_method" th:if="${subcontractor} != null" type="hidden" value="PUT">
                             <button class="btn btn-sm btn-primary" type="submit">
                                 <i class="fa fa-dot-circle-o"></i>保存
                             </button>
-                            <button class="btn btn-sm btn-danger" type="reset" @click="resetClass">
+                            <button @click="resetClass" class="btn btn-sm btn-danger" type="reset">
                                 <i class="fa fa-ban"></i>重置
                             </button>
                         </div>

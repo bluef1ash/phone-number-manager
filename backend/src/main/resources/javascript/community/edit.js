@@ -25,10 +25,10 @@ $(document).ready(() => {
                     phoneNumbers: [
                         {
                             phoneNumber: ''
-                        ,
 
+                        }
                 }
-            } else
+            else
                 {
                     if (this.community.residentSubmitted) {
                         this.residentSubmitted = 'on'
@@ -39,7 +39,7 @@ $(document).ready(() => {
                 }
             }
         ,
-            methods: {
+            {
                 /**
                  * 街道提交保存
                  * @param event
@@ -129,7 +129,7 @@ $(document).ready(() => {
             ,
             }
         ,
-            watch: {
+            {
                 residentSubmitted(value)
                 {
                     this.community.residentSubmitted = value === 'on'

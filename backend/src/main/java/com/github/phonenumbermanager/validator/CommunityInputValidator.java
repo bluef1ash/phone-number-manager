@@ -1,13 +1,15 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.entity.Community;
-import com.github.phonenumbermanager.service.CommunityService;
+import java.io.Serializable;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
-import java.util.List;
+import com.github.phonenumbermanager.entity.Community;
+import com.github.phonenumbermanager.service.CommunityService;
 
 /**
  * 社区添加/更新验证
@@ -25,9 +27,10 @@ public class CommunityInputValidator extends BaseInputValidator<Community> {
     @Override
     protected boolean checkInput(Object target, Errors errors) {
         ValidationUtils.rejectIfEmpty(errors, "name", "community.name.required", "社区名称不能为空！");
-        ValidationUtils.rejectIfEmpty(errors, "phoneNumbers", "community.phoneNumbers[0].phoneNumber.required", "社区联系方式不能为空！");
+        ValidationUtils.rejectIfEmpty(errors, "phoneNumbers", "community.phoneNumbers[0].phoneNumber.required",
+            "社区联系方式不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "actualNumber", "community.actualNumber.required", "社区分包数不能为空！");
-        Community community = (Community) target;
+        Community community = (Community)target;
         // 联系方式合法
         if (!checkedPhones(community.getPhoneNumbers())) {
             return false;
@@ -40,8 +43,10 @@ public class CommunityInputValidator extends BaseInputValidator<Community> {
     /**
      * 验证数据库返回数据是否为空
      *
-     * @param communities 需要验证的社区居委会对象的集合
-     * @param id          传入的编号
+     * @param communities
+     *            需要验证的社区居委会对象的集合
+     * @param id
+     *            传入的编号
      * @return 是否验证成功
      */
     private boolean checkedListData(List<Community> communities, Serializable id) {

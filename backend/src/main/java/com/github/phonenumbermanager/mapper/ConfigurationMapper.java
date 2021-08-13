@@ -1,7 +1,8 @@
 package com.github.phonenumbermanager.mapper;
 
-import com.github.phonenumbermanager.entity.Configuration;
 import org.apache.ibatis.annotations.Mapper;
+
+import com.github.phonenumbermanager.entity.Configuration;
 
 /**
  * 系统配置Mapper接口
@@ -9,5 +10,4 @@ import org.apache.ibatis.annotations.Mapper;
  * @author 廿二月的天
  */
 @Mapper
-public interface ConfigurationMapper extends CommonMapper<Configuration> {
-}
+public interface ConfigurationMapper extends CommonMapper<Configuration> {}

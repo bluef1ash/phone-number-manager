@@ -1,14 +1,16 @@
 package com.github.phonenumbermanager;
 
-import com.github.phonenumbermanager.entity.UserPrivilege;
-import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.List;
+import com.github.phonenumbermanager.entity.UserPrivilege;
+import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
 
 /**
  * 流测试
@@ -22,7 +24,8 @@ public class SteamTest {
     @Test
     public void map() {
         List<UserPrivilege> userPrivileges = userPrivilegeMapper.selectList(null);
-        String[] uri = userPrivileges.stream().map(UserPrivilege::getUri).filter(StringUtils::isNotEmpty).toArray(String[]::new);
+        String[] uri =
+            userPrivileges.stream().map(UserPrivilege::getUri).filter(StringUtils::isNotEmpty).toArray(String[]::new);
         System.out.println(Arrays.toString(uri));
     }
 }

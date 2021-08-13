@@ -1,14 +1,16 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.entity.Subdistrict;
-import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.service.SubdistrictService;
+import java.io.Serializable;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
-import java.util.List;
+import com.github.phonenumbermanager.entity.Subdistrict;
+import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.service.SubdistrictService;
 
 /**
  * 街道添加/更新验证
@@ -27,7 +29,7 @@ public class SubdistrictInputValidator extends BaseInputValidator<Subdistrict> {
     protected boolean checkInput(Object target, Errors errors) {
         ValidationUtils.rejectIfEmpty(errors, "name", "subdistrict.name.required", "街道名称不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "phoneNumbers", "subdistrict.phoneNumbers.required", "街道联系方式不能为空！");
-        Subdistrict subdistrict = (Subdistrict) target;
+        Subdistrict subdistrict = (Subdistrict)target;
         // 联系方式合法
         if (!checkedPhones(subdistrict.getPhoneNumbers())) {
             return false;
@@ -44,8 +46,10 @@ public class SubdistrictInputValidator extends BaseInputValidator<Subdistrict> {
     /**
      * 验证数据库返回数据是否为空
      *
-     * @param subdistricts 需要验证的街道办事处对象的集合
-     * @param id           传入的编号
+     * @param subdistricts
+     *            需要验证的街道办事处对象的集合
+     * @param id
+     *            传入的编号
      * @return 是否验证成功
      */
     private boolean checkedListData(List<Subdistrict> subdistricts, Serializable id) {

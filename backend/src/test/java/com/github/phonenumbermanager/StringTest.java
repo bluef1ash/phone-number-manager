@@ -1,8 +1,5 @@
 package com.github.phonenumbermanager;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * 字符串测试
@@ -22,7 +22,7 @@ public class StringTest {
         Pattern pattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
         String address = "大海阳中街11-11";
         Matcher matcher = pattern.matcher(address);
-        //        System.out.println(matcher.matches());
+        // System.out.println(matcher.matches());
         while (matcher.find()) {
             System.out.println("全部----" + matcher.group());
             System.out.println("第一个----" + matcher.group(1));
@@ -32,7 +32,8 @@ public class StringTest {
 
     @Test
     public void phoneTest() {
-        Pattern pattern = Pattern.compile("(?iUs)^(?:[(（]?(?:[0-9]{3,4})?\\s*[)）-])?\\d{7,9}(?:[-转]\\d{2,6})?|[(+]?(?:86)?[)]?0?1[34578]\\d{9}$");
+        Pattern pattern = Pattern.compile(
+            "(?iUs)^(?:[(（]?(?:[0-9]{3,4})?\\s*[)）-])?\\d{7,9}(?:[-转]\\d{2,6})?|[(+]?(?:86)?[)]?0?1[34578]\\d{9}$");
         String phone1 = "6242331";
         String phone2 = "13012569219";
         String phone3 = "1111111111";
@@ -59,7 +60,8 @@ public class StringTest {
     public void replaceBirthDate() throws ParseException {
         String[] dateStrings = {"1990.10", "1990.1", "1990-01", "1990-1", "199001", "19901"};
         for (String dateString : dateStrings) {
-            String dateStr = dateString.replaceAll("(?iUs)^(\\d{4})[.-/年]?(\\d{1,2})[.-/月]?(?:\\d{1,2})?[日]?$", "$1-$2");
+            String dateStr =
+                dateString.replaceAll("(?iUs)^(\\d{4})[.-/年]?(\\d{1,2})[.-/月]?(?:\\d{1,2})?[日]?$", "$1-$2");
             System.out.println(dateString + ": " + dateStr);
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd");

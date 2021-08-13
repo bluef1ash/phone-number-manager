@@ -1,13 +1,15 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.entity.Configuration;
-import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.service.ConfigurationService;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.service.ConfigurationService;
 
 /**
  * 配置添加/更新验证
@@ -27,7 +29,7 @@ public class ConfigurationInputValidator extends BaseInputValidator<Configuratio
         ValidationUtils.rejectIfEmpty(errors, "key", "configuration.key.required", "配置项名称不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "value", "configuration.value.required", "配置项值不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "description", "configuration.description.required", "配置项描述不能为空！");
-        Configuration configuration = (Configuration) target;
+        Configuration configuration = (Configuration)target;
         try {
             // 配置项重复
             List<Configuration> isRepeat = configurationService.get(configuration);

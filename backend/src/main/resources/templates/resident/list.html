@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layouts/index">
+<html lang="zh-CN" layout:decorate="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <head th:replace="layouts/header :: commonHead('社区居民列表 - 社区居民管理', ~{::script})">
         <title></title>
-        <script type="text/javascript" th:inline="javascript">
-            var publicPrams = { createUrl: /*[[@{'/resident/create'}]]*/null, editUrl: /*[[@{'/resident/edit/'}]]*/null, deleteUrl: /*[[@{'/resident'}]]*/null, companySelectUrl: /*[[@{'/community/select'}]]*/null, importAsSystemUrl: /*[[@{'/resident/import'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/load'}]]*/null, loadDataUrl: /*[[@{'/resident/list'}]]*/null, downloadExcelUrl: /*[[@{'/resident/download'}]]*/null, chooseSubmitUrl: /*[[@{'/community/submit'}]]*/null };
-            var data = { data: /*[[${communityResidents}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, companyTypes: /*[[${companyTypes}]]*/null, companyType: /*[[${companyType}]]*/null };
+        <script th:inline="javascript" type="text/javascript">
+            var publicPrams = { createUrl: /*[[@{'/resident/create'}]]*/null, editUrl: /*[[@{'/resident/edit/'}]]*/null, deleteUrl: /*[[@{'/resident'}]]*/null, companySelectUrl: /*[[@{'/community/select'}]]*/null, importAsSystemUrl: /*[[@{'/resident/import'}]]*/null, loadSubdistrictsUrl: /*[[@{'/subdistrict/load'}]]*/null, loadDataUrl: /*[[@{'/resident/list'}]]*/null, downloadExcelUrl: /*[[@{'/resident/download'}]]*/null, chooseSubmitUrl: /*[[@{'/community/submit'}]]*/null }
+            var data = { data: /*[[${communityResidents}]]*/null, dataType: /*[[${dataType}]]*/null, pageInfo: /*[[${pageInfo}]]*/null, companyTypes: /*[[${companyTypes}]]*/null, companyType: /*[[${companyType}]]*/null }
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/resident-list-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/resident-list-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/resident-list-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/resident-list-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">

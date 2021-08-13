@@ -3,15 +3,15 @@
     <head th:replace="layouts/header :: commonHead('首页', ~{::script})">
         <title></title>
         <script th:inline="javascript" type="text/javascript">
-            var systemUser = /*[[${systemUser}]]*/null;
-            var systemCompanyType = /*[[${systemCompanyType}]]*/null;
-            var communityCompanyType = /*[[${communityCompanyType}]]*/null;
-            var subdistrictCompanyType = /*[[${subdistrictCompanyType}]]*/null;
-            var getComputedUrl = /*[[@{'/index/getcomputed'}]]*/null;
-            var companySelectUrl = /*[[@{'/community/select'}]]*/null;
+            var systemUser = /*[[${systemUser}]]*/null
+            var systemCompanyType = /*[[${systemCompanyType}]]*/null
+            var communityCompanyType = /*[[${communityCompanyType}]]*/null
+            var subdistrictCompanyType = /*[[${subdistrictCompanyType}]]*/null
+            var getComputedUrl = /*[[@{'/index/getcomputed'}]]*/null
+            var companySelectUrl = /*[[@{'/community/select'}]]*/null
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/index-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/index-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/index-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/index-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -59,7 +59,7 @@
                                 <small class="text-muted">最少未录人数</small> <br>
                                 <count-to :end-val="remnantCount" class="h5"></count-to>
                             </div>
-                            <div class="callout callout-dark" :title="percentCountTitle" data-placement="top" data-toggle="tooltip">
+                            <div :title="percentCountTitle" class="callout callout-dark" data-placement="top" data-toggle="tooltip">
                                 <small class="text-muted">录入与核定比例</small> <br>
                                 <count-to :decimals="2" :end-val="percentCount" class="h5" suffix="%"></count-to>
                             </div>
@@ -97,7 +97,7 @@
                                 <div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
                                     <div class="form-group">
                                         <label for="chart_subcontractor_subdistrict_id"></label>
-                                        <select @change="loadCommunities(5, barChartSubcontractorSubdistrictId, 'barChartSubcontractorCommunityId', 'disabledSubcontractorCommunityId')" class="form-control form-control-sm" id="chart_subcontractor_subdistrict_id" v-model="barChartSubcontractorSubdistrictId" v-if="systemUser.companyType === systemCompanyType">
+                                        <select @change="loadCommunities(5, barChartSubcontractorSubdistrictId, 'barChartSubcontractorCommunityId', 'disabledSubcontractorCommunityId')" class="form-control form-control-sm" id="chart_subcontractor_subdistrict_id" v-if="systemUser.companyType === systemCompanyType" v-model="barChartSubcontractorSubdistrictId">
                                             <option :value="-1">请选择需要统计的街道</option>
                                             <option :disabled="systemUser.companyType !== systemCompanyType" :value="0">全部街道</option>
                                             <option :key="subdistrict.id" :value="subdistrict.id" v-for="subdistrict in subdistricts" v-text="subdistrict.name"></option>

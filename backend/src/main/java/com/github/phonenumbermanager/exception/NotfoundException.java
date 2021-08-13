@@ -1,6 +1,5 @@
 package com.github.phonenumbermanager.exception;
 
-
 /**
  * 404找不到异常
  *

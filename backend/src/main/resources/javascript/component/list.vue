@@ -5,23 +5,23 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row resident-list-buttons">
-                            <button class="btn btn-warning" data-toggle="modal" data-target="#import_as_system_modal" title="从Excel文件导入系统" role="button" @click="loadSubdistricts" v-if="companyType !== companyTypes.communityCompanyType">从Excel文件导入系统</button>
+                            <button v-if="companyType !== companyTypes.communityCompanyType" class="btn btn-warning" data-target="#import_as_system_modal" data-toggle="modal" role="button" title="从Excel文件导入系统" @click="loadSubdistricts">从Excel文件导入系统</button>
                             <div class="btn-group">
-                                <button @click="exportExcel" :class="['btn', 'btn-secondary', companyType !== companyTypes.communityCompanyType ? 'is-dropdown' : '']" type="button">导出到Excel</button>
-                                <button aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" id="export_excel" type="button" v-if="companyType !== companyTypes.communityCompanyType">
+                                <button :class="['btn', 'btn-secondary', companyType !== companyTypes.communityCompanyType ? 'is-dropdown' : '']" type="button" @click="exportExcel">导出到Excel</button>
+                                <button v-if="companyType !== companyTypes.communityCompanyType" id="export_excel" aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" type="button">
                                     <span class="sr-only">选择导出的单位</span>
                                 </button>
-                                <div aria-labelledby="export_excel" class="dropdown-menu" x-placement="bottom-start" v-if="companyType !== companyTypes.communityCompanyType">
-                                    <el-tree :check-strictly="isStrictly" :data="companies2" :highlight-current="true" @check-change="chooseExportExcel" node-key="value" ref="export_excel_tree" show-checkbox></el-tree>
+                                <div v-if="companyType !== companyTypes.communityCompanyType" aria-labelledby="export_excel" class="dropdown-menu" x-placement="bottom-start">
+                                    <el-tree ref="export_excel_tree" :check-strictly="isStrictly" :data="companies2" :highlight-current="true" node-key="value" show-checkbox @check-change="chooseExportExcel"></el-tree>
                                 </div>
                             </div>
                             <div class="btn-group">
-                                <button @click="commitCommunity" :class="['btn', 'btn-primary', companyType !== companyTypes.communityCompanyType ? 'is-dropdown' : '']" type="button">提交社区保存</button>
-                                <button class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true" id="commit_community" type="button" v-if="companyType !== companyTypes.communityCompanyType">
+                                <button :class="['btn', 'btn-primary', companyType !== companyTypes.communityCompanyType ? 'is-dropdown' : '']" type="button" @click="commitCommunity">提交社区保存</button>
+                                <button v-if="companyType !== companyTypes.communityCompanyType" id="commit_community" aria-expanded="false" aria-haspopup="true" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" type="button">
                                     <span class="sr-only">提交社区保存</span>
                                 </button>
-                                <div aria-labelledby="commit_community" class="dropdown-menu" x-placement="bottom-start" v-if="companyType !== companyTypes.communityCompanyType">
-                                    <el-tree :check-strictly="isStrictly" :data="companies2" :highlight-current="true" @check-change="chooseCommitCommunity" node-key="value" ref="commit_community_tree" show-checkbox></el-tree>
+                                <div v-if="companyType !== companyTypes.communityCompanyType" aria-labelledby="commit_community" class="dropdown-menu" x-placement="bottom-start">
+                                    <el-tree ref="commit_community_tree" :check-strictly="isStrictly" :data="companies2" :highlight-current="true" node-key="value" show-checkbox @check-change="chooseCommitCommunity"></el-tree>
                                 </div>
                             </div>
                             <a :href="publicParams.createUrl" :title="'添加社区' + dataTypeName" class="btn btn-primary" v-text="'添加社区' + dataTypeName"></a>
@@ -31,15 +31,15 @@
                                 <form action="javascript:" class="form-inline list-search" method="get">
                                     <div class="form-group">
                                         <label>单位</label>
-                                        <el-cascader :clearable="true" :options="companies" :props="cascaderProps" placeholder="单位搜索" v-model="searchCompanyIds" popper-class="cascader-panel" ref="companiesCascader" @change="companiesCascaderChanged"></el-cascader>
+                                        <el-cascader ref="companiesCascader" v-model="searchCompanyIds" :clearable="true" :options="companies" :props="cascaderProps" placeholder="单位搜索" popper-class="cascader-panel" @change="companiesCascaderChanged"></el-cascader>
                                     </div>
                                     <div class="form-group">
                                         <label for="name" v-text="'社区' + dataTypeName + '姓名'"></label>
-                                        <input :placeholder="'请输入查找的社区' + dataTypeName + '姓名'" class="form-control" id="name" type="text" v-model="searchParams.name">
+                                        <input id="name" v-model="searchParams.name" :placeholder="'请输入查找的社区' + dataTypeName + '姓名'" class="form-control" type="text">
                                     </div>
-                                    <div class="form-group" v-if="dataType === 1">
+                                    <div v-if="dataType === 1" class="form-group">
                                         <label for="gender">社区楼长性别</label>
-                                        <select class="form-control" id="gender" v-model="searchParams.gender">
+                                        <select id="gender" v-model="searchParams.gender" class="form-control">
                                             <option :value="-1">请选择</option>
                                             <option :value="0">男</option>
                                             <option :value="1">女</option>
@@ -47,11 +47,11 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="address">家庭住址</label>
-                                        <input :placeholder="'请输入查找的社区' + dataTypeName + '家庭住址'" class="form-control" id="address" type="text" v-model="searchParams.address">
+                                        <input id="address" v-model="searchParams.address" :placeholder="'请输入查找的社区' + dataTypeName + '家庭住址'" class="form-control" type="text">
                                     </div>
                                     <div class="form-group">
                                         <label for="phone" v-text="'社区' + dataTypeName + '联系方式'"></label>
-                                        <input :placeholder="'请输入查找的社区' + dataTypeName + '联系方式'" class="form-control" id="phone" type="text" v-model="searchParams.phone">
+                                        <input id="phone" v-model="searchParams.phone" :placeholder="'请输入查找的社区' + dataTypeName + '联系方式'" class="form-control" type="text">
                                     </div>
                                     <div class="form-group">
                                         <button class="btn btn-sm btn-danger" @click="searchClear">
@@ -66,7 +66,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <el-table :data="data" border v-loading="isLoading">
+                        <el-table v-loading="isLoading" :data="data" border>
                             <el-table-column :index="index => index + 1" label="序号" type="index">
                                 <template v-slot="scope">
                                     <element-table-popover :data="scope.$index + 1" :row="scope.row"></element-table-popover>
@@ -77,17 +77,17 @@
                                     <element-table-popover :data="scope.row.name" :row="scope.row"></element-table-popover>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="社区楼长性别" prop="genderName" v-if="dataType === 1">
+                            <el-table-column v-if="dataType === 1" label="社区楼长性别" prop="genderName">
                                 <template v-slot="scope">
                                     <element-table-popover :data="scope.row.genderName" :row="scope.row"></element-table-popover>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="家庭住址" prop="address" v-if="dataType === 0">
+                            <el-table-column v-if="dataType === 0" label="家庭住址" prop="address">
                                 <template v-slot="scope">
                                     <element-table-popover :data="scope.row.address" :row="scope.row"></element-table-popover>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="年龄" prop="age" v-if="dataType === 1">
+                            <el-table-column v-if="dataType === 1" label="年龄" prop="age">
                                 <template v-slot="scope">
                                     <element-table-popover :data="scope.row.age" :row="scope.row"></element-table-popover>
                                 </template>
@@ -104,15 +104,15 @@
                             </el-table-column>
                             <el-table-column label="操作">
                                 <template v-slot="scope">
-                                    <div class="row" v-if="(!scope.row.community.dormitorySubmitted && dataType === 1) || (!scope.row.community.residentSubmitted && dataType === 0)">
+                                    <div v-if="(!scope.row.community.dormitorySubmitted && dataType === 1) || (!scope.row.community.residentSubmitted && dataType === 0)" class="row">
                                         <div class="col-6">
                                             <a :href="publicParams.editUrl + scope.row.id" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
                                         </div>
                                         <div class="col-6">
-                                            <button @click="deleteObject(scope.row.id)" class="btn btn-sm btn-block btn-pill btn-danger" title="点击删除" type="button">删除</button>
+                                            <button class="btn btn-sm btn-block btn-pill btn-danger" title="点击删除" type="button" @click="deleteObject(scope.row.id)">删除</button>
                                         </div>
                                     </div>
-                                    <div class="row" v-if="(scope.row.community.dormitorySubmitted && dataType === 1) || (scope.row.community.residentSubmitted && dataType === 0)">
+                                    <div v-if="(scope.row.community.dormitorySubmitted && dataType === 1) || (scope.row.community.residentSubmitted && dataType === 0)" class="row">
                                         <div class="col-12">
                                             <a :href="publicParams.editUrl + scope.row.id" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击查看">查看</a>
                                         </div>
@@ -121,38 +121,38 @@
                             </el-table-column>
                         </el-table>
                         <nav>
-                            <el-pagination layout="total, prev, pager, next, jumper" :total="pageInfo.total" prev-text="上一页" next-text="下一页" :current-page="pagination" @current-change="paginationCurrentChange"></el-pagination>
+                            <el-pagination :current-page="pagination" :total="pageInfo.total" layout="total, prev, pager, next, jumper" next-text="下一页" prev-text="上一页" @current-change="paginationCurrentChange"></el-pagination>
                         </nav>
                     </div>
                 </div>
             </div>
             <!-- /.col-->
         </div>
-        <div class="modal fade" id="import_as_system_modal" tabindex="-1" role="dialog" aria-labelledby="import_as_system_modal_label" aria-hidden="true" v-if="companyType !== companyTypes.communityCompanyType">
+        <div v-if="companyType !== companyTypes.communityCompanyType" id="import_as_system_modal" aria-hidden="true" aria-labelledby="import_as_system_modal_label" class="modal fade" role="dialog" tabindex="-1">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title">选择导入的街道</h4>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="关闭">
+                        <button aria-label="关闭" class="close" data-dismiss="modal" type="button">
                             <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form class="form-inline" action="javascript:" method="get">
+                        <form action="javascript:" class="form-inline" method="get">
                             <div class="form-group">
                                 <label for="subdistrict_id">选择导入的街道</label>
-                                <select class="form-control" id="subdistrict_id" v-model="subdistrictId">
+                                <select id="subdistrict_id" v-model="subdistrictId" class="form-control">
                                     <option :value="0">请选择</option>
-                                    <option :value="subdistrict.id" v-for="subdistrict in subdistricts" :key="subdistrict.id" v-text="subdistrict.name"></option>
+                                    <option v-for="subdistrict in subdistricts" :key="subdistrict.id" :value="subdistrict.id" v-text="subdistrict.name"></option>
                                 </select>
                             </div>
-                            <el-upload :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :headers="{'X-CSRF-TOKEN': csrf.prop('content')}" :data="{subdistrictId}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo" ref="uploadExcel">
+                            <el-upload ref="uploadExcel" :action="publicParams.importAsSystemUrl" :auto-upload="false" :before-upload="beforeUploadExcel" :data="{subdistrictId}" :headers="{'X-CSRF-TOKEN': csrf.prop('content')}" :on-error="uploadError" :on-progress="uploadProgress" :on-success="uploadSuccess" :show-file-list="false" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="upload-demo">
                                 <el-button size="small" type="primary">浏览文件</el-button>
                             </el-upload>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" type="button" data-dismiss="modal">关闭</button>
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">关闭</button>
                         <button class="btn btn-primary" type="button" @click="uploadExcel">导入</button>
                     </div>
                 </div>
@@ -161,7 +161,7 @@
             <!-- /.modal-dialog-->
         </div>
         <!-- /.modal-->
-        <iframe :src="exportExcelUrl" class="hidden" v-if="isDownload"></iframe>
+        <iframe v-if="isDownload" :src="exportExcelUrl" class="hidden"></iframe>
     </div>
 </template>
 <script>

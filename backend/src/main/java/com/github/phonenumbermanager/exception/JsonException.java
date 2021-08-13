@@ -1,6 +1,5 @@
 package com.github.phonenumbermanager.exception;
 
-
 /**
  * 返回JSON异常
  *

@@ -1,6 +1,13 @@
 package com.github.phonenumbermanager.service.impl;
 
-import cn.hutool.core.convert.Convert;
+import java.io.Serializable;
+import java.util.*;
+import java.util.regex.Pattern;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -11,13 +18,8 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
 import com.github.phonenumbermanager.service.CommunityResidentService;
-import org.apache.poi.ss.usermodel.Cell;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.regex.Pattern;
+import cn.hutool.core.convert.Convert;
 
 /**
  * 社区居民业务实现
@@ -25,7 +27,8 @@ import java.util.regex.Pattern;
  * @author 廿二月的天
  */
 @Service("communityResidentService")
-public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResidentMapper, CommunityResident> implements CommunityResidentService {
+public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResidentMapper, CommunityResident>
+    implements CommunityResidentService {
     private final Pattern communityPattern = Pattern.compile("(?iUs)^(.*[社区居委会])?(.*)$");
 
     @Override
@@ -34,24 +37,32 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public IPage<CommunityResident> get(SystemUser systemUser, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, CommunityResident communityResident, Serializable companyId, Serializable companyType, Integer pageNumber, Integer pageDataSize) {
+    public IPage<CommunityResident> get(SystemUser systemUser, Serializable systemCompanyType,
+        Serializable communityCompanyType, Serializable subdistrictCompanyType, CommunityResident communityResident,
+        Serializable companyId, Serializable companyType, Integer pageNumber, Integer pageDataSize) {
         Map<String, Object> company = getCompany(systemUser, companyId, companyType);
         Page<CommunityResident> page = new Page<>(pageNumber, pageDataSize);
-        return communityResidentMapper.selectByUserRole(page, (Serializable) company.get("companyType"), (Serializable) company.get("companyId"), systemCompanyType, communityCompanyType, subdistrictCompanyType, communityResident);
+        return communityResidentMapper.selectByUserRole(page, (Serializable)company.get("companyType"),
+            (Serializable)company.get("companyId"), systemCompanyType, communityCompanyType, subdistrictCompanyType,
+            communityResident);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         List<CommunityResident> residents = new ArrayList<>();
-        long readResidentExcelStartRowNumber = Convert.toLong(configurationsMap.get("read_resident_excel_start_row_number"));
-        int excelCommunityCellNumber = Convert.toInt(configurationsMap.get("excel_resident_community_name_cell_number"));
-        int excelCommunityResidentNameCellNumber = Convert.toInt(configurationsMap.get("excel_resident_name_cell_number"));
+        long readResidentExcelStartRowNumber =
+            Convert.toLong(configurationsMap.get("read_resident_excel_start_row_number"));
+        int excelCommunityCellNumber =
+            Convert.toInt(configurationsMap.get("excel_resident_community_name_cell_number"));
+        int excelCommunityResidentNameCellNumber =
+            Convert.toInt(configurationsMap.get("excel_resident_name_cell_number"));
         int excelResidentAddressCellNumber = Convert.toInt(configurationsMap.get("excel_resident_address_cell_number"));
         int excelPhone1CellNumber = Convert.toInt(configurationsMap.get("excel_resident_phone1_cell_number"));
         int excelPhone2CellNumber = Convert.toInt(configurationsMap.get("excel_resident_phone2_cell_number"));
         int excelPhone3CellNumber = Convert.toInt(configurationsMap.get("excel_resident_phone3_cell_number"));
-        int excelSubcontractorCellNumber = Convert.toInt(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
+        int excelSubcontractorCellNumber =
+            Convert.toInt(configurationsMap.get("excel_resident_subcontractor_name_cell_number"));
         setCommunityVariables(subdistrictId);
         /*for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             Sheet sheet = workbook.getSheetAt(i);
@@ -102,14 +113,19 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
+    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType,
+        Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-        List<CommunityResident> communityResidents = communityResidentMapper.selectByUserData(userData, communityCompanyType, subdistrictCompanyType);
+        List<CommunityResident> communityResidents =
+            communityResidentMapper.selectByUserData(userData, communityCompanyType, subdistrictCompanyType);
         if (communityResidents != null && communityResidents.size() > 0) {
             for (CommunityResident communityResident : communityResidents) {
                 LinkedHashMap<String, Object> hashMap = new LinkedHashMap<>();
-                String communityName = communityResident.getCommunity().getName().replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
-                String subdistrictName = communityResident.getCommunity().getSubdistrict().getName().replaceAll(SystemConstant.SUBDISTRICT_ALIAS_NAME, "").replaceAll(SystemConstant.SUBDISTRICT_NAME, "");
+                String communityName = communityResident.getCommunity().getName()
+                    .replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
+                String subdistrictName = communityResident.getCommunity().getSubdistrict().getName()
+                    .replaceAll(SystemConstant.SUBDISTRICT_ALIAS_NAME, "")
+                    .replaceAll(SystemConstant.SUBDISTRICT_NAME, "");
                 hashMap.put("街道", subdistrictName);
                 hashMap.put("社区", communityName);
                 hashMap.put("户主姓名", communityResident.getName());
@@ -178,16 +194,17 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }*/
 
     @Override
-    public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType,
+        Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         Map<String, Object> baseMessage = new HashMap<>(3);
         Long addCount = null;
         Long haveToCount = null;
         boolean isSystemRole = companyType == null || companyId == null || companyType.equals(systemCompanyType);
-        long ct = (long) (companyType == null ? 0L : companyType);
-        int cct = (int) communityCompanyType;
-        int sct = (int) subdistrictCompanyType;
+        long ct = (long)(companyType == null ? 0L : companyType);
+        int cct = (int)communityCompanyType;
+        int sct = (int)subdistrictCompanyType;
         if (isSystemRole) {
-            addCount = (long) count();
+            addCount = (long)count();
             haveToCount = communityMapper.sumActualNumber();
         } else if (ct == cct) {
             addCount = communityResidentMapper.countByCommunityId(companyId);
@@ -202,17 +219,19 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
+        Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         String companyLabel = "社区";
         LinkedList<Map<String, Object>> communityResidents;
-        long ct = (long) (companyType == null ? 0L : companyType);
-        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue()) || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int) subdistrictCompanyType);
-        if (companyType == null || ct == (int) systemCompanyType) {
+        long ct = (long)(companyType == null ? 0L : companyType);
+        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
+            || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
+        if (companyType == null || ct == (int)systemCompanyType) {
             companyLabel = "街道";
             communityResidents = communityResidentMapper.countForGroupSubdistrict();
         } else if (isSystemRoleCount) {
             communityResidents = communityResidentMapper.countForGroupCommunity(companyId);
-        } else if ((int) communityCompanyType == (long) systemUser.getLevel().getValue()) {
+        } else if ((int)communityCompanyType == (long)systemUser.getLevel().getValue()) {
             communityResidents = communityResidentMapper.countForGroupByCommunityId(companyId);
         } else {
             communityResidents = new LinkedList<>();
@@ -223,10 +242,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     /**
      * 社区居民联系方式处理
      *
-     * @param sourceId   来源编号
-     * @param phone1Cell 联系方式一单元格对象
-     * @param phone2Cell 联系方式二单元格对象
-     * @param phone3Cell 联系方式三单元格对象
+     * @param sourceId
+     *            来源编号
+     * @param phone1Cell
+     *            联系方式一单元格对象
+     * @param phone2Cell
+     *            联系方式二单元格对象
+     * @param phone3Cell
+     *            联系方式三单元格对象
      * @return 联系方式拼接字符串
      */
     private List<PhoneNumber> residentPhoneHandler(String sourceId, Cell phone1Cell, Cell phone2Cell, Cell phone3Cell) {
@@ -234,11 +257,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         String phone2 = convertCellString(phone2Cell);
         String phone3 = convertCellString(phone3Cell);
         PhoneNumber phoneNumber1 = new PhoneNumber();
-        phoneNumber1.setPhoneNumber(phone1).setSourceType(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT).setSourceId(sourceId);
+        phoneNumber1.setPhoneNumber(phone1).setSourceType(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT)
+            .setSourceId(sourceId);
         PhoneNumber phoneNumber2 = new PhoneNumber();
-        phoneNumber2.setPhoneNumber(phone2).setSourceType(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT).setSourceId(sourceId);
+        phoneNumber2.setPhoneNumber(phone2).setSourceType(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT)
+            .setSourceId(sourceId);
         PhoneNumber phoneNumber3 = new PhoneNumber();
-        phoneNumber3.setPhoneNumber(phone3).setSourceType(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT).setSourceId(sourceId);
+        phoneNumber3.setPhoneNumber(phone3).setSourceType(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT)
+            .setSourceId(sourceId);
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         phoneNumbers.add(phoneNumber1);
         phoneNumbers.add(phoneNumber2);

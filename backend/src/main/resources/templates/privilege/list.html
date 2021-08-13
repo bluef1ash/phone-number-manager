@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/index">
+<html lang="zh-CN" layout:decorator="layouts/index" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
     <head th:replace="layouts/header :: commonHead('系统用户权限列表 - 系统用户管理 - 系统管理', ~{::script})">
         <title></title>
-        <script type="text/javascript" th:inline="javascript">
-            var userPrivileges = /*[[${userPrivileges}]]*/null;
-            var deleteUrl = /*[[@{'/system/user_role/privilege'}]]*/null;
+        <script th:inline="javascript" type="text/javascript">
+            var userPrivileges = /*[[${userPrivileges}]]*/null
+            var deleteUrl = /*[[@{'/system/user_role/privilege'}]]*/null
         </script>
-        <script type="text/javascript" src="http://127.0.0.1:3000/privilege-list-bundle.js" th:if="${debug}"></script>
-        <script type="text/javascript" th:src="@{'/javascript/privilege-list-bundle.js'}" th:if="${!debug}"></script>
+        <script src="http://127.0.0.1:3000/privilege-list-bundle.js" th:if="${debug}" type="text/javascript"></script>
+        <script th:if="${!debug}" th:src="@{'/javascript/privilege-list-bundle.js'}" type="text/javascript"></script>
     </head>
     <body>
         <th:block layout:fragment="content">
@@ -32,7 +32,7 @@
                         <div class="card">
                             <div class="card-header">
                                 <div class="col-3 float-right">
-                                    <a th:href="@{'/system/user_role/privilege/create'}" class="btn btn-block btn-primary" title="添加系统用户权限">添加系统用户权限</a>
+                                    <a class="btn btn-block btn-primary" th:href="@{'/system/user_role/privilege/create'}" title="添加系统用户权限">添加系统用户权限</a>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -45,16 +45,16 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(userPrivilege, index) in userPrivileges.records" :key="userPrivilege.id">
+                                        <tr :key="userPrivilege.id" v-for="(userPrivilege, index) in userPrivileges.records">
                                             <td v-text="index + 1"></td>
                                             <td v-text="userPrivilege.name"></td>
                                             <td>
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <a th:attr="':href'='\'' + @{'/system/user_role/privilege/edit/'} + '\' + userPrivilege.id'" class="btn btn-sm btn-block btn-pill btn-secondary" title="点击修改">修改</a>
+                                                        <a class="btn btn-sm btn-block btn-pill btn-secondary" th:attr="':href'='\'' + @{'/system/user_role/privilege/edit/'} + '\' + userPrivilege.id'" title="点击修改">修改</a>
                                                     </div>
                                                     <div class="col-6">
-                                                        <button class="btn btn-sm btn-block btn-pill btn-danger" type="button" title="点击删除" @click="deleteObject(userPrivilege.id)">删除</button>
+                                                        <button @click="deleteObject(userPrivilege.id)" class="btn btn-sm btn-block btn-pill btn-danger" title="点击删除" type="button">删除</button>
                                                     </div>
                                                 </div>
                                             </td>

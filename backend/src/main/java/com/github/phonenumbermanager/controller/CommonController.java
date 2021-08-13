@@ -1,12 +1,14 @@
 package com.github.phonenumbermanager.controller;
 
-import com.github.phonenumbermanager.exception.JsonException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import com.github.phonenumbermanager.exception.JsonException;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * 公共控制器

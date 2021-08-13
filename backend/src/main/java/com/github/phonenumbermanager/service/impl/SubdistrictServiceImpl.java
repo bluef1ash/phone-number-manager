@@ -1,5 +1,14 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.UserLevelEnum;
@@ -9,14 +18,6 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.SubdistrictMapper;
 import com.github.phonenumbermanager.service.SubdistrictService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * 街道业务实现
@@ -24,10 +25,12 @@ import java.util.Set;
  * @author 廿二月的天
  */
 @Service("subdistrictService")
-public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, Subdistrict> implements SubdistrictService {
+public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, Subdistrict>
+    implements SubdistrictService {
 
     @Override
-    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
+        Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         return null;
     }
 
@@ -40,7 +43,8 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, S
     }
 
     @Override
-    public Set<Subdistrict> getCorrelation(Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType, UserLevelEnum userLevel, Serializable companyId) {
+    public Set<Subdistrict> getCorrelation(Serializable systemCompanyType, Serializable communityCompanyType,
+        Serializable subdistrictCompanyType, UserLevelEnum userLevel, Serializable companyId) {
         Set<Subdistrict> subdistricts;
         if (communityCompanyType.equals(userLevel.getValue())) {
             // 社区角色

@@ -2,26 +2,26 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
     <head th:fragment="commonHead(title, scripts)">
         <meta charset="utf-8">
-        <meta name="renderer" content="webkit" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta content="webkit" name="renderer" />
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
         <!--/*@thymesVar id="title" type="java.lang.String"*/-->
         <title th:text="${title} + ' - 社区居民联系方式管理系统'"></title>
-        <meta name="keywords" content="街道, 社区, 居民, 联系方式, 管理系统">
-        <meta name="description" content="这是为社区工作者开发的一款居民联系方式管理系统，使用Java编程语言进行开发，保证安全。">
-        <meta http-equiv="content-language" content="zh-CN">
-        <meta name="author" content="廿二月的天">
-        <meta th:name="${_csrf.headerName}" th:content="${_csrf.token}">
+        <meta content="街道, 社区, 居民, 联系方式, 管理系统" name="keywords">
+        <meta content="这是为社区工作者开发的一款居民联系方式管理系统，使用Java编程语言进行开发，保证安全。" name="description">
+        <meta content="zh-CN" http-equiv="content-language">
+        <meta content="廿二月的天" name="author">
+        <meta th:content="${_csrf.token}" th:name="${_csrf.headerName}">
         <link rel="icon" th:href="@{'/images/favicon.ico'}">
         <!--[if lt IE 8]>
         <script type="text/javascript" th:inline="javascript">
-        alert("您使用的浏览器太陈旧了！！！本系统尚未支持您现在使用的浏览器！");
-        location.href = "http://www.onlinedown.net/soft/7993.htm";
+            alert("您使用的浏览器太陈旧了！！！本系统尚未支持您现在使用的浏览器！");
+            location.href = "http://www.onlinedown.net/soft/7993.htm";
         </script><![endif]-->
         <!-- basic scripts -->
-        <script type="text/javascript" th:inline="javascript">
-            var getCsrfUrl = /*[[@{'/getcsrf'}]]*/null;
-            var getMenuUrl = /*[[@{'/index/getmenu'}]]*/null;
-            var logoutUrl = /*[[@{'/login/logout'}]]*/null;
+        <script th:inline="javascript" type="text/javascript">
+            var getCsrfUrl = /*[[@{'/getcsrf'}]]*/null
+            var getMenuUrl = /*[[@{'/index/getmenu'}]]*/null
+            var logoutUrl = /*[[@{'/login/logout'}]]*/null
         </script>
         <!--/*@thymesVar id="scripts" type="java.lang.String"*/-->
         <th:block th:replace="${scripts}" />

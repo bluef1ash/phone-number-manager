@@ -1,6 +1,5 @@
 package com.github.phonenumbermanager.exception;
 
-
 import org.springframework.security.authentication.AccountStatusException;
 
 /**

@@ -37,7 +37,8 @@ public final class SystemConstant {
     /**
      * 通过白名单
      */
-    public static final String[] PERMIT_WHITELIST = {"/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**"};
+    public static final String[] PERMIT_WHITELIST =
+        {"/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**"};
     /**
      * 匿名用户白名单
      */
@@ -45,7 +46,8 @@ public final class SystemConstant {
     /**
      * 权限通过
      */
-    public static final String[] PRIVILEGE_PERMITS = {"/", "/index/getmenu", "/community/select", "/index/getcomputed", "/community/subcontractor/load", "system/user_role/user/edit"};
+    public static final String[] PRIVILEGE_PERMITS = {"/", "/index/getmenu", "/community/select", "/index/getcomputed",
+        "/community/subcontractor/load", "system/user_role/user/edit"};
     /**
      * JWTToken过期时间
      */
@@ -69,7 +71,8 @@ public final class SystemConstant {
     /**
      * Base64密钥
      */
-    public static final String BASE64_SECRET = "ZmQ0ZGI5NjQ0MDQwY2I4MjMxY2Y3ZmI3MjdhN2ZmMjNhODViOTg1ZGE0NTBjMGM4NDA5NzYxMjdjOWMwYWRmZTBlZjlhNGY3ZTg4Y2U3YTE1ODVkZDU5Y2Y3OGYwZWE1NzUzNWQ2YjFjZDc0NGMxZWU2MmQ3MjY1NzJmNTE0MzI=";
+    public static final String BASE64_SECRET =
+        "ZmQ0ZGI5NjQ0MDQwY2I4MjMxY2Y3ZmI3MjdhN2ZmMjNhODViOTg1ZGE0NTBjMGM4NDA5NzYxMjdjOWMwYWRmZTBlZjlhNGY3ZTg4Y2U3YTE1ODVkZDU5Y2Y3OGYwZWE1NzUzNWQ2YjFjZDc0NGMxZWU2MmQ3MjY1NzJmNTE0MzI=";
     /**
      * JWT密钥创建标识
      */

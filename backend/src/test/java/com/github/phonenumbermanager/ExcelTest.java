@@ -1,14 +1,15 @@
 package com.github.phonenumbermanager;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 
 /**
  * Excel测试类
@@ -16,26 +17,11 @@ import java.util.LinkedHashMap;
 @SpringBootTest
 public class ExcelTest {
 
-    private interface Person {
-        void eat();
-    }
-
-    private static class Student implements Person {
-        @Override
-        public void eat() {
-            System.out.println("111111");
-        }
-
-        public void sleep() {
-            System.out.println("22222222222");
-        }
-    }
-
     private void test(Person person) {
         Student student = null;
         if (person instanceof Student) {
             System.out.println("hhhhhhhhhhhhh");
-            student = (Student) person;
+            student = (Student)person;
         }
         if (student != null) {
             student.sleep();
@@ -106,5 +92,20 @@ public class ExcelTest {
         writer.write(list);
         writer.flush();
         writer.close();
+    }
+
+    private interface Person {
+        void eat();
+    }
+
+    private static class Student implements Person {
+        @Override
+        public void eat() {
+            System.out.println("111111");
+        }
+
+        public void sleep() {
+            System.out.println("22222222222");
+        }
     }
 }

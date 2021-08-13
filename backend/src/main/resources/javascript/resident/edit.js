@@ -311,7 +311,7 @@ $(document).ready(() => {
                     false
                 ]
                 this.errorMessages = ['', '', '', '', '', '', '', '']
-            },
-        },
-    });
-});
+            }
+        }
+    })
+})

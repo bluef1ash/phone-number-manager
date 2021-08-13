@@ -1,5 +1,13 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.UserLevelEnum;
@@ -8,13 +16,6 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.SubcontractorMapper;
 import com.github.phonenumbermanager.service.SubcontractorService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 社区分包人业务实现
@@ -22,24 +23,28 @@ import java.util.Map;
  * @author 廿二月的天
  */
 @Service("subcontractorService")
-public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMapper, Subcontractor> implements SubcontractorService {
+public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMapper, Subcontractor>
+    implements SubcontractorService {
 
     @Override
-    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
+        Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         String companyLabel = "社区";
         String label = null;
         String formatter = "人";
         LinkedList<Map<String, Object>> subcontractors;
-        long ct = (long) (companyType == null ? 0L : companyType);
-        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue()) || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int) subdistrictCompanyType);
-        if (companyType == null || ct == (int) systemCompanyType) {
+        long ct = (long)(companyType == null ? 0L : companyType);
+        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
+            || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
+        if (companyType == null || ct == (int)systemCompanyType) {
             companyLabel = "街道";
             label = "街道分包人总人数";
             subcontractors = subcontractorMapper.countForGroupSubdistrict();
         } else if (isSystemRoleCount) {
             label = "社区分包人总人数";
             subcontractors = subcontractorMapper.countForGroupCommunity(companyId);
-        } else if (ct == (int) communityCompanyType || (int) communityCompanyType == (long) systemUser.getLevel().getValue()) {
+        } else if (ct == (int)communityCompanyType
+            || (int)communityCompanyType == (long)systemUser.getLevel().getValue()) {
             label = "社区居民分包总户数";
             formatter = "户";
             subcontractors = subcontractorMapper.countForGroupByCommunityId(companyId);
@@ -50,7 +55,9 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     }
 
     @Override
-    public IPage<Subcontractor> get(Integer pageNumber, Integer pageDataSize, UserLevelEnum userLevel, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public IPage<Subcontractor> get(Integer pageNumber, Integer pageDataSize, UserLevelEnum userLevel,
+        Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType,
+        Serializable subdistrictCompanyType) {
         Page<Subcontractor> page = new Page<>(pageNumber, pageDataSize);
         IPage<Subcontractor> subcontractors = null;
         if (communityCompanyType.equals(userLevel)) {
@@ -64,7 +71,8 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     }
 
     @Override
-    public List<Subcontractor> get(UserLevelEnum userLevel, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public List<Subcontractor> get(UserLevelEnum userLevel, Serializable companyId, Serializable systemCompanyType,
+        Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         List<Subcontractor> subcontractors = null;
         if (communityCompanyType.equals(userLevel)) {
             subcontractors = subcontractorMapper.select(companyId);
@@ -77,8 +85,10 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     }
 
     @Override
-    public List<Subcontractor> getCorrelation(Serializable companyType, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return getBySystemUserRole((Integer) companyType, companyId, systemCompanyType, communityCompanyType, subdistrictCompanyType);
+    public List<Subcontractor> getCorrelation(Serializable companyType, Serializable companyId,
+        Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+        return getBySystemUserRole((Integer)companyType, companyId, systemCompanyType, communityCompanyType,
+            subdistrictCompanyType);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -108,14 +118,20 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     /**
      * 通过系统用户角色查找社区分包人
      *
-     * @param userLevel              系统用户单位类型
-     * @param companyId              系统用户单位编号
-     * @param systemCompanyType      系统单位类型编号
-     * @param communityCompanyType   社区单位类型编号
-     * @param subdistrictCompanyType 街道单位类型编号
+     * @param userLevel
+     *            系统用户单位类型
+     * @param companyId
+     *            系统用户单位编号
+     * @param systemCompanyType
+     *            系统单位类型编号
+     * @param communityCompanyType
+     *            社区单位类型编号
+     * @param subdistrictCompanyType
+     *            街道单位类型编号
      * @return 对应的社区分包人对象集合
      */
-    private List<Subcontractor> getBySystemUserRole(Integer userLevel, Serializable companyId, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    private List<Subcontractor> getBySystemUserRole(Integer userLevel, Serializable companyId,
+        Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         List<Subcontractor> subcontractors = null;
         if (communityCompanyType.equals(userLevel)) {
             subcontractors = subcontractorMapper.select(companyId);

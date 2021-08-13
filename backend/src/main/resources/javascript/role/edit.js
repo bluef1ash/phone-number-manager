@@ -44,8 +44,9 @@ $(document).ready(() => {
                         label: userPrivileges[i].name,
                         parentId: userPrivileges[i].parentI
 
-                    if (
-                        typeof this.userRole.userPrivileges !== 'undefined'{
+                        if (
+                        typeof this.userRole.userPrivileges !== 'undefined'
+                    {
                         " &&
                     }
                     this.userRole.userPrivileges !== null
@@ -162,6 +163,7 @@ $(document).ready(() => {
                     this.privilegeIds = []
                 }
             ,
-            },
-        });
-});
+            }
+        })
+})
+

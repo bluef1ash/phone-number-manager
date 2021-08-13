@@ -1,8 +1,20 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.util.*;
 
-import cn.hutool.core.convert.Convert;
-import cn.hutool.poi.excel.cell.CellUtil;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,28 +27,19 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.poi.excel.cell.CellUtil;
 
 /**
  * 基础业务实现
  *
- * @param <M> <T> SERVICE泛型
+ * @param <M>
+ *            <T> SERVICE泛型
  * @author 廿二月的天
  */
-public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends ServiceImpl<M, T> implements BaseService<T> {
-    private CommonMapper<T> commonMapper;
+public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends ServiceImpl<M, T>
+    implements BaseService<T> {
     @Resource
     protected SystemUserMapper systemUserMapper;
     @Resource
@@ -61,18 +64,20 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     protected PhoneNumberMapper phoneNumberMapper;
     List<Subcontractor> subcontractors;
     Map<String, Long> communityMap;
-
+    private CommonMapper<T> commonMapper;
 
     /**
      * 最先运行的方法，自动加载对应类型的Mapper
      *
-     * @throws NoSuchFieldException   找不到参数异常
-     * @throws IllegalAccessException 错误转换异常
+     * @throws NoSuchFieldException
+     *             找不到参数异常
+     * @throws IllegalAccessException
+     *             错误转换异常
      */
     @PostConstruct
     private void initBaseMapper() throws NoSuchFieldException, IllegalAccessException {
-        ParameterizedType type = (ParameterizedType) this.getClass().getGenericSuperclass();
-        Class<?> clazz = (Class<?>) type.getActualTypeArguments()[0];
+        ParameterizedType type = (ParameterizedType)this.getClass().getGenericSuperclass();
+        Class<?> clazz = (Class<?>)type.getActualTypeArguments()[0];
         String localField = clazz.getSimpleName().substring(0, 1).toLowerCase() + clazz.getSimpleName().substring(1);
         Field field = this.getClass().getSuperclass().getDeclaredField(localField);
         Field baseField = this.getClass().getSuperclass().getDeclaredField("commonMapper");
@@ -90,12 +95,14 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     }
 
     @Override
-    public List<T> get(List<PhoneNumber> phoneNumbers, Serializable id, Serializable subdistrictId, PhoneNumberSourceTypeEnum sourceType) {
+    public List<T> get(List<PhoneNumber> phoneNumbers, Serializable id, Serializable subdistrictId,
+        PhoneNumberSourceTypeEnum sourceType) {
         return commonMapper.selectByPhones(phoneNumbers, id, subdistrictId, sourceType);
     }
 
     @Override
-    public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType,
+        Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         return null;
     }
 
@@ -115,7 +122,9 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     }
 
     @Override
-    public IPage<T> getCorrelation(SystemUser systemUser, PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum, Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber, Integer pageDataSize) {
+    public IPage<T> getCorrelation(SystemUser systemUser, PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum,
+        Serializable communityCompanyType, Serializable subdistrictCompanyType, Integer pageNumber,
+        Integer pageDataSize) {
         List<Serializable> companyIds = getCommunityIds(systemUser, communityCompanyType, subdistrictCompanyType);
         Page<T> page = new Page<>(pageNumber, pageDataSize);
         return commonMapper.selectAndCommunityByCommunityIds(page, companyIds, phoneNumberSourceTypeEnum);
@@ -127,24 +136,30 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     }
 
     @Override
-    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
+        Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         return null;
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType, Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
+    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType,
+        Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
         return null;
     }
 
     /**
      * 查找社区编号
      *
-     * @param systemUser             系统用户对象
-     * @param communityCompanyType   社区单位类型编号
-     * @param subdistrictCompanyType 街道单位类型编号
+     * @param systemUser
+     *            系统用户对象
+     * @param communityCompanyType
+     *            社区单位类型编号
+     * @param subdistrictCompanyType
+     *            街道单位类型编号
      * @return 社区编号数组
      */
-    List<Serializable> getCommunityIds(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    List<Serializable> getCommunityIds(SystemUser systemUser, Serializable communityCompanyType,
+        Serializable subdistrictCompanyType) {
         Integer level = systemUser.getLevel().getValue();
         Long companyId = systemUser.getCompanyId();
         List<Serializable> communityIds = new ArrayList<>();
@@ -164,7 +179,8 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     /**
      * 转换单元格字符串
      *
-     * @param cell 需要转换的字符串的单元格对象
+     * @param cell
+     *            需要转换的字符串的单元格对象
      * @return 转换成功的字符串
      */
     String convertCellString(Cell cell) {
@@ -177,7 +193,8 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     /**
      * 转换单元格数字类型
      *
-     * @param cell 需要转换的字符串的单元格对象
+     * @param cell
+     *            需要转换的字符串的单元格对象
      * @return 转换成功的字符串
      */
     Integer convertCell(Cell cell) {
@@ -187,20 +204,26 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     /**
      * 分包人处理
      *
-     * @param name           分包人姓名
-     * @param mobile         分包人联系方式
-     * @param subcontractors 从数据库查询的分包人集合对象
-     * @param communityId    所属社区编号
+     * @param name
+     *            分包人姓名
+     * @param mobile
+     *            分包人联系方式
+     * @param subcontractors
+     *            从数据库查询的分包人集合对象
+     * @param communityId
+     *            所属社区编号
      * @return 分包人编号
      */
     @Transactional(rollbackFor = Exception.class)
-    Long addSubcontractorHandler(String name, String mobile, List<Subcontractor> subcontractors, Serializable communityId) {
+    Long addSubcontractorHandler(String name, String mobile, List<Subcontractor> subcontractors,
+        Serializable communityId) {
         Long id = null;
         for (Subcontractor subcontractor : subcontractors) {
             if (name.equals(subcontractor.getName())) {
                 id = subcontractor.getId();
                 if (StringUtils.isEmpty(subcontractor.getPhoneNumbers().get(0).getPhoneNumber())) {
-                    PhoneNumber phoneNumber = phoneNumberMapper.selectBySourceTypeAndSourceId(PhoneNumberSourceTypeEnum.SUBCONTRACTOR, subcontractor.getId());
+                    PhoneNumber phoneNumber = phoneNumberMapper
+                        .selectBySourceTypeAndSourceId(PhoneNumberSourceTypeEnum.SUBCONTRACTOR, subcontractor.getId());
                     phoneNumber.setPhoneNumber(mobile);
                     DefaultTransactionDefinition def = new DefaultTransactionDefinition();
                     def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -213,7 +236,7 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
         if (id == null) {
             Subcontractor newSubcontractor = new Subcontractor();
             newSubcontractor.setName(name);
-            newSubcontractor.setCommunityId((Long) communityId);
+            newSubcontractor.setCommunityId((Long)communityId);
             List<String> numbers = new ArrayList<>();
             numbers.add(mobile);
             List<PhoneNumber> phoneNumbers = CommonUtil.setPhoneNumbers(numbers);
@@ -229,14 +252,16 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     /**
      * 获取社区编号
      *
-     * @param communityMap  社区集合
-     * @param communityName 社区名称
+     * @param communityMap
+     *            社区集合
+     * @param communityName
+     *            社区名称
      * @return 社区编号
      */
     Long getCommunityId(Map<String, Long> communityMap, String communityName) {
         Long communityId;
         if (!communityMap.containsKey(communityName)) {
-            communityId = (Long) communityMapper.selectIdByName(communityName);
+            communityId = (Long)communityMapper.selectIdByName(communityName);
             if (communityId == null) {
                 throw new BusinessException("找不到社区名称为“" + communityName + "”的社区，请创建此社区后，重新导入！");
             }
@@ -250,7 +275,8 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     /**
      * 设置社区变量
      *
-     * @param subdistrictId 街道编号
+     * @param subdistrictId
+     *            街道编号
      */
     void setCommunityVariables(Serializable subdistrictId) {
         subcontractors = subcontractorMapper.selectList(null);
@@ -261,13 +287,18 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     /**
      * 柱状图数据处理
      *
-     * @param label        饼图图例
-     * @param companyLabel 柱状图横坐标文字
-     * @param formatter    格式文字
-     * @param object       饼图数据内容
+     * @param label
+     *            饼图图例
+     * @param companyLabel
+     *            柱状图横坐标文字
+     * @param formatter
+     *            格式文字
+     * @param object
+     *            饼图数据内容
      * @return 处理后的对象
      */
-    Map<String, Object> barChartDataHandler(String label, String companyLabel, String formatter, LinkedList<Map<String, Object>> object) {
+    Map<String, Object> barChartDataHandler(String label, String companyLabel, String formatter,
+        LinkedList<Map<String, Object>> object) {
         Map<String, Object> barChartMap = new HashMap<>(3);
         List<String> columns = new ArrayList<>();
         List<Map<String, Object>> rows = new ArrayList<>();
@@ -276,7 +307,7 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
         for (Map<String, Object> residentCount : object) {
             Map<String, Object> row = new HashMap<>(3);
             row.put(companyLabel, residentCount.get("name"));
-            titleLabel.add((String) residentCount.get("name"));
+            titleLabel.add((String)residentCount.get("name"));
             row.put(label, residentCount.get("value"));
             rows.add(row);
         }
@@ -293,9 +324,12 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     /**
      * 获取单位类型和单位编号
      *
-     * @param systemUser  登录的系统用户对象
-     * @param companyId   查找的范围单位的编号
-     * @param companyType 查找的范围单位的类别编号
+     * @param systemUser
+     *            登录的系统用户对象
+     * @param companyId
+     *            查找的范围单位的编号
+     * @param companyType
+     *            查找的范围单位的类别编号
      * @return 单位类型和单位编号集合
      */
     Map<String, Object> getCompany(SystemUser systemUser, Serializable companyId, Serializable companyType) {

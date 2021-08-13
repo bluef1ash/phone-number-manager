@@ -21,13 +21,12 @@ $(document).ready(() => {
                     phoneNumbers: [
                         {
                             phoneNumber: ''
-                        ,
 
+                        }
                 }
             }
-            }
         ,
-            methods: {
+            {
                 /**
                  * 街道提交保存
                  * @param event

@@ -1,10 +1,11 @@
 package com.github.phonenumbermanager.config;
 
-import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import java.time.LocalDateTime;
+
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 
 /**
  * 时间自动填充处理
@@ -17,7 +18,8 @@ public class MyBatisPlusAutofillHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         this.strictUpdateFill(metaObject, "createTime", LocalDateTime::now, LocalDateTime.class);
-        this.strictUpdateFill(metaObject, "accountExpireTime", () -> LocalDateTime.parse("9999-99-99"), LocalDateTime.class);
+        this.strictUpdateFill(metaObject, "accountExpireTime", () -> LocalDateTime.parse("9999-99-99"),
+            LocalDateTime.class);
         this.strictUpdateFill(metaObject, "credentialExpireTime", LocalDateTime::now, LocalDateTime.class);
     }
 

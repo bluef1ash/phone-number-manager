@@ -1,19 +1,11 @@
 package com.github.phonenumbermanager.service.impl;
 
-import cn.hutool.core.convert.Convert;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.phonenumbermanager.constant.HttpMethodEnum;
-import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
-import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.entity.UserPrivilege;
-import com.github.phonenumbermanager.entity.UserRole;
-import com.github.phonenumbermanager.exception.SystemClosedException;
-import com.github.phonenumbermanager.mapper.SystemUserMapper;
-import com.github.phonenumbermanager.service.SystemUserService;
-import com.github.phonenumbermanager.util.RedisUtil;
+import java.io.Serializable;
+import java.util.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,10 +21,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
-import java.util.*;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.HttpMethodEnum;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
+import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.entity.UserPrivilege;
+import com.github.phonenumbermanager.entity.UserRole;
+import com.github.phonenumbermanager.exception.SystemClosedException;
+import com.github.phonenumbermanager.mapper.SystemUserMapper;
+import com.github.phonenumbermanager.service.SystemUserService;
+import com.github.phonenumbermanager.util.RedisUtil;
+
+import cn.hutool.core.convert.Convert;
 
 /**
  * 系统用户业务实现
@@ -49,7 +52,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
         SystemUser systemUser = systemUserMapper.selectAndRolesByName(username);
-        @SuppressWarnings("all") Map<String, Object> configurationsMap = (Map<String, Object>) redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
+        @SuppressWarnings("all")
+        Map<String, Object> configurationsMap =
+            (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
         Long systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id"));
         // 系统用户权限
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
@@ -58,7 +63,8 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             userPrivileges = new LinkedHashSet<>(userPrivilegeMapper.selectList(null));
             for (UserPrivilege userPrivilege : userPrivileges) {
                 if (StringUtils.isNotEmpty(userPrivilege.getUri())) {
-                    grantedAuthorities.add(new SimpleGrantedAuthority(userPrivilege.getUri() + "|" + HttpMethodEnum.ALL.getDescription()));
+                    grantedAuthorities.add(
+                        new SimpleGrantedAuthority(userPrivilege.getUri() + "|" + HttpMethodEnum.ALL.getDescription()));
                 }
             }
         }
@@ -70,8 +76,10 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
                 List<RolePrivilegeRelation> rolePrivilegeRelations = rolePrivilegeRelationMapper.selectList(wrapper);
                 for (UserPrivilege userPrivilege : userPrivileges) {
                     for (RolePrivilegeRelation rolePrivilegeRelation : rolePrivilegeRelations) {
-                        if (userPrivilege.getId().equals(rolePrivilegeRelation.getPrivilegeId()) && StringUtils.isNotEmpty(userPrivilege.getUri())) {
-                            grantedAuthorities.add(new SimpleGrantedAuthority(userPrivilege.getUri() + "|" + rolePrivilegeRelation.getMethod().getDescription()));
+                        if (userPrivilege.getId().equals(rolePrivilegeRelation.getPrivilegeId())
+                            && StringUtils.isNotEmpty(userPrivilege.getUri())) {
+                            grantedAuthorities.add(new SimpleGrantedAuthority(
+                                userPrivilege.getUri() + "|" + rolePrivilegeRelation.getMethod().getDescription()));
                         }
                     }
                 }
@@ -85,7 +93,8 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
 
     @Override
     public Authentication authentication(String username, String password) {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+            new UsernamePasswordAuthenticationToken(username, password);
         Authentication authenticate;
         try {
             authenticate = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
@@ -166,8 +175,10 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     /**
      * 递归系统用户权限
      *
-     * @param userPrivileges 需要递归的系统权限
-     * @param parentId       上级系统权限编号
+     * @param userPrivileges
+     *            需要递归的系统权限
+     * @param parentId
+     *            上级系统权限编号
      * @return 处理后的系统权限集合
      */
     private Set<UserPrivilege> recursionPrivileges(Set<UserPrivilege> userPrivileges, Long parentId) {

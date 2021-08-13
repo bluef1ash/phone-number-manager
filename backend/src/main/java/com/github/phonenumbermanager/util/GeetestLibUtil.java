@@ -1,9 +1,5 @@
 package com.github.phonenumbermanager.util;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -14,6 +10,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * 极验工具类
  *
@@ -21,24 +21,21 @@ import java.util.Map;
  */
 @SuppressWarnings("all")
 public class GeetestLibUtil {
-    protected final String sdkLang = "java";
-    private final String apiUrl = "http://api.geetest.com";
-    private final String json_format = "1";
     /**
      * 极验验证二次验证表单数据
      */
     public static final String FN_GEETEST_CHALLENGE = "geetest_challenge";
-
     /**
      * 极验验证二次验证表单数据 validate
      */
     public static final String FN_GEETEST_VALIDATE = "geetest_validate";
-
     /**
      * 极验验证二次验证表单数据 seccode
      */
     public static final String FN_GEETEST_SECCODE = "geetest_seccode";
-
+    protected final String sdkLang = "java";
+    private final String apiUrl = "http://api.geetest.com";
+    private final String json_format = "1";
     /**
      * 公钥
      */
@@ -53,16 +50,14 @@ public class GeetestLibUtil {
      * 是否开启新的failback
      */
     private final boolean newFailback;
-
-    /**
-     * 返回字符串
-     */
-    private String responseStr = "";
-
     /**
      * 极验验证API服务状态Session Key
      */
     public String gtServerStatusSessionKey = "gt_server_status";
+    /**
+     * 返回字符串
+     */
+    private String responseStr = "";
 
     public GeetestLibUtil(String captchaId, String privateKey, boolean newFailback) {
 
@@ -111,7 +106,8 @@ public class GeetestLibUtil {
     /**
      * 预处理成功后的标准串
      *
-     * @param challenge 标准串
+     * @param challenge
+     *            标准串
      */
     private String getSuccessPreProcessRes(String challenge) {
         gtlog("challenge:" + challenge);
@@ -129,7 +125,8 @@ public class GeetestLibUtil {
     /**
      * 验证初始化预处理
      *
-     * @param data 初始化的数据
+     * @param data
+     *            初始化的数据
      * @return 1表示初始化成功，0表示初始化失败
      */
     public int preProcess(Map<String, String> data) {
@@ -143,7 +140,8 @@ public class GeetestLibUtil {
     /**
      * 用captchaID进行注册，更新challenge
      *
-     * @param data 验证码信息
+     * @param data
+     *            验证码信息
      * @return 1表示注册成功，0表示注册失败
      */
     private int registerChallenge(Map<String, String> data) {
@@ -182,10 +180,14 @@ public class GeetestLibUtil {
     /**
      * 拼接参数
      *
-     * @param userId     用户编号
-     * @param clientType 客户端类型
-     * @param ipAddress  客户端IP地址
-     * @param param      原有参数
+     * @param userId
+     *            用户编号
+     * @param clientType
+     *            客户端类型
+     * @param ipAddress
+     *            客户端IP地址
+     * @param param
+     *            原有参数
      * @return 拼接完整的参数字符串
      */
     private String getParam(String userId, String clientType, String ipAddress, String param) {
@@ -204,7 +206,8 @@ public class GeetestLibUtil {
     /**
      * 判断一个表单对象值是否为空
      *
-     * @param gtObj 需要判断的对象
+     * @param gtObj
+     *            需要判断的对象
      * @return 判断值
      */
     private boolean objIsEmpty(Object gtObj) {
@@ -232,7 +235,6 @@ public class GeetestLibUtil {
         return objIsEmpty(seccode);
     }
 
-
     /**
      * 服务正常的情况下使用的验证方式,向gt-server进行二次验证,获取验证结果
      *
@@ -252,7 +254,8 @@ public class GeetestLibUtil {
         String ipAddress = data.get("ip_address");
         String validateUrl = "/validate.php";
         String postUrl = this.apiUrl + validateUrl;
-        String param = String.format("challenge=%s&validate=%s&seccode=%s&json_format=%s", challenge, validate, seccode, this.json_format);
+        String param = String.format("challenge=%s&validate=%s&seccode=%s&json_format=%s", challenge, validate, seccode,
+            this.json_format);
         param = getParam(userId, clientType, ipAddress, param);
         gtlog("param:" + param);
         String response = "";
@@ -301,7 +304,6 @@ public class GeetestLibUtil {
             }
 
         } catch (JSONException e) {
-
 
             gtlog("json load error");
             return 0;
@@ -360,7 +362,7 @@ public class GeetestLibUtil {
     private String readContentFromGet(String URL) throws IOException {
 
         URL getUrl = new URL(URL);
-        HttpURLConnection connection = (HttpURLConnection) getUrl.openConnection();
+        HttpURLConnection connection = (HttpURLConnection)getUrl.openConnection();
         // 设置连接主机超时（单位：毫秒）
         connection.setConnectTimeout(2000);
         // 设置从主机读取数据超时（单位：毫秒）
@@ -376,7 +378,7 @@ public class GeetestLibUtil {
             InputStream inStream = null;
             byte[] buf = new byte[1024];
             inStream = connection.getInputStream();
-            for (int n; (n = inStream.read(buf)) != -1; ) {
+            for (int n; (n = inStream.read(buf)) != -1;) {
                 sBuffer.append(new String(buf, 0, n, StandardCharsets.UTF_8));
             }
             inStream.close();
@@ -400,7 +402,7 @@ public class GeetestLibUtil {
 
         gtlog(data);
         URL postUrl = new URL(URL);
-        HttpURLConnection connection = (HttpURLConnection) postUrl.openConnection();
+        HttpURLConnection connection = (HttpURLConnection)postUrl.openConnection();
 
         connection.setConnectTimeout(2000);// 设置连接主机超时（单位：毫秒）
         connection.setReadTimeout(2000);// 设置从主机读取数据超时（单位：毫秒）
@@ -412,7 +414,8 @@ public class GeetestLibUtil {
         // 建立与服务器的连接，并未发送数据
         connection.connect();
 
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8);
+        OutputStreamWriter outputStreamWriter =
+            new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8);
         outputStreamWriter.write(data);
         outputStreamWriter.flush();
         outputStreamWriter.close();
@@ -424,7 +427,7 @@ public class GeetestLibUtil {
             InputStream inStream = null;
             byte[] buf = new byte[1024];
             inStream = connection.getInputStream();
-            for (int n; (n = inStream.read(buf)) != -1; ) {
+            for (int n; (n = inStream.read(buf)) != -1;) {
                 sBuffer.append(new String(buf, 0, n, StandardCharsets.UTF_8));
             }
             inStream.close();

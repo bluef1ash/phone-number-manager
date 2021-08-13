@@ -1,14 +1,16 @@
 package com.github.phonenumbermanager.validator;
 
-import com.github.phonenumbermanager.entity.Subcontractor;
-import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.service.SubcontractorService;
+import java.io.Serializable;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
-import java.util.List;
+import com.github.phonenumbermanager.entity.Subcontractor;
+import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.service.SubcontractorService;
 
 /**
  * 社区分包人添加/更新验证
@@ -28,7 +30,7 @@ public class SubcontractorInputValidator extends BaseInputValidator<Subcontracto
         ValidationUtils.rejectIfEmpty(errors, "name", "subcontractor.name.required", "社区分包人名称不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "phoneNumbers", "subcontractor.phoneNumbers.required", "社区分包人联系方式不能为空！");
         ValidationUtils.rejectIfEmpty(errors, "communityId", "subcontractor.communityId.required", "社区分包人所属社区不能为空！");
-        Subcontractor subcontractor = (Subcontractor) target;
+        Subcontractor subcontractor = (Subcontractor)target;
         // 联系方式合法
         if (!checkedPhones(subcontractor.getPhoneNumbers())) {
             return false;
@@ -45,8 +47,10 @@ public class SubcontractorInputValidator extends BaseInputValidator<Subcontracto
     /**
      * 验证数据库返回数据是否为空
      *
-     * @param subcontractors 需要验证的社区分包人对象的集合
-     * @param id             传入的编号
+     * @param subcontractors
+     *            需要验证的社区分包人对象的集合
+     * @param id
+     *            传入的编号
      * @return 是否验证成功
      */
     private boolean checkedListData(List<Subcontractor> subcontractors, Serializable id) {

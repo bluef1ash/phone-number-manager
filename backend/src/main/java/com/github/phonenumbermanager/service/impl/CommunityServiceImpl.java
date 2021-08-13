@@ -1,5 +1,13 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -8,13 +16,6 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.service.CommunityService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 社区业务实现
@@ -43,7 +44,8 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
     }
 
     @Override
-    public List<Community> get(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public List<Community> get(SystemUser systemUser, Serializable communityCompanyType,
+        Serializable subdistrictCompanyType) {
         List<Community> communities;
         if (communityCompanyType.equals(systemUser.getLevel().getValue())) {
             communities = new ArrayList<>();
@@ -64,7 +66,8 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean update(List<Map<String, Object>> data, Integer changeType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
+    public boolean update(List<Map<String, Object>> data, Integer changeType, Serializable communityCompanyType,
+        Serializable subdistrictCompanyType) {
         Community community = new Community();
         if (changeType == 0) {
             community.setResidentSubmitted(true);

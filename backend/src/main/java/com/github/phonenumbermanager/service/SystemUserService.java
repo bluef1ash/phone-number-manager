@@ -1,11 +1,13 @@
 package com.github.phonenumbermanager.service;
 
-import com.github.phonenumbermanager.entity.SystemUser;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+import com.github.phonenumbermanager.entity.SystemUser;
 
 /**
  * 系统用户业务接口
@@ -24,8 +26,10 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
     /**
      * 认证密码
      *
-     * @param username 用户名
-     * @param password 密码
+     * @param username
+     *            用户名
+     * @param password
+     *            密码
      * @return 认证对象
      */
     Authentication authentication(String username, String password);
@@ -33,8 +37,10 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
     /**
      * 判断权限
      *
-     * @param request        HTTP请求
-     * @param authentication 认证对象
+     * @param request
+     *            HTTP请求
+     * @param authentication
+     *            认证对象
      * @return 是否享受
      */
     boolean hasPermission(HttpServletRequest request, Authentication authentication);

@@ -1,20 +1,21 @@
 package com.github.phonenumbermanager.entity;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.security.core.GrantedAuthority;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 /**
  * 用户权限对象实体

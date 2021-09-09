@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
@@ -23,7 +22,7 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
  * @author 廿二月的天
  */
 @Mapper
-public interface CommonMapper<T> extends BaseMapper<T> {
+public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.BaseMapper<T> {
 
     /**
      * 通过实体对象查询对象

@@ -16,7 +16,7 @@ import com.github.phonenumbermanager.entity.UserRole;
  * @author 廿二月的天
  */
 @Mapper
-public interface UserRoleMapper extends CommonMapper<UserRole> {
+public interface UserRoleMapper extends BaseMapper<UserRole> {
     /**
      * 查询所有角色与所属系统用户
      *

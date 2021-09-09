@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,8 @@ import com.github.phonenumbermanager.constant.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
+import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.mapper.SubcontractorMapper;
 import com.github.phonenumbermanager.service.SubcontractorService;
 
@@ -25,6 +29,10 @@ import com.github.phonenumbermanager.service.SubcontractorService;
 @Service("subcontractorService")
 public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMapper, Subcontractor>
     implements SubcontractorService {
+    @Resource
+    private CommunityResidentMapper communityResidentMapper;
+    @Resource
+    private DormitoryManagerMapper dormitoryManagerMapper;
 
     @Override
     public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
@@ -39,15 +47,15 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         if (companyType == null || ct == (int)systemCompanyType) {
             companyLabel = "街道";
             label = "街道分包人总人数";
-            subcontractors = subcontractorMapper.countForGroupSubdistrict();
+            subcontractors = baseMapper.countForGroupSubdistrict();
         } else if (isSystemRoleCount) {
             label = "社区分包人总人数";
-            subcontractors = subcontractorMapper.countForGroupCommunity(companyId);
+            subcontractors = baseMapper.countForGroupCommunity(companyId);
         } else if (ct == (int)communityCompanyType
             || (int)communityCompanyType == (long)systemUser.getLevel().getValue()) {
             label = "社区居民分包总户数";
             formatter = "户";
-            subcontractors = subcontractorMapper.countForGroupByCommunityId(companyId);
+            subcontractors = baseMapper.countForGroupByCommunityId(companyId);
         } else {
             subcontractors = new LinkedList<>();
         }
@@ -61,11 +69,11 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         Page<Subcontractor> page = new Page<>(pageNumber, pageDataSize);
         IPage<Subcontractor> subcontractors = null;
         if (communityCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.select(page, companyId);
+            subcontractors = baseMapper.select(page, companyId);
         } else if (subdistrictCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.selectBySubdistrictId(page, companyId);
+            subcontractors = baseMapper.selectBySubdistrictId(page, companyId);
         } else if (systemCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.selectCorrelationAll(page);
+            subcontractors = baseMapper.selectCorrelationAll(page);
         }
         return subcontractors;
     }
@@ -75,11 +83,11 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         List<Subcontractor> subcontractors = null;
         if (communityCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.select(companyId);
+            subcontractors = baseMapper.select(companyId);
         } else if (subdistrictCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.selectBySubdistrictId(companyId);
+            subcontractors = baseMapper.selectBySubdistrictId(companyId);
         } else if (systemCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.selectCorrelationAll();
+            subcontractors = baseMapper.selectCorrelationAll();
         }
         return subcontractors;
     }
@@ -102,17 +110,17 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区分包人！");
         }
-        return subcontractorMapper.deleteById(id) > 0;
+        return baseMapper.deleteById(id) > 0;
     }
 
     @Override
     public List<Subcontractor> getByCommunityId(Serializable communityId) {
-        return subcontractorMapper.select(communityId);
+        return baseMapper.select(communityId);
     }
 
     @Override
     public Subcontractor getCorrelation(Serializable id) {
-        return subcontractorMapper.getCorrelationById(id);
+        return baseMapper.getCorrelationById(id);
     }
 
     /**
@@ -134,11 +142,11 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
         List<Subcontractor> subcontractors = null;
         if (communityCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.select(companyId);
+            subcontractors = baseMapper.select(companyId);
         } else if (subdistrictCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.selectBySubdistrictId(companyId);
+            subcontractors = baseMapper.selectBySubdistrictId(companyId);
         } else if (systemCompanyType.equals(userLevel)) {
-            subcontractors = subcontractorMapper.selectCorrelationAll();
+            subcontractors = baseMapper.selectCorrelationAll();
         }
         return subcontractors;
     }

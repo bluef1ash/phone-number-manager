@@ -1,34 +1,28 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
+import java.text.ParseException;
 import java.util.*;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.PhoneNumber;
-import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.mapper.*;
+import com.github.phonenumbermanager.mapper.BaseMapper;
+import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.service.BaseService;
-import com.github.phonenumbermanager.util.CommonUtil;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.poi.excel.cell.CellUtil;
 
 /**
@@ -38,66 +32,24 @@ import cn.hutool.poi.excel.cell.CellUtil;
  *            <T> SERVICE泛型
  * @author 廿二月的天
  */
-public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends ServiceImpl<M, T>
-    implements BaseService<T> {
+public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> implements BaseService<T> {
     @Resource
-    protected SystemUserMapper systemUserMapper;
-    @Resource
-    protected DormitoryManagerMapper dormitoryManagerMapper;
-    @Resource
-    protected UserRoleMapper userRoleMapper;
-    @Resource
-    protected UserPrivilegeMapper userPrivilegeMapper;
-    @Resource
-    protected RolePrivilegeRelationMapper rolePrivilegeRelationMapper;
-    @Resource
-    protected SubdistrictMapper subdistrictMapper;
-    @Resource
-    protected CommunityMapper communityMapper;
-    @Resource
-    protected CommunityResidentMapper communityResidentMapper;
-    @Resource
-    protected ConfigurationMapper configurationMapper;
-    @Resource
-    protected SubcontractorMapper subcontractorMapper;
-    @Resource
-    protected PhoneNumberMapper phoneNumberMapper;
-    List<Subcontractor> subcontractors;
-    Map<String, Long> communityMap;
-    private CommonMapper<T> commonMapper;
-
-    /**
-     * 最先运行的方法，自动加载对应类型的Mapper
-     *
-     * @throws NoSuchFieldException
-     *             找不到参数异常
-     * @throws IllegalAccessException
-     *             错误转换异常
-     */
-    @PostConstruct
-    private void initBaseMapper() throws NoSuchFieldException, IllegalAccessException {
-        ParameterizedType type = (ParameterizedType)this.getClass().getGenericSuperclass();
-        Class<?> clazz = (Class<?>)type.getActualTypeArguments()[0];
-        String localField = clazz.getSimpleName().substring(0, 1).toLowerCase() + clazz.getSimpleName().substring(1);
-        Field field = this.getClass().getSuperclass().getDeclaredField(localField);
-        Field baseField = this.getClass().getSuperclass().getDeclaredField("commonMapper");
-        baseField.set(this, field.get(this));
-    }
+    private CommunityMapper communityMapper;
 
     @Override
     public List<T> get(T object) {
-        return commonMapper.selectByObject(object);
+        return baseMapper.selectByObject(object);
     }
 
     @Override
     public List<T> get(String nameAddress, Serializable id, Serializable subdistrictId) {
-        return commonMapper.selectByNameAndAddress(nameAddress, id, subdistrictId);
+        return baseMapper.selectByNameAndAddress(nameAddress, id, subdistrictId);
     }
 
     @Override
     public List<T> get(List<PhoneNumber> phoneNumbers, Serializable id, Serializable subdistrictId,
         PhoneNumberSourceTypeEnum sourceType) {
-        return commonMapper.selectByPhones(phoneNumbers, id, subdistrictId, sourceType);
+        return baseMapper.selectByPhones(phoneNumbers, id, subdistrictId, sourceType);
     }
 
     @Override
@@ -117,7 +69,8 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     }
 
     @Override
-    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
+    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap)
+        throws ParseException {
         return false;
     }
 
@@ -127,7 +80,7 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
         Integer pageDataSize) {
         List<Serializable> companyIds = getCommunityIds(systemUser, communityCompanyType, subdistrictCompanyType);
         Page<T> page = new Page<>(pageNumber, pageDataSize);
-        return commonMapper.selectAndCommunityByCommunityIds(page, companyIds, phoneNumberSourceTypeEnum);
+        return baseMapper.selectAndCommunityByCommunityIds(page, companyIds, phoneNumberSourceTypeEnum);
     }
 
     @Override
@@ -202,89 +155,6 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
     }
 
     /**
-     * 分包人处理
-     *
-     * @param name
-     *            分包人姓名
-     * @param mobile
-     *            分包人联系方式
-     * @param subcontractors
-     *            从数据库查询的分包人集合对象
-     * @param communityId
-     *            所属社区编号
-     * @return 分包人编号
-     */
-    @Transactional(rollbackFor = Exception.class)
-    Long addSubcontractorHandler(String name, String mobile, List<Subcontractor> subcontractors,
-        Serializable communityId) {
-        Long id = null;
-        for (Subcontractor subcontractor : subcontractors) {
-            if (name.equals(subcontractor.getName())) {
-                id = subcontractor.getId();
-                if (StringUtils.isEmpty(subcontractor.getPhoneNumbers().get(0).getPhoneNumber())) {
-                    PhoneNumber phoneNumber = phoneNumberMapper
-                        .selectBySourceTypeAndSourceId(PhoneNumberSourceTypeEnum.SUBCONTRACTOR, subcontractor.getId());
-                    phoneNumber.setPhoneNumber(mobile);
-                    DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-                    def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-                    subcontractorMapper.updateById(subcontractor);
-                    phoneNumberMapper.updateById(phoneNumber);
-                }
-                break;
-            }
-        }
-        if (id == null) {
-            Subcontractor newSubcontractor = new Subcontractor();
-            newSubcontractor.setName(name);
-            newSubcontractor.setCommunityId((Long)communityId);
-            List<String> numbers = new ArrayList<>();
-            numbers.add(mobile);
-            List<PhoneNumber> phoneNumbers = CommonUtil.setPhoneNumbers(numbers);
-            newSubcontractor.setPhoneNumbers(phoneNumbers);
-            DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-            def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-            subcontractorMapper.insert(newSubcontractor);
-            subcontractors.add(newSubcontractor);
-        }
-        return id;
-    }
-
-    /**
-     * 获取社区编号
-     *
-     * @param communityMap
-     *            社区集合
-     * @param communityName
-     *            社区名称
-     * @return 社区编号
-     */
-    Long getCommunityId(Map<String, Long> communityMap, String communityName) {
-        Long communityId;
-        if (!communityMap.containsKey(communityName)) {
-            communityId = (Long)communityMapper.selectIdByName(communityName);
-            if (communityId == null) {
-                throw new BusinessException("找不到社区名称为“" + communityName + "”的社区，请创建此社区后，重新导入！");
-            }
-            communityMap.put(communityName, communityId);
-        } else {
-            communityId = communityMap.get(communityName);
-        }
-        return communityId;
-    }
-
-    /**
-     * 设置社区变量
-     *
-     * @param subdistrictId
-     *            街道编号
-     */
-    void setCommunityVariables(Serializable subdistrictId) {
-        subcontractors = subcontractorMapper.selectList(null);
-        List<Community> communities = communityMapper.selectBySubdistrictId(subdistrictId);
-        communityMap = new HashMap<>(communities.size() + 1);
-    }
-
-    /**
      * 柱状图数据处理
      *
      * @param label
@@ -341,5 +211,19 @@ public abstract class BaseServiceImpl<M extends CommonMapper<T>, T> extends Serv
         company.put("companyId", companyId);
         company.put("companyType", companyType);
         return company;
+    }
+
+    protected PhoneNumber phoneHandler(String phone) {
+        if (PhoneUtil.isPhone(phone)) {
+            PhoneNumber phoneNumber = new PhoneNumber();
+            phoneNumber.setPhoneNumber(phone).setSourceType(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT);
+            if (PhoneUtil.isMobile(phone)) {
+                phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
+            } else {
+                phoneNumber.setPhoneType(PhoneTypeEnum.LANDLINE);
+            }
+            return phoneNumber;
+        }
+        return null;
     }
 }

@@ -10,4 +10,4 @@ import com.github.phonenumbermanager.entity.Configuration;
  * @author 廿二月的天
  */
 @Mapper
-public interface ConfigurationMapper extends CommonMapper<Configuration> {}
+public interface ConfigurationMapper extends BaseMapper<Configuration> {}

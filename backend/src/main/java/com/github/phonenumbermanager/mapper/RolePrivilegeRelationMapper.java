@@ -10,4 +10,4 @@ import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
  * @author 廿二月的天
  */
 @Mapper
-public interface RolePrivilegeRelationMapper extends CommonMapper<RolePrivilegeRelation> {}
+public interface RolePrivilegeRelationMapper extends BaseMapper<RolePrivilegeRelation> {}

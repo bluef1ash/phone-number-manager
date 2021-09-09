@@ -74,8 +74,5 @@ mybatis-plus:
             id-type: assign_id
 
 logging:
-    pattern:
-        console: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n %ex{5}"
-        file: "[%d{yyyy-MM-dd HH:mm:ss}] -- [%-5p]: [%c] -- %m%n"
     file:
         path: /var/log/phone-number-manager

@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.service;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +146,8 @@ public interface BaseService<T> extends IService<T> {
      *            系统配置
      * @return 导入的行数
      */
-    boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap);
+    boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap)
+        throws ParseException;
 
     /**
      * 通过编号关联查找

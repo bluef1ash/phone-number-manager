@@ -30,6 +30,7 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.poi.excel.StyleSet;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -234,7 +235,7 @@ public class CommunityResidentController extends BaseController {
             communityResidentService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData);
         String excelResidentTitleUp = Convert.toStr(configurationsMap.get("excel_resident_title_up"));
         String excelResidentTitle = Convert.toStr(configurationsMap.get("excel_resident_title"));
-        if (dataResult != null && dataResult.size() > 0) {
+        if (!dataResult.isEmpty()) {
             ExcelWriter excelWriter = ExcelUtil.getWriter();
             CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
             setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, false, false, false);
@@ -249,6 +250,11 @@ public class CommunityResidentController extends BaseController {
             setCellStyle(dateRowStyle, excelWriter, "宋体", (short)11, false, false, true);
             excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6, 1, new Date(), dateRowStyle);
             excelWriter.passCurrentRow();
+            StyleSet styleSet = excelWriter.getStyleSet();
+            CellStyle headCellStyle = styleSet.getHeadCellStyle();
+            setCellStyle(headCellStyle, excelWriter, "宋体", (short)11, false, true, false);
+            CellStyle cellStyle = styleSet.getCellStyle();
+            setCellStyle(cellStyle, excelWriter, "宋体", (short)9, false, true, true);
             excelWriter.write(dataResult, true);
             excelWriter.setColumnWidth(-1, 22);
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

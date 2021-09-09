@@ -16,7 +16,7 @@ import com.github.phonenumbermanager.entity.Subcontractor;
  * @author 廿二月的天
  */
 @Mapper
-public interface SubcontractorMapper extends CommonMapper<Subcontractor> {
+public interface SubcontractorMapper extends BaseMapper<Subcontractor> {
     /**
      * 通过所属社区编号编号查询
      *

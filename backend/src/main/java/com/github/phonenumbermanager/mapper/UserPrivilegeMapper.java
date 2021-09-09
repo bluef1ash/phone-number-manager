@@ -15,7 +15,7 @@ import com.github.phonenumbermanager.entity.UserPrivilege;
  * @author 廿二月的天
  */
 @Mapper
-public interface UserPrivilegeMapper extends CommonMapper<UserPrivilege> {
+public interface UserPrivilegeMapper extends BaseMapper<UserPrivilege> {
     /**
      * 通过角色ID查询
      *

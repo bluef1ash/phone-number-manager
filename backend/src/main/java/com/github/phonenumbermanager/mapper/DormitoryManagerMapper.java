@@ -16,7 +16,7 @@ import com.github.phonenumbermanager.entity.DormitoryManager;
  * @author 廿二月的天
  */
 @Mapper
-public interface DormitoryManagerMapper extends CommonMapper<DormitoryManager> {
+public interface DormitoryManagerMapper extends BaseMapper<DormitoryManager> {
 
     /**
      * 通过社区编号查询最后一个编号

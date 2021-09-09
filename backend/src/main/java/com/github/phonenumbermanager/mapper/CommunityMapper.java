@@ -16,7 +16,7 @@ import com.github.phonenumbermanager.entity.Community;
  * @author 廿二月的天
  */
 @Mapper
-public interface CommunityMapper extends CommonMapper<Community> {
+public interface CommunityMapper extends BaseMapper<Community> {
     /**
      * 通过主键ID查询社区和所属街道
      *

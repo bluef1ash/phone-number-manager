@@ -74,11 +74,4 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      */
     Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType, Boolean typeParam,
         Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType);
-
-    /**
-     * 获取文件标题
-     *
-     * @return 文件标题
-     */
-    String getFileTitle();
 }

@@ -19,7 +19,7 @@ import com.github.phonenumbermanager.entity.Subdistrict;
  * @author 廿二月的天
  */
 @Mapper
-public interface SubdistrictMapper extends CommonMapper<Subdistrict> {
+public interface SubdistrictMapper extends BaseMapper<Subdistrict> {
     /**
      * 通过社区编号查询所属街道及社区
      *

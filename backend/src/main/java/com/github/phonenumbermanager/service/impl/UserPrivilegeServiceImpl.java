@@ -3,12 +3,16 @@ package com.github.phonenumbermanager.service.impl;
 import java.io.Serializable;
 import java.util.*;
 
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
 import com.github.phonenumbermanager.entity.UserPrivilege;
+import com.github.phonenumbermanager.mapper.RolePrivilegeRelationMapper;
+import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
 
@@ -20,10 +24,14 @@ import com.github.phonenumbermanager.service.UserPrivilegeService;
 @Service("userPrivilegeService")
 public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMapper, UserPrivilege>
     implements UserPrivilegeService {
+    @Resource
+    private RolePrivilegeRelationMapper rolePrivilegeRelationMapper;
+    @Resource
+    private SystemUserMapper systemUserMapper;
 
     @Override
     public Set<UserPrivilege> getByRoleId(Serializable roleId) {
-        return userPrivilegeMapper.selectByRoleId(roleId);
+        return baseMapper.selectByRoleId(roleId);
     }
 
     @Override
@@ -33,22 +41,17 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
 
     @Override
     public Set<UserPrivilege> getForSub() {
-        Set<UserPrivilege> userPrivileges = new HashSet<>(userPrivilegeMapper.selectList(null));
+        Set<UserPrivilege> userPrivileges = new HashSet<>(baseMapper.selectList(null));
         return getAndSubPrivileges(userPrivileges, null, 0L);
     }
 
     @Override
     public LinkedList<UserPrivilege> getAndHandler() {
-        List<UserPrivilege> userPrivileges = userPrivilegeMapper.selectList(null);
+        List<UserPrivilege> userPrivileges = baseMapper.selectList(null);
         LinkedList<UserPrivilege> privileges = new LinkedList<>();
         getAndSubPrivileges(privileges, userPrivileges, 0L, 0);
         for (UserPrivilege userPrivilege : privileges) {
-            StringBuilder name = new StringBuilder();
-            name.append("|");
-            for (int i = 0; i < userPrivilege.getLevel(); i++) {
-                name.append("  ");
-            }
-            name.append("┗");
+            String name = "|" + "  ".repeat(Math.max(0, userPrivilege.getLevel())) + "┗";
             userPrivilege.setName(name + userPrivilege.getName());
         }
         return privileges;
@@ -63,7 +66,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
         QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
         wrapper.eq("privilege_id", id);
         if (rolePrivilegeRelationMapper.delete(wrapper) > 0) {
-            return userPrivilegeMapper.deleteById(id) > 0;
+            return baseMapper.deleteById(id) > 0;
         }
         return false;
     }

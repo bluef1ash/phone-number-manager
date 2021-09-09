@@ -29,6 +29,7 @@ import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.poi.excel.style.StyleUtil;
 
 /**
  * 控制器父类
@@ -143,17 +144,13 @@ abstract class BaseController {
      * @param isWrapText
      *            是否自动换行
      */
-    public void setCellStyle(CellStyle cellStyle, ExcelWriter excelWriter, String fontName, short fontHeight,
+    protected void setCellStyle(CellStyle cellStyle, ExcelWriter excelWriter, String fontName, short fontHeight,
         boolean isBold, boolean isBorder, boolean isWrapText) {
-        cellStyle.setFillPattern(FillPatternType.NO_FILL);
+        StyleUtil.setColor(cellStyle, IndexedColors.AUTOMATIC, FillPatternType.NO_FILL);
         if (isBorder) {
-            cellStyle.setBorderBottom(BorderStyle.THIN);
-            cellStyle.setBorderLeft(BorderStyle.THIN);
-            cellStyle.setBorderRight(BorderStyle.THIN);
-            cellStyle.setBorderTop(BorderStyle.THIN);
+            StyleUtil.setBorder(cellStyle, BorderStyle.THIN, IndexedColors.BLACK);
         }
-        cellStyle.setAlignment(HorizontalAlignment.CENTER);
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        StyleUtil.setAlign(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
         Font font = excelWriter.createFont();
         font.setFontName(fontName);
         font.setFontHeightInPoints(fontHeight);

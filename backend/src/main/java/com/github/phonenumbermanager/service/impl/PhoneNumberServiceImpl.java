@@ -27,6 +27,6 @@ public class PhoneNumberServiceImpl extends BaseServiceImpl<PhoneNumberMapper, P
         Map<String, Object> columnMap = new HashMap<>(2);
         columnMap.put("sourceType", sourceType);
         columnMap.put("sourceId", sourceId);
-        return phoneNumberMapper.deleteByMap(columnMap) > 0;
+        return baseMapper.deleteByMap(columnMap) > 0;
     }
 }

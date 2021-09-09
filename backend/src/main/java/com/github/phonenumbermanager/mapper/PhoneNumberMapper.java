@@ -14,7 +14,7 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
  * @author 廿二月的天
  */
 @Mapper
-public interface PhoneNumberMapper extends CommonMapper<PhoneNumber> {
+public interface PhoneNumberMapper extends BaseMapper<PhoneNumber> {
     /**
      * 通过来源类型与来源编号查询
      *

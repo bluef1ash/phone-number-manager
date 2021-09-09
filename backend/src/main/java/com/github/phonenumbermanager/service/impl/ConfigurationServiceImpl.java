@@ -22,9 +22,9 @@ public class ConfigurationServiceImpl extends BaseServiceImpl<ConfigurationMappe
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable key) {
-        Configuration configuration = configurationMapper.selectById(key);
+        Configuration configuration = baseMapper.selectById(key);
         if (configuration.getKeyIsChanged()) {
-            configurationMapper.deleteById(key);
+            baseMapper.deleteById(key);
             return true;
         }
         throw new BusinessException("不允许删除内置系统配置");

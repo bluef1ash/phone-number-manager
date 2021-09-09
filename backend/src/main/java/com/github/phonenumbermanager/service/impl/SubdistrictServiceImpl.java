@@ -3,8 +3,9 @@ package com.github.phonenumbermanager.service.impl;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +15,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Subdistrict;
-import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.mapper.SubdistrictMapper;
 import com.github.phonenumbermanager.service.SubdistrictService;
 
@@ -27,19 +28,15 @@ import com.github.phonenumbermanager.service.SubdistrictService;
 @Service("subdistrictService")
 public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, Subdistrict>
     implements SubdistrictService {
-
-    @Override
-    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
-        Serializable systemCompanyType, Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        return null;
-    }
+    @Resource
+    private CommunityMapper communityMapper;
 
     @Override
     public IPage<Subdistrict> getCorrelation(Integer pageNumber, Integer pageDataSize) {
         pageNumber = pageNumber == null ? 1 : pageNumber;
         pageDataSize = pageDataSize == null ? 10 : pageDataSize;
         Page<Subdistrict> page = new Page<>(pageNumber, pageDataSize);
-        return subdistrictMapper.selectAndPhoneNumbersAll(page);
+        return baseMapper.selectAndPhoneNumbersAll(page);
     }
 
     @Override
@@ -49,14 +46,14 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, S
         if (communityCompanyType.equals(userLevel.getValue())) {
             // 社区角色
             subdistricts = new HashSet<>();
-            Subdistrict subdistrict = subdistrictMapper.selectOneAndCommunityByCommunityId(companyId);
+            Subdistrict subdistrict = baseMapper.selectOneAndCommunityByCommunityId(companyId);
             subdistricts.add(subdistrict);
         } else if (subdistrictCompanyType.equals(userLevel.getValue())) {
             // 街道角色
-            subdistricts = subdistrictMapper.selectCorrelationAndCommunityById(companyId);
+            subdistricts = baseMapper.selectCorrelationAndCommunityById(companyId);
         } else {
             // 管理员角色
-            subdistricts = subdistrictMapper.selectAndCommunities();
+            subdistricts = baseMapper.selectAndCommunities();
         }
         return subdistricts;
     }
@@ -68,11 +65,11 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, S
         if (communities != null && communities.size() > 0) {
             throw new BusinessException("不允许删除存在下属社区的街道单位！");
         }
-        return subdistrictMapper.deleteById(id) > 0;
+        return baseMapper.deleteById(id) > 0;
     }
 
     @Override
     public Subdistrict getCorrelation(Serializable id) {
-        return subdistrictMapper.selectCorrelationAndPhoneNumbersById(id);
+        return baseMapper.selectCorrelationAndPhoneNumbersById(id);
     }
 }

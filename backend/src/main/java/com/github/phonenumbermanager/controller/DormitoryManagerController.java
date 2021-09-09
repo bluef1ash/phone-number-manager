@@ -1,11 +1,14 @@
 package com.github.phonenumbermanager.controller;
 
+import java.io.IOException;
 import java.util.*;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -17,6 +20,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.constant.GenderEnum;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.DormitoryManager;
+import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
@@ -25,6 +29,10 @@ import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.validator.DormitoryManagerInputValidator;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.poi.excel.StyleSet;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -230,15 +238,75 @@ public class DormitoryManagerController extends BaseController {
         String excelDormitoryTitleUp = Convert.toStr(configurationsMap.get("excel_dormitory_title_up"));
         String excelDormitoryTitle = Convert.toStr(configurationsMap.get("excel_dormitory_title"));
         // 获取业务数据集
-        List<LinkedHashMap<String, Object>> dataJson =
+        List<LinkedHashMap<String, Object>> dataResult =
             dormitoryManagerService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData);
-        /*try {
-            ByteArrayOutputStream byteArrayOutputStream = ExcelUtil.exportExcelX(excelDormitoryTitle, headMap, dataJson, 0, excelDataHandler);
-            ExcelUtil.downloadExcelFile(response, request, dormitoryManagerService.getFileTitle(), byteArrayOutputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException("导出Excel文件失败！");
-        }*/
+        if (!dataResult.isEmpty()) {
+            ExcelWriter excelWriter = ExcelUtil.getWriter();
+            CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+            setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, false, false, false);
+            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, 1, excelDormitoryTitleUp,
+                firstRowStyle);
+            excelWriter.passCurrentRow();
+            CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+            setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
+            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0,
+                dataResult.get(0).keySet().size(), excelDormitoryTitle, titleStyle);
+            excelWriter.passCurrentRow();
+            StyleSet styleSet = excelWriter.getStyleSet();
+            CellStyle headCellStyle = styleSet.getHeadCellStyle();
+            setCellStyle(headCellStyle, excelWriter, "宋体", (short)11, false, true, false);
+            CellStyle cellStyle = styleSet.getCellStyle();
+            setCellStyle(cellStyle, excelWriter, "宋体", (short)9, false, true, true);
+            Map<String, String> tableHead = new LinkedHashMap<>();
+            tableHead.put("sequenceNumber", "序号");
+            tableHead.put("communityName", "社区名称");
+            tableHead.put("id", "编号");
+            tableHead.put("name", "姓名");
+            tableHead.put("genderName", "性别");
+            tableHead.put("birthString", "出生年月");
+            tableHead.put("politicalStatusName", "政治面貌");
+            tableHead.put("workStatusName", "工作状况");
+            tableHead.put("educationName", "文化程度");
+            tableHead.put("address", "家庭住址（具体到单元号、楼号）");
+            tableHead.put("managerAddress", "分包楼栋（具体到单元号、楼号）");
+            tableHead.put("managerCount", "联系户数");
+            tableHead.put("telephone", "手机");
+            tableHead.put("landline", "座机");
+            tableHead.put("subcontractorName", "姓名");
+            tableHead.put("subcontractorTelephone", "手机");
+            excelWriter.setHeaderAlias(tableHead);
+            int index = 0;
+            for (String value : tableHead.values()) {
+                if (index == tableHead.size() - 2) {
+                    excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), index, index + 1, "分包人",
+                        true);
+                    excelWriter.writeCellValue(excelWriter.getCurrentRow() + 1, index, value);
+                } else if (index == tableHead.size() - 1) {
+                    excelWriter.writeCellValue(excelWriter.getCurrentRow() + 1, index, value);
+                } else {
+                    excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow() + 1, index, index, value,
+                        true);
+                }
+                index++;
+            }
+            excelWriter.passCurrentRow();
+            excelWriter.passCurrentRow();
+            excelWriter.write(dataResult, false);
+            excelWriter.setColumnWidth(-1, 22);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.addHeader("Content-Disposition",
+                "attachment;filename=" + excelDormitoryTitle + System.currentTimeMillis() + ".xlsx");
+            try {
+                ServletOutputStream outputStream = response.getOutputStream();
+                excelWriter.flush(outputStream, true);
+                IoUtil.close(outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new BusinessException("导出Excel文件失败！");
+            } finally {
+                excelWriter.close();
+            }
+        }
     }
 
     /**

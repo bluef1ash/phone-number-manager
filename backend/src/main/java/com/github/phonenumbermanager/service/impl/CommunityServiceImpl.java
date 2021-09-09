@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,8 @@ import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CommunityMapper;
+import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
+import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.service.CommunityService;
 
 /**
@@ -24,10 +28,14 @@ import com.github.phonenumbermanager.service.CommunityService;
  */
 @Service("communityService")
 public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Community> implements CommunityService {
+    @Resource
+    private CommunityResidentMapper communityResidentMapper;
+    @Resource
+    private DormitoryManagerMapper dormitoryManagerMapper;
 
     @Override
     public Community getCorrelation(Serializable communityId) {
-        return communityMapper.selectAndSubdistrictById(communityId);
+        return baseMapper.selectAndSubdistrictById(communityId);
     }
 
     @Override
@@ -35,12 +43,12 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
         pageNumber = pageNumber == null ? 1 : pageNumber;
         pageDataSize = pageDataSize == null ? 10 : pageDataSize;
         Page<Community> page = new Page<>(pageNumber, pageDataSize);
-        return communityMapper.selectAndSubdistrictAll(page);
+        return baseMapper.selectAndSubdistrictAll(page);
     }
 
     @Override
     public List<Community> getCorrelation() {
-        return communityMapper.selectAndSubdistrictAll();
+        return baseMapper.selectAndSubdistrictAll();
     }
 
     @Override
@@ -49,19 +57,19 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
         List<Community> communities;
         if (communityCompanyType.equals(systemUser.getLevel().getValue())) {
             communities = new ArrayList<>();
-            Community community = communityMapper.selectCorrelationById(systemUser.getCompanyId());
+            Community community = baseMapper.selectCorrelationById(systemUser.getCompanyId());
             communities.add(community);
         } else if (subdistrictCompanyType.equals(systemUser.getLevel().getValue())) {
-            communities = communityMapper.selectCorrelationBySubdistrictId(systemUser.getCompanyId());
+            communities = baseMapper.selectCorrelationBySubdistrictId(systemUser.getCompanyId());
         } else {
-            communities = communityMapper.selectCorrelationSubdistrictsAll();
+            communities = baseMapper.selectCorrelationSubdistrictsAll();
         }
         return communities;
     }
 
     @Override
     public List<Community> getBySubdistrictId(Serializable subdistrictId) {
-        return communityMapper.selectBySubdistrictId(subdistrictId);
+        return baseMapper.selectBySubdistrictId(subdistrictId);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -87,7 +95,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
 
     @Override
     public boolean isSubmittedById(Integer submitType, Serializable id) {
-        return communityMapper.selectSubmittedById(submitType, id);
+        return baseMapper.selectSubmittedById(submitType, id);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -101,7 +109,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
         if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
-        communityMapper.deleteById(id);
+        baseMapper.deleteById(id);
         return true;
     }
 }

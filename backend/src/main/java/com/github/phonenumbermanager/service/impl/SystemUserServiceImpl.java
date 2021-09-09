@@ -31,7 +31,9 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 import com.github.phonenumbermanager.entity.UserRole;
 import com.github.phonenumbermanager.exception.SystemClosedException;
+import com.github.phonenumbermanager.mapper.RolePrivilegeRelationMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
+import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.RedisUtil;
 
@@ -48,10 +50,14 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     private AuthenticationManagerBuilder authenticationManagerBuilder;
     @Resource
     private RedisUtil redisUtil;
+    @Resource
+    private UserPrivilegeMapper userPrivilegeMapper;
+    @Resource
+    private RolePrivilegeRelationMapper rolePrivilegeRelationMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
-        SystemUser systemUser = systemUserMapper.selectAndRolesByName(username);
+        SystemUser systemUser = baseMapper.selectAndRolesByName(username);
         @SuppressWarnings("all")
         Map<String, Object> configurationsMap =
             (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
@@ -112,7 +118,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
         systemUser.setLoginTime(new Date(0));
-        return systemUserMapper.insert(systemUser) > 0;
+        return baseMapper.insert(systemUser) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -122,23 +128,23 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
             systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
         }
-        return systemUserMapper.updateById(systemUser) > 0;
+        return baseMapper.updateById(systemUser) > 0;
     }
 
     @Override
     public IPage<SystemUser> getCorrelation(Integer pageNumber, Integer pageDataSize) {
         Page<SystemUser> page = new Page<>(pageNumber, pageDataSize);
-        return systemUserMapper.selectAndRoles(page);
+        return baseMapper.selectAndRoles(page);
     }
 
     @Override
     public SystemUser getCorrelation(Serializable id) {
-        return systemUserMapper.selectAndRoleById(id);
+        return baseMapper.selectAndRoleById(id);
     }
 
     @Override
     public List<SystemUser> getIdAndName() {
-        return systemUserMapper.selectIdAndName();
+        return baseMapper.selectIdAndName();
     }
 
     @Override

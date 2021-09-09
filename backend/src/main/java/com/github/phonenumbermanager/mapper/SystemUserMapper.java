@@ -16,7 +16,7 @@ import com.github.phonenumbermanager.entity.SystemUser;
  * @author 廿二月的天
  */
 @Mapper
-public interface SystemUserMapper extends CommonMapper<SystemUser> {
+public interface SystemUserMapper extends BaseMapper<SystemUser> {
     /**
      * 查询所有系统用户与所属角色
      *

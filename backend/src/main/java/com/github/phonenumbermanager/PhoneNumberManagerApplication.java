@@ -18,7 +18,7 @@ import springfox.documentation.oas.annotations.EnableOpenApi;
 @EnableScheduling
 @EnableTransactionManagement
 @EnableOpenApi
-@MapperScan("com.github.phonenumbermanager.mapper.*Mapper")
+@MapperScan("com.github.phonenumbermanager.mapper")
 public class PhoneNumberManagerApplication {
     public static void main(String[] args) {
         SpringApplication.run(PhoneNumberManagerApplication.class, args);

@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.github.phonenumbermanager.constant.ConfigurationTypeEnum;
 
 import io.swagger.annotations.ApiModel;
@@ -19,6 +21,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ApiModel("配置项对象实体")
 public class Configuration extends BaseEntity<Configuration> {
+    @TableId(type = IdType.INPUT, value = "`key`")
     private String key;
     private ConfigurationTypeEnum type;
     private String value;

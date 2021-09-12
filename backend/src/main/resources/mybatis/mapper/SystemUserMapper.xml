@@ -10,9 +10,6 @@
         <result column="is_enabled" property="isEnabled"/>
         <result column="account_expire_time" property="accountExpireTime"/>
         <result column="credential_expire_time" property="credentialExpireTime"/>
-        <result column="level" property="level"
-                typeHandler="com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler"/>
-        <result column="company_id" property="companyId"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>
@@ -40,8 +37,6 @@
             `pm_system_user`.`credential_expire_time`,
             `pm_system_user`.`create_time` AS 'system_user_create_time',
             `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_system_user`.`level`,
-            `pm_system_user`.`company_id`,
             `pm_role`.`name` AS 'role_name',
             `pm_role`.`description` AS 'role_description'
         FROM `pm_system_user`
@@ -59,8 +54,6 @@
             `pm_system_user`.company_id,
             `pm_system_user`.`create_time` AS 'system_user_create_time',
             `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_system_user`.`level`,
-            `pm_system_user`.`company_id`,
             `pm_role`.`name` AS 'role_name'
         FROM `pm_system_user`
                  LEFT JOIN `pm_user_role` ON `pm_system_user`.`id` = `pm_user_role`.`user_id`
@@ -79,8 +72,6 @@
             `pm_system_user`.`credential_expire_time`,
             `pm_system_user`.`create_time` AS 'system_user_create_time',
             `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_system_user`.`level`,
-            `pm_system_user`.`company_id`,
             `pm_role`.`name` AS 'role_name',
             `pm_role`.`description` AS 'role_description',
             `pm_role`.`parent_id` AS 'role_parent_id'
@@ -105,8 +96,6 @@
             `pm_system_user`.`credential_expire_time`,
             `pm_system_user`.`create_time` AS 'system_user_create_time',
             `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_system_user`.`level`,
-            `pm_system_user`.`company_id`,
             `pm_user_role`.`role_id`
         FROM `pm_system_user`
                  LEFT JOIN `pm_user_role` ON `pm_system_user`.`id` = `pm_user_role`.`user_id`

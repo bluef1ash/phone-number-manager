@@ -3,7 +3,6 @@ package com.github.phonenumbermanager.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Subcontractor;
-import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
@@ -176,9 +174,11 @@ public class CommunityController extends BaseController {
         Map<String, Object> jsonMap = new HashMap<>(3);
         getRoleId();
         if (subdistrictId == null) {
-            Set<Subdistrict> subdistricts = subdistrictService.getCorrelation(systemCompanyType, communityCompanyType,
-                subdistrictCompanyType, systemUser.getLevel(), systemUser.getCompanyId());
-            jsonMap.put("subdistricts", subdistricts);
+            //// TODO: 2021/9/12 0012 用户权限
+            // Set<Subdistrict> subdistricts = subdistrictService.getCorrelation(systemCompanyType,
+            //// communityCompanyType,
+            // subdistrictCompanyType, systemUser.getLevel(), systemUser.getCompanyId());
+            // jsonMap.put("subdistricts", subdistricts);
         } else {
             List<Community> communities = communityService.getBySubdistrictId(subdistrictId);
             jsonMap.put("communities", communities);
@@ -223,13 +223,14 @@ public class CommunityController extends BaseController {
         @ApiParam(name = "每页数据条数") Integer limit) {
         getRoleId();
         Map<String, Object> jsonMap = new HashMap<>(1);
-        if (page == null) {
+        // // TODO: 2021/9/12 0012
+        /*if (page == null) {
             jsonMap.put("subcontractors", subcontractorService.get(systemUser.getLevel(), systemUser.getCompanyId(),
                 systemCompanyType, communityCompanyType, subdistrictCompanyType));
         } else {
             jsonMap.put("subcontractors", subcontractorService.get(page, limit, systemUser.getLevel(),
                 systemUser.getCompanyId(), systemCompanyType, communityCompanyType, subdistrictCompanyType));
-        }
+        }*/
         return jsonMap;
     }
 

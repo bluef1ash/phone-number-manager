@@ -94,7 +94,8 @@ public class CommunityResidentController extends BaseController {
         jsonMap.put("systemCompanyType", systemCompanyType);
         jsonMap.put("communityCompanyType", communityCompanyType);
         jsonMap.put("subdistrictCompanyType", subdistrictCompanyType);
-        jsonMap.put("companyType", systemUser.getLevel());
+        // TODO: 2021/9/12 0012 用户权限
+        // jsonMap.put("companyType", systemUser.getLevel());
         jsonMap.put("dataType", 0);
         IPage<CommunityResident> communityResidents;
         if (isSearch != null && isSearch) {
@@ -214,7 +215,7 @@ public class CommunityResidentController extends BaseController {
             jsonMap.put("state", 1);
             jsonMap.put("create", communityResidentService.save(data, subdistrictId, configurationsMap));
             return jsonMap;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new JsonException("上传文件失败！", e);
         }

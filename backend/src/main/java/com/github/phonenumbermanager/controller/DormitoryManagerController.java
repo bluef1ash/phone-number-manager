@@ -99,7 +99,8 @@ public class DormitoryManagerController extends BaseController {
         jsonMap.put("systemCompanyType", systemCompanyType);
         jsonMap.put("communityCompanyType", communityCompanyType);
         jsonMap.put("subdistrictCompanyType", subdistrictCompanyType);
-        jsonMap.put("companyType", systemUser.getLevel());
+        // TODO: 2021/9/12 0012 用户权限
+        // jsonMap.put("companyType", systemUser.getLevel());
         IPage<DormitoryManager> dormitoryManagers;
         if (isSearch != null && isSearch) {
             DormitoryManager dormitoryManager = new DormitoryManager();

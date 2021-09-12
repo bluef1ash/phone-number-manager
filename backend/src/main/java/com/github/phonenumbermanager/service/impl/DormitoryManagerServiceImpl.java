@@ -285,8 +285,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         String companyLabel = null;
         LinkedList<Map<String, Object>> dormitoryManager;
         long ct = (long)(companyType == null ? 0L : companyType);
-        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
-            || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
+        // TODO: 2021/9/12 0012 用户权限
+        // boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
+        // || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
         if (companyType == null || ct == (int)systemCompanyType) {
             companyLabel = "街道";
             if (typeParam) {
@@ -295,22 +296,22 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             } else {
                 dormitoryManager = baseMapper.sumManagerCountForGroupSubdistrict();
             }
-        } else if (isSystemRoleCount) {
-            companyLabel = "社区";
-            if (typeParam) {
-                label = "社区楼长总人数";
-                dormitoryManager = baseMapper.countForGroupCommunity(companyId);
-            } else {
-                dormitoryManager = baseMapper.sumManagerCountForGroupCommunity(companyId);
-            }
-        } else if ((int)communityCompanyType == systemUser.getLevel().getValue()) {
-            companyLabel = "社区";
-            if (typeParam) {
-                label = "社区楼长总人数";
-                dormitoryManager = baseMapper.countForGroupByCommunityId(companyId);
-            } else {
-                dormitoryManager = baseMapper.sumManagerCountForGroupByCommunityId(companyId);
-            }
+            // } else if (isSystemRoleCount) {
+            // companyLabel = "社区";
+            // if (typeParam) {
+            // label = "社区楼长总人数";
+            // dormitoryManager = baseMapper.countForGroupCommunity(companyId);
+            // } else {
+            // dormitoryManager = baseMapper.sumManagerCountForGroupCommunity(companyId);
+            // }
+            // } else if ((int)communityCompanyType == systemUser.getLevel().getValue()) {
+            // companyLabel = "社区";
+            // if (typeParam) {
+            // label = "社区楼长总人数";
+            // dormitoryManager = baseMapper.countForGroupByCommunityId(companyId);
+            // } else {
+            // dormitoryManager = baseMapper.sumManagerCountForGroupByCommunityId(companyId);
+            // }
         } else {
             dormitoryManager = new LinkedList<>();
         }

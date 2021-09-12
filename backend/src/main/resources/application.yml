@@ -11,42 +11,12 @@ server:
             io: 8
             worker: 64
 
-# 数据库访问配置
 spring:
     profiles:
         active: @profileActive@
 
-    datasource:
-        type: com.alibaba.druid.pool.DruidDataSource
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        host: 127.0.0.1
-        port: 3306
-        url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/phone_number?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=GMT%2B8&allowMultiQueries=true
-        username: root
-        password: root
-        initialization-mode: always
-        continue-on-error: true
-        sql-script-encoding: UTF-8
-        druid:
-            initial-size: 25
-            min-idle: 5
-            max-active: 100
-            max-wait: 60000
-            time-between-eviction-runs-millis: 60000
-            min-evictable-idle-time-millis: 300000
-            validation-query: SELECT 1 FROM DUAL
-            test-while-idle: true
-            test-on-borrow: false
-            test-on-return: false
-
     main:
         allow-bean-definition-overriding: true
-
-    redis:
-        host-alias: 127.0.0.1
-        port-alias: 6379
-        host: ${spring.redis.host-alias}
-        port: ${spring.redis.port-alias}
 
     mvc:
         throw-exception-if-no-handler-found: true
@@ -72,7 +42,3 @@ mybatis-plus:
         db-config:
             table-prefix: pm_
             id-type: assign_id
-
-logging:
-    file:
-        path: /var/log/phone-number-manager

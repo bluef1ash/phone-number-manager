@@ -1,7 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -54,16 +53,17 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
     @Override
     public List<Community> get(SystemUser systemUser, Serializable communityCompanyType,
         Serializable subdistrictCompanyType) {
-        List<Community> communities;
-        if (communityCompanyType.equals(systemUser.getLevel().getValue())) {
-            communities = new ArrayList<>();
-            Community community = baseMapper.selectCorrelationById(systemUser.getCompanyId());
-            communities.add(community);
-        } else if (subdistrictCompanyType.equals(systemUser.getLevel().getValue())) {
-            communities = baseMapper.selectCorrelationBySubdistrictId(systemUser.getCompanyId());
-        } else {
-            communities = baseMapper.selectCorrelationSubdistrictsAll();
-        }
+        List<Community> communities = null;
+        // TODO: 2021/9/12 0012 用户权限
+        // if (communityCompanyType.equals(systemUser.getLevel().getValue())) {
+        // communities = new ArrayList<>();
+        // Community community = baseMapper.selectCorrelationById(systemUser.getCompanyId());
+        // communities.add(community);
+        // } else if (subdistrictCompanyType.equals(systemUser.getLevel().getValue())) {
+        // communities = baseMapper.selectCorrelationBySubdistrictId(systemUser.getCompanyId());
+        // } else {
+        // communities = baseMapper.selectCorrelationSubdistrictsAll();
+        // }
         return communities;
     }
 

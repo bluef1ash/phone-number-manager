@@ -180,15 +180,16 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         String companyLabel = "社区";
         LinkedList<Map<String, Object>> communityResidents;
         long ct = (long)(companyType == null ? 0L : companyType);
-        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
-            || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
+        // TODO: 2021/9/12 0012 用户权限
+        // boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
+        // || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
         if (companyType == null || ct == (int)systemCompanyType) {
             companyLabel = "街道";
             communityResidents = baseMapper.countForGroupSubdistrict();
-        } else if (isSystemRoleCount) {
-            communityResidents = baseMapper.countForGroupCommunity(companyId);
-        } else if ((int)communityCompanyType == (long)systemUser.getLevel().getValue()) {
-            communityResidents = baseMapper.countForGroupByCommunityId(companyId);
+            // } else if (isSystemRoleCount) {
+            // communityResidents = baseMapper.countForGroupCommunity(companyId);
+            // } else if ((int)communityCompanyType == (long)systemUser.getLevel().getValue()) {
+            // communityResidents = baseMapper.countForGroupByCommunityId(companyId);
         } else {
             communityResidents = new LinkedList<>();
         }

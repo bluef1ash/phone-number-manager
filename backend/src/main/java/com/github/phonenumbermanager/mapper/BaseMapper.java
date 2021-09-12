@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
@@ -217,6 +218,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      * @throws DataAccessException
      *             数据库操作异常
      */
+    @MapKey("name")
     LinkedList<Map<String, Object>> countForGroupSubdistrict() throws DataAccessException;
 
     /**
@@ -228,6 +230,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      * @throws DataAccessException
      *             数据库操作异常
      */
+    @MapKey("name")
     LinkedList<Map<String, Object>> countForGroupCommunity(Serializable subdistrictId) throws DataAccessException;
 
     /**
@@ -239,6 +242,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      * @throws DataAccessException
      *             数据库操作异常
      */
+    @MapKey("name")
     LinkedList<Map<String, Object>> countForGroupByCommunityId(Serializable communityId) throws DataAccessException;
 
     /**

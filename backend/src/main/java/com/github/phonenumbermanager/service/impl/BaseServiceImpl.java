@@ -14,7 +14,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.PhoneTypeEnum;
-import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.BaseMapper;
@@ -113,10 +112,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      */
     List<Serializable> getCommunityIds(SystemUser systemUser, Serializable communityCompanyType,
         Serializable subdistrictCompanyType) {
-        Integer level = systemUser.getLevel().getValue();
-        Long companyId = systemUser.getCompanyId();
+        // TODO: 2021/9/12 0012 用户权限
+        // Integer level = systemUser.getLevel().getValue();
+        // Long companyId = systemUser.getCompanyId();
         List<Serializable> communityIds = new ArrayList<>();
-        if (level.equals(communityCompanyType)) {
+        /*if (level.equals(communityCompanyType)) {
             communityIds.add(companyId);
         } else if (level.equals(subdistrictCompanyType)) {
             List<Community> communities = communityMapper.selectCorrelationBySubdistrictId(companyId);
@@ -125,7 +125,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
             }
         } else {
             communityIds = null;
-        }
+        }*/
         return communityIds;
     }
 
@@ -204,8 +204,9 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      */
     Map<String, Object> getCompany(SystemUser systemUser, Serializable companyId, Serializable companyType) {
         if (companyType == null || companyId == null) {
-            companyType = systemUser.getLevel();
-            companyId = systemUser.getCompanyId();
+            // TODO: 2021/9/12 0012 用户权限
+            // companyType = systemUser.getLevel();
+            // companyId = systemUser.getCompanyId();
         }
         Map<String, Object> company = new HashMap<>(3);
         company.put("companyId", companyId);

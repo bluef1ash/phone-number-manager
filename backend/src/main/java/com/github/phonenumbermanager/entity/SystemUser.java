@@ -11,8 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.Version;
-import com.github.phonenumbermanager.constant.UserLevelEnum;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -29,7 +27,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Accessors(chain = true)
 @ApiModel("系统用户对象实体")
-public class SystemUser implements UserDetails {
+public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     Collection<? extends GrantedAuthority> authorities;
@@ -44,14 +42,6 @@ public class SystemUser implements UserDetails {
     private Date accountExpireTime;
     @TableField(fill = FieldFill.INSERT)
     private Date credentialExpireTime;
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-    @Version
-    private Integer version;
-    private UserLevelEnum level;
-    private Long companyId;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<UserRole> userRoles;
@@ -96,11 +86,10 @@ public class SystemUser implements UserDetails {
         boolean isEqual = false;
         if (object != null && SystemUser.class.isAssignableFrom(object.getClass())) {
             SystemUser systemUser = (SystemUser)object;
-            isEqual = new EqualsBuilder().append(getCompanyId(), systemUser.getCompanyId())
-                .append(getId(), systemUser.getId()).append(getUsername(), systemUser.getUsername())
+            isEqual = new EqualsBuilder().append(getId(), systemUser.getId())
+                .append(getUsername(), systemUser.getUsername())
                 .append(isAccountNonLocked(), systemUser.isAccountNonLocked())
                 .append(getCreateTime(), systemUser.getCreateTime()).append(getUpdateTime(), systemUser.getUpdateTime())
-                .append(getLevel(), systemUser.getLevel())
                 .append(isAccountNonExpired(), systemUser.isAccountNonLocked())
                 .append(getCredentialExpireTime(), systemUser.getCredentialExpireTime())
                 .append(getAccountExpireTime(), systemUser.getAccountExpireTime()).isEquals();
@@ -112,7 +101,7 @@ public class SystemUser implements UserDetails {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37).append(getId()).append(getUsername()).append(isAccountNonLocked())
-            .append(getCreateTime()).append(getUpdateTime()).append(getCompanyId()).append(getLevel())
-            .append(isAccountNonExpired()).append(isCredentialsNonExpired()).append(isEnabled()).toHashCode();
+            .append(getCreateTime()).append(getUpdateTime()).append(isAccountNonExpired())
+            .append(isCredentialsNonExpired()).append(isEnabled()).toHashCode();
     }
 }

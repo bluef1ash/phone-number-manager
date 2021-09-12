@@ -23,6 +23,7 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
+import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.AccountInputValidator;
 
@@ -85,6 +86,7 @@ public class AccountController extends BaseController {
         claims.put(SystemConstant.USERNAME_KEY, systemUser.getUsername());
         claims.put(SystemConstant.AUTHORITIES_KEY, authorities);
         claims.put(SystemConstant.CLAIM_KEY_CREATED, new Date());
+        R r = new R();
         jsonMap.put("state", 1);
         jsonMap.put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));

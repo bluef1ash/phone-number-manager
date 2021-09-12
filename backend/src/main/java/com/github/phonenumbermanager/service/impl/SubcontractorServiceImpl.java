@@ -42,20 +42,21 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         String formatter = "人";
         LinkedList<Map<String, Object>> subcontractors;
         long ct = (long)(companyType == null ? 0L : companyType);
-        boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
-            || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
+        //// TODO: 2021/9/12 0012 用户权限
+        // boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
+        // || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
         if (companyType == null || ct == (int)systemCompanyType) {
             companyLabel = "街道";
             label = "街道分包人总人数";
             subcontractors = baseMapper.countForGroupSubdistrict();
-        } else if (isSystemRoleCount) {
-            label = "社区分包人总人数";
-            subcontractors = baseMapper.countForGroupCommunity(companyId);
-        } else if (ct == (int)communityCompanyType
-            || (int)communityCompanyType == (long)systemUser.getLevel().getValue()) {
-            label = "社区居民分包总户数";
-            formatter = "户";
-            subcontractors = baseMapper.countForGroupByCommunityId(companyId);
+            // } else if (isSystemRoleCount) {
+            // label = "社区分包人总人数";
+            // subcontractors = baseMapper.countForGroupCommunity(companyId);
+            // } else if (ct == (int)communityCompanyType
+            // || (int)communityCompanyType == (long)systemUser.getLevel().getValue()) {
+            // label = "社区居民分包总户数";
+            // formatter = "户";
+            // subcontractors = baseMapper.countForGroupByCommunityId(companyId);
         } else {
             subcontractors = new LinkedList<>();
         }

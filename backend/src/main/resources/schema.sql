@@ -13,13 +13,13 @@ SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE =
 --
 -- 电话管理系统
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `phone_number` DEFAULT CHARACTER SET utf8mb4;
-USE `phone_number`;
+CREATE SCHEMA IF NOT EXISTS `phone_number_manager` DEFAULT CHARACTER SET utf8mb4;
+USE `phone_number_manager`;
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_community_resident`
+-- Table `phone_number_manager`.`pm_community_resident`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_community_resident` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_community_resident` (
     `id`               BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
     `name`             VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '居民姓名',
     `address`          VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '住址',
@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_community_resident` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_system_user`
+-- Table `phone_number_manager`.`pm_system_user`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_system_user` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_system_user` (
     `id`                     BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
     `username`               VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '用户名称',
     `password`               CHAR(88)             NOT NULL DEFAULT '' COMMENT '用户密码',
@@ -64,9 +64,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_system_user` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_community`
+-- Table `phone_number_manager`.`pm_community`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_community` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_community` (
     `id`                  BIGINT UNSIGNED       NOT NULL AUTO_INCREMENT,
     `name`                VARCHAR(10)           NOT NULL DEFAULT '' COMMENT '社区名称',
     `actual_number`       MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0 COMMENT '辖区内人数',
@@ -85,9 +85,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_community` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_subdistrict`
+-- Table `phone_number_manager`.`pm_subdistrict`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_subdistrict` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_subdistrict` (
     `id`          BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
     `name`        VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '街道办事处名称',
     `create_time` DATETIME             NOT NULL COMMENT '增加时间',
@@ -101,9 +101,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_subdistrict` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_role`
+-- Table `phone_number_manager`.`pm_role`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_role` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_role` (
     `id`          BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
     `name`        VARCHAR(20)          NOT NULL DEFAULT '' COMMENT '角色名称',
     `description` VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '角色描述',
@@ -120,9 +120,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_role` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_privilege`
+-- Table `phone_number_manager`.`pm_privilege`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_privilege` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_privilege` (
     `id`          BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
     `name`        VARCHAR(30)          NOT NULL DEFAULT '' COMMENT '权限名称',
     `description` VARCHAR(200)         NOT NULL DEFAULT '' COMMENT '约束描述',
@@ -143,9 +143,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_privilege` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_role_privilege`
+-- Table `phone_number_manager`.`pm_role_privilege`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_role_privilege` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_role_privilege` (
     `role_id`      BIGINT UNSIGNED      NOT NULL COMMENT '角色所属编号',
     `privilege_id` BIGINT UNSIGNED      NOT NULL COMMENT '权限所属编号',
     `create_time`  DATETIME             NOT NULL COMMENT '增加时间',
@@ -158,9 +158,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_role_privilege` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_configuration`
+-- Table `phone_number_manager`.`pm_configuration`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_configuration` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_configuration` (
     `key`            VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '系统配置项关键字名称',
     `type`           TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '系统配置项类型，0未知类型，1布尔类型，2字符串类型，3数值类型，4系统用户类型',
     `value`          VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '配置内容',
@@ -176,9 +176,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_configuration` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_subcontractor`
+-- Table `phone_number_manager`.`pm_subcontractor`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_subcontractor` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_subcontractor` (
     `id`           BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT,
     `name`         VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '分包人姓名',
     `create_time`  DATETIME             NOT NULL COMMENT '增加时间',
@@ -193,9 +193,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_subcontractor` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_dormitory_manager`
+-- Table `phone_number_manager`.`pm_dormitory_manager`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_dormitory_manager` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_dormitory_manager` (
     `id`                VARCHAR(15)          NOT NULL COMMENT '编号',
     `name`              VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '楼片长姓名',
     `gender`            TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '性别，0男，1女，2未知',
@@ -221,17 +221,17 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_dormitory_manager` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_phone_number`
+-- Table `phone_number_manager`.`pm_phone_number`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_phone_number` (
-    `phone_number` VARCHAR(15)          NOT NULL DEFAULT '' COMMENT '联系方式，固定电话与移动电话',
-    `source_type`  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '联系方式的来源类型，0为居民，1为楼长，2为分包人，3为社区，4为街道',
-    `source_id`    VARCHAR(20)          NOT NULL DEFAULT '' COMMENT '所属来源者编号',
-    `phone_type`   TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '联系方式类型，0未知，1手机号码，2固定电话号码',
-    `create_time`  DATETIME             NOT NULL COMMENT '增加时间',
-    `update_time`  DATETIME             NOT NULL COMMENT '更新时间',
-    `version`      SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
-    PRIMARY KEY (`phone_number`, `source_type`, `source_id`),
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_phone_number` (
+    `phone_number_manager` VARCHAR(15)          NOT NULL DEFAULT '' COMMENT '联系方式，固定电话与移动电话',
+    `source_type`          TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '联系方式的来源类型，0为居民，1为楼长，2为分包人，3为社区，4为街道',
+    `source_id`            VARCHAR(20)          NOT NULL DEFAULT '' COMMENT '所属来源者编号',
+    `phone_type`           TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '联系方式类型，0未知，1手机号码，2固定电话号码',
+    `create_time`          DATETIME             NOT NULL COMMENT '增加时间',
+    `update_time`          DATETIME             NOT NULL COMMENT '更新时间',
+    `version`              SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    PRIMARY KEY (`phone_number_manager`, `source_type`, `source_id`),
     INDEX `idx_source_type_source_id`(`source_type` ASC, `source_id` ASC) VISIBLE
 )
     ENGINE = InnoDB
@@ -239,9 +239,9 @@ CREATE TABLE IF NOT EXISTS `phone_number`.`pm_phone_number` (
 
 
 -- -----------------------------------------------------
--- Table `phone_number`.`pm_user_role`
+-- Table `phone_number_manager`.`pm_user_role`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `phone_number`.`pm_user_role` (
+CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_user_role` (
     `user_id`     BIGINT UNSIGNED      NOT NULL COMMENT '系统用户所属编号',
     `role_id`     BIGINT UNSIGNED      NOT NULL COMMENT '用户角色所属编号',
     `create_time` DATETIME             NOT NULL COMMENT '增加时间',

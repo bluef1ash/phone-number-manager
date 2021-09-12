@@ -1,12 +1,10 @@
 package com.github.phonenumbermanager.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.*;
+import com.github.phonenumbermanager.constant.ConfigurationTypeEnum;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
@@ -15,21 +13,15 @@ import lombok.experimental.Accessors;
  *
  * @author 廿二月的天
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
 @ApiModel("配置项对象实体")
-public class Configuration implements Serializable {
-    @TableId(type = IdType.INPUT, value = "`key`")
+public class Configuration extends BaseEntity<Configuration> {
     private String key;
-    private Integer type;
+    private ConfigurationTypeEnum type;
     private String value;
     private String description;
     private Boolean keyIsChanged;
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-    @Version
-    private Integer version;
 }

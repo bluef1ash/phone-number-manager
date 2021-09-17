@@ -3,19 +3,16 @@ package com.github.phonenumbermanager.controller;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
-import org.springframework.validation.ObjectError;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.github.phonenumbermanager.constant.SystemConstant;
@@ -64,20 +61,11 @@ public class AccountController extends BaseController {
      *
      * @param systemUser
      *            前端传入的用户对象
-     * @param bindingResult
-     *            验证结果对象
      * @return JSON对象
      */
     @PostMapping("/login")
     @ApiOperation("用户登录")
-    public Map<String, Object> login(@ApiParam(name = "系统用户对象", required = true) @Validated SystemUser systemUser,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(2);
-        if (bindingResult.hasErrors()) {
-            List<ObjectError> allErrors = bindingResult.getAllErrors();
-            jsonMap.put("messageErrors", allErrors);
-            return jsonMap;
-        }
+    public R login(@ApiParam(name = "系统用户对象", required = true) @RequestBody @Valid SystemUser systemUser) {
         Authentication authentication =
             systemUserService.authentication(systemUser.getUsername(), systemUser.getPassword());
         Map<String, Object> claims = new HashMap<>(2);
@@ -86,11 +74,8 @@ public class AccountController extends BaseController {
         claims.put(SystemConstant.USERNAME_KEY, systemUser.getUsername());
         claims.put(SystemConstant.AUTHORITIES_KEY, authorities);
         claims.put(SystemConstant.CLAIM_KEY_CREATED, new Date());
-        R r = new R();
-        jsonMap.put("state", 1);
-        jsonMap.put("token",
+        return R.ok().put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
-        return jsonMap;
     }
 
     /**

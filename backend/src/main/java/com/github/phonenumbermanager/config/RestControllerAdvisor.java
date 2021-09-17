@@ -1,19 +1,17 @@
 package com.github.phonenumbermanager.config;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.exception.HttpStatusOkException;
 import com.github.phonenumbermanager.exception.NotfoundException;
+import com.github.phonenumbermanager.util.R;
 
 /**
  * 控制器钩子
@@ -22,19 +20,35 @@ import com.github.phonenumbermanager.exception.NotfoundException;
  */
 @RestControllerAdvice(basePackages = "com.github.phonenumbermanager.controller")
 public class RestControllerAdvisor {
-    @Resource
-    private HttpServletResponse response;
+
+    /**
+     * 方法验证失败
+     *
+     * @param exception
+     *            异常对象
+     * @return json对象
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public R methodArgumentNotValid(MethodArgumentNotValidException exception) {
+        exception.printStackTrace();
+        Map<String, String> errorMap = new HashMap<>(exception.getBindingResult().getAllErrors().size());
+        exception.getBindingResult().getAllErrors()
+            .forEach(error -> errorMap.put(error.getObjectName(), error.getDefaultMessage()));
+        return R.error(HttpStatus.BAD_REQUEST.value(), "参数错误").put("error", errorMap);
+    }
 
     /**
      * 异常显示
      *
-     * @param exception
+     * @param throwable
      *            异常对象
      */
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public void methodArgumentTypeMismatch(Exception exception) throws IOException {
-        output(exception, HttpStatus.BAD_REQUEST.value());
+    public R methodArgumentTypeMismatch(Throwable throwable) {
+        throwable.printStackTrace();
+        return R.error(HttpStatus.BAD_REQUEST.value(), throwable.getMessage());
     }
 
     /**
@@ -42,11 +56,13 @@ public class RestControllerAdvisor {
      *
      * @param exception
      *            异常对象
+     * @return json对象
      */
     @ExceptionHandler(NotfoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void notfound(Exception exception) throws IOException {
-        output(exception, HttpStatus.NOT_FOUND.value());
+    public R notfound(NotfoundException exception) {
+        exception.printStackTrace();
+        return R.error(HttpStatus.NOT_FOUND.value(), exception.getMessage());
     }
 
     /**
@@ -54,34 +70,11 @@ public class RestControllerAdvisor {
      *
      * @param exception
      *            异常对象
+     * @return json对象
      */
     @ExceptionHandler(HttpStatusOkException.class)
     @ResponseStatus(HttpStatus.OK)
-    public void httpStatusOk(HttpStatusOkException exception) throws IOException {
-        output(exception, HttpStatus.OK.value());
-    }
-
-    /**
-     * 输出异常结果
-     *
-     * @param exception
-     *            异常对象
-     * @param httpStatus
-     *            HTTP状态
-     * @throws IOException
-     *             IO异常
-     */
-    private void output(Exception exception, int httpStatus) throws IOException {
-        exception.printStackTrace();
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/json; charset=utf-8");
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        JSONObject returnObj = new JSONObject();
-        returnObj.put("state", 0);
-        returnObj.put("messageError", exception.getMessage());
-        returnObj.put("status", httpStatus);
-        PrintWriter writer = response.getWriter();
-        writer.write(returnObj.toJSONString());
-        writer.flush();
+    public R httpStatusOk(HttpStatusOkException exception) {
+        return R.error(HttpStatus.OK.value(), exception.getMessage());
     }
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
@@ -21,6 +22,7 @@ import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.service.SubdistrictService;
+import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CommunityInputValidator;
 import com.github.phonenumbermanager.validator.SubcontractorInputValidator;
 
@@ -106,20 +108,12 @@ public class CommunityController extends BaseController {
      *            HTTP请求对象
      * @param community
      *            社区对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     @ApiOperation("添加、修改社区处理")
-    public Map<String, Object> communityCreateOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "社区对象", required = true) @RequestBody @Validated Community community,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
-        if (bindingResult.hasErrors()) {
-            // 输出错误信息
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
-        }
+    public R communityCreateOrEditHandle(HttpServletRequest request,
+        @ApiParam(name = "社区对象", required = true) @RequestBody @Valid Community community) {
         if (RequestMethod.POST.toString().equals(request.getMethod())) {
             if (communityService.save(community)) {
                 setPhoneNumbers(community.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY,
@@ -137,8 +131,7 @@ public class CommunityController extends BaseController {
                 throw new JsonException("修改社区失败！");
             }
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        return R.ok();
     }
 
     /**
@@ -151,13 +144,11 @@ public class CommunityController extends BaseController {
     @DeleteMapping("/{id}")
     @ApiOperation("通过社区编号删除社区")
     public Map<String, Object> deleteCommunity(@ApiParam(name = "社区编号", required = true) @PathVariable Long id) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
         if (!communityService.removeById(id)
             || !phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.COMMUNITY, id)) {
             throw new JsonException("删除社区失败！");
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        return R.ok("删除社区成功！");
     }
 
     /**

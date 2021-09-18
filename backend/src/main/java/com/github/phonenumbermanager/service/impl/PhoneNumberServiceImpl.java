@@ -7,7 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.mapper.PhoneNumberMapper;
 import com.github.phonenumbermanager.service.PhoneNumberService;

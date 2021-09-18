@@ -3,7 +3,7 @@ package com.github.phonenumbermanager.service;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.github.phonenumbermanager.constant.UserLevelEnum;
+import com.github.phonenumbermanager.constant.enums.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Subdistrict;
 
 /**

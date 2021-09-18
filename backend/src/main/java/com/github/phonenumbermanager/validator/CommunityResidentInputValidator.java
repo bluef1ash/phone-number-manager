@@ -10,8 +10,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.service.CommunityResidentService;

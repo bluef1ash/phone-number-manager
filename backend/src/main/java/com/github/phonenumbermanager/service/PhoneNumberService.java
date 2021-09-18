@@ -2,7 +2,7 @@ package com.github.phonenumbermanager.service;
 
 import java.io.Serializable;
 
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 
 /**

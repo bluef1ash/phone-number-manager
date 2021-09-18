@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.exception.BusinessException;

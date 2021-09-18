@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.PhoneNumberService;

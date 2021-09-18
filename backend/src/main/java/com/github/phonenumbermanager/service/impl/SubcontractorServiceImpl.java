@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.phonenumbermanager.constant.UserLevelEnum;
+import com.github.phonenumbermanager.constant.enums.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;

@@ -1,7 +1,7 @@
 package com.github.phonenumbermanager.entity;
 
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
-import com.github.phonenumbermanager.constant.PhoneTypeEnum;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;

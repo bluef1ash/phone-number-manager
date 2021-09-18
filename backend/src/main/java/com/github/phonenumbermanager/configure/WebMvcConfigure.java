@@ -1,12 +1,9 @@
 package com.github.phonenumbermanager.configure;
 
-import javax.annotation.Resource;
-
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.ErrorPageRegistrar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -18,13 +15,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class WebMvcConfigure implements WebMvcConfigurer {
-    @Resource
-    private EnumConvertFactory enumConvertFactory;
-
-    @Override
-    public void addFormatters(FormatterRegistry registry) {
-        registry.addConverterFactory(enumConvertFactory);
-    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

@@ -1,8 +1,8 @@
-package com.github.phonenumbermanager.constant;
+package com.github.phonenumbermanager.constant.enums;
 
-import com.baomidou.mybatisplus.annotation.IEnum;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.baomidou.mybatisplus.annotation.EnumValue;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -10,8 +10,9 @@ import lombok.Getter;
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @Getter
-public enum EducationStatusEnum implements IEnum<Integer> {
+public enum EducationStatusEnum {
     /**
      *
      */
@@ -19,17 +20,7 @@ public enum EducationStatusEnum implements IEnum<Integer> {
     SENIOR_MIDDLE_SCHOOL(4, "高中"), JUNIOR_COLLEGE(5, "大专"), UNDERGRADUATE_COURSE(6, "本科"), MASTER(7, "硕士研究生"),
     DOCTOR(8, "博士研究生");
 
+    @EnumValue
     private final int value;
     private final String description;
-
-    EducationStatusEnum(int value, String description) {
-        this.value = value;
-        this.description = description;
-    }
-
-    @JsonValue
-    @Override
-    public Integer getValue() {
-        return this.value;
-    }
 }

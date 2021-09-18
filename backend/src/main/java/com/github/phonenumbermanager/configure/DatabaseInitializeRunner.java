@@ -10,8 +10,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
-import com.github.phonenumbermanager.constant.ConfigurationTypeEnum;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.ConfigurationTypeEnum;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.service.*;
 

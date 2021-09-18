@@ -17,9 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.alibaba.fastjson.JSON;
-import com.github.phonenumbermanager.constant.PhoneNumberSourceTypeEnum;
-import com.github.phonenumbermanager.constant.PhoneTypeEnum;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
+import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.util.RedisUtil;

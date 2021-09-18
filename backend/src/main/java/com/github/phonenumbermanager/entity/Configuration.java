@@ -2,7 +2,7 @@ package com.github.phonenumbermanager.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.github.phonenumbermanager.constant.ConfigurationTypeEnum;
+import com.github.phonenumbermanager.constant.enums.ConfigurationTypeEnum;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;

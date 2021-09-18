@@ -33,9 +33,8 @@ spring:
 mybatis-plus:
     mapper-locations: classpath:mybatis/mapper/*Mapper.xml
     type-aliases-package: com.github.phonenumbermanager.entity
-    type-enums-package: com.github.phonenumbermanager.constant
+    type-enums-package: com.github.phonenumbermanager.constant.enums
     configuration:
-        default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
         log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
 
     global-config:

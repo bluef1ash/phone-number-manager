@@ -1,7 +1,7 @@
 package com.github.phonenumbermanager.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.phonenumbermanager.constant.HttpMethodEnum;
+import com.github.phonenumbermanager.constant.enums.HttpMethodEnum;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;

@@ -6,10 +6,10 @@ import java.util.List;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.github.phonenumbermanager.constant.EducationStatusEnum;
-import com.github.phonenumbermanager.constant.EmploymentStatusEnum;
-import com.github.phonenumbermanager.constant.GenderEnum;
-import com.github.phonenumbermanager.constant.PoliticalStatusEnum;
+import com.github.phonenumbermanager.constant.enums.EducationStatusEnum;
+import com.github.phonenumbermanager.constant.enums.EmploymentStatusEnum;
+import com.github.phonenumbermanager.constant.enums.GenderEnum;
+import com.github.phonenumbermanager.constant.enums.PoliticalStatusEnum;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

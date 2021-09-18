@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.config;
+package com.github.phonenumbermanager.configure;
 
 import java.util.HashMap;
 import java.util.Map;

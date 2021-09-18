@@ -1,9 +1,5 @@
-package com.github.phonenumbermanager.config;
+package com.github.phonenumbermanager.configure;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +14,6 @@ import com.github.phonenumbermanager.constant.ConfigurationTypeEnum;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.service.*;
-import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * 数据库数据初始化
@@ -27,8 +22,6 @@ import com.zaxxer.hikari.HikariDataSource;
  */
 @Component
 public class DatabaseInitializeRunner implements CommandLineRunner {
-    @Resource
-    private HikariDataSource dataSource;
     @Resource
     private ConfigurationService configurationService;
     @Resource
@@ -43,61 +36,9 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (databaseInitialize()) {
-            systemUerAndRoleDataInitialize();
-            configurationDataInitialize();
-            privilegeDataInitialize();
-        }
-    }
-
-    /**
-     * 初始化数据库
-     *
-     * @return 初始化成功/失败/无需初始化
-     */
-    private boolean databaseInitialize() {
-        // 通过 hikari 获取数据库连接信息
-        String driver = dataSource.getDriverClassName();
-        String url = dataSource.getJdbcUrl();
-        String username = dataSource.getUsername();
-        String password = dataSource.getPassword();
-        Connection connection = null;
-        InputStream resourceAsStream = null;
-        boolean flag = true;
-        try {
-            Class.forName(driver);
-            URI uri = new URI(url.replace("jdbc:", ""));
-            String connectUrl = "jdbc:mysql://" + uri.getHost() + ":" + uri.getPort()
-                + "/?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true";
-            connection = DriverManager.getConnection(connectUrl, username, password);
-            Statement statement = connection.createStatement();
-            ResultSet databases = statement.executeQuery("SHOW DATABASES;");
-            while (databases.next()) {
-                if ("phone_number_manager".equals(databases.getString(0))) {
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag) {
-                resourceAsStream = getClass().getClassLoader().getResourceAsStream("/schema.sql");
-                execute(statement, resourceAsStream);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (connection != null) {
-                    connection.close();
-                }
-                if (resourceAsStream != null) {
-                    resourceAsStream.close();
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
-        }
-        return true;
+        systemUerAndRoleDataInitialize();
+        configurationDataInitialize();
+        privilegeDataInitialize();
     }
 
     /**
@@ -606,49 +547,5 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setRoleId(systemUserRole.getId()).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
         }
-    }
-
-    /**
-     * 读取 SQL 文件，获取 SQL 语句
-     *
-     * @param sqlInputStream
-     *            SQL 脚本文件
-     * @return List<sql> 返回所有 SQL 语句的 List
-     * @throws IOException
-     *             IO异常
-     */
-    private List<String> loadSql(InputStream sqlInputStream) throws IOException {
-        List<String> sqlList = new ArrayList<>();
-        StringBuilder sqlStringBuilder = new StringBuilder();
-        byte[] buff = new byte[1024];
-        int byteRead;
-        while ((byteRead = sqlInputStream.read(buff)) != -1) {
-            sqlStringBuilder.append(new String(buff, 0, byteRead));
-        }
-        // Windows 下换行是 \r\n, Linux 下是 \n
-        String[] sqlArr = sqlStringBuilder.toString().split("(;\\s*\\r\\n)|(;\\s*\\n)");
-        for (String s : sqlArr) {
-            String sql = s.replaceAll("--.*", "").trim();
-            if (!"".equals(sql)) {
-                sqlList.add(sql);
-            }
-        }
-        return sqlList;
-    }
-
-    /**
-     * 传入连接来执行 SQL 脚本文件，这样可与其外的数据库操作同处一个事物中
-     *
-     * @param statement
-     *            传入数据库连接
-     * @param sqlInputStream
-     *            SQL 脚本文件
-     */
-    private void execute(Statement statement, InputStream sqlInputStream) throws IOException, SQLException {
-        List<String> sqlList = loadSql(sqlInputStream);
-        for (String sql : sqlList) {
-            statement.addBatch(sql);
-        }
-        statement.executeBatch();
     }
 }

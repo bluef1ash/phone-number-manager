@@ -7,7 +7,8 @@ spring:
         driver-class-name: com.mysql.cj.jdbc.Driver
         host: 127.0.0.1
         port: 3306
-        url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/phone_number_manager?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+        database-name: phone_number_manager
+        url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database-name}?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
         username: root
         password: root
         druid:

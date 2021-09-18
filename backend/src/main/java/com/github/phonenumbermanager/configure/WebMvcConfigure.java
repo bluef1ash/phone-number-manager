@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.config;
+package com.github.phonenumbermanager.configure;
 
 import javax.annotation.Resource;
 
@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author 廿二月的天
  */
 @Configuration
-public class WebMvcConfig implements WebMvcConfigurer {
+public class WebMvcConfigure implements WebMvcConfigurer {
     @Resource
     private EnumConvertFactory enumConvertFactory;
 

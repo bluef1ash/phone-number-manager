@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.config;
+package com.github.phonenumbermanager.configure;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +31,7 @@ import springfox.documentation.spring.web.plugins.Docket;
  * @author 廿二月的天
  */
 @Configuration
-public class ApplicationConfig {
+public class ApplicationConfigure {
 
     /**
      * Mybatis插件注册

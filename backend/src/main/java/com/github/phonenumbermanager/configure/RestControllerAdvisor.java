@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.exception.HttpStatusOkException;
 import com.github.phonenumbermanager.exception.NotfoundException;
 import com.github.phonenumbermanager.util.R;
@@ -31,11 +32,11 @@ public class RestControllerAdvisor {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R methodArgumentNotValid(MethodArgumentNotValidException exception) {
-        exception.printStackTrace();
         Map<String, String> errorMap = new HashMap<>(exception.getBindingResult().getAllErrors().size());
-        exception.getBindingResult().getAllErrors()
-            .forEach(error -> errorMap.put(error.getObjectName(), error.getDefaultMessage()));
-        return R.error(HttpStatus.BAD_REQUEST.value(), "参数错误").put("error", errorMap);
+        exception.getBindingResult().getFieldErrors()
+            .forEach(fieldError -> errorMap.put(fieldError.getField(), fieldError.getDefaultMessage()));
+        return R.error(ExceptionCode.METHOD_ARGUMENT_NOT_VALID.getCode(),
+            ExceptionCode.METHOD_ARGUMENT_NOT_VALID.getDescription()).put("exception", errorMap);
     }
 
     /**
@@ -47,8 +48,8 @@ public class RestControllerAdvisor {
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R methodArgumentTypeMismatch(Throwable throwable) {
-        throwable.printStackTrace();
-        return R.error(HttpStatus.BAD_REQUEST.value(), throwable.getMessage());
+        return R.error(ExceptionCode.UNKNOWN_EXCEPTION.getCode(), ExceptionCode.UNKNOWN_EXCEPTION.getDescription())
+            .put("exception", throwable);
     }
 
     /**

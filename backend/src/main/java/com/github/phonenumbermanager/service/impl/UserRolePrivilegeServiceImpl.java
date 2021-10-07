@@ -9,7 +9,7 @@ import com.github.phonenumbermanager.mapper.RolePrivilegeRelationMapper;
 import com.github.phonenumbermanager.service.UserRolePrivilegeService;
 
 /**
- * 系统用户权限业务实现
+ * 系统用户角色权限中间业务实现
  *
  * @author 廿二月的天
  */
@@ -19,10 +19,10 @@ public class UserRolePrivilegeServiceImpl extends BaseServiceImpl<RolePrivilegeR
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean remove(RolePrivilegeRelation rolePrivilegeRelation) {
+    public boolean remove(Long roleId, Long privilegeId) {
         QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
-        wrapper.eq("privilege_id", rolePrivilegeRelation.getPrivilegeId());
-        wrapper.eq("role_id", rolePrivilegeRelation.getRoleId());
+        wrapper.eq("privilege_id", privilegeId);
+        wrapper.eq("role_id", roleId);
         return baseMapper.delete(wrapper) > 0;
     }
 }

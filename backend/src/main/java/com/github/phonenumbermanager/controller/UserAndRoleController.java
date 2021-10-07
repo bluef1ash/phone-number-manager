@@ -1,15 +1,15 @@
 package com.github.phonenumbermanager.controller;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
 import com.github.phonenumbermanager.entity.SystemUser;
@@ -20,9 +20,9 @@ import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
 import com.github.phonenumbermanager.service.UserRolePrivilegeService;
 import com.github.phonenumbermanager.service.UserRoleService;
-import com.github.phonenumbermanager.validator.SystemUserInputValidator;
-import com.github.phonenumbermanager.validator.UserPrivilegeInputValidator;
-import com.github.phonenumbermanager.validator.UserRoleInputValidator;
+import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.validator.CreateInputGroup;
+import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,27 +45,6 @@ public class UserAndRoleController extends BaseController {
     private UserPrivilegeService userPrivilegeService;
     @Resource
     private UserRolePrivilegeService userRolePrivilegeService;
-    @Resource
-    private HttpServletRequest request;
-
-    @InitBinder
-    public void initBinder(DataBinder binder) {
-        StringBuffer requestUrl = request.getRequestURL();
-        String s = requestUrl.substring(requestUrl.lastIndexOf("/"));
-        boolean isUser = "user".equals(s) && (RequestMethod.POST.toString().equals(request.getMethod())
-            || RequestMethod.PUT.toString().equals(request.getMethod()));
-        boolean isRole = "role".equals(s) && (RequestMethod.POST.toString().equals(request.getMethod())
-            || RequestMethod.PUT.toString().equals(request.getMethod()));
-        boolean isPrivilege = "privilege".equals(s) && (RequestMethod.POST.toString().equals(request.getMethod())
-            || RequestMethod.PUT.toString().equals(request.getMethod()));
-        if (isUser) {
-            binder.replaceValidators(new SystemUserInputValidator(systemUserService, request));
-        } else if (isRole) {
-            binder.replaceValidators(new UserRoleInputValidator(userRoleService, request));
-        } else if (isPrivilege) {
-            binder.replaceValidators(new UserPrivilegeInputValidator(userPrivilegeService, request));
-        }
-    }
 
     /**
      * 系统用户列表
@@ -78,13 +57,10 @@ public class UserAndRoleController extends BaseController {
      */
     @GetMapping("/user")
     @ApiOperation("系统用户列表")
-    public Map<String, Object> systemUserList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据") Integer limit) {
+    public R systemUserList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据") Integer limit) {
         getRoleId();
-        Map<String, Object> jsonMap = new HashMap<>(2);
-        jsonMap.put("systemAdministratorId", systemAdministratorId);
-        jsonMap.put("systemUsers", systemUserService.getCorrelation(page, limit));
-        return jsonMap;
+        return Objects.requireNonNull(R.ok().put("systemAdministratorId", systemAdministratorId)).put("systemUsers",
+            systemUserService.getCorrelation(page, limit));
     }
 
     /**
@@ -98,22 +74,18 @@ public class UserAndRoleController extends BaseController {
      */
     @PostMapping("/user/lock")
     @ApiOperation("系统用户锁定与解锁")
-    public Map<String, Object> systemUserLocked(@ApiParam(name = "系统用户编号", required = true) Long id,
+    public R systemUserLocked(@ApiParam(name = "系统用户编号", required = true) Long id,
         @ApiParam(name = "锁定与解锁的标记", required = true) Boolean locked) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
         getRoleId();
         SystemUser systemUser = new SystemUser();
         systemUser.setId(id);
         systemUser.setIsLocked(locked);
         if (!id.equals(systemAdministratorId)) {
             systemUserService.updateById(systemUser);
-            jsonMap.put("state", 1);
             SystemUser user = systemUserService.getById(id);
-            jsonMap.put("isAccountNonLocked", user.isAccountNonLocked());
-        } else {
-            jsonMap.put("state", 0);
+            return R.ok().put("isAccountNonLocked", user.isAccountNonLocked());
         }
-        return jsonMap;
+        throw new JsonException();
     }
 
     /**
@@ -125,58 +97,49 @@ public class UserAndRoleController extends BaseController {
      */
     @GetMapping("/user/{id}")
     @ApiOperation("通过系统用户编号查找")
-    public Map<String, Object> getSystemUser(@ApiParam(name = "要查找的对应编号", required = true) @PathVariable Long id) {
+    public R getSystemUser(@ApiParam(name = "要查找的对应编号", required = true) @PathVariable Long id) {
         getRoleId();
-        Map<String, Object> jsonMap = new HashMap<>(4);
-        jsonMap.put("communityCompanyType", communityCompanyType);
-        jsonMap.put("subdistrictCompanyType", subdistrictCompanyType);
-        jsonMap.put("systemAdministratorId", systemAdministratorId);
         if (id == null) {
             id = systemUser.getId();
         }
-        jsonMap.put("user", systemUserService.getCorrelation(id));
-        return jsonMap;
+        return Objects.requireNonNull(Objects
+            .requireNonNull(Objects.requireNonNull(R.ok().put("communityCompanyType", communityCompanyType))
+                .put("subdistrictCompanyType", subdistrictCompanyType))
+            .put("systemAdministratorId", systemAdministratorId)).put("user", systemUserService.getCorrelation(id));
     }
 
     /**
-     * 添加与修改处理系统用户
+     * 添加处理系统用户
      *
-     * @param request
-     *            HTTP请求对象
      * @param systemUser
      *            系统用户对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 是否成功JSON
      */
-    @RequestMapping(value = "/user", method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加与修改处理系统用户")
-    public Map<String, Object> systemUserAddOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "系统用户对象", required = true) @RequestBody @Validated SystemUser systemUser,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            getRoleId();
-            // 输出错误信息
-            jsonMap.put("communityCompanyType", communityCompanyType);
-            jsonMap.put("subdistrictCompanyType", subdistrictCompanyType);
-            jsonMap.put("systemAdministratorId", systemAdministratorId);
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
-            return jsonMap;
+    @PostMapping("/user")
+    @ApiOperation("添加处理系统用户")
+    public R systemUserCreateHandle(@ApiParam(name = "系统用户对象",
+        required = true) @RequestBody @Validated(CreateInputGroup.class) SystemUser systemUser) {
+        if (!systemUserService.save(systemUser)) {
+            throw new JsonException("添加用户失败！");
         }
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            // 添加
-            if (!systemUserService.save(systemUser)) {
-                throw new JsonException("添加用户失败！");
-            }
-        } else {
-            // 修改
-            if (!systemUserService.updateById(systemUser)) {
-                throw new JsonException("修改用户失败！");
-            }
+        return R.ok();
+    }
+
+    /**
+     * 修改处理系统用户
+     *
+     * @param systemUser
+     *            系统用户对象
+     * @return 是否成功JSON
+     */
+    @PutMapping("/user")
+    @ApiOperation("修改处理系统用户")
+    public R systemUserModifyHandle(@ApiParam(name = "系统用户对象",
+        required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemUser systemUser) {
+        if (!systemUserService.updateById(systemUser)) {
+            throw new JsonException("修改用户失败！");
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        return R.ok();
     }
 
     /**
@@ -188,20 +151,15 @@ public class UserAndRoleController extends BaseController {
      */
     @DeleteMapping("/user/{id}")
     @ApiOperation("通过系统用户编号删除系统用户")
-    public Map<String, Object> deleteSystemUser(@ApiParam(name = "要删除的用户名编号", required = true) @PathVariable Long id) {
+    public R deleteSystemUser(@ApiParam(name = "要删除的用户名编号", required = true) @PathVariable Long id) {
         getRoleId();
-        Map<String, Object> jsonMap = new HashMap<>(3);
         if (id.equals(systemAdministratorId)) {
-            jsonMap.put("state", 0);
-            jsonMap.put("message", "不允许删除超级管理员！");
-        } else {
-            if (!systemUserService.removeById(id)) {
-                throw new JsonException("删除系统用户失败！");
-            }
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除系统用户成功！");
+            throw new JsonException("不允许删除超级管理员！");
         }
-        return jsonMap;
+        if (systemUserService.removeCorrelationById(id)) {
+            throw new JsonException("删除系统用户失败！");
+        }
+        return R.ok();
     }
 
     /**
@@ -214,15 +172,11 @@ public class UserAndRoleController extends BaseController {
      * @return 系统角色列表JSON
      */
     @GetMapping("/role")
-    public Map<String, Object> systemUserRoleList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据") Integer limit) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
+    public R systemUserRoleList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据") Integer limit) {
         if (page == null) {
-            jsonMap.put("userRoles", userRoleService.getCorrelation(page, limit));
-        } else {
-            jsonMap.put("userRoles", userRoleService.list());
+            return R.ok().put("userRoles", userRoleService.getCorrelation(page, limit));
         }
-        return jsonMap;
+        return R.ok().put("userRoles", userRoleService.list());
     }
 
     /**
@@ -234,50 +188,50 @@ public class UserAndRoleController extends BaseController {
      */
     @GetMapping("/role/{id}")
     @ApiOperation("通过系统角色编号查找")
-    public UserRole getSystemUserRole(@ApiParam(name = "角色编号", required = true) @PathVariable Long id) {
-        return userRoleService.getCorrelation(id);
+    public R getSystemUserRole(@ApiParam(name = "角色编号", required = true) @PathVariable Long id) {
+        return R.ok().put("userRole", userRoleService.getCorrelation(id));
     }
 
     /**
-     * 添加与修改处理系统角色
+     * 添加处理系统角色
      *
-     * @param request
-     *            HTTP请求对象
      * @param userRole
      *            系统角色对象
      * @param privilegeIds
      *            系统权限编号数组
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/role", method = {RequestMethod.POST, RequestMethod.PUT})
-    public Map<String, Object> systemUserRoleCreateOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "系统角色对象", required = true) @RequestBody @Validated UserRole userRole,
-        @ApiParam(name = "系统权限编号数组", required = true) Long[] privilegeIds, BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            // 输出错误信息
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
-            return jsonMap;
+    @PostMapping("/role")
+    @ApiOperation("添加处理系统角色")
+    public R systemUserRoleCreateHandle(
+        @ApiParam(name = "系统角色对象", required = true) @RequestBody @Validated(CreateInputGroup.class) UserRole userRole,
+        @ApiParam(name = "系统权限编号数组", required = true) Long[] privilegeIds) {
+        if (!userRoleService.save(userRole)
+            && !userRolePrivilegeService.saveBatch(getUserRolePrivileges(userRole.getId(), privilegeIds))) {
+            throw new JsonException("添加角色失败！");
         }
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            // 添加
-            if (userRoleService.save(userRole)) {
-                userRolePrivilegeService.saveBatch(getUserRolePrivileges(userRole.getId(), privilegeIds));
-            } else {
-                throw new JsonException("添加角色失败！");
-            }
-        } else {
-            // 修改
-            if (userRoleService.updateById(userRole)) {
-                userRolePrivilegeService.saveOrUpdateBatch(getUserRolePrivileges(userRole.getId(), privilegeIds));
-            } else {
-                throw new JsonException("修改角色失败！");
-            }
+        return R.ok();
+    }
+
+    /**
+     * 修改处理系统角色
+     *
+     * @param userRole
+     *            系统角色对象
+     * @param privilegeIds
+     *            系统权限编号数组
+     * @return 视图页面
+     */
+    @PutMapping("/role")
+    @ApiOperation("修改处理系统角色")
+    public R systemUserRoleModifyHandle(
+        @ApiParam(name = "系统角色对象", required = true) @RequestBody @Validated(ModifyInputGroup.class) UserRole userRole,
+        @ApiParam(name = "系统权限编号数组", required = true) Long[] privilegeIds) {
+        if (!userRoleService.updateById(userRole)
+            && !userRolePrivilegeService.saveOrUpdateBatch(getUserRolePrivileges(userRole.getId(), privilegeIds))) {
+            throw new JsonException("修改角色失败！");
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        return R.ok();
     }
 
     /**
@@ -289,16 +243,14 @@ public class UserAndRoleController extends BaseController {
      */
     @DeleteMapping("/role/{id}")
     @ApiOperation("通过系统用户角色编号删除系统用户角色")
-    public Map<String, Object>
-        deleteSystemUserRoleForAjax(@ApiParam(name = "需要删除的用户角色的编号", required = true) @PathVariable Long id) {
+    public R deleteSystemUserRoleForAjax(@ApiParam(name = "需要删除的用户角色的编号", required = true) @PathVariable Long id) {
         getRoleId();
-        Map<String, Object> jsonMap = new HashMap<>(3);
-        if (userRoleService.removeById(id)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除用户角色成功！");
-            return jsonMap;
+        QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
+        wrapper.eq("role_id", id);
+        if (!userRoleService.removeCorrelationById(id)) {
+            throw new JsonException("删除用户角色失败！");
         }
-        throw new JsonException("删除用户角色失败！");
+        return R.ok();
     }
 
     /**
@@ -312,16 +264,12 @@ public class UserAndRoleController extends BaseController {
      */
     @GetMapping("/privilege")
     @ApiOperation("系统权限列表")
-    public Map<String, Object> systemUserPrivilegeList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据") Integer limit) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
+    public R systemUserPrivilegeList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据") Integer limit) {
         if (page == null) {
-            jsonMap.put("userPrivileges", userPrivilegeService.list());
-        } else {
-            Page<UserPrivilege> userPrivilegePage = new Page<>(page, limit);
-            jsonMap.put("userPrivileges", userPrivilegeService.page(userPrivilegePage, null));
+            return R.ok().put("userPrivileges", userPrivilegeService.list());
         }
-        return jsonMap;
+        Page<UserPrivilege> userPrivilegePage = new Page<>(page, limit);
+        return R.ok().put("userPrivileges", userPrivilegeService.page(userPrivilegePage, null));
     }
 
     /**
@@ -333,44 +281,42 @@ public class UserAndRoleController extends BaseController {
      */
     @GetMapping("/privilege/{id}")
     @ApiOperation("获取系统权限")
-    public UserPrivilege getSystemUserPrivilege(@ApiParam(name = "权限编号", required = true) @PathVariable Long id) {
-        return userPrivilegeService.getById(id);
+    public R getSystemUserPrivilege(@ApiParam(name = "权限编号", required = true) @PathVariable Long id) {
+        return R.ok().put("userPrivileges", userPrivilegeService.getById(id));
     }
 
     /**
-     * 添加与修改处理系统权限
+     * 添加处理系统权限
      *
-     * @param request
-     *            HTTP请求对象
      * @param userPrivilege
      *            系统用户权限对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/privilege", method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加与修改处理系统权限")
-    public Map<String, Object> systemUserPrivilegeCreateOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "系统用户权限对象", required = true) @RequestBody @Validated UserPrivilege userPrivilege,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            // 输出错误信息
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
-            return jsonMap;
+    @PostMapping("/privilege")
+    @ApiOperation("添加处理系统权限")
+    public R systemUserPrivilegeCreateHandle(@ApiParam(name = "系统用户权限对象",
+        required = true) @RequestBody @Validated(CreateInputGroup.class) UserPrivilege userPrivilege) {
+        if (!userPrivilegeService.save(userPrivilege)) {
+            throw new JsonException("添加权限失败！");
         }
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            // 添加
-            if (!userPrivilegeService.save(userPrivilege)) {
-                throw new JsonException("添加权限失败！");
-            }
-        } else {
-            // 修改
-            if (!userPrivilegeService.updateById(userPrivilege)) {
-                throw new JsonException("修改权限失败！");
-            }
+        return R.ok();
+    }
+
+    /**
+     * 修改处理系统权限
+     *
+     * @param userPrivilege
+     *            系统用户权限对象
+     * @return 视图页面
+     */
+    @PostMapping("/privilege")
+    @ApiOperation("修改处理系统权限")
+    public R systemUserPrivilegeModifyHandle(@ApiParam(name = "系统用户权限对象",
+        required = true) @RequestBody @Validated(ModifyInputGroup.class) UserPrivilege userPrivilege) {
+        if (!userPrivilegeService.updateById(userPrivilege)) {
+            throw new JsonException("修改权限失败！");
         }
-        return jsonMap;
+        return R.ok();
     }
 
     /**
@@ -382,15 +328,11 @@ public class UserAndRoleController extends BaseController {
      */
     @DeleteMapping("/privilege/{id}")
     @ApiOperation("通过系统用户权限编号删除系统用户权限")
-    public Map<String, Object>
-        deleteSystemUserPrivilege(@ApiParam(name = "系统用户权限编号", required = true) @PathVariable Long id) {
-        Map<String, Object> jsonMap = new HashMap<>(2);
-        if (userPrivilegeService.removeById(id)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除用户权限成功！");
-            return jsonMap;
+    public R deleteSystemUserPrivilege(@ApiParam(name = "系统用户权限编号", required = true) @PathVariable Long id) {
+        if (!userPrivilegeService.removeCorrelationById(id)) {
+            throw new JsonException("删除用户权限失败！");
         }
-        throw new JsonException("删除用户权限失败！");
+        return R.ok();
     }
 
     /**
@@ -402,9 +344,8 @@ public class UserAndRoleController extends BaseController {
      */
     @GetMapping("/privilege/role/{roleId}")
     @ApiOperation("获取系统用户角色拥有的权限")
-    public Set<UserPrivilege>
-        getPrivilegesByRoleId(@ApiParam(name = "系统用户角色编号", required = true) @PathVariable Long roleId) {
-        return userPrivilegeService.getByRoleId(roleId);
+    public R getPrivilegesByRoleId(@ApiParam(name = "系统用户角色编号", required = true) @PathVariable Long roleId) {
+        return R.ok().put("userPrivileges", userPrivilegeService.getByRoleId(roleId));
     }
 
     /**

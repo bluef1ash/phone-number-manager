@@ -4,13 +4,21 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.github.phonenumbermanager.validator.CreateInputGroup;
+import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,12 +39,20 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     Collection<? extends GrantedAuthority> authorities;
+    @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
+    @TableId
     private Long id;
+    @NotBlank(groups = CreateInputGroup.class, message = "用户名称不能为空！")
+    @Length(max = 10, message = "系统用户名称不允许超过10个字符！")
     private String username;
+    @NotBlank(groups = CreateInputGroup.class, message = "用户密码不能为空！")
     private String password;
+    @Past
     private Date loginTime;
     private String loginIp;
+    @NotNull(groups = CreateInputGroup.class, message = "用户是否被锁定不能为空！")
     private Boolean isLocked;
+    @NotBlank(groups = CreateInputGroup.class, message = "用户是否开启不能为空！")
     private Boolean isEnabled;
     @TableField(fill = FieldFill.INSERT)
     private Date accountExpireTime;

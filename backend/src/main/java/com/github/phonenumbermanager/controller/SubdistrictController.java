@@ -1,23 +1,18 @@
 package com.github.phonenumbermanager.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.service.SubdistrictService;
-import com.github.phonenumbermanager.validator.SubdistrictInputValidator;
+import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.validator.CreateInputGroup;
+import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -36,16 +31,6 @@ public class SubdistrictController extends BaseController {
     private SubdistrictService subdistrictService;
     @Resource
     private PhoneNumberService phoneNumberService;
-    @Resource
-    private HttpServletRequest request;
-
-    @InitBinder
-    public void initBinder(DataBinder binder) {
-        if (RequestMethod.POST.toString().equals(request.getMethod())
-            || RequestMethod.PUT.toString().equals(request.getMethod())) {
-            binder.replaceValidators(new SubdistrictInputValidator(subdistrictService, request));
-        }
-    }
 
     /**
      * 街道列表
@@ -58,9 +43,8 @@ public class SubdistrictController extends BaseController {
      */
     @GetMapping
     @ApiOperation("街道列表")
-    public IPage<Subdistrict> subdistrictList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据") Integer limit) {
-        return subdistrictService.getCorrelation(page, limit);
+    public R subdistrictList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据") Integer limit) {
+        return R.ok().put("subdistrict", subdistrictService.getCorrelation(page, limit));
     }
 
     /**
@@ -72,51 +56,44 @@ public class SubdistrictController extends BaseController {
      */
     @GetMapping("/{id}")
     @ApiOperation("通过街道编号查找")
-    public Subdistrict getSubdistrict(@ApiParam(name = "查找的对应编号", required = true) @PathVariable Long id) {
-        return subdistrictService.getCorrelation(id);
+    public R getSubdistrict(@ApiParam(name = "查找的对应编号", required = true) @PathVariable Long id) {
+        return R.ok().put("subdistrict", subdistrictService.getCorrelation(id));
     }
 
     /**
-     * 添加、修改街道处理
+     * 添加街道处理
      *
-     * @param request
-     *            HTTP请求对象
      * @param subdistrict
      *            街道对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加、修改街道处理")
-    public Map<String, Object> subdistrictCreateOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "街道对象", required = true) @RequestBody @Validated Subdistrict subdistrict,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            // 输出错误信息
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
-            return jsonMap;
+    @PostMapping
+    @ApiOperation("添加街道处理")
+    public R subdistrictCreateHandle(@ApiParam(name = "街道对象",
+        required = true) @RequestBody @Validated(CreateInputGroup.class) Subdistrict subdistrict) {
+        if (subdistrictService.save(subdistrict)) {
+            return setPhoneNumbers(phoneNumberService, subdistrict.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.SUBDISTRICT, String.valueOf(subdistrict.getId()));
         }
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            if (subdistrictService.save(subdistrict)) {
-                setPhoneNumbers(subdistrict.getPhoneNumbers(), PhoneNumberSourceTypeEnum.SUBDISTRICT,
-                    String.valueOf(subdistrict.getId()));
-                phoneNumberService.saveBatch(subdistrict.getPhoneNumbers());
-            } else {
-                throw new JsonException("添加街道失败！");
-            }
-        } else {
-            if (subdistrictService.updateById(subdistrict)) {
-                setPhoneNumbers(subdistrict.getPhoneNumbers(), PhoneNumberSourceTypeEnum.SUBDISTRICT,
-                    String.valueOf(subdistrict.getId()));
-                phoneNumberService.saveOrUpdateBatch(subdistrict.getPhoneNumbers());
-            } else {
-                throw new JsonException("修改街道失败！");
-            }
+        throw new JsonException("添加街道失败！");
+    }
+
+    /**
+     * 修改街道处理
+     *
+     * @param subdistrict
+     *            街道对象
+     * @return 视图页面
+     */
+    @PutMapping
+    @ApiOperation("修改街道处理")
+    public R subdistrictModifyHandle(@ApiParam(name = "街道对象",
+        required = true) @RequestBody @Validated(ModifyInputGroup.class) Subdistrict subdistrict) {
+        if (subdistrictService.updateById(subdistrict)) {
+            return setPhoneNumbers(phoneNumberService, subdistrict.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.SUBDISTRICT, String.valueOf(subdistrict.getId()));
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        throw new JsonException("修改街道失败！");
     }
 
     /**
@@ -128,13 +105,9 @@ public class SubdistrictController extends BaseController {
      */
     @DeleteMapping("/{id}")
     @ApiOperation("通过街道编号删除")
-    public Map<String, Object> deleteSubdistrict(@ApiParam(name = "通过街道编号删除", required = true) @PathVariable Long id) {
-        Map<String, Object> jsonMap = new HashMap<>(2);
-        if (subdistrictService.removeById(id)
-            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.SUBDISTRICT, id)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除街道成功！");
-            return jsonMap;
+    public R deleteSubdistrict(@ApiParam(name = "通过街道编号删除", required = true) @PathVariable Long id) {
+        if (subdistrictService.removeCorrelationById(id)) {
+            return R.ok();
         }
         throw new JsonException("删除街道失败！");
     }

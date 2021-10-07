@@ -2,6 +2,7 @@ package com.github.phonenumbermanager.service;
 
 import java.util.List;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.security.core.Authentication;
@@ -32,7 +33,7 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
      *            密码
      * @return 认证对象
      */
-    Authentication authentication(String username, String password);
+    Authentication authentication(String username, String password) throws LoginException;
 
     /**
      * 判断权限

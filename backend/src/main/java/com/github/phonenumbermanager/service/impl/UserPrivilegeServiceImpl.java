@@ -59,16 +59,10 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeById(Serializable id) {
-        if (systemUserMapper.selectByRoleId(id).size() > 0) {
-            return false;
-        }
+    public boolean removeCorrelationById(Serializable id) {
         QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
         wrapper.eq("privilege_id", id);
-        if (rolePrivilegeRelationMapper.delete(wrapper) > 0) {
-            return baseMapper.deleteById(id) > 0;
-        }
-        return false;
+        return baseMapper.deleteById(id) > 0 && rolePrivilegeRelationMapper.delete(wrapper) > 0;
     }
 
     /**

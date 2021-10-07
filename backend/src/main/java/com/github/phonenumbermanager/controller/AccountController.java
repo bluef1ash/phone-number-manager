@@ -7,22 +7,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.validation.DataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 import com.github.phonenumbermanager.util.R;
-import com.github.phonenumbermanager.util.RedisUtil;
-import com.github.phonenumbermanager.validator.AccountInputValidator;
 
 import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.jwt.JWTUtil;
@@ -40,21 +37,7 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "账号控制器")
 public class AccountController extends BaseController {
     @Resource
-    private HttpServletRequest request;
-    @Resource
     private SystemUserService systemUserService;
-    @Resource
-    private ConfigurationService configurationService;
-    @Resource
-    private RedisUtil redisUtil;
-
-    @InitBinder
-    public void initBinder(DataBinder binder) {
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            binder.replaceValidators(
-                new AccountInputValidator(request, systemUserService, configurationService, redisUtil));
-        }
-    }
 
     /**
      * 用户登录
@@ -62,10 +45,13 @@ public class AccountController extends BaseController {
      * @param systemUser
      *            前端传入的用户对象
      * @return JSON对象
+     * @throws LoginException
+     *             登录异常
      */
     @PostMapping("/login")
     @ApiOperation("用户登录")
-    public R login(@ApiParam(name = "系统用户对象", required = true) @RequestBody @Valid SystemUser systemUser) {
+    public R login(@ApiParam(name = "系统用户对象", required = true) @RequestBody @Valid SystemUser systemUser)
+        throws LoginException {
         Authentication authentication =
             systemUserService.authentication(systemUser.getUsername(), systemUser.getPassword());
         Map<String, Object> claims = new HashMap<>(2);
@@ -106,8 +92,7 @@ public class AccountController extends BaseController {
      */
     @PostMapping("/logout")
     @ApiOperation("退出登录")
-    public Map<String, Object> logout() {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        return jsonMap;
+    public R logout() {
+        return R.ok();
     }
 }

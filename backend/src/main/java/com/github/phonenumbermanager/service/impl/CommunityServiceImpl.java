@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
@@ -19,6 +20,7 @@ import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
 import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.service.CommunityService;
+import com.github.phonenumbermanager.service.PhoneNumberService;
 
 /**
  * 社区业务实现
@@ -31,6 +33,8 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
     private CommunityResidentMapper communityResidentMapper;
     @Resource
     private DormitoryManagerMapper dormitoryManagerMapper;
+    @Resource
+    private PhoneNumberService phoneNumberService;
 
     @Override
     public Community getCorrelation(Serializable communityId) {
@@ -90,7 +94,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
                 wrapper.eq("subdistrict_id", item.get("companyType"));
             }
         }
-        return super.update(community, wrapper);
+        return baseMapper.update(community, wrapper) > 0;
     }
 
     @Override
@@ -100,7 +104,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeById(Serializable id) {
+    public boolean removeCorrelationById(Serializable id) {
         Long communityResidentCount = communityResidentMapper.countByCommunityId(id);
         if (communityResidentCount != null && communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
@@ -109,7 +113,7 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
         if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
-        baseMapper.deleteById(id);
-        return true;
+        return baseMapper.deleteById(id) > 0
+            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.COMMUNITY, id);
     }
 }

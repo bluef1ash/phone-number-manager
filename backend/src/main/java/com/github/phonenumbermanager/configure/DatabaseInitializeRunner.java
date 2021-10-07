@@ -32,7 +32,7 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
     private UserRoleService userRoleService;
     @Resource
     private SystemUserRoleService systemUserRoleService;
-    private long administratorId;
+    private String administratorName;
 
     @Override
     public void run(String... args) {
@@ -48,8 +48,8 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
         if (configurationService.list().isEmpty()) {
             List<Configuration> configurations = new ArrayList<>();
             configurations.add((Configuration)new Configuration().setKey("system_administrator_id")
-                .setType(ConfigurationTypeEnum.NUMBER).setValue(String.valueOf(administratorId))
-                .setDescription("系统管理员编号").setKeyIsChanged(false).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setType(ConfigurationTypeEnum.STRING).setValue(administratorName).setDescription("系统管理员用户名称")
+                .setKeyIsChanged(false).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             configurations.add((Configuration)new Configuration().setKey("system_company_type")
                 .setType(ConfigurationTypeEnum.NUMBER).setValue("0").setDescription("系统用户角色编号").setKeyIsChanged(false)
@@ -274,8 +274,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                     .setUri("/resident/edit").setParentId(communityResidentManagerId)
                     .setIconName("fa fa-pencil-square-o").setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                     .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加、修改居民信息处理")
-                .setDescription("communityResidentCreateOrEditHandle").setUri("/resident")
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加居民信息处理")
+                .setDescription("communityResidentCreateHandle").setUri("/resident")
+                .setParentId(communityResidentManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加居民信息处理")
+                .setDescription("communityResidentModifyHandle").setUri("/resident")
                 .setParentId(communityResidentManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除居民信息")
@@ -308,8 +312,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setDescription("editDormitoryManager").setUri("/dormitory/edit").setParentId(dormitoryManagerManagerId)
                 .setIconName("fa fa-pencil-square-o").setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加、修改楼长信息处理")
-                .setDescription("dormitoryManagerCreateOrEditHandle").setUri("/dormitory")
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加楼长信息处理")
+                .setDescription("dormitoryManagerCreateHandle").setUri("/dormitory")
+                .setParentId(dormitoryManagerManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改楼长信息处理")
+                .setDescription("dormitoryManagerModifyHandle").setUri("/dormitory")
                 .setParentId(dormitoryManagerManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除楼长信息")
@@ -340,8 +348,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setUri("/community/edit").setParentId(communityManagerId).setIconName("fa fa-pencil-square-o")
                 .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加、修改社区信息处理")
-                .setDescription("communityCreateOrEditHandle").setUri("/community").setParentId(communityManagerId)
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加社区信息处理")
+                .setDescription("communityCreateHandle").setUri("/community").setParentId(communityManagerId)
+                .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改社区信息处理")
+                .setDescription("communityModifyHandle").setUri("/community").setParentId(communityManagerId)
                 .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除社区信息")
@@ -374,8 +386,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                     .setUri("/community/subcontractor/edit").setParentId(communityManagerId)
                     .setIconName("fa fa-pencil-square-o").setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                     .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加、修改社区分包人信息处理")
-                .setDescription("subcontractorCreateOrEditHandle").setUri("/community/subcontractor")
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加社区分包人信息处理")
+                .setDescription("subcontractorCreateHandle").setUri("/community/subcontractor")
+                .setParentId(communityManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改社区分包人信息处理")
+                .setDescription("subcontractorModifyHandle").setUri("/community/subcontractor")
                 .setParentId(communityManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除社区分包人信息")
@@ -422,8 +438,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setUri("/system/user_role/user/edit").setParentId(userManagerId).setIconName("fa fa-pencil-square-o")
                 .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加与修改处理系统用户")
-                .setDescription("systemUserAddOrEditHandle").setUri("/system/user_role/user").setParentId(userManagerId)
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加处理系统用户")
+                .setDescription("systemUserCreateHandle").setUri("/system/user_role/user").setParentId(userManagerId)
+                .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改处理系统用户")
+                .setDescription("systemUserModifyHandle").setUri("/system/user_role/user").setParentId(userManagerId)
                 .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除系统用户")
@@ -448,8 +468,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setDescription("editSystemUserRole").setUri("/system/user_role/user/edit").setParentId(userManagerId)
                 .setIconName("fa fa-pencil-square-o").setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加与修改处理系统用户角色")
-                .setDescription("systemUserRoleCreateOrEditHandle").setUri("/system/user_role/role")
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加处理系统用户角色")
+                .setDescription("systemUserRoleCreateHandle").setUri("/system/user_role/role")
+                .setParentId(userManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改处理系统用户角色")
+                .setDescription("systemUserRoleModifyHandle").setUri("/system/user_role/role")
                 .setParentId(userManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除系统用户角色")
@@ -471,8 +495,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                     .setUri("/system/user_role/privilege/edit").setParentId(userManagerId)
                     .setIconName("fa fa-pencil-square-o").setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                     .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加与修改处理系统用户权限")
-                .setDescription("systemUserPrivilegeCreateOrEditHandle").setUri("/system/user_role/privilege")
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加处理系统用户权限")
+                .setDescription("systemUserPrivilegeCreateHandle").setUri("/system/user_role/privilege")
+                .setParentId(userManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改处理系统用户权限")
+                .setDescription("systemUserPrivilegeModifyHandle").setUri("/system/user_role/privilege")
                 .setParentId(userManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除系统用户权限")
@@ -497,8 +525,12 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setUri("/system/configuration/edit").setParentId(systemManagerId).setIconName("fa fa-pencil-square-o")
                 .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加处理系统配置")
+                .setDescription("systemConfigurationCreateHandle").setUri("/system/configuration")
+                .setParentId(systemManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加与修改处理系统配置")
-                .setDescription("systemConfigurationCreateOrEditHandle").setUri("/system/configuration")
+                .setDescription("systemConfigurationModifyHandle").setUri("/system/configuration")
                 .setParentId(systemManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除系统配置")
@@ -513,6 +545,7 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
      * 系统用户与角色数据初始化
      */
     private void systemUerAndRoleDataInitialize() {
+        Long administratorId = null;
         if (systemUserService.list().isEmpty()) {
             SystemUser systemUser = new SystemUser();
             systemUser.setUsername("admin").setPassword(new BCryptPasswordEncoder().encode("admin888"))
@@ -522,6 +555,7 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN);
             systemUserService.save(systemUser);
             administratorId = systemUser.getId();
+            administratorName = systemUser.getUsername();
         }
         UserRole systemUserRole = new UserRole();
         if (userRoleService.list().isEmpty()) {

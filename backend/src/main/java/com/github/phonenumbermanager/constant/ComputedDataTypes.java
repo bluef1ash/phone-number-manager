@@ -1,10 +1,17 @@
 package com.github.phonenumbermanager.constant;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * 计算数据的类型
  *
  * @author 廿二月的天
  */
+@Getter
+@AllArgsConstructor
+@ToString
 public enum ComputedDataTypes {
     /**
      * 社区居民基本信息
@@ -28,17 +35,4 @@ public enum ComputedDataTypes {
     DORMITORY_BAR_CHART(4);
 
     private final int code;
-
-    ComputedDataTypes(int code) {
-        this.code = code;
-    }
-
-    @Override
-    public String toString() {
-        return String.valueOf(code);
-    }
-
-    public int getCode() {
-        return code;
-    }
 }

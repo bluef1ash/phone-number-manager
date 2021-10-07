@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.enums.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.entity.SystemUser;
@@ -19,6 +20,7 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
 import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.mapper.SubcontractorMapper;
+import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.service.SubcontractorService;
 
 /**
@@ -33,6 +35,8 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     private CommunityResidentMapper communityResidentMapper;
     @Resource
     private DormitoryManagerMapper dormitoryManagerMapper;
+    @Resource
+    private PhoneNumberService phoneNumberService;
 
     @Override
     public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
@@ -102,7 +106,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeById(Serializable id) {
+    public boolean removeCorrelationById(Serializable id) {
         Long communityResidentCount = communityResidentMapper.countBySubcontractorId(id);
         if (communityResidentCount != null && communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区分包人！");
@@ -111,7 +115,8 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区分包人！");
         }
-        return baseMapper.deleteById(id) > 0;
+        return baseMapper.deleteById(id) > 0
+            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.SUBCONTRACTOR, id);
     }
 
     @Override

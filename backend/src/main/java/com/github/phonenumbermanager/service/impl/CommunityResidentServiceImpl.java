@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CommunityMapper;
@@ -194,5 +195,12 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             communityResidents = new LinkedList<>();
         }
         return barChartDataHandler("社区居民总户数", companyLabel, "户", communityResidents);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean removeCorrelationById(Serializable id) {
+        return baseMapper.deleteById(id) > 0
+            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, id);
     }
 }

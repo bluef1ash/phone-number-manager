@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import javax.annotation.Resource;
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -11,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,14 +26,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.constant.enums.HttpMethodEnum;
-import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
-import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.entity.UserPrivilege;
-import com.github.phonenumbermanager.entity.UserRole;
+import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.RolePrivilegeRelationMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
+import com.github.phonenumbermanager.mapper.UserRoleRelationMapper;
+import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.RedisUtil;
 
@@ -51,9 +50,13 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Resource
     private RedisUtil redisUtil;
     @Resource
+    private UserRoleRelationMapper userRoleRelationMapper;
+    @Resource
     private UserPrivilegeMapper userPrivilegeMapper;
     @Resource
     private RolePrivilegeRelationMapper rolePrivilegeRelationMapper;
+    @Resource
+    private ConfigurationService configurationService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
@@ -98,17 +101,29 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     }
 
     @Override
-    public Authentication authentication(String username, String password) {
+    public Authentication authentication(String username, String password) throws LoginException {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
             new UsernamePasswordAuthenticationToken(username, password);
-        Authentication authenticate;
-        try {
-            authenticate = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
-            return null;
-        }
+        Authentication authenticate =
+            authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authenticate);
+        @SuppressWarnings("all")
+        Map<String, Object> configurationsMap =
+            (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
+        if (configurationsMap == null) {
+            List<Configuration> configurations = configurationService.list(null);
+            configurationsMap = new HashMap<>(configurations.size() + 1);
+            for (Configuration configuration : configurations) {
+                configurationsMap.put(configuration.getKey(), configuration.getValue());
+            }
+            redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, configurationsMap);
+        }
+        Integer systemIsActive = Convert.toInt(configurationsMap.get("system_is_active"));
+        String systemAdministratorName = Convert.toStr(configurationsMap.get("system_administrator_name"));
+        if (systemIsActive == 0
+            && !systemAdministratorName.equals(((UserDetails)authenticate.getPrincipal()).getUsername())) {
+            throw new LoginException("该系统已经禁止登录，请联系管理员！");
+        }
         return authenticate;
     }
 
@@ -176,6 +191,14 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             }
         }
         return false;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean removeCorrelationById(Serializable id) {
+        QueryWrapper<UserRoleRelation> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", id);
+        return baseMapper.deleteById(id) > 0 && userRoleRelationMapper.delete(wrapper) > 0;
     }
 
     /**

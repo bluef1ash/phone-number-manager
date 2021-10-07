@@ -9,10 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +23,9 @@ import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.validator.DormitoryManagerInputValidator;
+import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.validator.CreateInputGroup;
+import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.IoUtil;
@@ -52,17 +51,6 @@ public class DormitoryManagerController extends BaseController {
     private CommunityService communityService;
     @Resource
     private PhoneNumberService phoneNumberService;
-    @Resource
-    private HttpServletRequest request;
-
-    @InitBinder
-    public void initBinder(DataBinder binder) {
-        if (RequestMethod.POST.toString().equals(request.getMethod())
-            || RequestMethod.PUT.toString().equals(request.getMethod())) {
-            binder.addCustomFormatter(new DateFormatter("yyyy-MM-dd"));
-            binder.replaceValidators(new DormitoryManagerInputValidator(dormitoryManagerService, request));
-        }
-    }
 
     /**
      * 社区楼长列表
@@ -89,11 +77,11 @@ public class DormitoryManagerController extends BaseController {
      */
     @GetMapping
     @ApiOperation("社区楼长列表")
-    public Map<String, Object> dormitoryManagerList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据") Integer limit, @ApiParam(name = "是否搜索") Boolean isSearch,
-        @ApiParam(name = "单位编号") Long companyId, @ApiParam(name = "单位类别编号") Integer companyType,
-        @ApiParam(name = "社区楼长姓名") String name, @ApiParam(name = "社区楼长性别") GenderEnum gender,
-        @ApiParam(name = "社区楼长家庭地址") String address, @ApiParam(name = "社区楼长联系方式") String phone) {
+    public R dormitoryManagerList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据") Integer limit,
+        @ApiParam(name = "是否搜索") Boolean isSearch, @ApiParam(name = "单位编号") Long companyId,
+        @ApiParam(name = "单位类别编号") Integer companyType, @ApiParam(name = "社区楼长姓名") String name,
+        @ApiParam(name = "社区楼长性别") GenderEnum gender, @ApiParam(name = "社区楼长家庭地址") String address,
+        @ApiParam(name = "社区楼长联系方式") String phone) {
         getRoleId();
         Map<String, Object> jsonMap = new HashMap<>(6);
         jsonMap.put("systemCompanyType", systemCompanyType);
@@ -117,7 +105,7 @@ public class DormitoryManagerController extends BaseController {
                 PhoneNumberSourceTypeEnum.DORMITORY_MANAGER, communityCompanyType, subdistrictCompanyType, page, limit);
         }
         jsonMap.put("dormitoryManagers", dormitoryManagers);
-        return jsonMap;
+        return R.ok(jsonMap);
     }
 
     /**
@@ -129,53 +117,47 @@ public class DormitoryManagerController extends BaseController {
      */
     @GetMapping("/{id}")
     @ApiOperation("通过编号查找社区楼长")
-    public DormitoryManager findDormitoryManager(@ApiParam(name = "社区楼长的编号", required = true) @PathVariable String id) {
-        return dormitoryManagerService.getCorrelation(id);
+    public R findDormitoryManager(@ApiParam(name = "社区楼长的编号", required = true) @PathVariable String id) {
+        return R.ok().put("dormitoryManager", dormitoryManagerService.getCorrelation(id));
     }
 
     /**
-     * 添加、修改社区楼长处理
+     * 添加社区楼长处理
      *
-     * @param httpServletRequest
-     *            HTTP请求对象
      * @param dormitoryManager
      *            前台传递的社区楼长对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加、修改社区楼长处理")
-    public Map<String, Object> dormitoryManagerCreateOrEditHandle(HttpServletRequest httpServletRequest,
-        @ApiParam(name = "前台传递的社区楼长对象", required = true) @RequestBody @Validated DormitoryManager dormitoryManager,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
-            return jsonMap;
+    @PostMapping
+    @ApiOperation("添加社区楼长处理")
+    public R dormitoryManagerCreateHandle(@ApiParam(name = "前台传递的社区楼长对象",
+        required = true) @RequestBody @Validated(CreateInputGroup.class) DormitoryManager dormitoryManager) {
+        if (communityService.isSubmittedById(1, dormitoryManager.getCommunityId())) {
+            throw new JsonException("此社区已经提报，不允许添加！");
         }
-        if (RequestMethod.POST.toString().equals(httpServletRequest.getMethod())) {
-            if (communityService.isSubmittedById(1, dormitoryManager.getCommunityId())) {
-                throw new JsonException("此社区已经提报，不允许添加！");
-            }
-            if (dormitoryManagerService.save(dormitoryManager)) {
-                setPhoneNumbers(dormitoryManager.getPhoneNumbers(), PhoneNumberSourceTypeEnum.DORMITORY_MANAGER,
-                    dormitoryManager.getId());
-                phoneNumberService.saveBatch(dormitoryManager.getPhoneNumbers());
-            } else {
-                throw new JsonException("添加社区楼长失败！");
-            }
-        } else {
-            if (dormitoryManagerService.updateById(dormitoryManager)) {
-                setPhoneNumbers(dormitoryManager.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY,
-                    dormitoryManager.getId());
-                phoneNumberService.saveOrUpdateBatch(dormitoryManager.getPhoneNumbers());
-            } else {
-                throw new JsonException("修改社区楼长失败！");
-            }
+        if (dormitoryManagerService.save(dormitoryManager)) {
+            return setPhoneNumbers(phoneNumberService, dormitoryManager.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.DORMITORY_MANAGER, dormitoryManager.getId());
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        throw new JsonException("添加社区楼长失败！");
+    }
+
+    /**
+     * 修改社区楼长处理
+     *
+     * @param dormitoryManager
+     *            前台传递的社区楼长对象
+     * @return 视图页面
+     */
+    @PutMapping
+    @ApiOperation("修改社区楼长处理")
+    public R dormitoryManagerModifyHandle(@ApiParam(name = "前台传递的社区楼长对象",
+        required = true) @RequestBody @Validated(ModifyInputGroup.class) DormitoryManager dormitoryManager) {
+        if (dormitoryManagerService.updateById(dormitoryManager)) {
+            return setPhoneNumbers(phoneNumberService, dormitoryManager.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.COMMUNITY, dormitoryManager.getId());
+        }
+        throw new JsonException("修改社区楼长失败！");
     }
 
     /**
@@ -187,13 +169,9 @@ public class DormitoryManagerController extends BaseController {
      */
     @DeleteMapping("/{id}")
     @ApiOperation("通过社区楼长编号删除")
-    public Map<String, Object>
-        deleteDormitoryManager(@ApiParam(name = "社区楼长编号", required = true) @PathVariable String id) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
-        if (dormitoryManagerService.removeById(id)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除社区楼长成功！");
-            return jsonMap;
+    public R deleteDormitoryManager(@ApiParam(name = "社区楼长编号", required = true) @PathVariable String id) {
+        if (dormitoryManagerService.removeCorrelationById(id)) {
+            return R.ok("删除社区楼长成功！");
         }
         throw new JsonException("删除社区楼长失败！");
     }
@@ -209,20 +187,14 @@ public class DormitoryManagerController extends BaseController {
      */
     @PostMapping("/import")
     @ApiOperation("导入楼长信息进系统")
-    public Map<String, Object> dormitoryManagerImportAsSystem(HttpServletRequest request,
+    public R dormitoryManagerImportAsSystem(HttpServletRequest request,
         @ApiParam(name = "导入的街道编号", required = true) Long subdistrictId) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
-        try {
-            List<List<Object>> data =
-                uploadExcel(request, Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number")));
-            dormitoryManagerService.save(data, subdistrictId, configurationsMap);
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "上传成功！");
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("上传文件失败！", e);
+        List<List<Object>> data =
+            uploadExcel(request, Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number")));
+        if (data != null && dormitoryManagerService.save(data, subdistrictId, configurationsMap)) {
+            return R.ok("上传成功！");
         }
+        throw new JsonException("上传文件失败！");
     }
 
     /**
@@ -323,12 +295,9 @@ public class DormitoryManagerController extends BaseController {
      */
     @PostMapping("/last_id")
     @ApiOperation("通过社区编号加载最后一个编号")
-    public Map<String, Object> loadDormitoryManagerLastId(@ApiParam(name = "社区编号") Long communityId,
+    public R loadDormitoryManagerLastId(@ApiParam(name = "社区编号") Long communityId,
         @ApiParam(name = "社区名称") String communityName, @ApiParam(name = "街道办事处名称") String subdistrictName) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
         String lastId = dormitoryManagerService.get(communityId, communityName, subdistrictName);
-        jsonMap.put("state", 1);
-        jsonMap.put("id", lastId);
-        return jsonMap;
+        return R.ok().put("id", lastId);
     }
 }

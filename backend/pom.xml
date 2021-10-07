@@ -28,7 +28,7 @@
         <fastjson.version>1.2.75</fastjson.version>
         <druid.version>1.2.6</druid.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
-        <tinypinyin.version>2.0.3</tinypinyin.version>
+        <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <hutool.version>5.7.2</hutool.version>
     </properties>
@@ -74,10 +74,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
@@ -91,11 +87,6 @@
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
@@ -104,16 +95,24 @@
             <artifactId>spring-boot-starter-undertow</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -151,18 +150,14 @@
             <version>${commons-fileupload.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.promeg</groupId>
-            <artifactId>tinypinyin</artifactId>
+            <groupId>io.github.biezhi</groupId>
+            <artifactId>TinyPinyin</artifactId>
             <version>${tinypinyin.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>${hutool.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -177,7 +172,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven-resources-plugin.version}</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <delimiters>

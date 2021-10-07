@@ -1,11 +1,10 @@
 package com.github.phonenumbermanager.controller;
 
-import java.util.Map;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.phonenumbermanager.exception.JsonException;
+import com.github.phonenumbermanager.util.R;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,7 +25,7 @@ public class CommonController extends BaseController {
      */
     @GetMapping("/loginError")
     @ApiOperation("未登录错误页面")
-    public Map<String, Object> loginError() {
+    public R loginError() {
         throw new JsonException("您尚未登录，请登录后重试！");
     }
 }

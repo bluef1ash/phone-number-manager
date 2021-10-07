@@ -9,12 +9,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.exception.BusinessException;
@@ -23,7 +22,9 @@ import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.CommunityService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.validator.CommunityResidentInputValidator;
+import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.validator.CreateInputGroup;
+import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.IoUtil;
@@ -50,16 +51,6 @@ public class CommunityResidentController extends BaseController {
     private CommunityService communityService;
     @Resource
     private PhoneNumberService phoneNumberService;
-    @Resource
-    private HttpServletRequest request;
-
-    @InitBinder
-    public void initBinder(DataBinder binder) {
-        if (RequestMethod.POST.toString().equals(request.getMethod())
-            || RequestMethod.PUT.toString().equals(request.getMethod())) {
-            binder.replaceValidators(new CommunityResidentInputValidator(communityResidentService, request));
-        }
-    }
 
     /**
      * 社区居民列表
@@ -84,11 +75,10 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping
     @ApiOperation("社区居民列表")
-    public Map<String, Object> communityResidentList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据数量") Integer limit, @ApiParam(name = "单位编号") Long companyId,
-        @ApiParam(name = "单位类别编号") Long companyType, @ApiParam(name = "社区居民姓名") String name,
-        @ApiParam(name = "社区居民家庭地址") String address, @ApiParam(name = "社区居民联系方式") String phone,
-        @ApiParam(name = "是否为搜索状态") Boolean isSearch) {
+    public R communityResidentList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据数量") Integer limit,
+        @ApiParam(name = "单位编号") Long companyId, @ApiParam(name = "单位类别编号") Long companyType,
+        @ApiParam(name = "社区居民姓名") String name, @ApiParam(name = "社区居民家庭地址") String address,
+        @ApiParam(name = "社区居民联系方式") String phone, @ApiParam(name = "是否为搜索状态") Boolean isSearch) {
         getRoleId();
         Map<String, Object> jsonMap = new HashMap<>(6);
         jsonMap.put("systemCompanyType", systemCompanyType);
@@ -113,7 +103,7 @@ public class CommunityResidentController extends BaseController {
                     communityCompanyType, subdistrictCompanyType, page, limit);
         }
         jsonMap.put("communityResidents", communityResidents);
-        return jsonMap;
+        return R.ok(jsonMap);
     }
 
     /**
@@ -125,54 +115,48 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping("/{id}")
     @ApiOperation("通过编号查找社区居民")
-    public CommunityResident
-        editCommunityResident(@ApiParam(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
-        return communityResidentService.getCorrelation(id);
+    public R editCommunityResident(@ApiParam(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
+        return R.ok().put("communityResident", communityResidentService.getCorrelation(id));
     }
 
     /**
-     * 添加、修改社区居民处理
+     * 添加社区居民处理
      *
-     * @param httpServletRequest
-     *            HTTP请求对象
      * @param communityResident
      *            前台传递的社区居民对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加、修改社区居民处理")
-    public Map<String, Object> communityResidentCreateOrEditHandle(HttpServletRequest httpServletRequest,
-        @ApiParam(name = "前台传递的社区居民对象", required = true) @RequestBody @Validated CommunityResident communityResident,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
+    @PostMapping
+    @ApiOperation("添加社区居民处理")
+    public R communityResidentCreateHandle(@ApiParam(name = "前台传递的社区居民对象",
+        required = true) @RequestBody @Validated(CreateInputGroup.class) CommunityResident communityResident) {
+        if (communityService.isSubmittedById(0, communityResident.getCommunityId())) {
+            return R.error(ExceptionCode.NOT_MODIFIED.getCode(), "此社区已经提报，不允许添加！");
         }
-        if (RequestMethod.POST.toString().equals(httpServletRequest.getMethod())) {
-            if (communityService.isSubmittedById(0, communityResident.getCommunityId())) {
-                throw new JsonException("此社区已经提报，不允许添加！");
-            }
-            multiplePhoneHandler(communityResident);
-            if (communityResidentService.save(communityResident)) {
-                setPhoneNumbers(communityResident.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT,
-                    String.valueOf(communityResident.getId()));
-                phoneNumberService.saveBatch(communityResident.getPhoneNumbers());
-            } else {
-                throw new JsonException("添加社区居民失败！");
-            }
-        } else {
-            if (communityResidentService.updateById(communityResident)) {
-                setPhoneNumbers(communityResident.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT,
-                    String.valueOf(communityResident.getId()));
-                phoneNumberService.saveOrUpdateBatch(communityResident.getPhoneNumbers());
-            } else {
-                throw new JsonException("修改社区居民失败！");
-            }
+        multiplePhoneHandler(communityResident);
+        if (communityResidentService.save(communityResident)) {
+            return setPhoneNumbers(phoneNumberService, communityResident.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, String.valueOf(communityResident.getId()));
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        throw new JsonException("添加社区居民失败！");
+    }
+
+    /**
+     * 修改社区居民处理
+     *
+     * @param communityResident
+     *            前台传递的社区居民对象
+     * @return 视图页面
+     */
+    @PutMapping
+    @ApiOperation("修改社区居民处理")
+    public R communityResidentModifyHandle(@ApiParam(name = "前台传递的社区居民对象",
+        required = true) @RequestBody @Validated(ModifyInputGroup.class) CommunityResident communityResident) {
+        if (communityResidentService.updateById(communityResident)) {
+            return setPhoneNumbers(phoneNumberService, communityResident.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, String.valueOf(communityResident.getId()));
+        }
+        throw new JsonException("修改社区居民失败！");
     }
 
     /**
@@ -184,15 +168,11 @@ public class CommunityResidentController extends BaseController {
      */
     @DeleteMapping("/{id}")
     @ApiOperation("通过社区居民编号删除社区居民")
-    public Map<String, Object>
-        deleteCommunityResident(@ApiParam(name = "社区居民编号", required = true) @PathVariable Long id) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
-        if (communityResidentService.removeById(id)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除社区居民成功！");
-            return jsonMap;
+    public R deleteCommunityResident(@ApiParam(name = "社区居民编号", required = true) @PathVariable Long id) {
+        if (!communityResidentService.removeCorrelationById(id)) {
+            throw new JsonException("删除社区居民失败！");
         }
-        throw new JsonException("删除社区居民失败！");
+        return R.ok();
     }
 
     /**
@@ -206,19 +186,14 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/import")
     @ApiOperation("导入居民信息进系统")
-    public Map<String, Object> communityResidentImportAsSystem(HttpServletRequest request,
+    public R communityResidentImportAsSystem(HttpServletRequest request,
         @ApiParam(name = "导入的街道编号", required = true) Long subdistrictId) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
         int startRowNumber = Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number"));
-        try {
-            List<List<Object>> data = uploadExcel(request, startRowNumber);
-            jsonMap.put("state", 1);
-            jsonMap.put("create", communityResidentService.save(data, subdistrictId, configurationsMap));
-            return jsonMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonException("上传文件失败！", e);
+        List<List<Object>> data = uploadExcel(request, startRowNumber);
+        if (data != null && !communityResidentService.save(data, subdistrictId, configurationsMap)) {
+            return R.ok();
         }
+        throw new JsonException("上传文件失败！");
     }
 
     /**

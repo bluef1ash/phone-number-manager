@@ -28,9 +28,9 @@ import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.mapper.SubcontractorMapper;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
-import com.github.promeg.pinyinhelper.Pinyin;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.extra.pinyin.PinyinUtil;
 
 /**
  * 社区楼长业务实现
@@ -56,8 +56,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap)
-        throws ParseException {
+    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         Integer excelDormitoryCommunityNameCellNumber =
@@ -96,9 +95,14 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                     .contains(String.valueOf(datum.get(excelDormitoryCommunityNameCellNumber))))
                 .collect(Collectors.toList());
             if (communityList.size() == 0) {
-                throw new BusinessException("未找到对应的社区，请重试！");
+                return false;
             }
-            Date birth = simpleDateFormat.parse(String.valueOf(datum.get(excelDormitoryBirthCellNumber)));
+            Date birth;
+            try {
+                birth = simpleDateFormat.parse(String.valueOf(datum.get(excelDormitoryBirthCellNumber)));
+            } catch (ParseException e) {
+                return false;
+            }
             dormitoryManager.setCommunityId(communityList.get(0).getId())
                 .setId(String.valueOf(datum.get(excelDormitoryIdCellNumber)))
                 .setName(String.valueOf(datum.get(excelDormitoryNameCellNumber)))
@@ -208,17 +212,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         } else {
             String sn = subdistrictName.replaceAll("(?iUs)[街道办事处]", "");
             String cn = communityName.replaceAll("(?iUs)[社区居委会]", "");
-            String regex = ",";
-            String subdistrictNamePinyin = Pinyin.toPinyin(sn, regex);
-            String communityNamePinyin = Pinyin.toPinyin(cn, regex);
-            String[] subdistrictNamePinyinSplit = subdistrictNamePinyin.split(regex);
-            String[] communityNamePinyinSplit = communityNamePinyin.split(regex);
-            for (String split : subdistrictNamePinyinSplit) {
-                lastId.append(split.toUpperCase(), 0, 1);
-            }
-            for (String split : communityNamePinyinSplit) {
-                lastId.append(split.toUpperCase(), 0, 1);
-            }
+            lastId.append(PinyinUtil.getFirstLetter(sn, "")).append(PinyinUtil.getFirstLetter(cn, ""));
         }
         lastId.append(String.format("%04d", idNumber + 1));
         return lastId.toString();
@@ -317,6 +311,12 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             dormitoryManager = new LinkedList<>();
         }
         return barChartDataHandler(label, companyLabel, "户", dormitoryManager);
+    }
+
+    @Override
+    public boolean removeCorrelationById(Serializable id) {
+        return baseMapper.deleteById(id) > 0
+            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.DORMITORY_MANAGER, id);
     }
 
     /**

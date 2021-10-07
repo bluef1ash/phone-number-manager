@@ -1,23 +1,45 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "centos8"
-  config.vm.network "forwarded_port", guest: 8081, host: 8081, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 3306, host: 3306, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 6379, host: 6379, host_ip: "127.0.0.1"
   config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.provision "shell", privileged: false, inline: <<-SHELL
-    if [ -z "$(rpm -aq | grep mysql-server)" ]; then
-        sudo yum -y update && sudo yum -y upgrade
-        sudo yum -y localinstall https://dev.mysql.com/get/mysql80-community-release-el8-1.noarch.rpm && sudo yum -y update
-        sudo yum -y install mysql-server
-        sudo systemctl start mysqld
-        sudo systemctl enable mysqld
-        wget -O /tmp/schema.sql https://github.com/bluef1ash/phone-number-manager/raw/master/src/main/resources/schema.sql
-        wget -O /tmp/data.sql https://github.com/bluef1ash/phone-number-manager/raw/master/src/main/resources/data.sql
-        mysql -uroot < /tmp/schema.sql
-        mysql -uroot < /tmp/data.sql
-        mysql -uroot << EOF
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
-FLUSH PRIVILEGES;
+  config.vm.synced_folder ".", "/vagrant"
+  config.vm.provision "shell", inline: <<-shell
+    if [ ! -f "/var/log/first.log" ]; then
+        sed -i '/^SELINUX=/s/enforcing/disabled/' /etc/selinux/config
+        timedatectl set-timezone Asia/Shanghai
+        systemctl stop firewalld
+        systemctl disabled firewalld
+        if [ ! -f "/etc/yum.repos.d/Centos-8.repo" ]; then
+            wget -O /etc/yum.repos.d/Centos-8.repo http://mirrors.aliyun.com/repo/Centos-8.repo
+            yum clean all && yum makecache
+            yum -y upgrade && yum -y update
+        fi
+        if [ -z "$(rpm -aq | grep java-11-openjdk)" ]; then
+            yum -y update && yum -y upgrade
+            yum -y install java-11-openjdk java-11-openjdk-devel
+        fi
+        if [ -z "$(rpm -aq | grep mysql-server)" ]; then
+            yum -y update && yum -y upgrade
+            yum -y localinstall https://dev.mysql.com/get/mysql80-community-release-el8-1.noarch.rpm
+            yum -y install mysql-server
+            systemctl start mysqld
+            systemctl enable mysqld
+            mysql -u root < /vagrant/backend/src/main/resources/schema.sql
+            mysql -u root << EOF
+                ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
+                CREATE USER 'root'@'%' IDENTIFIED BY 'root';
+                GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+                FLUSH PRIVILEGES;
 EOF
+        fi
+        if [ -z "$(rpm -aq | grep redis)" ]; then
+            yum -y update && yum -y upgrade
+            yum -y install redis
+            systemctl start redis
+            systemctl enable redis
+        fi
+        echo $(date) > /var/log/first.log
     fi
-  SHELL
+  shell
 end

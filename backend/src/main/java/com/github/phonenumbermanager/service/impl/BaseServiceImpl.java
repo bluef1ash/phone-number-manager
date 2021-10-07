@@ -1,13 +1,7 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.*;
-
-import javax.annotation.Resource;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,12 +11,9 @@ import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.BaseMapper;
-import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.service.BaseService;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.PhoneUtil;
-import cn.hutool.poi.excel.cell.CellUtil;
 
 /**
  * 基础业务实现
@@ -32,8 +23,6 @@ import cn.hutool.poi.excel.cell.CellUtil;
  * @author 廿二月的天
  */
 public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> implements BaseService<T> {
-    @Resource
-    private CommunityMapper communityMapper;
 
     @Override
     public List<T> get(T object) {
@@ -68,8 +57,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap)
-        throws ParseException {
+    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
         return false;
     }
 
@@ -99,6 +87,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         return null;
     }
 
+    @Override
+    public boolean removeCorrelationById(Serializable id) {
+        return false;
+    }
+
     /**
      * 查找社区编号
      *
@@ -110,7 +103,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      *            街道单位类型编号
      * @return 社区编号数组
      */
-    List<Serializable> getCommunityIds(SystemUser systemUser, Serializable communityCompanyType,
+    protected List<Serializable> getCommunityIds(SystemUser systemUser, Serializable communityCompanyType,
         Serializable subdistrictCompanyType) {
         // TODO: 2021/9/12 0012 用户权限
         // Integer level = systemUser.getLevel().getValue();
@@ -130,31 +123,6 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     /**
-     * 转换单元格字符串
-     *
-     * @param cell
-     *            需要转换的字符串的单元格对象
-     * @return 转换成功的字符串
-     */
-    String convertCellString(Cell cell) {
-        if (cell == null) {
-            return null;
-        }
-        return Convert.toDBC(String.valueOf(CellUtil.getCellValue(cell, CellType.STRING, true)));
-    }
-
-    /**
-     * 转换单元格数字类型
-     *
-     * @param cell
-     *            需要转换的字符串的单元格对象
-     * @return 转换成功的字符串
-     */
-    Integer convertCell(Cell cell) {
-        return Integer.parseInt(String.valueOf(CellUtil.getCellValue(cell, CellType.NUMERIC, true)));
-    }
-
-    /**
      * 柱状图数据处理
      *
      * @param label
@@ -167,7 +135,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      *            饼图数据内容
      * @return 处理后的对象
      */
-    Map<String, Object> barChartDataHandler(String label, String companyLabel, String formatter,
+    protected Map<String, Object> barChartDataHandler(String label, String companyLabel, String formatter,
         LinkedList<Map<String, Object>> object) {
         Map<String, Object> barChartMap = new HashMap<>(3);
         List<String> columns = new ArrayList<>();
@@ -202,7 +170,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      *            查找的范围单位的类别编号
      * @return 单位类型和单位编号集合
      */
-    Map<String, Object> getCompany(SystemUser systemUser, Serializable companyId, Serializable companyType) {
+    protected Map<String, Object> getCompany(SystemUser systemUser, Serializable companyId, Serializable companyType) {
         if (companyType == null || companyId == null) {
             // TODO: 2021/9/12 0012 用户权限
             // companyType = systemUser.getLevel();
@@ -214,6 +182,13 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         return company;
     }
 
+    /**
+     * 处理联系方式
+     *
+     * @param phone
+     *            联系方式
+     * @return 处理后的联系方式
+     */
     protected PhoneNumber phoneHandler(String phone) {
         if (PhoneUtil.isPhone(phone)) {
             PhoneNumber phoneNumber = new PhoneNumber();

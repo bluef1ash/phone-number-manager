@@ -1,7 +1,9 @@
-FROM openjdk:8-jdk-alpine
-VOLUME /tmp
-RUN apk update && apk upgrade && apk add ca-certificates && update-ca-certificates && apk add --update tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone && rm -rf /var/cache/apk/*
-ENV TZ=Asia/Shanghai
-ADD ./target/phone-number-manager-0.0.1-SNAPSHOT.jar app.jar
+FROM java:11
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app.jar", "-Dlogging.path=/var/log"]
+VOLUME /tmp
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN echo 'Asia/Shanghai' > /etc/timezone
+ENV TZ=Asia/Shanghai
+ADD ./target/*.jar /app.jar
+RUN bash -c "touch /app.jar"
+ENTRYPOINT ["java", "-jar", "/app.jar", "--spring.profiles.active=prod"]

@@ -12,12 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.enums.UserLevelEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Subdistrict;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.mapper.SubdistrictMapper;
+import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.service.SubdistrictService;
 
 /**
@@ -30,6 +32,8 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, S
     implements SubdistrictService {
     @Resource
     private CommunityMapper communityMapper;
+    @Resource
+    private PhoneNumberService phoneNumberService;
 
     @Override
     public IPage<Subdistrict> getCorrelation(Integer pageNumber, Integer pageDataSize) {
@@ -60,12 +64,13 @@ public class SubdistrictServiceImpl extends BaseServiceImpl<SubdistrictMapper, S
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeById(Serializable id) {
+    public boolean removeCorrelationById(Serializable id) {
         List<Community> communities = communityMapper.selectBySubdistrictId(id);
         if (communities != null && communities.size() > 0) {
             throw new BusinessException("不允许删除存在下属社区的街道单位！");
         }
-        return baseMapper.deleteById(id) > 0;
+        return baseMapper.deleteById(id) > 0
+            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.SUBDISTRICT, id);
     }
 
     @Override

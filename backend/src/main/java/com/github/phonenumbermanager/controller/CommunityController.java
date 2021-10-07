@@ -3,17 +3,14 @@ package com.github.phonenumbermanager.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
-import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Subcontractor;
@@ -23,8 +20,8 @@ import com.github.phonenumbermanager.service.PhoneNumberService;
 import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.service.SubdistrictService;
 import com.github.phonenumbermanager.util.R;
-import com.github.phonenumbermanager.validator.CommunityInputValidator;
-import com.github.phonenumbermanager.validator.SubcontractorInputValidator;
+import com.github.phonenumbermanager.validator.CreateInputGroup;
+import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -47,24 +44,6 @@ public class CommunityController extends BaseController {
     private SubdistrictService subdistrictService;
     @Resource
     private PhoneNumberService phoneNumberService;
-    @Resource
-    private HttpServletRequest request;
-
-    @InitBinder
-    public void initBinder(DataBinder binder) {
-        StringBuffer requestUrl = request.getRequestURL();
-        boolean isCommunity = !requestUrl.toString().contains("/community/subcontractor")
-            && (RequestMethod.POST.toString().equals(request.getMethod())
-                || RequestMethod.PUT.toString().equals(request.getMethod()));
-        boolean isSubcontractor = requestUrl.toString().contains("/community/subcontractor")
-            && (RequestMethod.POST.toString().equals(request.getMethod())
-                || RequestMethod.PUT.toString().equals(request.getMethod()));
-        if (isCommunity) {
-            binder.replaceValidators(new CommunityInputValidator(communityService, request));
-        } else if (isSubcontractor) {
-            binder.replaceValidators(new SubcontractorInputValidator(subcontractorService, request));
-        }
-    }
 
     /**
      * 社区列表及所属街道
@@ -77,15 +56,12 @@ public class CommunityController extends BaseController {
      */
     @GetMapping
     @ApiOperation("社区列表及所属街道")
-    public Map<String, Object> communityList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据条数") Integer limit) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
+    public R communityList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据条数") Integer limit) {
         if (page == null) {
-            jsonMap.put("communities", communityService.getCorrelation());
+            return R.ok().put("communities", communityService.getCorrelation());
         } else {
-            jsonMap.put("communities", communityService.getCorrelation(page, limit));
+            return R.ok().put("communities", communityService.getCorrelation(page, limit));
         }
-        return jsonMap;
     }
 
     /**
@@ -97,41 +73,44 @@ public class CommunityController extends BaseController {
      */
     @GetMapping("/{id}")
     @ApiOperation("通过社区编号获取")
-    public Community getCommunityById(@ApiParam(name = "社区编号", required = true) @PathVariable Long id) {
-        return communityService.getCorrelation(id);
+    public R getCommunityById(@ApiParam(name = "社区编号", required = true) @PathVariable Long id) {
+        return R.ok().put("communities", communityService.getCorrelation(id));
     }
 
     /**
-     * 添加、修改社区处理
+     * 添加处理
      *
-     * @param request
-     *            HTTP请求对象
      * @param community
      *            社区对象
      * @return 视图页面
      */
-    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加、修改社区处理")
-    public R communityCreateOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "社区对象", required = true) @RequestBody @Valid Community community) {
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            if (communityService.save(community)) {
-                setPhoneNumbers(community.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY,
-                    String.valueOf(community.getId()));
-                phoneNumberService.saveBatch(community.getPhoneNumbers());
-            } else {
-                throw new JsonException("添加社区失败！");
-            }
-        } else {
-            if (communityService.updateById(community)) {
-                setPhoneNumbers(community.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY,
-                    String.valueOf(community.getId()));
-                phoneNumberService.saveOrUpdateBatch(community.getPhoneNumbers());
-            } else {
-                throw new JsonException("修改社区失败！");
-            }
+    @PostMapping
+    @ApiOperation("添加社区处理")
+    public R communityCreateHandle(
+        @ApiParam(name = "社区对象", required = true) @RequestBody @Validated(CreateInputGroup.class) Community community) {
+        if (communityService.save(community)) {
+            return setPhoneNumbers(phoneNumberService, community.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY,
+                String.valueOf(community.getId()));
         }
-        return R.ok();
+        throw new JsonException("添加社区失败！");
+    }
+
+    /**
+     * 修改社区处理
+     *
+     * @param community
+     *            社区对象
+     * @return 视图页面
+     */
+    @PutMapping
+    @ApiOperation("修改社区处理")
+    public R communityModifyHandle(
+        @ApiParam(name = "社区对象", required = true) @RequestBody @Validated(ModifyInputGroup.class) Community community) {
+        if (communityService.updateById(community)) {
+            return setPhoneNumbers(phoneNumberService, community.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY,
+                String.valueOf(community.getId()));
+        }
+        throw new JsonException("修改社区失败！");
     }
 
     /**
@@ -144,9 +123,8 @@ public class CommunityController extends BaseController {
     @DeleteMapping("/{id}")
     @ApiOperation("通过社区编号删除社区")
     public Map<String, Object> deleteCommunity(@ApiParam(name = "社区编号", required = true) @PathVariable Long id) {
-        if (!communityService.removeById(id)
-            || !phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.COMMUNITY, id)) {
-            throw new JsonException("删除社区失败！");
+        if (!communityService.removeCorrelationById(id)) {
+            return R.error(ExceptionCode.DELETE_FAILED.getCode(), "删除社区失败！");
         }
         return R.ok("删除社区成功！");
     }
@@ -160,9 +138,9 @@ public class CommunityController extends BaseController {
      */
     @GetMapping({"/subdistrict", "/subdistrict/{subdistrictId}"})
     @ApiOperation("通过街道编号列出社区居委会")
-    public Map<String, Object> getCommunitiesBySubdistrictId(
+    public R getCommunitiesBySubdistrictId(
         @ApiParam(name = "街道编号", required = true) @PathVariable(required = false) Long subdistrictId) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
+        Map<String, Object> jsonMap = new HashMap<>(1);
         getRoleId();
         if (subdistrictId == null) {
             //// TODO: 2021/9/12 0012 用户权限
@@ -174,8 +152,7 @@ public class CommunityController extends BaseController {
             List<Community> communities = communityService.getBySubdistrictId(subdistrictId);
             jsonMap.put("communities", communities);
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        return R.ok(jsonMap);
     }
 
     /**
@@ -189,16 +166,12 @@ public class CommunityController extends BaseController {
      */
     @PutMapping("/submit")
     @ApiOperation("更改社区是否允许更删改信息")
-    public Map<String, Object> chooseSubmitForAjax(
-        @ApiParam(name = "用户加密数据", required = true) @RequestParam String data,
+    public R chooseSubmitForAjax(@ApiParam(name = "用户加密数据", required = true) @RequestParam String data,
         @ApiParam(name = "更改类型", required = true) @RequestParam Integer changeType) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
         if (communityService.update(getDecodeData(data), changeType, communityCompanyType, subdistrictCompanyType)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "上报成功！");
-            return jsonMap;
+            return R.ok("上报成功！");
         }
-        throw new JsonException("更改失败，请稍后再试！");
+        return R.error(ExceptionCode.EDIT_FAILED.getCode(), "更改失败，请稍后再试！");
     }
 
     /**
@@ -210,10 +183,8 @@ public class CommunityController extends BaseController {
      */
     @GetMapping("/subcontractor")
     @ApiOperation("社区分包人列表")
-    public Map<String, Object> subcontractorList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据条数") Integer limit) {
+    public R subcontractorList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据条数") Integer limit) {
         getRoleId();
-        Map<String, Object> jsonMap = new HashMap<>(1);
         // // TODO: 2021/9/12 0012
         /*if (page == null) {
             jsonMap.put("subcontractors", subcontractorService.get(systemUser.getLevel(), systemUser.getCompanyId(),
@@ -222,7 +193,7 @@ public class CommunityController extends BaseController {
             jsonMap.put("subcontractors", subcontractorService.get(page, limit, systemUser.getLevel(),
                 systemUser.getCompanyId(), systemCompanyType, communityCompanyType, subdistrictCompanyType));
         }*/
-        return jsonMap;
+        return R.ok();
     }
 
     /**
@@ -234,60 +205,47 @@ public class CommunityController extends BaseController {
      */
     @GetMapping("/subcontractor/{id}")
     @ApiOperation("通过编号获取社区分包人")
-    public Map<String, Object>
-        getSubcontractorById(@ApiParam(name = "社区分包人编号", required = true) @PathVariable Long id) {
+    public R getSubcontractorById(@ApiParam(name = "社区分包人编号", required = true) @PathVariable Long id) {
         getRoleId();
-        Map<String, Object> jsonMap = new HashMap<>(2);
         Subcontractor subcontractor = subcontractorService.getCorrelation(id);
         List<Community> communities = communityService.get(systemUser, communityCompanyType, subdistrictCompanyType);
-        jsonMap.put("communities", communities);
-        jsonMap.put("subcontractor", subcontractor);
-        return jsonMap;
+        return Objects.requireNonNull(R.ok().put("communities", communities)).put("subcontractor", subcontractor);
     }
 
     /**
-     * 添加、修改社区分包人处理
+     * 添加社区分包人处理
      *
-     * @param request
-     *            HTTP请求对象
      * @param subcontractor
      *            社区分包人对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/subcontractor", method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加、修改社区分包人处理")
-    public Map<String, Object> subcontractorCreateOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "社区分包人对象", required = true) @RequestBody @Validated Subcontractor subcontractor,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            getRoleId();
-            // 输出错误信息
-            List<ObjectError> allErrors = bindingResult.getAllErrors();
-            jsonMap.put("messageErrors", allErrors);
-            return jsonMap;
+    @PostMapping("/subcontractor")
+    @ApiOperation("添加社区分包人处理")
+    public R subcontractorCreateHandle(@ApiParam(name = "社区分包人对象",
+        required = true) @RequestBody @Validated(CreateInputGroup.class) Subcontractor subcontractor) {
+        if (subcontractorService.save(subcontractor)) {
+            return setPhoneNumbers(phoneNumberService, subcontractor.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.SUBCONTRACTOR, String.valueOf(subcontractor.getId()));
         }
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            if (subcontractorService.save(subcontractor)) {
-                setPhoneNumbers(subcontractor.getPhoneNumbers(), PhoneNumberSourceTypeEnum.SUBCONTRACTOR,
-                    String.valueOf(subcontractor.getId()));
-                phoneNumberService.saveBatch(subcontractor.getPhoneNumbers());
-            } else {
-                throw new JsonException("添加社区分包人失败！");
-            }
-        } else {
-            if (subcontractorService.updateById(subcontractor)) {
-                setPhoneNumbers(subcontractor.getPhoneNumbers(), PhoneNumberSourceTypeEnum.COMMUNITY,
-                    String.valueOf(subcontractor.getId()));
-                phoneNumberService.saveOrUpdateBatch(subcontractor.getPhoneNumbers());
-            } else {
-                throw new JsonException("修改社区分包人失败！");
-            }
+        throw new JsonException("添加社区分包人失败！");
+    }
+
+    /**
+     * 修改社区分包人处理
+     *
+     * @param subcontractor
+     *            社区分包人对象
+     * @return 视图页面
+     */
+    @PutMapping("/subcontractor")
+    @ApiOperation("修改社区分包人处理")
+    public R subcontractorModifyHandle(@ApiParam(name = "社区分包人对象",
+        required = true) @RequestBody @Validated(ModifyInputGroup.class) Subcontractor subcontractor) {
+        if (subcontractorService.updateById(subcontractor)) {
+            return setPhoneNumbers(phoneNumberService, subcontractor.getPhoneNumbers(),
+                PhoneNumberSourceTypeEnum.COMMUNITY, String.valueOf(subcontractor.getId()));
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        throw new JsonException("修改社区分包人失败！");
     }
 
     /**
@@ -299,13 +257,9 @@ public class CommunityController extends BaseController {
      */
     @DeleteMapping("/subcontractor/{id}")
     @ApiOperation("通过社区分包人编号删除社区分包人")
-    public Map<String, Object> deleteSubcontractor(@ApiParam(name = "社区分包人编号", required = true) @PathVariable Long id) {
-        Map<String, Object> jsonMap = new HashMap<>(3);
-        if (subcontractorService.removeById(id)
-            || !phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.SUBCONTRACTOR, id)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除社区分包人成功！");
-            return jsonMap;
+    public R deleteSubcontractor(@ApiParam(name = "社区分包人编号", required = true) @PathVariable Long id) {
+        if (!subcontractorService.removeCorrelationById(id)) {
+            return R.ok("删除社区分包人成功！");
         }
         throw new JsonException("删除社区分包人失败！");
     }
@@ -319,12 +273,8 @@ public class CommunityController extends BaseController {
      */
     @GetMapping("/subcontractor/community/{communityId}")
     @ApiOperation("通过社区编号加载社区分包人")
-    public Map<String, Object>
-        loadSubcontractor(@ApiParam(name = "社区编号", required = true) @PathVariable Long communityId) {
-        Map<String, Object> jsonMap = new HashMap<>(2);
+    public R loadSubcontractor(@ApiParam(name = "社区编号", required = true) @PathVariable Long communityId) {
         List<Subcontractor> subcontractors = subcontractorService.getByCommunityId(communityId);
-        jsonMap.put("state", 1);
-        jsonMap.put("subcontractors", subcontractors);
-        return jsonMap;
+        return R.ok().put("subcontractors", subcontractors);
     }
 }

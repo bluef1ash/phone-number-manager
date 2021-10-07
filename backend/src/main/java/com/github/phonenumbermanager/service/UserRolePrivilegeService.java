@@ -11,9 +11,11 @@ public interface UserRolePrivilegeService extends BaseService<RolePrivilegeRelat
     /**
      * 通过中间表对象删除
      *
-     * @param rolePrivilegeRelation
-     *            系统用户角色权限中间对象
+     * @param roleId
+     *            所属角色编号
+     * @param privilegeId
+     *            所属用户权限编号
      * @return 数据库删除影响的行数
      */
-    boolean remove(RolePrivilegeRelation rolePrivilegeRelation);
+    boolean remove(Long roleId, Long privilegeId);
 }

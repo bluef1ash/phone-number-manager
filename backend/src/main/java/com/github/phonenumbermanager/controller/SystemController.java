@@ -1,13 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +9,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.ConfigurationService;
-import com.github.phonenumbermanager.validator.ConfigurationInputValidator;
+import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.validator.CreateInputGroup;
+import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,16 +28,6 @@ import io.swagger.annotations.ApiParam;
 public class SystemController extends BaseController {
     @Resource
     private ConfigurationService configurationService;
-    @Resource
-    private HttpServletRequest request;
-
-    @InitBinder
-    public void initBinder(DataBinder binder) {
-        if (RequestMethod.POST.toString().equals(request.getMethod())
-            || RequestMethod.PUT.toString().equals(request.getMethod())) {
-            binder.replaceValidators(new ConfigurationInputValidator(configurationService, request));
-        }
-    }
 
     /**
      * 系统配置列表
@@ -54,16 +40,13 @@ public class SystemController extends BaseController {
      */
     @GetMapping("/configuration")
     @ApiOperation("系统配置列表")
-    public Map<String, Object> configurationList(@ApiParam(name = "分页页码") Integer page,
-        @ApiParam(name = "每页数据数量") Integer limit) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
+    public R configurationList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据数量") Integer limit) {
         if (page == null) {
-            jsonMap.put("configurations", configurationService.list());
+            return R.ok().put("configurations", configurationService.list());
         } else {
             Page<Configuration> configurationPage = new Page<>(page, limit);
-            jsonMap.put("configurations", configurationService.page(configurationPage, null));
+            return R.ok().put("configurations", configurationService.page(configurationPage, null));
         }
-        return jsonMap;
     }
 
     /**
@@ -75,46 +58,42 @@ public class SystemController extends BaseController {
      */
     @GetMapping("/configuration/{key}")
     @ApiOperation("通过系统配置项KEY查找")
-    public Map<String, Object>
-        editConfiguration(@ApiParam(name = "对应系统配置项关键字", required = true) @PathVariable String key) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        jsonMap.put("configuration", configurationService.getById(key));
-        return jsonMap;
+    public R editConfiguration(@ApiParam(name = "对应系统配置项关键字", required = true) @PathVariable String key) {
+        return R.ok().put("configuration", configurationService.getById(key));
     }
 
     /**
-     * 添加、修改系统配置处理
+     * 添加系统配置处理
      *
-     * @param request
-     *            HTTP请求对象
      * @param configuration
      *            系统配置对象
-     * @param bindingResult
-     *            错误信息对象
      * @return 视图页面
      */
-    @RequestMapping(value = "/configuration", method = {RequestMethod.POST, RequestMethod.PUT})
-    @ApiOperation("添加、修改系统配置处理")
-    public Map<String, Object> configurationCreateOrEditHandle(HttpServletRequest request,
-        @ApiParam(name = "系统配置对象", required = true) @RequestBody @Validated Configuration configuration,
-        BindingResult bindingResult) {
-        Map<String, Object> jsonMap = new HashMap<>(1);
-        if (bindingResult.hasErrors()) {
-            // 输出错误信息
-            jsonMap.put("messageErrors", bindingResult.getAllErrors());
-            return jsonMap;
+    @PostMapping("/configuration")
+    @ApiOperation("添加系统配置处理")
+    public R configurationCreateHandle(@ApiParam(name = "系统配置对象",
+        required = true) @RequestBody @Validated(CreateInputGroup.class) Configuration configuration) {
+        if (!configurationService.save(configuration)) {
+            throw new JsonException("添加系统配置失败！");
         }
-        if (RequestMethod.POST.toString().equals(request.getMethod())) {
-            if (!configurationService.save(configuration)) {
-                throw new JsonException("添加系统配置失败！");
-            }
-        } else {
-            if (!configurationService.updateById(configuration)) {
-                throw new JsonException("修改系统配置失败！");
-            }
+        return R.ok();
+    }
+
+    /**
+     * 修改系统配置处理
+     *
+     * @param configuration
+     *            系统配置对象
+     * @return 视图页面
+     */
+    @PutMapping("/configuration")
+    @ApiOperation("修改系统配置处理")
+    public R configurationModifyHandle(@ApiParam(name = "系统配置对象",
+        required = true) @RequestBody @Validated(ModifyInputGroup.class) Configuration configuration) {
+        if (!configurationService.updateById(configuration)) {
+            throw new JsonException("修改系统配置失败！");
         }
-        jsonMap.put("state", 1);
-        return jsonMap;
+        return R.ok();
     }
 
     /**
@@ -126,15 +105,9 @@ public class SystemController extends BaseController {
      */
     @DeleteMapping("/configuration/{key}")
     @ApiOperation("通过系统配置编号删除")
-    public Map<String, Object>
-        deleteConfigurationForAjax(@ApiParam(name = "对应系统配置项关键字", required = true) @PathVariable String key) {
-        Map<String, Object> jsonMap = new HashMap<>(2);
-        Map<String, Object> columnMap = new HashMap<>(1);
-        columnMap.put("key", key);
-        if (configurationService.removeByMap(columnMap)) {
-            jsonMap.put("state", 1);
-            jsonMap.put("message", "删除系统配置成功！");
-            return jsonMap;
+    public R deleteConfigurationForAjax(@ApiParam(name = "对应系统配置项关键字", required = true) @PathVariable String key) {
+        if (configurationService.removeById(key)) {
+            return R.ok("删除系统配置成功！");
         }
         throw new JsonException("删除系统配置失败！");
     }

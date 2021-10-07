@@ -1,6 +1,5 @@
 package com.github.phonenumbermanager.controller;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
@@ -22,6 +21,9 @@ import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.exception.JsonException;
+import com.github.phonenumbermanager.service.PhoneNumberService;
+import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.util.RedisUtil;
 
 import cn.hutool.core.convert.Convert;
@@ -51,7 +53,7 @@ abstract class BaseController {
      * 获取角色编号
      */
     @SuppressWarnings("all")
-    void getRoleId() {
+    protected void getRoleId() {
         systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         configurationsMap = (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
         systemCompanyType = Convert.toInt(configurationsMap.get("system_company_type"));
@@ -71,16 +73,19 @@ abstract class BaseController {
      * @throws IOException
      *             IO异常
      */
-    List<List<Object>> uploadExcel(HttpServletRequest request, int startRowNumber) throws IOException {
+    protected List<List<Object>> uploadExcel(HttpServletRequest request, int startRowNumber) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
         MultipartFile file = multipartRequest.getFile("file");
         if (file == null || file.isEmpty()) {
-            throw new FileNotFoundException("文件不存在！");
+            return null;
         }
-        InputStream inputStream = file.getInputStream();
-        ExcelReader excelReader = ExcelUtil.getReader(inputStream, 0);
-        excelReader.setIgnoreEmptyRow(true);
-        return excelReader.read(startRowNumber);
+        try (InputStream inputStream = file.getInputStream()) {
+            ExcelReader excelReader = ExcelUtil.getReader(inputStream, 0);
+            excelReader.setIgnoreEmptyRow(true);
+            return excelReader.read(startRowNumber);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     /**
@@ -93,7 +98,7 @@ abstract class BaseController {
      *             转换异常
      */
     @SuppressWarnings("all")
-    List<Map<String, Object>> getDecodeData(String encodeData) throws ClassCastException {
+    protected List<Map<String, Object>> getDecodeData(String encodeData) throws ClassCastException {
         getRoleId();
         byte[] jsonDecode = Base64.getDecoder().decode(encodeData);
         return (List<Map<String, Object>>)JSON.parse(jsonDecode);
@@ -109,8 +114,8 @@ abstract class BaseController {
      * @param sourceId
      *            来源编号
      */
-    void setPhoneNumbers(List<PhoneNumber> phoneNumbers, PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum,
-        String sourceId) {
+    protected R setPhoneNumbers(PhoneNumberService phoneNumberService, List<PhoneNumber> phoneNumbers,
+        PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum, String sourceId) {
         for (PhoneNumber phoneNumber : phoneNumbers) {
             phoneNumber.setSourceType(phoneNumberSourceTypeEnum);
             phoneNumber.setSourceId(sourceId);
@@ -124,6 +129,10 @@ abstract class BaseController {
                 }
             }
         }
+        if (phoneNumberService.saveOrUpdateBatch(phoneNumbers)) {
+            return R.ok();
+        }
+        throw new JsonException("联系方式添加失败！");
     }
 
     /**

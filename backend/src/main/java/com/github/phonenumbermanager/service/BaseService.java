@@ -1,7 +1,6 @@
 package com.github.phonenumbermanager.service;
 
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,8 +145,7 @@ public interface BaseService<T> extends IService<T> {
      *            系统配置
      * @return 导入的行数
      */
-    boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap)
-        throws ParseException;
+    boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap);
 
     /**
      * 通过编号关联查找
@@ -171,4 +169,13 @@ public interface BaseService<T> extends IService<T> {
      */
     List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType,
         Serializable subdistrictCompanyType, List<Map<String, Object>> userData);
+
+    /**
+     * 通过编号关联删除
+     *
+     * @param id
+     *            需要删除的编号
+     * @return 删除是否成功
+     */
+    boolean removeCorrelationById(Serializable id);
 }

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.*;
 
 import javax.annotation.Resource;
-import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -13,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,24 +23,26 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.constant.enums.HttpMethodEnum;
-import com.github.phonenumbermanager.entity.*;
+import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.entity.UserPrivilege;
+import com.github.phonenumbermanager.entity.UserRoleRelation;
 import com.github.phonenumbermanager.exception.SystemClosedException;
-import com.github.phonenumbermanager.mapper.RolePrivilegeRelationMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
-import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
 import com.github.phonenumbermanager.mapper.UserRoleRelationMapper;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.RedisUtil;
 
 import cn.hutool.core.convert.Convert;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 系统用户业务实现
  *
  * @author 廿二月的天
  */
+@Slf4j
 @Service("systemUserService")
 public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, SystemUser> implements SystemUserService {
     @Resource
@@ -52,61 +52,11 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Resource
     private UserRoleRelationMapper userRoleRelationMapper;
     @Resource
-    private UserPrivilegeMapper userPrivilegeMapper;
-    @Resource
-    private RolePrivilegeRelationMapper rolePrivilegeRelationMapper;
-    @Resource
     private ConfigurationService configurationService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
         SystemUser systemUser = baseMapper.selectAndRolesByName(username);
-        @SuppressWarnings("all")
-        Map<String, Object> configurationsMap =
-            (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
-        Long systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id"));
-        // 系统用户权限
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        Set<UserPrivilege> userPrivileges = null;
-        if (systemAdministratorId.equals(systemUser.getId())) {
-            userPrivileges = new LinkedHashSet<>(userPrivilegeMapper.selectList(null));
-            for (UserPrivilege userPrivilege : userPrivileges) {
-                if (StringUtils.isNotEmpty(userPrivilege.getUri())) {
-                    grantedAuthorities.add(
-                        new SimpleGrantedAuthority(userPrivilege.getUri() + "|" + HttpMethodEnum.ALL.getDescription()));
-                }
-            }
-        }
-        QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
-        for (UserRole userRole : systemUser.getUserRoles()) {
-            if (!systemAdministratorId.equals(systemUser.getId())) {
-                userPrivileges = userPrivilegeMapper.selectByRoleId(userRole.getId());
-                wrapper.eq("role_id", userRole.getId());
-                List<RolePrivilegeRelation> rolePrivilegeRelations = rolePrivilegeRelationMapper.selectList(wrapper);
-                for (UserPrivilege userPrivilege : userPrivileges) {
-                    for (RolePrivilegeRelation rolePrivilegeRelation : rolePrivilegeRelations) {
-                        if (userPrivilege.getId().equals(rolePrivilegeRelation.getPrivilegeId())
-                            && StringUtils.isNotEmpty(userPrivilege.getUri())) {
-                            grantedAuthorities.add(new SimpleGrantedAuthority(
-                                userPrivilege.getUri() + "|" + rolePrivilegeRelation.getMethod().getDescription()));
-                        }
-                    }
-                }
-            }
-            assert userPrivileges != null;
-            userRole.setUserPrivileges(recursionPrivileges(userPrivileges, 0L));
-        }
-        systemUser.setAuthorities(grantedAuthorities);
-        return systemUser;
-    }
-
-    @Override
-    public Authentication authentication(String username, String password) throws LoginException {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-            new UsernamePasswordAuthenticationToken(username, password);
-        Authentication authenticate =
-            authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authenticate);
         @SuppressWarnings("all")
         Map<String, Object> configurationsMap =
             (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
@@ -118,12 +68,21 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             }
             redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, configurationsMap);
         }
+        String systemAdministratorName = String.valueOf(configurationsMap.get("system_administrator_name"));
         Integer systemIsActive = Convert.toInt(configurationsMap.get("system_is_active"));
-        String systemAdministratorName = Convert.toStr(configurationsMap.get("system_administrator_name"));
-        if (systemIsActive == 0
-            && !systemAdministratorName.equals(((UserDetails)authenticate.getPrincipal()).getUsername())) {
-            throw new LoginException("该系统已经禁止登录，请联系管理员！");
+        if (systemIsActive == 0 && !systemAdministratorName.equals(systemUser.getUsername())) {
+            throw new SystemClosedException("该系统已经禁止登录，请联系管理员！");
         }
+        return systemUser;
+    }
+
+    @Override
+    public Authentication authentication(String username, String password) {
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+            new UsernamePasswordAuthenticationToken(username, password);
+        Authentication authenticate =
+            authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
         return authenticate;
     }
 

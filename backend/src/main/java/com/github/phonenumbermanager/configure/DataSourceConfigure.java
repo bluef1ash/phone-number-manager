@@ -20,8 +20,6 @@ import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import com.github.phonenumbermanager.util.CommonUtil;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * 数据源配置
  *
@@ -30,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @ConditionalOnClass({DruidDataSource.class})
 @AutoConfigureBefore({DruidDataSourceAutoConfigure.class})
-@Slf4j
 public class DataSourceConfigure {
     @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;
@@ -69,7 +66,7 @@ public class DataSourceConfigure {
                 CommonUtil.executeSql(connection.createStatement(), resourceAsStream);
             }
         } catch (Throwable e) {
-            log.error(e.getMessage());
+            e.printStackTrace();
         } finally {
             try {
                 if (null != state) {
@@ -82,7 +79,7 @@ public class DataSourceConfigure {
                     resourceAsStream.close();
                 }
             } catch (Throwable e) {
-                log.error(e.getMessage());
+                e.printStackTrace();
             }
         }
         return DruidDataSourceBuilder.create().build();

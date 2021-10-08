@@ -309,7 +309,7 @@ public class UserAndRoleController extends BaseController {
      *            系统用户权限对象
      * @return 视图页面
      */
-    @PostMapping("/privilege")
+    @PutMapping("/privilege")
     @ApiOperation("修改处理系统权限")
     public R systemUserPrivilegeModifyHandle(@ApiParam(name = "系统用户权限对象",
         required = true) @RequestBody @Validated(ModifyInputGroup.class) UserPrivilege userPrivilege) {

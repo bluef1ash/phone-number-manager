@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Set;
 
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
 
 /**
@@ -26,11 +27,11 @@ public interface UserPrivilegeService extends BaseService<UserPrivilege> {
      *
      * @param display
      *            是否在导航栏中显示
-     * @param userPrivileges
-     *            权限集合
+     * @param systemUser
+     *            当前登录的用户
      * @return 查找到的系统用户权限对象的集合
      */
-    Set<UserPrivilege> get(Boolean display, Set<UserPrivilege> userPrivileges);
+    Set<UserPrivilege> get(Boolean display, SystemUser systemUser);
 
     /**
      * 查找所有权限包含子权限

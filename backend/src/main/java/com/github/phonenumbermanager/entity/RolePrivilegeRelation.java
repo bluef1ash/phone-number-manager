@@ -4,7 +4,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.phonenumbermanager.constant.enums.HttpMethodEnum;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -32,5 +31,4 @@ public class RolePrivilegeRelation extends BaseEntity<RolePrivilegeRelation> {
     @NotNull(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "用户权限编号不能为空！")
     @Min(value = 0, message = "用户权限编号不正确！")
     private Long privilegeId;
-    private HttpMethodEnum method;
 }

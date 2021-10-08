@@ -31,6 +31,8 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
      *            用户名
      * @param password
      *            密码
+     * @throws LoginException
+     *             登录异常
      * @return 认证对象
      */
     Authentication authentication(String username, String password) throws LoginException;

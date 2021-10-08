@@ -1,17 +1,18 @@
 package com.github.phonenumbermanager.controller;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Resource;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.phonenumbermanager.constant.ComputedDataTypes;
-import com.github.phonenumbermanager.entity.UserPrivilege;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.SubcontractorService;
@@ -21,12 +22,14 @@ import com.github.phonenumbermanager.util.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 首页控制器
  *
  * @author 廿二月的天
  */
+@Slf4j
 @RestController
 @RequestMapping("/index")
 @Api(tags = "首页控制器")
@@ -50,11 +53,8 @@ public class IndexController extends BaseController {
     @GetMapping("/getmenu")
     @ApiOperation("获取首页菜单栏内容")
     public R getMenu(@ApiParam(name = "是否显示") Boolean display) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Set<UserPrivilege> systemUser = (Set<UserPrivilege>)authentication.getAuthorities();
-        Set<UserPrivilege> userPrivileges = new LinkedHashSet<>();
-        // systemUser.getUserRoles().forEach(userRole -> userPrivileges.addAll(userRole.getUserPrivileges()));
-        return R.ok().put("userPrivileges", userPrivilegeService.get(display, userPrivileges));
+        SystemUser userDetails = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return R.ok().put("userPrivileges", userPrivilegeService.get(display, userDetails));
     }
 
     /**

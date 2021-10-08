@@ -7,8 +7,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.security.core.GrantedAuthority;
-
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -33,7 +31,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @TableName("pm_privilege")
 @ApiModel("用户权限对象实体")
-public class UserPrivilege extends BaseEntity<UserPrivilege> implements GrantedAuthority {
+public class UserPrivilege extends BaseEntity<UserPrivilege> {
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
     @TableId
     private Long id;
@@ -62,9 +60,4 @@ public class UserPrivilege extends BaseEntity<UserPrivilege> implements GrantedA
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private Set<UserPrivilege> subUserPrivileges;
-
-    @Override
-    public String getAuthority() {
-        return uri;
-    }
 }

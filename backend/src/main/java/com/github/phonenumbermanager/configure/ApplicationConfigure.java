@@ -1,10 +1,17 @@
 package com.github.phonenumbermanager.configure;
 
+import java.time.Duration;
+
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import com.baomidou.mybatisplus.annotation.DbType;
@@ -62,6 +69,13 @@ public class ApplicationConfigure {
             .apis(RequestHandlerSelectors.basePackage("com.github.phonenumbermanager")).build().apiInfo(apiInfo);
     }
 
+    /**
+     * Redis配置
+     *
+     * @param redisConnectionFactory
+     *            Redis连接工厂
+     * @return RedisTemplate
+     */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -80,4 +94,21 @@ public class ApplicationConfigure {
         template.afterPropertiesSet();
         return template;
     }
+
+    /**
+     * Spring Cache格式化JSON
+     *
+     * @param connectionFactory
+     *            Redis连接工厂
+     * @return CacheManager
+     */
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        return RedisCacheManager.builder(connectionFactory)
+            .cacheDefaults(
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(8)).serializeValuesWith(
+                    RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())))
+            .transactionAware().build();
+    }
+
 }

@@ -8,8 +8,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +21,7 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
@@ -31,14 +30,12 @@ import lombok.experimental.Accessors;
  *
  * @author 廿二月的天
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
 @ApiModel("系统用户对象实体")
 public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
-    @TableField(exist = false)
-    @ApiModelProperty(hidden = true)
-    Collection<? extends GrantedAuthority> authorities;
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
     @TableId
     private Long id;
@@ -89,35 +86,11 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return userRoles;
     }
 
     @Override
     public String getPassword() {
         return password;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        boolean isEqual = false;
-        if (object != null && SystemUser.class.isAssignableFrom(object.getClass())) {
-            SystemUser systemUser = (SystemUser)object;
-            isEqual = new EqualsBuilder().append(getId(), systemUser.getId())
-                .append(getUsername(), systemUser.getUsername())
-                .append(isAccountNonLocked(), systemUser.isAccountNonLocked())
-                .append(getCreateTime(), systemUser.getCreateTime()).append(getUpdateTime(), systemUser.getUpdateTime())
-                .append(isAccountNonExpired(), systemUser.isAccountNonLocked())
-                .append(getCredentialExpireTime(), systemUser.getCredentialExpireTime())
-                .append(getAccountExpireTime(), systemUser.getAccountExpireTime()).isEquals();
-        }
-        return isEqual;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(getId()).append(getUsername()).append(isAccountNonLocked())
-            .append(getCreateTime()).append(getUpdateTime()).append(isAccountNonExpired())
-            .append(isCredentialsNonExpired()).append(isEnabled()).toHashCode();
     }
 }

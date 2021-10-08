@@ -4,15 +4,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.github.phonenumbermanager.constant.SystemConstant;
@@ -50,15 +48,13 @@ public class AccountController extends BaseController {
      */
     @PostMapping("/login")
     @ApiOperation("用户登录")
-    public R login(@ApiParam(name = "系统用户对象", required = true) @RequestBody @Valid SystemUser systemUser)
+    public R login(@ApiParam(name = "系统用户对象", required = true) @RequestBody @Validated SystemUser systemUser)
         throws LoginException {
         Authentication authentication =
             systemUserService.authentication(systemUser.getUsername(), systemUser.getPassword());
+        SystemUser principal = (SystemUser)authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>(2);
-        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-            .collect(Collectors.joining(","));
-        claims.put(SystemConstant.USERNAME_KEY, systemUser.getUsername());
-        claims.put(SystemConstant.AUTHORITIES_KEY, authorities);
+        claims.put(SystemConstant.SYSTEM_USER_KEY, principal);
         claims.put(SystemConstant.CLAIM_KEY_CREATED, new Date());
         return R.ok().put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));

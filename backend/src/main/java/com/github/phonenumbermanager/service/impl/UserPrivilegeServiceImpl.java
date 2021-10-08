@@ -5,16 +5,17 @@ import java.util.*;
 
 import javax.annotation.Resource;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.entity.RolePrivilegeRelation;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.UserPrivilege;
-import com.github.phonenumbermanager.mapper.RolePrivilegeRelationMapper;
-import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.mapper.UserPrivilegeMapper;
 import com.github.phonenumbermanager.service.UserPrivilegeService;
+import com.github.phonenumbermanager.service.UserRolePrivilegeService;
 
 /**
  * 系统用户权限业务实现
@@ -25,17 +26,18 @@ import com.github.phonenumbermanager.service.UserPrivilegeService;
 public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMapper, UserPrivilege>
     implements UserPrivilegeService {
     @Resource
-    private RolePrivilegeRelationMapper rolePrivilegeRelationMapper;
-    @Resource
-    private SystemUserMapper systemUserMapper;
+    private UserRolePrivilegeService userRolePrivilegeService;
 
     @Override
     public Set<UserPrivilege> getByRoleId(Serializable roleId) {
         return baseMapper.selectByRoleId(roleId);
     }
 
+    @Cacheable(value = "privilege_menu", key = "#systemUser.id")
     @Override
-    public Set<UserPrivilege> get(Boolean display, Set<UserPrivilege> userPrivileges) {
+    public Set<UserPrivilege> get(Boolean display, SystemUser systemUser) {
+        Set<UserPrivilege> userPrivileges = new HashSet<>();
+        systemUser.getUserRoles().forEach(role -> userPrivileges.addAll(getByRoleId(role.getId())));
         return getAndSubPrivileges(userPrivileges, display, 0L);
     }
 
@@ -62,7 +64,7 @@ public class UserPrivilegeServiceImpl extends BaseServiceImpl<UserPrivilegeMappe
     public boolean removeCorrelationById(Serializable id) {
         QueryWrapper<RolePrivilegeRelation> wrapper = new QueryWrapper<>();
         wrapper.eq("privilege_id", id);
-        return baseMapper.deleteById(id) > 0 && rolePrivilegeRelationMapper.delete(wrapper) > 0;
+        return baseMapper.deleteById(id) > 0 && userRolePrivilegeService.remove(wrapper);
     }
 
     /**

@@ -36,6 +36,7 @@ EOF
         if [ -z "$(rpm -aq | grep redis)" ]; then
             yum -y update && yum -y upgrade
             yum -y install redis
+            sed -i 's/^[#\s]\?bind\s127\.0\.0\.1/bind 0.0.0.0/' /etc/redis.conf
             systemctl start redis
             systemctl enable redis
         fi

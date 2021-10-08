@@ -32,13 +32,15 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
     private UserRoleService userRoleService;
     @Resource
     private SystemUserRoleService systemUserRoleService;
+    @Resource
+    private UserRolePrivilegeService userRolePrivilegeService;
     private String administratorName;
 
     @Override
     public void run(String... args) {
-        systemUerAndRoleDataInitialize();
         configurationDataInitialize();
         privilegeDataInitialize();
+        systemUerAndRoleDataInitialize();
     }
 
     /**
@@ -50,18 +52,6 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
             configurations.add((Configuration)new Configuration().setKey("system_administrator_id")
                 .setType(ConfigurationTypeEnum.STRING).setValue(administratorName).setDescription("系统管理员用户名称")
                 .setKeyIsChanged(false).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
-                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            configurations.add((Configuration)new Configuration().setKey("system_company_type")
-                .setType(ConfigurationTypeEnum.NUMBER).setValue("0").setDescription("系统用户角色编号").setKeyIsChanged(false)
-                .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
-                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            configurations.add((Configuration)new Configuration().setKey("community_company_type")
-                .setType(ConfigurationTypeEnum.NUMBER).setValue("1").setDescription("社区用户角色编号").setKeyIsChanged(false)
-                .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
-                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            configurations.add((Configuration)new Configuration().setKey("subdistrict_company_type")
-                .setType(ConfigurationTypeEnum.NUMBER).setValue("2").setDescription("街道用户角色编号").setKeyIsChanged(false)
-                .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             configurations.add((Configuration)new Configuration().setKey("excel_resident_title_up")
                 .setType(ConfigurationTypeEnum.STRING).setValue("附件2").setDescription("电话库Excel表标题上文字")
@@ -278,7 +268,7 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setDescription("communityResidentCreateHandle").setUri("/resident")
                 .setParentId(communityResidentManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加居民信息处理")
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改居民信息处理")
                 .setDescription("communityResidentModifyHandle").setUri("/resident")
                 .setParentId(communityResidentManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
@@ -410,9 +400,13 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
                 .setUri("/subdistrict/edit").setParentId(subdistrictManagerId).setIconName("fa fa-pencil-square-o")
                 .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
-            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加、修改街道信息处理")
-                .setDescription("subdistrictCreateOrEditHandle").setUri("/subdistrict")
-                .setParentId(subdistrictManagerId).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("添加街道信息处理")
+                .setDescription("subdistrictCreateHandle").setUri("/subdistrict").setParentId(subdistrictManagerId)
+                .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+            userPrivileges.add((UserPrivilege)new UserPrivilege().setName("修改街道信息处理")
+                .setDescription("subdistrictModifyHandle").setUri("/subdistrict").setParentId(subdistrictManagerId)
+                .setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
             userPrivileges.add((UserPrivilege)new UserPrivilege().setName("通过AJAX技术删除街道信息")
                 .setDescription("deleteSubdistrictForAjax").setUri("/subdistrict").setParentId(subdistrictManagerId)
@@ -580,6 +574,15 @@ public class DatabaseInitializeRunner implements CommandLineRunner {
             systemUserRoleService.save((UserRoleRelation)new UserRoleRelation().setUserId(administratorId)
                 .setRoleId(systemUserRole.getId()).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
                 .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN));
+        }
+        if (userRolePrivilegeService.list().isEmpty()) {
+            List<UserPrivilege> userPrivileges = userPrivilegeService.list();
+            List<RolePrivilegeRelation> rolePrivilegeRelations = new ArrayList<>();
+            userPrivileges.forEach(userPrivilege -> rolePrivilegeRelations
+                .add((RolePrivilegeRelation)new RolePrivilegeRelation().setRoleId(systemUserRole.getId())
+                    .setPrivilegeId(userPrivilege.getId()).setCreateTime(SystemConstant.DATABASE_DATETIME_MIN)
+                    .setUpdateTime(SystemConstant.DATABASE_DATETIME_MIN)));
+            userRolePrivilegeService.saveBatch(rolePrivilegeRelations);
         }
     }
 }

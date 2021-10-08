@@ -29,6 +29,11 @@ spring:
             max-file-size: 10MB
             max-request-size: 10MB
 
+    cache:
+        type: redis
+        redis:
+            time-to-live: 5184000
+
 # Mybatis基础配置
 mybatis-plus:
     mapper-locations: classpath:mybatis/mapper/*Mapper.xml

@@ -85,17 +85,13 @@ public final class SystemConstant {
      */
     public static final String AUTHORITIES_KEY = "auth";
     /**
-     * 用户名键值
+     * 用户名键名
      */
     public static final String USERNAME_KEY = "username";
     /**
-     * 姓名最大字符数
+     * 系统用户键名
      */
-    public static final int NAME_MAX_LENGTH = 10;
-    /**
-     * 地址最大字符数
-     */
-    public static final int ADDRESS_MAX_LENGTH = 255;
+    public static final String SYSTEM_USER_KEY = "system_user";
     /**
      * 最小日期
      */

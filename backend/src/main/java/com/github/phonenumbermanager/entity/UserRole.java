@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
+import org.springframework.security.core.GrantedAuthority;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -33,7 +34,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @TableName("pm_role")
 @ApiModel("用户角色对象实体")
-public class UserRole extends BaseEntity<UserRole> {
+public class UserRole extends BaseEntity<UserRole> implements GrantedAuthority {
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
     @Min(value = 0, message = "编号不正确！")
     @TableId
@@ -56,4 +57,9 @@ public class UserRole extends BaseEntity<UserRole> {
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<RolePrivilegeRelation> rolePrivilegeRelation;
+
+    @Override
+    public String getAuthority() {
+        return String.valueOf(id);
+    }
 }

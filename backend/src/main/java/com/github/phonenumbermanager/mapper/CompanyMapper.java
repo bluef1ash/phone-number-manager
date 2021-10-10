@@ -9,24 +9,25 @@ import org.springframework.dao.DataAccessException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Community;
+import com.github.phonenumbermanager.entity.Company;
 
 /**
- * 社区Mapper接口
+ * 单位Mapper接口
  *
  * @author 廿二月的天
  */
 @Mapper
-public interface CommunityMapper extends BaseMapper<Community> {
+public interface CompanyMapper extends BaseMapper<Company> {
     /**
-     * 通过主键ID查询社区和所属街道
+     * 通过主键关联查询
      *
      * @param id
-     *            社区编号
-     * @return 一个社区信息和所属街道信息
+     *            单位编号
+     * @return 一个单位信息对象
      * @throws DataAccessException
      *             数据库操作异常
      */
-    Community selectAndSubdistrictById(Serializable id) throws DataAccessException;
+    Company selectCorrelationById(Serializable id) throws DataAccessException;
 
     /**
      * 查询所有社区和所属街道
@@ -38,15 +39,15 @@ public interface CommunityMapper extends BaseMapper<Community> {
     List<Community> selectAndSubdistrictAll() throws DataAccessException;
 
     /**
-     * 查询所有社区和所属街道
+     * 查询所有单位（树形排列）
      *
      * @param page
      *            分页对象
-     * @return 全部查询的社区和所属街道的信息
+     * @return 全部查询单位信息的分页对象
      * @throws DataAccessException
      *             数据库操作异常
      */
-    IPage<Community> selectAndSubdistrictAll(Page<Community> page) throws DataAccessException;
+    IPage<Company> selectCorrelation(Page<Company> page) throws DataAccessException;
 
     /**
      * 通过所属街道编号关联查询社区
@@ -142,17 +143,6 @@ public interface CommunityMapper extends BaseMapper<Community> {
      *             数据库连接异常
      */
     List<Community> selectCorrelationSubdistrictsAll() throws DataAccessException;
-
-    /**
-     * 通过社区编号关联查询
-     *
-     * @param id
-     *            社区编号
-     * @return 查询到的关联社区对象
-     * @throws DataAccessException
-     *             数据库连接异常
-     */
-    Community selectCorrelationById(Serializable id) throws DataAccessException;
 
     /**
      * 通过编号与提交类别查询是否已锁定

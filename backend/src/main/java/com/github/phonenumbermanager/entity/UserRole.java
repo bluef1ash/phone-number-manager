@@ -32,7 +32,7 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-@TableName("pm_role")
+@TableName("pm_system_role")
 @ApiModel("用户角色对象实体")
 public class UserRole extends BaseEntity<UserRole> implements GrantedAuthority {
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")

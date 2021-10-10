@@ -28,68 +28,66 @@
                     resultMap="com.github.phonenumbermanager.mapper.UserRoleRelationMapper.baseResultMap"/>
     </resultMap>
     <select id="selectAndSystemUsers" resultMap="correlationResultMap">
-        SELECT `pm_role`.`id` AS 'role_id',
-            `pm_role`.`name` AS 'role_name',
-            `pm_role`.`description` AS 'role_description',
-            `pm_role`.`create_time` AS 'role_create_time',
-            `pm_role`.`update_time` AS 'role_update_time',
-            `pm_role`.`parent_id` AS 'role_parent_id',
+        SELECT `pm_system_role`.`id` AS 'role_id',
+            `pm_system_role`.`name` AS 'role_name',
+            `pm_system_role`.`description` AS 'role_description',
+            `pm_system_role`.`create_time` AS 'role_create_time',
+            `pm_system_role`.`update_time` AS 'role_update_time',
+            `pm_system_role`.`parent_id` AS 'role_parent_id',
             `pm_system_user`.`id` AS 'system_user_id',
             `pm_system_user`.`username`,
             `pm_system_user`.`password`,
             `pm_system_user`.`login_time`,
             `pm_system_user`.`login_ip`,
             `pm_system_user`.`is_locked`,
-            `pm_system_user`.`level`,
             `pm_system_user`.`company_id`
-        FROM `pm_role`
-                 LEFT JOIN `pm_system_user` ON `pm_role`.`id` = `pm_system_user`.`id`
-        ORDER BY `pm_role`.`create_time`
+        FROM `pm_system_role`
+                 LEFT JOIN `pm_system_user` ON `pm_system_role`.`id` = `pm_system_user`.`id`
+        ORDER BY `pm_system_role`.`create_time`
     </select>
     <select id="selectAndPrivileges" resultMap="correlationResultMap">
-        SELECT `pm_role`.`id` AS 'role_id',
-            `pm_role`.`name` AS 'role_name',
-            `pm_role`.`description` AS 'role_description',
-            `pm_role`.`create_time` AS 'role_create_time',
-            `pm_role`.`update_time` AS 'role_update_time',
-            `pm_role`.`parent_id` AS 'role_parent_id',
-            `pm_privilege`.`id` AS 'privilege_id',
-            `pm_privilege`.`name` AS 'privilege_name',
-            `pm_privilege`.description,
-            `pm_privilege`.`uri`,
-            `pm_privilege`.`parent_id` AS `privilege_parent_id`,
-            `pm_privilege`.`icon_name`,
-            `pm_privilege`.`orders`,
-            `pm_privilege`.`is_display`
-        FROM `pm_role`
-                 LEFT JOIN `pm_role_privilege` ON `pm_role`.`id` = `pm_role_privilege`.`role_id`
-                 LEFT JOIN `pm_privilege` ON `pm_role_privilege`.`privilege_id` = `pm_privilege`.`id`
-        ORDER BY `pm_role`.`id`
+        SELECT `pm_system_role`.`id` AS 'role_id',
+            `pm_system_role`.`name` AS 'role_name',
+            `pm_system_role`.`description` AS 'role_description',
+            `pm_system_role`.`create_time` AS 'role_create_time',
+            `pm_system_role`.`update_time` AS 'role_update_time',
+            `pm_system_role`.`parent_id` AS 'role_parent_id',
+            `pm_system_privilege`.`id` AS 'privilege_id',
+            `pm_system_privilege`.`name` AS 'privilege_name',
+            `pm_system_privilege`.description,
+            `pm_system_privilege`.`uri`,
+            `pm_system_privilege`.`parent_id` AS `privilege_parent_id`,
+            `pm_system_privilege`.`icon_name`,
+            `pm_system_privilege`.`orders`,
+            `pm_system_privilege`.`is_display`
+        FROM `pm_system_role`
+                 LEFT JOIN `pm_role_privilege` ON `pm_system_role`.`id` = `pm_role_privilege`.`role_id`
+                 LEFT JOIN `pm_system_privilege` ON `pm_role_privilege`.`privilege_id` = `pm_system_privilege`.`id`
+        ORDER BY `pm_system_role`.`id`
     </select>
     <select id="selectAndPrivilegesById" resultMap="correlationResultMap">
-        SELECT `pm_role`.`id` AS 'role_id',
-            `pm_role`.`name` AS 'role_name',
-            `pm_role`.`description` AS 'role_description',
-            `pm_role`.`create_time` AS 'role_create_time',
-            `pm_role`.`update_time` AS 'role_update_time',
-            `pm_role`.`parent_id` AS 'role_parent_id',
-            `pm_privilege`.`id` AS 'privilege_id',
-            `pm_privilege`.`name` AS 'privilege_name',
-            `pm_privilege`.description,
-            `pm_privilege`.`uri`,
-            `pm_privilege`.`parent_id` AS `privilege_parent_id`,
-            `pm_privilege`.`icon_name`,
-            `pm_privilege`.`orders`,
-            `pm_privilege`.`is_display`,
-            `pm_role_privilege`.`method`
-        FROM `pm_role`
-                 LEFT JOIN `pm_role_privilege` ON `pm_role`.`id` = `pm_role_privilege`.`role_id`
-                 LEFT JOIN `pm_privilege` ON `pm_role_privilege`.`privilege_id` = `pm_privilege`.`id`
-        WHERE `pm_role`.`id` = #{id}
+        SELECT `pm_system_role`.`id` AS 'role_id',
+            `pm_system_role`.`name` AS 'role_name',
+            `pm_system_role`.`description` AS 'role_description',
+            `pm_system_role`.`create_time` AS 'role_create_time',
+            `pm_system_role`.`update_time` AS 'role_update_time',
+            `pm_system_role`.`parent_id` AS 'role_parent_id',
+            `pm_system_privilege`.`id` AS 'privilege_id',
+            `pm_system_privilege`.`name` AS 'privilege_name',
+            `pm_system_privilege`.description,
+            `pm_system_privilege`.`uri`,
+            `pm_system_privilege`.`parent_id` AS `privilege_parent_id`,
+            `pm_system_privilege`.`icon_name`,
+            `pm_system_privilege`.`orders`,
+            `pm_system_privilege`.`is_display`
+        FROM `pm_system_role`
+                 LEFT JOIN `pm_role_privilege` ON `pm_system_role`.`id` = `pm_role_privilege`.`role_id`
+                 LEFT JOIN `pm_system_privilege` ON `pm_role_privilege`.`privilege_id` = `pm_system_privilege`.`id`
+        WHERE `pm_system_role`.`id` = #{id}
     </select>
     <select id="selectNameById" resultType="java.lang.String">
         SELECT `name`
-        FROM `pm_role`
+        FROM `pm_system_role`
         WHERE `id` = #{id}
     </select>
 </mapper>

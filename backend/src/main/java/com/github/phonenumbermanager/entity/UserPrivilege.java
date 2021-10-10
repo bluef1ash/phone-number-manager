@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.github.phonenumbermanager.constant.enums.HttpMethodEnum;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -29,7 +30,7 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-@TableName("pm_privilege")
+@TableName("pm_system_privilege")
 @ApiModel("用户权限对象实体")
 public class UserPrivilege extends BaseEntity<UserPrivilege> {
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
@@ -41,6 +42,8 @@ public class UserPrivilege extends BaseEntity<UserPrivilege> {
     private String description;
     @NotBlank(groups = CreateInputGroup.class, message = "用户权限地址不能为空！")
     private String uri;
+    @NotNull(groups = CreateInputGroup.class, message = "用户权限方式不能为空！")
+    private HttpMethodEnum httpMethod;
     @NotNull(groups = CreateInputGroup.class, message = "用户权限父级编号不能为空！")
     @Min(value = 0, message = "用户权限父级编号不正确！")
     private Long parentId;

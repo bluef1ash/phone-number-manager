@@ -47,5 +47,5 @@ public class Subcontractor extends BaseEntity<Subcontractor> {
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private Community community;
+    private Company company;
 }

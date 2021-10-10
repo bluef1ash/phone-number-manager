@@ -60,15 +60,6 @@ public interface SystemUserMapper extends BaseMapper<SystemUser> {
     SystemUser selectAndRolesByName(String username) throws DataAccessException;
 
     /**
-     * 查询系统用户（不含密码）
-     *
-     * @return 查询到的系统用户
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    List<SystemUser> selectIdAndName() throws DataAccessException;
-
-    /**
      * 通过系统用户角色编号查询
      *
      * @param roleId

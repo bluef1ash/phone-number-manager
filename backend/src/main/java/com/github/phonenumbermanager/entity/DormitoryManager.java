@@ -80,5 +80,5 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     private Subcontractor subcontractor;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private Community community;
+    private Company company;
 }

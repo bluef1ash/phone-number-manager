@@ -59,5 +59,5 @@ public class CommunityResident extends BaseEntity<CommunityResident> {
     private List<Long> communityIds;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private Community community;
+    private Company company;
 }

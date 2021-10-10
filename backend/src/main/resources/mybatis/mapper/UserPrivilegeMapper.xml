@@ -30,14 +30,14 @@
     <select id="selectByDisplay" resultMap="baseResultMap">
         SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
             `update_time`
-        FROM `pm_privilege`
+        FROM `pm_system_privilege`
         WHERE `is_display` = #{display}
         ORDER BY `id`
     </select>
     <select id="selectByDisplayAndConstraintAuth" resultMap="baseResultMap">
         SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`,
         `is_display`,`create_time`,`update_time`
-        FROM `pm_privilege`
+        FROM `pm_system_privilege`
         <where>
             `is_display` = #{display} AND
             `constraint_auth` IN
@@ -48,38 +48,38 @@
         ORDER BY `id`
     </select>
     <select id="selectByRoleId" resultMap="correlationResultMap">
-        SELECT `pm_privilege`.`id` AS 'privilege_id',
-            `pm_privilege`.`name` AS 'privilege_name',
-            `pm_privilege`.`description`,
-            `pm_privilege`.`uri`,
-            `pm_privilege`.`parent_id` AS 'privilege_parent_id',
-            `pm_privilege`.`icon_name`,
-            `pm_privilege`.`orders`,
-            `pm_privilege`.`is_display`,
-            `pm_privilege`.`create_time` AS 'privilege_create_time',
-            `pm_privilege`.`update_time` AS 'privilege_update_time'
-        FROM `pm_privilege`
-                 LEFT JOIN `pm_role_privilege` ON `pm_privilege`.`id` = `pm_role_privilege`.`privilege_id`
+        SELECT `pm_system_privilege`.`id` AS 'privilege_id',
+            `pm_system_privilege`.`name` AS 'privilege_name',
+            `pm_system_privilege`.`description`,
+            `pm_system_privilege`.`uri`,
+            `pm_system_privilege`.`parent_id` AS 'privilege_parent_id',
+            `pm_system_privilege`.`icon_name`,
+            `pm_system_privilege`.`orders`,
+            `pm_system_privilege`.`is_display`,
+            `pm_system_privilege`.`create_time` AS 'privilege_create_time',
+            `pm_system_privilege`.`update_time` AS 'privilege_update_time'
+        FROM `pm_system_privilege`
+                 LEFT JOIN `pm_role_privilege` ON `pm_system_privilege`.`id` = `pm_role_privilege`.`privilege_id`
         WHERE `pm_role_privilege`.`role_id` = #{roleId}
     </select>
     <select id="selectByParentIdAndDisplay" resultMap="baseResultMap">
         SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
             `update_time`
-        FROM `pm_privilege`
+        FROM `pm_system_privilege`
         WHERE `parent_id` = #{parentId} AND `is_display` = #{display}
         ORDER BY `id`
     </select>
     <select id="selectByParentId" resultMap="baseResultMap">
         SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`, `create_time`,
             `update_time`
-        FROM `pm_privilege`
+        FROM `pm_system_privilege`
         WHERE `parent_id` = #{parentId}
         ORDER BY `id`
     </select>
     <select id="selectByObject" resultMap="baseResultMap">
         SELECT `id`, `name`, `description`, `uri`, `parent_id`, `icon_name`, `orders`, `is_display`,`create_time`,
         `update_time`
-        FROM `pm_privilege`
+        FROM `pm_system_privilege`
         <where>
             <if test="id != null">
                 `id` = #{id}

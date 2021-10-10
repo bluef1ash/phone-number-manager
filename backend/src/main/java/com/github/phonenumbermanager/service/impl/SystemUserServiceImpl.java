@@ -117,11 +117,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     }
 
     @Override
-    public List<SystemUser> getIdAndName() {
-        return baseMapper.selectIdAndName();
-    }
-
-    @Override
     public boolean hasPermission(HttpServletRequest request, Authentication authentication) {
         String uri = request.getRequestURI();
         String method = request.getMethod();

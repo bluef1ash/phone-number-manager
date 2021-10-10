@@ -1,15 +1,14 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "centos8"
-  config.vm.network "forwarded_port", guest: 3306, host: 3306, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 6379, host: 6379, host_ip: "127.0.0.1"
-  config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.network "forwarded_port", guest: 3306, host: 3306
+  config.vm.network "forwarded_port", guest: 6379, host: 6379
   config.vm.synced_folder ".", "/vagrant"
   config.vm.provision "shell", inline: <<-shell
     if [ ! -f "/var/log/first.log" ]; then
         sed -i '/^SELINUX=/s/enforcing/disabled/' /etc/selinux/config
         timedatectl set-timezone Asia/Shanghai
         systemctl stop firewalld
-        systemctl disabled firewalld
+        systemctl disable firewalld
         if [ ! -f "/etc/yum.repos.d/Centos-8.repo" ]; then
             wget -O /etc/yum.repos.d/Centos-8.repo http://mirrors.aliyun.com/repo/Centos-8.repo
             yum clean all && yum makecache

@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.phonenumbermanager.entity.Community;
+import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemUser;
 
 /**
- * 社区业务接口
+ * 单位业务接口
  *
  * @author 廿二月的天
  */
-public interface CommunityService extends BaseService<Community> {
+public interface CompanyService extends BaseService<Company> {
 
     /**
      * 通过系统用户查找

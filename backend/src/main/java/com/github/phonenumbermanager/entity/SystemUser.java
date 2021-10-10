@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
@@ -55,6 +56,9 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     private Date accountExpireTime;
     @TableField(fill = FieldFill.INSERT)
     private Date credentialExpireTime;
+    @NotNull(groups = CreateInputGroup.class, message = "用户单位编号不能为空！")
+    @Min(value = 1, message = "用户单位编号不正确！")
+    private Long companyId;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<UserRole> userRoles;

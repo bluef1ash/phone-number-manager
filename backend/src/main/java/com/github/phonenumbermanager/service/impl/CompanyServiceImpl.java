@@ -6,47 +6,50 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
-import com.github.phonenumbermanager.entity.Community;
-import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.mapper.CommunityMapper;
-import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
-import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
-import com.github.phonenumbermanager.service.CommunityService;
+import com.github.phonenumbermanager.mapper.CompanyMapper;
+import com.github.phonenumbermanager.service.CommunityResidentService;
+import com.github.phonenumbermanager.service.CompanyService;
+import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 
 /**
- * 社区业务实现
+ * 单位业务实现
  *
  * @author 廿二月的天
  */
-@Service("communityService")
-public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Community> implements CommunityService {
+@Service("companyService")
+public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> implements CompanyService {
     @Resource
-    private CommunityResidentMapper communityResidentMapper;
+    private CommunityResidentService communityResidentService;
     @Resource
-    private DormitoryManagerMapper dormitoryManagerMapper;
+    private DormitoryManagerService dormitoryManagerService;
     @Resource
     private PhoneNumberService phoneNumberService;
 
     @Override
-    public Community getCorrelation(Serializable communityId) {
-        return baseMapper.selectAndSubdistrictById(communityId);
+    public Company getCorrelation(Serializable id) {
+        SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return baseMapper.selectCorrelationById(id);
     }
 
     @Override
-    public IPage<Community> getCorrelation(Integer pageNumber, Integer pageDataSize) {
+    public IPage<Company> getCorrelation(Integer pageNumber, Integer pageDataSize) {
         pageNumber = pageNumber == null ? 1 : pageNumber;
         pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        Page<Community> page = new Page<>(pageNumber, pageDataSize);
-        return baseMapper.selectAndSubdistrictAll(page);
+        Page<Company> page = new Page<>(pageNumber, pageDataSize);
+        return baseMapper.selectCorrelation(page);
     }
 
     @Override
@@ -105,12 +108,14 @@ public class CommunityServiceImpl extends BaseServiceImpl<CommunityMapper, Commu
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeCorrelationById(Serializable id) {
-        Long communityResidentCount = communityResidentMapper.countByCommunityId(id);
-        if (communityResidentCount != null && communityResidentCount > 0) {
+        int communityResidentCount =
+            communityResidentService.count(new QueryWrapper<CommunityResident>().eq("company_id", id));
+        if (communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
         }
-        Long dormitoryManagerCount = dormitoryManagerMapper.countByCommunityId(id);
-        if (dormitoryManagerCount != null && dormitoryManagerCount > 0) {
+        int dormitoryManagerCount =
+            dormitoryManagerService.count(new QueryWrapper<DormitoryManager>().eq("company_id", id));
+        if (dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
         return baseMapper.deleteById(id) > 0

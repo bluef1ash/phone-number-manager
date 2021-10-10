@@ -167,17 +167,6 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
         throws DataAccessException;
 
     /**
-     * 通过社区编号查询对象的数量
-     *
-     * @param communityId
-     *            社区编号
-     * @return 对象的数量
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    Long countByCommunityId(Serializable communityId) throws DataAccessException;
-
-    /**
      * 通过姓名+地址查询姓名与社区编号
      *
      * @param nameAddress

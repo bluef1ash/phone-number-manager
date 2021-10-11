@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_phone_number` (
     `phone_type`   TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '联系方式类型；0：未知，1：手机号码，2：固定电话号码',
     `create_time`  DATETIME             NOT NULL COMMENT '增加时间',
     `update_time`  DATETIME             NOT NULL COMMENT '更新时间',
-    `version`      SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`      SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`phone_number`, `source_type`, `source_id`),
     INDEX `idx_source_type_source_id`(`source_type` ASC, `source_id` ASC) VISIBLE
 )
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_community_resident` (
     `subcontractor_id` BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '所属社区分包人编号',
     `create_time`      DATETIME             NOT NULL COMMENT '增加时间',
     `update_time`      DATETIME             NOT NULL COMMENT '更新时间',
-    `version`          SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`          SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `uk_name_address`(`name` ASC, `address` ASC) VISIBLE,
     INDEX `idx_company_id`(`company_id` ASC) VISIBLE,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_dormitory_manager` (
     `company_id`        BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '社区所属编号',
     `create_time`       DATETIME             NOT NULL COMMENT '增加时间',
     `update_time`       DATETIME             NOT NULL COMMENT '更新时间',
-    `version`           SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`           SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`id`),
     INDEX `idx_company_id`(`company_id` ASC) VISIBLE,
     INDEX `idx_subcontractor_id`(`subcontractor_id` ASC) VISIBLE,
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_subcontractor` (
     `company_id`  BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '分包人所属单位编号',
     `create_time` DATETIME             NOT NULL COMMENT '增加时间',
     `update_time` DATETIME             NOT NULL COMMENT '更新时间',
-    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`id`),
     INDEX `idx_company_id`(`company_id` ASC) VISIBLE
 )
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_company` (
     `parent_id`     BIGINT UNSIGNED       NOT NULL DEFAULT 0 COMMENT '上级所属编号',
     `create_time`   DATETIME              NOT NULL COMMENT '增加时间',
     `update_time`   DATETIME              NOT NULL COMMENT '更新时间',
-    `version`       SMALLINT(5) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`       SMALLINT(5) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `uk_name`(`name` ASC) VISIBLE,
     INDEX `idx_parent_id`(`parent_id` ASC) VISIBLE
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_system_user` (
     `company_id`             BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '所属单位编号',
     `create_time`            DATETIME             NOT NULL COMMENT '增加时间',
     `update_time`            DATETIME             NOT NULL COMMENT '更新时间',
-    `version`                SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`                SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `uk_username`(`username` ASC) VISIBLE,
     INDEX `idx_company_id`(`company_id` ASC) VISIBLE
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_user_role` (
     `role_id`     BIGINT UNSIGNED      NOT NULL COMMENT '用户角色所属编号',
     `create_time` DATETIME             NOT NULL COMMENT '增加时间',
     `update_time` DATETIME             NOT NULL COMMENT '更新时间',
-    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`user_id`, `role_id`)
 )
     ENGINE = InnoDB
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_system_role` (
     `parent_id`   BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级角色',
     `create_time` DATETIME             NOT NULL COMMENT '增加时间',
     `update_time` DATETIME             NOT NULL COMMENT '更新时间',
-    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `role_name_UNIQUE`(`name` ASC) VISIBLE,
     INDEX `idx_parent_id`(`parent_id` ASC) VISIBLE
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_role_privilege` (
     `privilege_id` BIGINT UNSIGNED      NOT NULL COMMENT '系统用户权限所属编号',
     `create_time`  DATETIME             NOT NULL COMMENT '增加时间',
     `update_time`  DATETIME             NOT NULL COMMENT '更新时间',
-    `version`      SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`      SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`role_id`, `privilege_id`)
 )
     ENGINE = InnoDB
@@ -183,15 +183,16 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_system_privilege` (
     `description` VARCHAR(200)         NOT NULL DEFAULT '' COMMENT '系统用户权限约束描述',
     `uri`         VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '访问URI地址',
     `method`      TINYINT(1) UNSIGNED  NOT NULL DEFAULT 1 COMMENT '方法类型；0：ALL，1：GET，2：HEAD，3：POST，4：PUT，5：PATCH，6：DELETE，7：OPTIONS，8：TRACE',
-    `parent_id`   BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级权限',
+    `parent_id`   BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级系统用户权限编号',
     `icon_name`   VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '图标名称',
     `orders`      TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单排序',
     `is_display`  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '是否在菜单栏中显示；0：不显示，1：显示',
     `create_time` DATETIME             NOT NULL COMMENT '增加时间',
     `update_time` DATETIME             NOT NULL COMMENT '更新时间',
-    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `uk_name`(`name` ASC) VISIBLE
+    UNIQUE INDEX `uk_uri_method`(`uri` ASC, `method` ASC) VISIBLE
 )
     ENGINE = InnoDB
     COMMENT = '系统用户权限表';
@@ -207,7 +208,7 @@ CREATE TABLE IF NOT EXISTS `phone_number_manager`.`pm_configuration` (
     `key_is_changed` TINYINT(1) UNSIGNED  NOT NULL DEFAULT 1 COMMENT '系统配置项关键字名称是否允许更改；0：不允许，1：允许',
     `create_time`    DATETIME             NOT NULL COMMENT '增加时间',
     `update_time`    DATETIME             NOT NULL COMMENT '更新时间',
-    `version`        SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '数据版本',
+    `version`        SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (`key`)
 )
     ENGINE = InnoDB

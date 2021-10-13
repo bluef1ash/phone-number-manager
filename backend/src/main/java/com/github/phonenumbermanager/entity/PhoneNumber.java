@@ -3,7 +3,6 @@ package com.github.phonenumbermanager.entity;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
 import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
@@ -27,8 +26,6 @@ import lombok.experimental.Accessors;
 public class PhoneNumber extends BaseEntity<PhoneNumber> {
     @NotBlank(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "联系方式不能为空！")
     private String phoneNumber;
-    @NotNull(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "联系方式来源类型不能为空！")
-    private PhoneNumberSourceTypeEnum sourceType;
     @NotBlank(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "联系方式来源编号不能为空！")
     private String sourceId;
     @NotNull(groups = CreateInputGroup.class, message = "联系方式类型不能为空！")

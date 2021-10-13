@@ -61,12 +61,7 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     private Long companyId;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private List<UserRole> userRoles;
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
+    private List<Company> companies;
 
     @Override
     public boolean isAccountNonExpired() {
@@ -90,11 +85,6 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return userRoles;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
+        return companies;
     }
 }

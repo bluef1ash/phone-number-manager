@@ -67,17 +67,17 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     private Integer managerCount;
     @NotNull(groups = CreateInputGroup.class, message = "社区居民楼长分包人不能为空！")
     @Min(value = 1, message = "所属分包人编号不正确！")
-    private Long subcontractorId;
+    private Long systemUserId;
     @NotNull(groups = CreateInputGroup.class, message = "社区居民楼长社区不能为空！")
     @Min(value = 0, message = "所属社区编号不正确！")
-    private Long communityId;
+    private Long companyId;
     @PhoneNumberValidator
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private Subcontractor subcontractor;
+    private SystemUser systemUser;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private Company company;

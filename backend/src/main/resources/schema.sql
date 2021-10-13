@@ -85,8 +85,8 @@ DROP TABLE IF EXISTS pm_system_user;
 CREATE TABLE pm_system_user (
     id                     BIGINT UNSIGNED      NOT NULL COMMENT '系统用户编号',
     username               VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '系统用户名称',
-    password               CHAR(88)             NOT NULL DEFAULT '' COMMENT '系统用户密码',
-    login_ip               VARCHAR(15)          NOT NULL DEFAULT '' COMMENT '最后一次登录的IP地址',
+    password               CHAR(88)             NOT NULL DEFAULT ‘’ COMMENT '系统用户密码',
+    login_ip               VARCHAR(15)          NOT NULL DEFAULT ‘’ COMMENT '最后一次登录的IP地址',
     login_time             DATETIME             NOT NULL COMMENT '最后一次登录的时间',
     is_locked              TINYINT(1)           NOT NULL DEFAULT 0 COMMENT '是否已锁定;0：未锁定，1：已锁定',
     is_enabled             TINYINT(1)           NOT NULL DEFAULT 1 COMMENT '是否已启用;0：已禁用，1：已启用',
@@ -109,7 +109,7 @@ CREATE TABLE pm_company_permission (
     update_time  DATETIME             NOT NULL COMMENT '更新时间',
     version      SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (company_id, privilege_id)
-) COMMENT = '单位与系统用户权限中间表';
+) COMMENT = '单位与系统权限中间表';
 
 DROP TABLE IF EXISTS pm_system_permission;
 CREATE TABLE pm_system_permission (
@@ -120,7 +120,7 @@ CREATE TABLE pm_system_permission (
     method      TINYINT(1) UNSIGNED  NOT NULL DEFAULT 1 COMMENT '方法类型;0：ALL，1：GET，2：HEAD，3：POST，4：PUT，5：PATCH，6：DELETE，7：OPTIONS，8：TRACE',
     parent_id   BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级系统用户权限编号',
     icon_name   VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '图标名称',
-    orders      TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单排序',
+    order       TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单排序',
     is_display  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '是否在菜单栏中显示;0：不显示，1：显示',
     create_time DATETIME             NOT NULL COMMENT '增加时间',
     update_time DATETIME             NOT NULL COMMENT '更新时间',
@@ -171,4 +171,20 @@ CREATE TABLE pm_dormitory_manager_phone_number (
     version              SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (dormitory_manager_id, phone_number_id)
 ) COMMENT = '楼片长信息与联系方式中间表';
+
+DROP TABLE IF EXISTS pm_configuration;
+CREATE TABLE pm_configuration (
+    id          BIGINT UNSIGNED      NOT NULL COMMENT '配置编号',
+    title       VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '配置标题',
+    description VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '配置描述',
+    name        VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '变量名',
+    content     TEXT(255)            NOT NULL DEFAULT '' COMMENT '变量值',
+    field_type  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '字段类型',
+    field_value VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '字段类型值',
+    order       TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '排序',
+    create_time DATETIME             NOT NULL COMMENT '增加时间',
+    update_time DATETIME             NOT NULL COMMENT '更新时间',
+    version     SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
+    PRIMARY KEY (id)
+) COMMENT = '系统配置表';
 

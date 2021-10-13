@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
+import org.springframework.security.core.GrantedAuthority;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -31,7 +32,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Accessors(chain = true)
 @ApiModel("单位对象实体")
-public class Company extends BaseEntity<Company> {
+public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
     @TableId
     private Long id;
@@ -49,5 +50,10 @@ public class Company extends BaseEntity<Company> {
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private List<Company> subCompanies;
+    private List<Company> children;
+
+    @Override
+    public String getAuthority() {
+        return String.valueOf(id);
+    }
 }

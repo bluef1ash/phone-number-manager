@@ -43,17 +43,17 @@ public class CommunityResident extends BaseEntity<CommunityResident> {
     private String address;
     @NotNull(groups = CreateInputGroup.class, message = "社区分包人不能为空！")
     @Min(value = 1, message = "所属社区分包人编号不正确！")
-    private Long subcontractorId;
+    private Long systemUserId;
     @NotNull(groups = CreateInputGroup.class, message = "社区不能为空！")
     @Min(value = 1, message = "所属社区编号不正确！")
-    private Long communityId;
+    private Long companyId;
     @PhoneNumberValidator
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private Subcontractor subcontractor;
+    private SystemUser systemUser;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<Long> communityIds;

@@ -1,13 +1,8 @@
 package com.github.phonenumbermanager.service.impl;
 
-import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -15,19 +10,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.constant.enums.*;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.mapper.CommunityMapper;
 import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
-import com.github.phonenumbermanager.mapper.SubcontractorMapper;
-import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.service.PhoneNumberService;
+import com.github.phonenumbermanager.service.*;
+import com.github.phonenumbermanager.vo.DormitoryManagerSearchVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.extra.pinyin.PinyinUtil;
@@ -41,70 +32,65 @@ import cn.hutool.extra.pinyin.PinyinUtil;
 public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManagerMapper, DormitoryManager>
     implements DormitoryManagerService {
     private static final String DATA_COLUMN_NAME = "人数";
-    private final Pattern idPatten = Pattern.compile("(?iUs)([A-Za-z]+)(\\d+)");
     @Resource
-    private CommunityMapper communityMapper;
+    private CompanyService companyService;
     @Resource
-    private SubcontractorMapper subcontractorMapper;
+    private SystemUserService systemUserService;
     @Resource
     private PhoneNumberService phoneNumberService;
+    @Resource
+    private DormitoryManagerPhoneNumberService dormitoryManagerPhoneNumberService;
 
     @Override
-    public DormitoryManager getCorrelation(Serializable id) {
-        return baseMapper.selectAndCommunityById(id);
+    public DormitoryManager getCorrelation(Long id) {
+        return baseMapper.selectAndCompanyById(id);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Serializable subdistrictId, Map<String, Object> configurationsMap) {
+    public boolean save(List<List<Object>> data, Long streetId, Map<String, Configuration> configurationsMap) {
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         Integer excelDormitoryCommunityNameCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_community_name_cell_number"));
-        Integer excelDormitoryIdCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_id_cell_number"));
-        Integer excelDormitoryNameCellNumber = Convert.toInt(configurationsMap.get("excel_dormitory_name_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_community_name_cell_number").getContent());
+        Integer excelDormitoryNameCellNumber =
+            Convert.toInt(configurationsMap.get("excel_dormitory_name_cell_number").getContent());
         Integer excelDormitoryGenderCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_gender_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_gender_cell_number").getContent());
         Integer excelDormitoryBirthCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_birth_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_birth_cell_number").getContent());
         Integer excelDormitoryPoliticalStatusCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_political_status_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_political_status_cell_number").getContent());
         Integer excelDormitoryEmploymentStatusCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_employment_status_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_employment_status_cell_number").getContent());
         Integer excelDormitoryEducationCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_education_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_education_cell_number").getContent());
         Integer excelDormitoryAddressCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_address_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_address_cell_number").getContent());
         Integer excelDormitoryManagerAddressCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_manager_address_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_manager_address_cell_number").getContent());
         Integer excelDormitoryManagerCountCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_manager_count_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_manager_count_cell_number").getContent());
         Integer excelDormitoryTelephoneCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_telephone_cell_number"));
+            Convert.toInt(configurationsMap.get("excel_dormitory_telephone_cell_number").getContent());
         Integer excelDormitoryLandlineCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_landline_cell_number"));
-        Integer excelDormitorySubcontractorNameCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_subcontractor_name_cell_number"));
-        List<Community> communities = communityMapper.selectBySubdistrictId(subdistrictId);
-        List<Subcontractor> subcontractors = subcontractorMapper.selectBySubdistrictId(subdistrictId);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM");
+            Convert.toInt(configurationsMap.get("excel_dormitory_landline_cell_number").getContent());
+        Integer excelDormitorySubcontractorTelephoneCellNumber =
+            Convert.toInt(configurationsMap.get("excel_dormitory_subcontractor_telephone_cell_number").getContent());
+        List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", streetId));
+        List<SystemUser> systemUsers = systemUserService.listCorrelationPhoneNumber();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM");
         for (List<Object> datum : data) {
             DormitoryManager dormitoryManager = new DormitoryManager();
-            List<Community> communityList = communities.stream()
-                .filter(community -> community.getName()
-                    .contains(String.valueOf(datum.get(excelDormitoryCommunityNameCellNumber))))
-                .collect(Collectors.toList());
-            if (communityList.size() == 0) {
-                return false;
+            Optional<Company> company = companies.stream()
+                .filter(c -> c.getName().contains(String.valueOf(datum.get(excelDormitoryCommunityNameCellNumber))))
+                .findFirst();
+            if (company.isEmpty()) {
+                throw new BusinessException("单位读取失败！");
             }
-            Date birth;
-            try {
-                birth = simpleDateFormat.parse(String.valueOf(datum.get(excelDormitoryBirthCellNumber)));
-            } catch (ParseException e) {
-                return false;
-            }
-            dormitoryManager.setCommunityId(communityList.get(0).getId())
-                .setId(String.valueOf(datum.get(excelDormitoryIdCellNumber)))
+            LocalDate birth =
+                LocalDate.parse(String.valueOf(datum.get(excelDormitoryBirthCellNumber)), dateTimeFormatter);
+            dormitoryManager.setCompanyId(company.get().getId())
                 .setName(String.valueOf(datum.get(excelDormitoryNameCellNumber)))
                 .setGender(GenderEnum.valueOf(String.valueOf(datum.get(excelDormitoryGenderCellNumber))))
                 .setBirth(birth)
@@ -120,57 +106,64 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             String landline = String.valueOf(datum.get(excelDormitoryLandlineCellNumber));
             if (StringUtils.isNotEmpty(telephone)) {
                 PhoneNumber tel = new PhoneNumber();
-                tel.setPhoneNumber(telephone).setPhoneType(PhoneTypeEnum.MOBILE).setSourceId(dormitoryManager.getId())
-                    .setSourceType(PhoneNumberSourceTypeEnum.DORMITORY_MANAGER);
+                tel.setPhoneNumber(telephone).setPhoneType(PhoneTypeEnum.MOBILE);
                 phoneNumbers.add(tel);
             }
             if (StringUtils.isNotEmpty(landline)) {
                 PhoneNumber land = new PhoneNumber();
-                land.setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.LANDLINE).setSourceId(dormitoryManager.getId())
-                    .setSourceType(PhoneNumberSourceTypeEnum.DORMITORY_MANAGER);
+                land.setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.LANDLINE);
                 phoneNumbers.add(land);
             }
-            List<Subcontractor> subcontractorList = subcontractors.stream()
-                .filter(subcontractor -> subcontractor.getName()
-                    .equals(String.valueOf(datum.get(excelDormitorySubcontractorNameCellNumber))))
-                .collect(Collectors.toList());
-            if (subcontractorList.size() == 0) {
+            Optional<
+                SystemUser> user =
+                    systemUsers.stream()
+                        .filter(systemUser -> systemUser.getPhoneNumber().getPhoneNumber()
+                            .equals(String.valueOf(datum.get(excelDormitorySubcontractorTelephoneCellNumber))))
+                        .findFirst();
+            if (user.isEmpty()) {
                 throw new BusinessException("未找到对应的分包人信息，请重试！");
             }
-            dormitoryManager.setSubcontractorId(subcontractorList.get(0).getId());
+            dormitoryManager.setSystemUserId(user.get().getId());
             dormitoryManagers.add(dormitoryManager);
         }
         if (dormitoryManagers.size() > 0) {
             QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
-            wrapper.eq("subdistrict_id", subdistrictId);
-            baseMapper.delete(wrapper);
+            companies.forEach(company -> wrapper.eq("company_id", company.getId()).or());
+            baseMapper.delete(wrapper.or());
             phoneNumberService.saveBatch(phoneNumbers);
             return saveBatch(dormitoryManagers);
         }
-        return false;
+        throw new BusinessException("上传失败！");
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> getCorrelation(Serializable communityCompanyType,
-        Serializable subdistrictCompanyType, List<Map<String, Object>> userData) {
+    public List<LinkedHashMap<String, Object>> listCorrelationToMap(Long companyId) {
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-        List<DormitoryManager> dormitoryManagers =
-            baseMapper.selectByUserData(userData, communityCompanyType, subdistrictCompanyType);
-        if (dormitoryManagers != null) {
+        List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", companyId));
+        List<Long> companyIds = new ArrayList<>();
+        companyService.listSubmissionCompanyIds(companyIds, companies, companyService.list(), null);
+        List<DormitoryManager> dormitoryManagers = baseMapper.selectListByCompanyIds(companyIds);
+        if (!dormitoryManagers.isEmpty()) {
             long index = 1L;
+            QueryWrapper<Company> wrapper = new QueryWrapper<>();
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM");
             for (DormitoryManager dormitoryManager : dormitoryManagers) {
                 LinkedHashMap<String, Object> data = new LinkedHashMap<>();
                 // 序号
                 data.put("sequenceNumber", index);
                 // 处理社区名称
-                String communityName = dormitoryManager.getCommunity().getName()
+                String communityName = dormitoryManager.getCompany().getName()
                     .replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
                 data.put("communityName", communityName);
-                data.put("id", dormitoryManager.getId());
+                wrapper.eq("id", dormitoryManager.getCompany().getParentId());
+                Company company = companyService.getOne(wrapper);
+                String streetName = company.getName().replaceAll(SystemConstant.SUBDISTRICT_ALIAS_NAME, "")
+                    .replaceAll(SystemConstant.SUBDISTRICT_NAME, "");
+                data.put("id", PinyinUtil.getFirstLetter(streetName, "") + PinyinUtil.getFirstLetter(communityName, "")
+                    + String.format("%04d", index));
                 data.put("genderName", dormitoryManager.getGender().getDescription());
                 // 出生年月
-                DateFormat dateFormat = new SimpleDateFormat("yyyy.MM");
-                data.put("birthString", dateFormat.format(dormitoryManager.getBirth()));
+                data.put("birthString", dateTimeFormatter.format(dormitoryManager.getBirth()));
                 data.put("politicalStatusName", dormitoryManager.getPoliticalStatus().getDescription());
                 data.put("educationName", dormitoryManager.getEmploymentStatus().getDescription());
                 data.put("address", dormitoryManager.getAddress());
@@ -178,8 +171,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 data.put("managerCount", dormitoryManager.getManagerCount());
                 data.put("telephone", dormitoryManager.getPhoneNumbers().get(0));
                 // 处理分包人
-                data.put("subcontractorName", dormitoryManager.getSubcontractor().getName());
-                data.put("subcontractorTelephone", JSON.toJSON(dormitoryManager.getSubcontractor().getPhoneNumbers()));
+                data.put("subcontractorName", dormitoryManager.getSystemUser().getUsername());
+                SystemUser systemUser = systemUserService.getCorrelation(dormitoryManager.getSystemUser().getId());
+                data.put("subcontractorTelephone", systemUser.getPhoneNumber());
                 list.add(data);
                 index++;
             }
@@ -188,135 +182,85 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public IPage<DormitoryManager> get(SystemUser systemUser, Serializable systemCompanyType,
-        Serializable communityCompanyType, Serializable subdistrictCompanyType, DormitoryManager dormitoryManager,
-        Serializable companyId, Serializable companyRoleId, Integer pageNumber, Integer pageDataSize) {
-        Map<String, Object> company = getCompany(systemUser, companyId, companyRoleId);
-        Page<DormitoryManager> page = new Page<>(pageNumber, pageDataSize);
-        return baseMapper.selectByUserRole(page, (Serializable)company.get("companyType"),
-            (Serializable)company.get("companyId"), systemCompanyType, communityCompanyType, subdistrictCompanyType,
-            dormitoryManager);
+    public IPage<DormitoryManager> page(List<Company> companies, DormitoryManagerSearchVo dormitoryManagerSearchVo,
+        IPage<DormitoryManager> page) {
+        // TODO: 2021/10/19 0019 SQL需要测试
+        return baseMapper.selectBySearchVo(companies, dormitoryManagerSearchVo, page);
     }
 
     @Override
-    public String get(Serializable communityId, String communityName, String subdistrictName) {
-        StringBuilder lastId = new StringBuilder();
-        String id = baseMapper.selectLastIdByCommunityId(communityId);
-        long idNumber = 0L;
-        if (StringUtils.isNotEmpty(id)) {
-            Matcher matcher = idPatten.matcher(id);
-            while (matcher.find()) {
-                lastId.append(matcher.group(1).toUpperCase());
-                idNumber = Long.parseLong(matcher.group(2));
-            }
-        } else {
-            String sn = subdistrictName.replaceAll("(?iUs)[街道办事处]", "");
-            String cn = communityName.replaceAll("(?iUs)[社区居委会]", "");
-            lastId.append(PinyinUtil.getFirstLetter(sn, "")).append(PinyinUtil.getFirstLetter(cn, ""));
+    public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
+        List<Company> companyAll = companyService.list();
+        List<Long> companyIds = new ArrayList<>();
+        if (companyId != null) {
+            companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
         }
-        lastId.append(String.format("%04d", idNumber + 1));
-        return lastId.toString();
-    }
-
-    @Override
-    public Map<String, Object> get(Serializable companyId, Serializable companyType, Serializable systemCompanyType,
-        Serializable communityCompanyType, Serializable subdistrictCompanyType) {
-        Map<String, Object> baseMessage = new HashMap<>(3);
-        Map<String, Long> genderCount;
-        Map<String, Long> ageData = null;
-        Map<String, Long> educationData = null;
-        Map<String, Long> politicalStatusData = null;
-        Map<String, Long> workStatusData = null;
-        long ct = (long)(companyType == null ? 0L : companyType);
-        boolean isSystemRole = companyType == null || companyId == null || ct == (int)systemCompanyType;
-        if (isSystemRole) {
-            genderCount = baseMapper.countGenderAll();
-            ageData = baseMapper.countAgeRangeAll();
-            educationData = baseMapper.countEducationRangeAll();
-            politicalStatusData = baseMapper.countPoliticalStatusRangeAll();
-            workStatusData = baseMapper.countWorkStatusRangeAll();
-        } else if (ct == (int)communityCompanyType) {
-            genderCount = baseMapper.countGenderByCommunityId(companyId);
-            ageData = baseMapper.countAgeRangeCommunityId(companyId);
-            educationData = baseMapper.countEducationRangeCommunityId(companyId);
-            politicalStatusData = baseMapper.countPoliticalStatusRangeCommunityId(companyId);
-            workStatusData = baseMapper.countWorkStatusRangeCommunityId(companyId);
-        } else if (ct == (int)subdistrictCompanyType) {
-            genderCount = baseMapper.countGenderBySubdistrictId(companyId);
-            ageData = baseMapper.countAgeRangeSubdistrictId(companyId);
-            educationData = baseMapper.countEducationRangeSubdistrictId(companyId);
-            politicalStatusData = baseMapper.countPoliticalStatusRangeSubdistrictId(companyId);
-            workStatusData = baseMapper.countWorkStatusRangeSubdistrictId(companyId);
-        } else {
-            genderCount = new HashMap<>(3);
-            genderCount.put("male", 0L);
-            genderCount.put("female", 0L);
-        }
-        baseMessage.put("gender", genderCount);
-        if (ageData != null) {
-            Map<String, Object> agePieData = getPieData(ageData, "年龄范围");
+        Map<String, Map<String, Integer>> computedBaseMessage = computedBaseMessage(companies, companyAll, companyIds);
+        Map<String, Object> baseMessage = new HashMap<>();
+        baseMessage.put("gender", computedBaseMessage.get("genderCount"));
+        if (computedBaseMessage.get("ageCount") != null) {
+            Map<String, Object> agePieData = getPieData(computedBaseMessage.get("ageCount"), "年龄范围");
             baseMessage.put("age", agePieData);
         }
-        if (educationData != null) {
-            Map<String, Object> educationPieData = getPieData(educationData, "教育程度");
+        if (computedBaseMessage.get("educationCount") != null) {
+            Map<String, Object> educationPieData = getPieData(computedBaseMessage.get("educationCount"), "教育程度");
             baseMessage.put("education", educationPieData);
         }
-        if (politicalStatusData != null) {
-            Map<String, Object> politicalStatusPieData = getPieData(politicalStatusData, "政治面貌");
+        if (computedBaseMessage.get("politicalStatusCount") != null) {
+            Map<String, Object> politicalStatusPieData =
+                getPieData(computedBaseMessage.get("politicalStatusCount"), "政治面貌");
             baseMessage.put("politicalStatus", politicalStatusPieData);
         }
-        if (workStatusData != null) {
-            Map<String, Object> workStatusPieData = getPieData(workStatusData, "工作状况");
-            baseMessage.put("workStatus", workStatusPieData);
+        if (computedBaseMessage.get("employmentStatusCount") != null) {
+            Map<String, Object> employmentStatusPieData =
+                getPieData(computedBaseMessage.get("employmentStatusCount"), "工作状况");
+            baseMessage.put("employmentStatusCount", employmentStatusPieData);
         }
         return baseMessage;
     }
 
     @Override
-    public Map<String, Object> get(SystemUser systemUser, Serializable companyId, Serializable companyType,
-        Boolean typeParam, Serializable systemCompanyType, Serializable communityCompanyType,
-        Serializable subdistrictCompanyType) {
+    public Map<String, Object> getBarChart(List<Company> companies, Long companyId, Boolean typeParam) {
         String label = "社区楼长分包总户数";
-        String companyLabel = null;
-        LinkedList<Map<String, Object>> dormitoryManager;
-        long ct = (long)(companyType == null ? 0L : companyType);
-        // TODO: 2021/9/12 0012 用户权限
-        // boolean isSystemRoleCount = subdistrictCompanyType.equals(systemUser.getLevel().getValue())
-        // || (systemCompanyType.equals(systemUser.getLevel().getValue()) && ct == (int)subdistrictCompanyType);
-        if (companyType == null || ct == (int)systemCompanyType) {
-            companyLabel = "街道";
-            if (typeParam) {
-                label = "社区楼长总人数";
-                dormitoryManager = baseMapper.countForGroupSubdistrict();
-            } else {
-                dormitoryManager = baseMapper.sumManagerCountForGroupSubdistrict();
-            }
-            // } else if (isSystemRoleCount) {
-            // companyLabel = "社区";
-            // if (typeParam) {
-            // label = "社区楼长总人数";
-            // dormitoryManager = baseMapper.countForGroupCommunity(companyId);
-            // } else {
-            // dormitoryManager = baseMapper.sumManagerCountForGroupCommunity(companyId);
-            // }
-            // } else if ((int)communityCompanyType == systemUser.getLevel().getValue()) {
-            // companyLabel = "社区";
-            // if (typeParam) {
-            // label = "社区楼长总人数";
-            // dormitoryManager = baseMapper.countForGroupByCommunityId(companyId);
-            // } else {
-            // dormitoryManager = baseMapper.sumManagerCountForGroupByCommunityId(companyId);
-            // }
-        } else {
-            dormitoryManager = new LinkedList<>();
+        List<Company> companyAll = companyService.list();
+        LinkedList<Map<String, Object>> dormitoryManager = new LinkedList<>();
+        List<Long> companyIds = new ArrayList<>();
+        if (companyId == null) {
+            companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
         }
-        return barChartDataHandler(label, companyLabel, "户", dormitoryManager);
+        return barChartDataHandler(label, null, "户", dormitoryManager);
     }
 
     @Override
-    public boolean removeCorrelationById(Serializable id) {
-        return baseMapper.deleteById(id) > 0
-            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.DORMITORY_MANAGER, id);
+    public boolean removeCorrelationById(Long id) {
+        return baseMapper.deleteById(id) > 0 && dormitoryManagerPhoneNumberService
+            .remove(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", id));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean save(DormitoryManager entity) {
+        baseMapper.insert(entity);
+        // TODO: 2021/10/23 0023 测试mybatis plus 重复插入
+        /* phoneNumberService.list();
+        entity.getPhoneNumbers()
+            .forEach(phoneNumber -> dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
+                .setDormitoryManagerId(entity.getId()).setPhoneNumberId(phoneNumber.getId())));*/
+        List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbers = new ArrayList<>();
+        return dormitoryManagerPhoneNumberService.saveBatch(dormitoryManagerPhoneNumbers);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean updateById(DormitoryManager entity) {
+        baseMapper.updateById(entity);
+        // TODO: 2021/10/23 0023 测试是否有冗余数据
+        phoneNumberService.updateBatchById(entity.getPhoneNumbers());
+        List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbers = new ArrayList<>();
+        entity.getPhoneNumbers()
+            .forEach(phoneNumber -> dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
+                .setDormitoryManagerId(entity.getId()).setPhoneNumberId(phoneNumber.getId())));
+        return dormitoryManagerPhoneNumberService.updateBatchById(dormitoryManagerPhoneNumbers);
     }
 
     /**
@@ -328,10 +272,10 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
      *            饼图的图例
      * @return 饼图需要的数据
      */
-    private Map<String, Object> getPieData(Map<String, Long> data, String column) {
+    private Map<String, Object> getPieData(Map<String, Integer> data, String column) {
         Map<String, Object> pieData = new HashMap<>(3);
         List<LinkedHashMap<String, Object>> rows = new ArrayList<>();
-        for (Map.Entry<String, Long> entry : data.entrySet()) {
+        for (Map.Entry<String, Integer> entry : data.entrySet()) {
             LinkedHashMap<String, Object> row = new LinkedHashMap<>(3);
             row.put(column, entry.getKey());
             row.put(DATA_COLUMN_NAME, entry.getValue());
@@ -340,5 +284,90 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         pieData.put("columns", new String[] {column, DATA_COLUMN_NAME});
         pieData.put("rows", rows);
         return pieData;
+    }
+
+    /**
+     * 计算录入统计信息
+     *
+     * @param companies
+     *            单位集合
+     * @param companyAll
+     *            所有单位集合
+     * @param companyIds
+     *            单位编号集合
+     * @return 录入统计信息
+     */
+    private Map<String, Map<String, Integer>> computedBaseMessage(List<Company> companies, List<Company> companyAll,
+        List<Long> companyIds) {
+        Map<String, Map<String, Integer>> baseMessage = new HashMap<>();
+        Map<String, Integer> genderCount = new HashMap<>();
+        genderCount.put("男性", 0);
+        genderCount.put("女性", 0);
+        Map<String, Integer> ageCount = new HashMap<>();
+        ageCount.put("20岁以下", 0);
+        ageCount.put("20岁~29岁", 0);
+        ageCount.put("30岁~39岁", 0);
+        ageCount.put("40岁~49岁", 0);
+        ageCount.put("50岁~59岁", 0);
+        ageCount.put("60岁~69岁", 0);
+        ageCount.put("70岁~79岁", 0);
+        ageCount.put("80岁以上", 0);
+        Map<String, Integer> educationCount = new HashMap<>();
+        Arrays.stream(EducationStatusEnum.values())
+            .forEach(educationStatusEnum -> educationCount.put(educationStatusEnum.getDescription(), 0));
+        Map<String, Integer> politicalStatusCount = new HashMap<>();
+        Arrays.stream(PoliticalStatusEnum.values())
+            .forEach(politicalStatusEnum -> politicalStatusCount.put(politicalStatusEnum.getDescription(), 0));
+        Map<String, Integer> employmentStatusCount = new HashMap<>();
+        Arrays.stream(EmploymentStatusEnum.values())
+            .forEach(employmentStatusEnum -> employmentStatusCount.put(employmentStatusEnum.getDescription(), 0));
+        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, null);
+        QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
+        companyIds.forEach(id -> wrapper.eq("company_id", id));
+        List<DormitoryManager> dormitoryManagers = baseMapper.selectList(wrapper);
+        LocalDate now = LocalDate.now();
+        for (DormitoryManager dormitoryManager : dormitoryManagers) {
+            switch (dormitoryManager.getGender()) {
+                case MALE:
+                    genderCount.put("男性", genderCount.get("男性") + 1);
+                    break;
+                case FEMALE:
+                    genderCount.put("女性", genderCount.get("女性") + 1);
+                    break;
+                default:
+                    genderCount.put("未知", genderCount.get("未知") + 1);
+                    break;
+            }
+            int age = dormitoryManager.getBirth().until(now).getYears();
+            if (age < 20) {
+                ageCount.put("20岁以下", ageCount.get("20岁以下") + 1);
+            } else if (age < 30) {
+                ageCount.put("20岁~29岁", ageCount.get("20岁~29岁") + 1);
+            } else if (age < 40) {
+                ageCount.put("30岁~39岁", ageCount.get("30岁~39岁") + 1);
+            } else if (age < 50) {
+                ageCount.put("40岁~49岁", ageCount.get("40岁~49岁") + 1);
+            } else if (age < 60) {
+                ageCount.put("50岁~59岁", ageCount.get("50岁~59岁") + 1);
+            } else if (age < 70) {
+                ageCount.put("60岁~69岁", ageCount.get("60岁~69岁") + 1);
+            } else if (age < 80) {
+                ageCount.put("70岁~79岁", ageCount.get("70岁~79岁") + 1);
+            } else {
+                ageCount.put("80岁以上", ageCount.get("80岁以上") + 1);
+            }
+            educationCount.put(dormitoryManager.getEducation().getDescription(),
+                educationCount.get(dormitoryManager.getEducation().getDescription()) + 1);
+            politicalStatusCount.put(dormitoryManager.getPoliticalStatus().getDescription(),
+                politicalStatusCount.get(dormitoryManager.getPoliticalStatus().getDescription()) + 1);
+            employmentStatusCount.put(dormitoryManager.getEmploymentStatus().getDescription(),
+                employmentStatusCount.get(dormitoryManager.getEmploymentStatus().getDescription()) + 1);
+        }
+        baseMessage.put("genderCount", genderCount);
+        baseMessage.put("ageCount", ageCount);
+        baseMessage.put("educationCount", educationCount);
+        baseMessage.put("politicalStatusCount", politicalStatusCount);
+        baseMessage.put("employmentStatusCount", employmentStatusCount);
+        return baseMessage;
     }
 }

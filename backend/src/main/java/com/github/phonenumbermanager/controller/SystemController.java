@@ -5,6 +5,7 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -41,25 +42,20 @@ public class SystemController extends BaseController {
     @GetMapping("/configuration")
     @ApiOperation("系统配置列表")
     public R configurationList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据数量") Integer limit) {
-        if (page == null) {
-            return R.ok().put("configurations", configurationService.list());
-        } else {
-            Page<Configuration> configurationPage = new Page<>(page, limit);
-            return R.ok().put("configurations", configurationService.page(configurationPage, null));
-        }
+        return R.ok().put("configurations", configurationService.page(new Page<>(page, limit), null));
     }
 
     /**
-     * 通过系统配置项KEY查找
+     * 通过系统配置项编号查找
      *
-     * @param key
-     *            对应系统配置项关键字
+     * @param id
+     *            系统配置项编号
      * @return 系统配置项
      */
-    @GetMapping("/configuration/{key}")
-    @ApiOperation("通过系统配置项KEY查找")
-    public R editConfiguration(@ApiParam(name = "对应系统配置项关键字", required = true) @PathVariable String key) {
-        return R.ok().put("configuration", configurationService.getById(key));
+    @GetMapping("/configuration/{id}")
+    @ApiOperation("通过系统配置项编号查找")
+    public R getConfigurationById(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
+        return R.ok().put("configuration", configurationService.getOne(new QueryWrapper<Configuration>().eq("id", id)));
     }
 
     /**
@@ -99,14 +95,14 @@ public class SystemController extends BaseController {
     /**
      * 通过系统配置编号删除
      *
-     * @param key
-     *            对应系统配置项关键字
-     * @return Ajax信息
+     * @param id
+     *            对应系统配置项编号
+     * @return 是否成功
      */
-    @DeleteMapping("/configuration/{key}")
+    @DeleteMapping("/configuration/{id}")
     @ApiOperation("通过系统配置编号删除")
-    public R deleteConfigurationForAjax(@ApiParam(name = "对应系统配置项关键字", required = true) @PathVariable String key) {
-        if (configurationService.removeById(key)) {
+    public R removeConfigurationById(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
+        if (configurationService.removeById(id)) {
             return R.ok("删除系统配置成功！");
         }
         throw new JsonException("删除系统配置失败！");

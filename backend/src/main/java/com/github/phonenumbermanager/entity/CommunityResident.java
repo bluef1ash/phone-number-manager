@@ -12,7 +12,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.validator.PhoneNumberValidator;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -32,31 +31,33 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ApiModel("社区居民对象实体")
 public class CommunityResident extends BaseEntity<CommunityResident> {
+    @ApiModelProperty("社区居民编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
     @TableId
     private Long id;
-    @NotBlank(groups = CreateInputGroup.class, message = "社区居民名称不能为空！")
+    @ApiModelProperty("社区居民姓名")
+    @NotBlank(groups = CreateInputGroup.class, message = "社区居民姓名不能为空！")
     @Length(max = 10, message = "社区居民姓名不能超过10个字符！")
     private String name;
+    @ApiModelProperty("社区居民地址")
     @NotBlank(groups = CreateInputGroup.class, message = "社区居民地址不能为空！")
     @Length(max = 255, message = "社区居民地址不能超过255个字符！")
     private String address;
+    @ApiModelProperty("所属社区分包人编号")
     @NotNull(groups = CreateInputGroup.class, message = "社区分包人不能为空！")
     @Min(value = 1, message = "所属社区分包人编号不正确！")
     private Long systemUserId;
+    @ApiModelProperty("所属社区编号")
     @NotNull(groups = CreateInputGroup.class, message = "社区不能为空！")
     @Min(value = 1, message = "所属社区编号不正确！")
     private Long companyId;
-    @PhoneNumberValidator
+    @ApiModelProperty("社区居民联系方式")
+    @NotNull(message = "社区居民的联系方式不能为空！")
     @TableField(exist = false)
-    @ApiModelProperty(hidden = true)
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private SystemUser systemUser;
-    @TableField(exist = false)
-    @ApiModelProperty(hidden = true)
-    private List<Long> communityIds;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private Company company;

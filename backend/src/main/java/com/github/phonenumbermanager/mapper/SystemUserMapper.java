@@ -24,60 +24,50 @@ public interface SystemUserMapper extends BaseMapper<SystemUser> {
      * @throws DataAccessException
      *             数据库操作异常
      */
-    List<SystemUser> selectAndRoles() throws DataAccessException;
+    List<SystemUser> selectAndCompanies() throws DataAccessException;
 
     /**
-     * 分页查询所有系统用户与所属角色
+     * 查询所有系统用户与所属联系方式
      *
+     * @return 所有系统用户与所属联系方式
+     * @throws DataAccessException
+     *             数据库操作异常
+     */
+    List<SystemUser> selectAndPhoneNumber() throws DataAccessException;
+
+    /**
+     * 分页查询所有系统用户与所属单位
+     *
+     * @param companyIds
+     *            当前已登录系统用户所属单位编号集合
      * @param page
      *            分页对象
      * @return 所有系统用户与所属角色
      * @throws DataAccessException
      *             数据库操作异常
      */
-    IPage<SystemUser> selectAndRoles(Page<SystemUser> page) throws DataAccessException;
+    IPage<SystemUser> selectCorrelationByCompanyIds(List<Long> companyIds, Page<SystemUser> page)
+        throws DataAccessException;
 
     /**
-     * 通过用户编号查询系统用户与所属角色
+     * 通过联系方式查询系统用户
      *
-     * @param id
-     *            用户编号
-     * @return 查询到的系统用户与所属角色
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    SystemUser selectAndRoleById(Serializable id) throws DataAccessException;
-
-    /**
-     * 通过用户名称查询系统用户
-     *
-     * @param username
-     *            系统用户名称
+     * @param phoneNumber
+     *            系统用户联系方式
      * @return 查询到的系统用户与所属角色以及权限
      * @throws DataAccessException
      *             数据库操作异常
      */
-    SystemUser selectAndRolesByName(String username) throws DataAccessException;
+    SystemUser selectAndCompaniesByPhoneNumber(String phoneNumber) throws DataAccessException;
 
     /**
-     * 通过系统用户角色编号查询
+     * 通过单位编号查询
      *
-     * @param roleId
-     *            系统用户角色编号
+     * @param companyId
+     *            单位编号
      * @return 查询到的系统用户
      * @throws DataAccessException
      *             数据库操作异常
      */
-    List<SystemUser> selectByRoleId(Serializable roleId) throws DataAccessException;
-
-    /**
-     * 通过系统用户角色编号统计
-     *
-     * @param roleId
-     *            系统用户角色编号
-     * @return 统计到的系统用户数量
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    Long countByRoleId(Serializable roleId) throws DataAccessException;
+    List<SystemUser> selectByCompanyId(Serializable companyId) throws DataAccessException;
 }

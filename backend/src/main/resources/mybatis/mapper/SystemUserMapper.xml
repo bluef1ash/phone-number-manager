@@ -4,108 +4,140 @@
     <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="commonResultMap">
         <result column="username" property="username"/>
         <result column="password" property="password"/>
+        <result column="position" property="position"/>
         <result column="login_time" property="loginTime"/>
         <result column="login_ip" property="loginIp"/>
         <result column="is_locked" property="isLocked"/>
         <result column="is_enabled" property="isEnabled"/>
         <result column="account_expire_time" property="accountExpireTime"/>
         <result column="credential_expire_time" property="credentialExpireTime"/>
-        <result column="company_id" property="companyId"/>
+        <result column="is_subcontract" property="isSubcontract"/>
+        <result column="phone_number_id" property="phoneNumberId"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="aliasResultMap" extends="commonResultMap">
-        <id property="id" column="system_user_id"/>
+        <id column="system_user_id" property="id"/>
         <result column="system_user_create_time" property="createTime"/>
         <result column="system_user_update_time" property="updateTime"/>
+        <result column="system_user_version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="correlationResultMap"
+    <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="collectionResultMap"
                extends="aliasResultMap">
-        <collection property="userRoles" ofType="com.github.phonenumbermanager.entity.UserRole"
-                    resultMap="com.github.phonenumbermanager.mapper.UserRoleMapper.correlationResultMap"/>
+        <collection property="companies" ofType="com.github.phonenumbermanager.entity.Company"
+                    resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.collectionResultMap"/>
+        <collection property="phoneNumber" ofType="com.github.phonenumbermanager.entity.PhoneNumber"
+                    resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
     </resultMap>
-    <select id="selectAndRoles" resultMap="correlationResultMap">
-        SELECT `pm_system_user`.`id` AS 'system_user_id',
-            `pm_system_user`.`username`,
-            `pm_system_user`.`login_time`,
-            `pm_system_user`.`login_ip`,
-            `pm_system_user`.`is_locked`,
-            `pm_system_user`.`is_enabled`,
-            `pm_system_user`.`account_expire_time`,
-            `pm_system_user`.`credential_expire_time`,
-            `pm_system_user`.`company_id`,
-            `pm_system_user`.`create_time` AS 'system_user_create_time',
-            `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_system_role`.`name` AS 'role_name',
-            `pm_system_role`.`description` AS 'role_description'
-        FROM `pm_system_user`
-                 LEFT JOIN `pm_user_role` ON `pm_system_user`.`id` = `pm_user_role`.`user_id`
-                 LEFT JOIN `pm_system_role` ON `pm_user_role`.`user_id` = `pm_system_role`.`id`
-        ORDER BY `pm_system_user`.`id`
+    <select id="selectCorrelationByCompanyIds" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+        pm_system_user.username,
+        pm_system_user.position,
+        pm_system_user.login_time,
+        pm_system_user.login_ip,
+        pm_system_user.is_locked,
+        pm_system_user.is_enabled,
+        pm_system_user.account_expire_time,
+        pm_system_user.credential_expire_time,
+        pm_system_user.create_time AS 'system_user_create_time',
+        pm_system_user.update_time AS 'system_user_update_time',
+        pm_system_user.is_subcontract,
+        pm_company.id AS 'company_id',
+        pm_company.name AS 'company_name',
+        pm_company.level,
+        pm_phone_number.phone_number
+        FROM pm_system_user
+        LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+        LEFT JOIN pm_phone_number ON pm_system_user.phone_number_id = pm_phone_number.id
+        <where>
+            <foreach collection="companyIds" item="companyId" separator="OR">
+                pm_company.id = #{companyId}
+            </foreach>
+        </where>
     </select>
-    <select id="selectAndRoleById" resultMap="correlationResultMap">
-        SELECT `pm_system_user`.`id` AS 'system_user_id',
-            `pm_system_user`.`username`,
-            `pm_system_user`.`is_locked`,
-            `pm_system_user`.`is_enabled`,
-            `pm_system_user`.`account_expire_time`,
-            `pm_system_user`.`credential_expire_time`,
-            `pm_system_user`.`company_id`,
-            `pm_system_user`.`create_time` AS 'system_user_create_time',
-            `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_system_role`.`name` AS 'role_name'
-        FROM `pm_system_user`
-                 LEFT JOIN `pm_user_role` ON `pm_system_user`.`id` = `pm_user_role`.`user_id`
-                 LEFT JOIN `pm_system_role` ON `pm_user_role`.`user_id` = `pm_system_role`.`id`
-        WHERE `pm_system_user`.`id` = #{id}
+    <select id="selectAndCompanyById" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+            pm_system_user.username,
+            pm_system_user.position,
+            pm_system_user.is_locked,
+            pm_system_user.is_enabled,
+            pm_system_user.account_expire_time,
+            pm_system_user.credential_expire_time,
+            pm_system_user.create_time AS 'system_user_create_time',
+            pm_system_user.update_time AS 'system_user_update_time',
+            pm_system_user.is_subcontract,
+            pm_company.name AS 'company_name',
+            pm_phone_number.phone_number
+        FROM pm_system_user
+                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+                 LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+                 LEFT JOIN pm_phone_number ON pm_system_user.phone_number_id = pm_phone_number.id
+        WHERE pm_system_user.id = #{id}
     </select>
-    <select id="selectAndRolesByName" resultMap="correlationResultMap">
-        SELECT `pm_system_user`.`id` AS 'system_user_id',
-            `pm_system_user`.`username`,
-            `pm_system_user`.`password`,
-            `pm_system_user`.`login_time`,
-            `pm_system_user`.`login_ip`,
-            `pm_system_user`.`is_locked`,
-            `pm_system_user`.`is_enabled`,
-            `pm_system_user`.`account_expire_time`,
-            `pm_system_user`.`credential_expire_time`,
-            `pm_system_user`.`company_id`,
-            `pm_system_user`.`create_time` AS 'system_user_create_time',
-            `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_system_role`.`id` AS 'role_id',
-            `pm_system_role`.`name` AS 'role_name',
-            `pm_system_role`.`description` AS 'role_description',
-            `pm_system_role`.`parent_id` AS 'role_parent_id'
-        FROM `pm_system_user`
-                 LEFT JOIN `pm_user_role` ON `pm_system_user`.`id` = `pm_user_role`.`user_id`
-                 LEFT JOIN `pm_system_role` ON `pm_user_role`.`role_id` = `pm_system_role`.`id`
-        WHERE `pm_system_user`.`username` = #{username}
+    <select id="selectAndCompaniesByPhoneNumber" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+            pm_system_user.username,
+            pm_system_user.password,
+            pm_system_user.position,
+            pm_system_user.login_time,
+            pm_system_user.login_ip,
+            pm_system_user.is_locked,
+            pm_system_user.is_enabled,
+            pm_system_user.account_expire_time,
+            pm_system_user.credential_expire_time,
+            pm_system_user.create_time AS 'system_user_create_time',
+            pm_system_user.update_time AS 'system_user_update_time',
+            pm_system_user.is_subcontract,
+            pm_company.id AS 'company_id',
+            pm_company.name AS 'company_name',
+            pm_company.level,
+            pm_company.parent_id,
+            pm_phone_number.phone_number
+        FROM pm_system_user
+                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+                 LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+                 LEFT JOIN pm_phone_number ON pm_system_user.phone_number_id = pm_phone_number.id
+        WHERE pm_phone_number.phone_number = #{phone_number}
     </select>
-    <select id="selectByRoleId" resultMap="correlationResultMap">
-        SELECT `pm_system_user`.`id` AS 'system_user_id',
-            `pm_system_user`.`username`,
-            `pm_system_user`.`password`,
-            `pm_system_user`.`login_time`,
-            `pm_system_user`.`login_ip`,
-            `pm_system_user`.`is_locked`,
-            `pm_system_user`.`is_enabled`,
-            `pm_system_user`.`account_expire_time`,
-            `pm_system_user`.`credential_expire_time`,
-            `pm_system_user`.`company_id`,
-            `pm_system_user`.`create_time` AS 'system_user_create_time',
-            `pm_system_user`.`update_time` AS 'system_user_update_time',
-            `pm_user_role`.`role_id`
-        FROM `pm_system_user`
-                 LEFT JOIN `pm_user_role` ON `pm_system_user`.`id` = `pm_user_role`.`user_id`
-        WHERE `pm_user_role`.`role_id` = #{roleId}
+    <select id="selectByCompanyId" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+            pm_system_user.username,
+            pm_system_user.password,
+            pm_system_user.position,
+            pm_system_user.login_time,
+            pm_system_user.login_ip,
+            pm_system_user.is_locked,
+            pm_system_user.is_enabled,
+            pm_system_user.account_expire_time,
+            pm_system_user.credential_expire_time,
+            pm_system_user.create_time AS 'system_user_create_time',
+            pm_system_user.update_time AS 'system_user_update_time',
+            pm_system_user.is_subcontract,
+            pm_system_user_company.company_id
+        FROM pm_system_user
+                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        WHERE pm_system_user_company.company_id = #{companyId}
     </select>
-    <select id="countByRoleId" resultType="java.lang.Long">
-        SELECT COUNT(`pm_system_user`.`id`)
-        FROM `pm_system_user`
-                 LEFT JOIN `pm_user_role` ON `pm_system_user`.`id` = `pm_user_role`.`user_id`
-        WHERE `pm_user_role`.`role_id` = #{roleId}
+    <select id="selectAndPhoneNumber" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+            pm_system_user.username,
+            pm_system_user.position,
+            pm_system_user.login_time,
+            pm_system_user.login_ip,
+            pm_system_user.is_locked,
+            pm_system_user.is_enabled,
+            pm_system_user.account_expire_time,
+            pm_system_user.credential_expire_time,
+            pm_system_user.create_time AS 'system_user_create_time',
+            pm_system_user.update_time AS 'system_user_update_time',
+            pm_system_user.is_subcontract,
+            pm_phone_number.phone_number
+        FROM pm_system_user
+                 LEFT JOIN pm_phone_number ON pm_system_user.phone_number_id = pm_phone_number.id
     </select>
 </mapper>

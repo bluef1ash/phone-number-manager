@@ -1,27 +1,26 @@
 package com.github.phonenumbermanager.service.impl;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
-import com.github.phonenumbermanager.entity.*;
+import com.github.phonenumbermanager.entity.CommunityResident;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.CompanyPhoneNumber;
+import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
-import com.github.phonenumbermanager.service.CommunityResidentService;
-import com.github.phonenumbermanager.service.CompanyService;
-import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.service.PhoneNumberService;
+import com.github.phonenumbermanager.service.*;
 
 /**
  * 单位业务实现
@@ -36,78 +35,45 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private DormitoryManagerService dormitoryManagerService;
     @Resource
     private PhoneNumberService phoneNumberService;
+    @Resource
+    private CompanyPhoneNumberService companyPhoneNumberService;
 
     @Override
-    public Company getCorrelation(Serializable id) {
-        SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public boolean save(Company entity) {
+        baseMapper.insert(entity);
+        // TODO: 2021/10/23 0023 测试mybatis plus 重复插入
+        List<CompanyPhoneNumber> companyPhoneNumbers = new ArrayList<>();
+        return companyPhoneNumberService.saveBatch(companyPhoneNumbers);
+    }
 
+    @Override
+    public boolean updateById(Company entity) {
+        baseMapper.updateById(entity);
+        // TODO: 2021/10/23 0023 测试是否有冗余数据
+        phoneNumberService.updateBatchById(entity.getPhoneNumbers());
+        List<CompanyPhoneNumber> companyPhoneNumbers = new ArrayList<>();
+        entity.getPhoneNumbers().forEach(phoneNumber -> companyPhoneNumbers
+            .add(new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId())));
+        return companyPhoneNumberService.updateBatchById(companyPhoneNumbers);
+    }
+
+    @Override
+    public Company getCorrelation(Long id) {
         return baseMapper.selectCorrelationById(id);
     }
 
     @Override
-    public IPage<Company> getCorrelation(Integer pageNumber, Integer pageDataSize) {
-        pageNumber = pageNumber == null ? 1 : pageNumber;
-        pageDataSize = pageDataSize == null ? 10 : pageDataSize;
-        Page<Company> page = new Page<>(pageNumber, pageDataSize);
-        return baseMapper.selectCorrelation(page);
-    }
-
-    @Override
-    public List<Community> getCorrelation() {
-        return baseMapper.selectAndSubdistrictAll();
-    }
-
-    @Override
-    public List<Community> get(SystemUser systemUser, Serializable communityCompanyType,
-        Serializable subdistrictCompanyType) {
-        List<Community> communities = null;
-        // TODO: 2021/9/12 0012 用户权限
-        // if (communityCompanyType.equals(systemUser.getLevel().getValue())) {
-        // communities = new ArrayList<>();
-        // Community community = baseMapper.selectCorrelationById(systemUser.getCompanyId());
-        // communities.add(community);
-        // } else if (subdistrictCompanyType.equals(systemUser.getLevel().getValue())) {
-        // communities = baseMapper.selectCorrelationBySubdistrictId(systemUser.getCompanyId());
-        // } else {
-        // communities = baseMapper.selectCorrelationSubdistrictsAll();
-        // }
-        return communities;
-    }
-
-    @Override
-    public List<Community> getBySubdistrictId(Serializable subdistrictId) {
-        return baseMapper.selectBySubdistrictId(subdistrictId);
+    public IPage<Company> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize) {
+        IPage<Company> companyPage =
+            baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize));
+        List<Company> companyList = companyHandler(companies, companyPage.getRecords());
+        companyPage.setRecords(companyList).setTotal(companyList.size());
+        return companyPage;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean update(List<Map<String, Object>> data, Integer changeType, Serializable communityCompanyType,
-        Serializable subdistrictCompanyType) {
-        Community community = new Community();
-        if (changeType == 0) {
-            community.setResidentSubmitted(true);
-        } else {
-            community.setDormitorySubmitted(true);
-        }
-        UpdateWrapper<Community> wrapper = new UpdateWrapper<>();
-        for (Map<String, Object> item : data) {
-            if (communityCompanyType.equals(item.get("companyType"))) {
-                wrapper.eq("id", item.get("companyId"));
-            } else if (subdistrictCompanyType.equals(item.get("companyType"))) {
-                wrapper.eq("subdistrict_id", item.get("companyType"));
-            }
-        }
-        return baseMapper.update(community, wrapper) > 0;
-    }
-
-    @Override
-    public boolean isSubmittedById(Integer submitType, Serializable id) {
-        return baseMapper.selectSubmittedById(submitType, id);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public boolean removeCorrelationById(Serializable id) {
+    public boolean removeCorrelationById(Long id) {
         int communityResidentCount =
             communityResidentService.count(new QueryWrapper<CommunityResident>().eq("company_id", id));
         if (communityResidentCount > 0) {
@@ -119,6 +85,79 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
         return baseMapper.deleteById(id) > 0
-            && phoneNumberService.removeBySource(PhoneNumberSourceTypeEnum.COMMUNITY, id);
+            && companyPhoneNumberService.remove(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", id));
+    }
+
+    @Override
+    public void listSubmissionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
+        Map<Long, String> parents) {
+        companies.forEach(company -> {
+            if (company.getLevel() == 0) {
+                companyIds.add(company.getId());
+                if (parents != null && parents.get(company.getParentId()).isEmpty()) {
+                    Optional<Company> companyOptional = companyAll.stream()
+                        .filter(company1 -> company1.getId().equals(company.getParentId())).findFirst();
+                    assert companyOptional.isPresent();
+                    parents.put(company.getParentId(), companyOptional.get().getName());
+                }
+            } else {
+                List<Company> companyList = companyAll.stream()
+                    .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
+                listSubmissionCompanyIds(companyIds, companyList, companyAll, parents);
+            }
+        });
+    }
+
+    @Override
+    public void listRecursionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
+        Long parentId) {
+        companies.forEach(company -> {
+            if (parentId.equals(company.getParentId())) {
+                companyIds.add(company.getId());
+            } else {
+                List<Company> companies1 = companyAll.stream()
+                    .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
+                listRecursionCompanyIds(companyIds, companies1, companyAll, company.getId());
+            }
+        });
+    }
+
+    /**
+     * 单位处理
+     *
+     * @param companyList
+     *            单位集合
+     * @param companies
+     *            全部单位
+     * @return 整理后单位集合
+     */
+    private List<Company> companyHandler(List<Company> companyList, List<Company> companies) {
+        List<Company> companyList2 = new ArrayList<>();
+        for (Company company : companyList) {
+            for (Company c : companies) {
+                if (company.getId().equals(c.getId())) {
+                    companyList2.add(c);
+                }
+            }
+        }
+        return companyList2.stream().map(company -> treeRecursive(company, companyList)).collect(Collectors.toList());
+    }
+
+    /**
+     * 树形递归
+     *
+     * @param company
+     *            根节点
+     * @param companies
+     *            需要整理的单位集合
+     * @return 树形完成
+     */
+    private Company treeRecursive(Company company, List<Company> companies) {
+        for (Company c : companies) {
+            if (company.getId().equals(c.getParentId())) {
+                company.getChildren().add(treeRecursive(c, companies));
+            }
+        }
+        return company;
     }
 }

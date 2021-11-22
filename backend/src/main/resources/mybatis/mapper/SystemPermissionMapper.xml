@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.SystemPermissionMapper">
+    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="commonResultMap">
+        <result column="function_name" property="functionName"/>
+        <result column="uri" property="uri"/>
+        <result column="http_method" property="httpMethod"/>
+        <result column="icon_name" property="iconName"/>
+        <result column="order_by" property="orderBy"/>
+        <result column="is_display" property="isDisplay"/>
+        <result column="level" property="level"/>
+        <result column="parent_id" property="parentId"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="baseResultMap"
+               extends="commonResultMap">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="aliasResultMap"
+               extends="commonResultMap">
+        <id column="permission_id" property="id"/>
+        <result column="permission_name" property="name"/>
+        <result column="permission_create_time" property="createTime"/>
+        <result column="permission_update_time" property="updateTime"/>
+        <result column="permission_version" property="version"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="correlationResultMap"
+               extends="aliasResultMap">
+        <collection property="companies" ofType="com.github.phonenumbermanager.entity.Company"
+                    resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.aliasResultMap"/>
+    </resultMap>
+    <select id="selectListByCompanyIds" resultMap="correlationResultMap">
+        SELECT pm_system_permission.id AS 'privilege_id',
+        pm_system_permission.name AS 'privilege_name',
+        pm_system_permission.function_name,
+        pm_system_permission.uri,
+        pm_system_permission.http_method,
+        pm_system_permission.level,
+        pm_system_permission.parent_id,
+        pm_system_permission.icon_name,
+        pm_system_permission.order_by,
+        pm_system_permission.is_display,
+        pm_system_permission.create_time AS 'privilege_create_time',
+        pm_system_permission.update_time AS 'privilege_update_time'
+        FROM pm_system_permission
+        LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
+        <where>
+            <foreach collection="companyIds" separator="or" item="companyId">
+                pm_company_permission.company_id = #{companyId}
+            </foreach>
+        </where>
+    </select>
+    <select id="selectByCompanyId" resultMap="correlationResultMap">
+        SELECT pm_system_permission.id AS 'privilege_id',
+            pm_system_permission.name AS 'privilege_name',
+            pm_system_permission.function_name,
+            pm_system_permission.uri,
+            pm_system_permission.http_method,
+            pm_system_permission.level,
+            pm_system_permission.parent_id,
+            pm_system_permission.icon_name,
+            pm_system_permission.order_by,
+            pm_system_permission.is_display,
+            pm_system_permission.create_time AS 'privilege_create_time',
+            pm_system_permission.update_time AS 'privilege_update_time'
+        FROM pm_system_permission
+                 LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
+        WHERE pm_company_permission.company_id = #{companyId}
+    </select>
+</mapper>

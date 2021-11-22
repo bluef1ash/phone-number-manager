@@ -12,7 +12,7 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 @Getter
-public enum ConfigurationTypeEnum {
+public enum ConfigurationFieldTypeEnum {
     /**
      *
      */

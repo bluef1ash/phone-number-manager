@@ -1,7 +1,9 @@
 package com.github.phonenumbermanager.controller;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -12,22 +14,17 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.github.phonenumbermanager.constant.ExceptionCode;
-import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
-import com.github.phonenumbermanager.service.CommunityService;
-import com.github.phonenumbermanager.service.PhoneNumberService;
-import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
+import com.github.phonenumbermanager.vo.CommunityResidentSearchVo;
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -47,10 +44,6 @@ import io.swagger.annotations.ApiParam;
 public class CommunityResidentController extends BaseController {
     @Resource
     private CommunityResidentService communityResidentService;
-    @Resource
-    private CommunityService communityService;
-    @Resource
-    private PhoneNumberService phoneNumberService;
 
     /**
      * 社区居民列表
@@ -59,51 +52,17 @@ public class CommunityResidentController extends BaseController {
      *            分页页码
      * @param limit
      *            每页数据数量
-     * @param companyId
-     *            单位编号
-     * @param companyType
-     *            单位类别编号
-     * @param name
-     *            社区居民姓名
-     * @param address
-     *            社区居民家庭地址
-     * @param phone
-     *            社区居民联系方式
-     * @param isSearch
-     *            是否搜索
-     * @return JSON对象
+     * @param communityResidentSearchVo
+     *            社区居民搜索视图对象
+     * @return 社区居民对象集合
      */
     @GetMapping
     @ApiOperation("社区居民列表")
     public R communityResidentList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据数量") Integer limit,
-        @ApiParam(name = "单位编号") Long companyId, @ApiParam(name = "单位类别编号") Long companyType,
-        @ApiParam(name = "社区居民姓名") String name, @ApiParam(name = "社区居民家庭地址") String address,
-        @ApiParam(name = "社区居民联系方式") String phone, @ApiParam(name = "是否为搜索状态") Boolean isSearch) {
-        getRoleId();
-        Map<String, Object> jsonMap = new HashMap<>(6);
-        jsonMap.put("systemCompanyType", systemCompanyType);
-        jsonMap.put("communityCompanyType", communityCompanyType);
-        jsonMap.put("subdistrictCompanyType", subdistrictCompanyType);
-        // TODO: 2021/9/12 0012 用户权限
-        // jsonMap.put("companyType", systemUser.getLevel());
-        jsonMap.put("dataType", 0);
-        IPage<CommunityResident> communityResidents;
-        if (isSearch != null && isSearch) {
-            CommunityResident communityResident = new CommunityResident();
-            communityResident.setName(name);
-            communityResident.setAddress(address);
-            List<String> phoneNumbers = new ArrayList<>();
-            phoneNumbers.add(phone);
-            communityResident.setPhoneNumbers(CommonUtil.setPhoneNumbers(phoneNumbers));
-            communityResidents = communityResidentService.get(systemUser, systemAdministratorId, communityCompanyType,
-                subdistrictCompanyType, communityResident, companyId, companyType, page, limit);
-        } else {
-            communityResidents =
-                communityResidentService.getCorrelation(systemUser, PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT,
-                    communityCompanyType, subdistrictCompanyType, page, limit);
-        }
-        jsonMap.put("communityResidents", communityResidents);
-        return R.ok(jsonMap);
+        @ApiParam(name = "社区居民搜索视图对象") CommunityResidentSearchVo communityResidentSearchVo) {
+        getEnvironmentVariable();
+        return R.ok().put("communityResidents", communityResidentService.page(systemUser.getCompanies(),
+            communityResidentSearchVo, new Page<>(page, limit)));
     }
 
     /**
@@ -115,7 +74,7 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping("/{id}")
     @ApiOperation("通过编号查找社区居民")
-    public R editCommunityResident(@ApiParam(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
+    public R getCommunityResidentById(@ApiParam(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
         return R.ok().put("communityResident", communityResidentService.getCorrelation(id));
     }
 
@@ -130,13 +89,9 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("添加社区居民处理")
     public R communityResidentCreateHandle(@ApiParam(name = "前台传递的社区居民对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) CommunityResident communityResident) {
-        if (communityService.isSubmittedById(0, communityResident.getCommunityId())) {
-            return R.error(ExceptionCode.NOT_MODIFIED.getCode(), "此社区已经提报，不允许添加！");
-        }
-        multiplePhoneHandler(communityResident);
-        if (communityResidentService.save(communityResident)) {
-            return setPhoneNumbers(phoneNumberService, communityResident.getPhoneNumbers(),
-                PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, String.valueOf(communityResident.getId()));
+        CommunityResident resident = multiplePhoneHandler(communityResident);
+        if (communityResidentService.save(resident)) {
+            return R.ok();
         }
         throw new JsonException("添加社区居民失败！");
     }
@@ -153,8 +108,7 @@ public class CommunityResidentController extends BaseController {
     public R communityResidentModifyHandle(@ApiParam(name = "前台传递的社区居民对象",
         required = true) @RequestBody @Validated(ModifyInputGroup.class) CommunityResident communityResident) {
         if (communityResidentService.updateById(communityResident)) {
-            return setPhoneNumbers(phoneNumberService, communityResident.getPhoneNumbers(),
-                PhoneNumberSourceTypeEnum.COMMUNITY_RESIDENT, String.valueOf(communityResident.getId()));
+            return R.ok();
         }
         throw new JsonException("修改社区居民失败！");
     }
@@ -168,11 +122,11 @@ public class CommunityResidentController extends BaseController {
      */
     @DeleteMapping("/{id}")
     @ApiOperation("通过社区居民编号删除社区居民")
-    public R deleteCommunityResident(@ApiParam(name = "社区居民编号", required = true) @PathVariable Long id) {
-        if (!communityResidentService.removeCorrelationById(id)) {
-            throw new JsonException("删除社区居民失败！");
+    public R removeCommunityResident(@ApiParam(name = "社区居民编号", required = true) @PathVariable Long id) {
+        if (communityResidentService.removeCorrelationById(id)) {
+            return R.ok();
         }
-        return R.ok();
+        throw new JsonException("删除社区居民失败！");
     }
 
     /**
@@ -180,17 +134,17 @@ public class CommunityResidentController extends BaseController {
      *
      * @param request
      *            HTTP请求对象
-     * @param subdistrictId
+     * @param streetId
      *            导入的街道编号
      * @return Ajax信息
      */
-    @PostMapping("/import")
+    @PostMapping("/import/{streetId}")
     @ApiOperation("导入居民信息进系统")
     public R communityResidentImportAsSystem(HttpServletRequest request,
-        @ApiParam(name = "导入的街道编号", required = true) Long subdistrictId) {
+        @ApiParam(name = "导入的街道编号", required = true) @PathVariable Long streetId) {
         int startRowNumber = Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number"));
         List<List<Object>> data = uploadExcel(request, startRowNumber);
-        if (data != null && !communityResidentService.save(data, subdistrictId, configurationsMap)) {
+        if (data != null && !communityResidentService.save(data, streetId, configurationsMap)) {
             return R.ok();
         }
         throw new JsonException("上传文件失败！");
@@ -201,20 +155,20 @@ public class CommunityResidentController extends BaseController {
      *
      * @param response
      *            前台响应对象
-     * @param data
-     *            传递数据
+     * @param companyId
+     *            单位编号
      */
     @GetMapping("/download")
-    public void communityResidentSaveAsExcel(HttpServletResponse response, String data) {
-        List<Map<String, Object>> userData = getDecodeData(data);
-        List<LinkedHashMap<String, Object>> dataResult =
-            communityResidentService.getCorrelation(communityCompanyType, subdistrictCompanyType, userData);
-        String excelResidentTitleUp = Convert.toStr(configurationsMap.get("excel_resident_title_up"));
-        String excelResidentTitle = Convert.toStr(configurationsMap.get("excel_resident_title"));
+    @ApiOperation("导出居民信息到Excel")
+    public void communityResidentSaveAsExcel(HttpServletResponse response,
+        @ApiParam(name = "需要生成的Excel表单位编号", required = true) Long companyId) {
+        String excelResidentTitleUp = configurationsMap.get("excel_resident_title_up").getContent();
+        String excelResidentTitle = configurationsMap.get("excel_resident_title").getContent();
+        List<LinkedHashMap<String, Object>> dataResult = communityResidentService.listCorrelationToMap(companyId);
         if (!dataResult.isEmpty()) {
             ExcelWriter excelWriter = ExcelUtil.getWriter();
             CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
-            setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, false, false, false);
+            setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
             excelWriter.writeCellValue(0, 0, excelResidentTitleUp);
             excelWriter.passCurrentRow();
             CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
@@ -236,10 +190,8 @@ public class CommunityResidentController extends BaseController {
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.addHeader("Content-Disposition",
                 "attachment;filename=" + excelResidentTitle + System.currentTimeMillis() + ".xlsx");
-            try {
-                ServletOutputStream outputStream = response.getOutputStream();
+            try (ServletOutputStream outputStream = response.getOutputStream()) {
                 excelWriter.flush(outputStream, true);
-                IoUtil.close(outputStream);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new BusinessException("导出Excel文件失败！");
@@ -254,12 +206,14 @@ public class CommunityResidentController extends BaseController {
      *
      * @param communityResident
      *            需要处理的社区居民对象
+     * @return 处理后的社区居民对象
      */
-    private void multiplePhoneHandler(CommunityResident communityResident) {
+    private CommunityResident multiplePhoneHandler(CommunityResident communityResident) {
         // 社区居民姓名
         communityResident.setName(Convert.toDBC(StrUtil.cleanBlank(communityResident.getName())).replaceAll("—", "-"));
         // 社区居民地址
         communityResident
             .setAddress(Convert.toDBC(StrUtil.cleanBlank(communityResident.getAddress())).replaceAll("—", "-"));
+        return communityResident;
     }
 }

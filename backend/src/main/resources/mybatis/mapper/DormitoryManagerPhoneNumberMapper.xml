@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.DormitoryManagerPhoneNumberMapper">
+    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManagerPhoneNumber" id="baseResultMap">
+        <id column="dormitory_manager_id" property="dormitoryManagerId"/>
+        <id column="phone_number_id" property="phoneNumberId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+</mapper>

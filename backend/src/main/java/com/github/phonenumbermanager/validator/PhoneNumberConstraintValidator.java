@@ -1,13 +1,7 @@
 package com.github.phonenumbermanager.validator;
 
-import java.util.List;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.github.phonenumbermanager.entity.PhoneNumber;
 
 import cn.hutool.core.util.PhoneUtil;
 
@@ -16,16 +10,10 @@ import cn.hutool.core.util.PhoneUtil;
  *
  * @author 廿二月的天
  */
-public class PhoneNumberConstraintValidator implements ConstraintValidator<PhoneNumberValidator, List<PhoneNumber>> {
+public class PhoneNumberConstraintValidator implements ConstraintValidator<PhoneNumberValidator, String> {
 
     @Override
-    public boolean isValid(List<PhoneNumber> phoneNumbers, ConstraintValidatorContext constraintValidatorContext) {
-        for (PhoneNumber phoneNumber : phoneNumbers) {
-            if (phoneNumber == null || StringUtils.isEmpty(phoneNumber.getPhoneNumber())
-                || PhoneUtil.isPhone(phoneNumber.getPhoneNumber())) {
-                return false;
-            }
-        }
-        return true;
+    public boolean isValid(String phoneNumber, ConstraintValidatorContext constraintValidatorContext) {
+        return PhoneUtil.isPhone(phoneNumber);
     }
 }

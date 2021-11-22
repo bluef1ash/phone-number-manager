@@ -1,13 +1,14 @@
 package com.github.phonenumbermanager.mapper;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.entity.CommunityResident;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.vo.CommunityResidentSearchVo;
 
 /**
  * 社区居民Mapper接口
@@ -16,63 +17,33 @@ import com.github.phonenumbermanager.entity.CommunityResident;
  */
 @Mapper
 public interface CommunityResidentMapper extends BaseMapper<CommunityResident> {
-
     /**
-     * 通过社区居民查询社区居民与所属社区
+     * 通过用户角色查询对象
      *
-     * @param communityResident
-     *            社区居民
-     * @return 多个社区居民与所属社区
+     * @param companies
+     *            登录的系统用户的单位集合
+     * @param searchVo
+     *            需要查询的对象
+     * @return 对象集合
      * @throws DataAccessException
      *             数据库操作异常
      */
-    List<CommunityResident> selectByCommunityResident(@Param("communityResident") CommunityResident communityResident)
+    List<CommunityResident> selectBySearchVo(List<Company> companies, CommunityResidentSearchVo searchVo)
         throws DataAccessException;
 
     /**
-     * 查询所有社区居民与所属社区和街道
+     * 通过单位查询对象（包含分页）
      *
-     * @param communityIds
-     *            多个社区编号
-     * @return 所有社区居民与所属社区
+     * @param companies
+     *            登录的系统用户的单位集合
+     * @param searchVo
+     *            需要查询的对象
+     * @param page
+     *            分页对象
+     * @return 对象集合
      * @throws DataAccessException
      *             数据库操作异常
      */
-    List<CommunityResident> selectAndCommunitiesAndSubdistrictByCommunityIds(
-        @Param("communityIds") List<Serializable> communityIds) throws DataAccessException;
-
-    /**
-     * 通过社区居民查询社区居民与所属社区的数量
-     *
-     * @param communityResident
-     *            社区居民
-     * @return 社区居民与所属社区的数量
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    Long countByCommunityResident(@Param("communityResident") CommunityResident communityResident)
-        throws DataAccessException;
-
-    /**
-     * 通过多个社区编号查询所有社区居民与所属社区的数量
-     *
-     * @param communityIds
-     *            多个社区编号
-     * @return 所有社区居民与所属社区的数量
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    Long countAndCommunityByCommunityIds(@Param("communityIds") List<Serializable> communityIds)
-        throws DataAccessException;
-
-    /**
-     * 通过街道编号查询社区居民与所属社区的数量
-     *
-     * @param subdistrictId
-     *            街道编号
-     * @return 社区居民与所属社区的数量
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    Long countBySubdistrictId(Serializable subdistrictId) throws DataAccessException;
+    IPage<CommunityResident> selectBySearchVo(List<Company> companies, CommunityResidentSearchVo searchVo,
+        IPage<CommunityResident> page) throws DataAccessException;
 }

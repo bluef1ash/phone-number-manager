@@ -2,7 +2,6 @@ package com.github.phonenumbermanager.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -15,19 +14,12 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import com.alibaba.fastjson.JSON;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.constant.enums.PhoneNumberSourceTypeEnum;
-import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
-import com.github.phonenumbermanager.entity.PhoneNumber;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.exception.JsonException;
-import com.github.phonenumbermanager.service.PhoneNumberService;
-import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.util.RedisUtil;
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -41,25 +33,19 @@ import cn.hutool.poi.excel.style.StyleUtil;
 @CrossOrigin
 abstract class BaseController {
     @Resource
-    protected RedisUtil redisUtil;
-    Integer systemCompanyType;
-    Integer communityCompanyType;
-    Integer subdistrictCompanyType;
+    private RedisUtil redisUtil;
     SystemUser systemUser;
-    Map<String, Object> configurationsMap;
+    Map<String, Configuration> configurationsMap;
     Long systemAdministratorId;
 
     /**
-     * 获取角色编号
+     * 获取环境变量
      */
     @SuppressWarnings("all")
-    protected void getRoleId() {
+    protected void getEnvironmentVariable() {
         systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        configurationsMap = (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
-        systemCompanyType = Convert.toInt(configurationsMap.get("system_company_type"));
-        communityCompanyType = Convert.toInt(configurationsMap.get("community_company_type"));
-        subdistrictCompanyType = Convert.toInt(configurationsMap.get("subdistrict_company_type"));
-        systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id"));
+        configurationsMap = (Map<String, Configuration>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
+        systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id").getContent());
     }
 
     /**
@@ -70,8 +56,6 @@ abstract class BaseController {
      * @param startRowNumber
      *            开始读取的行数
      * @return Excel工作簿对象
-     * @throws IOException
-     *             IO异常
      */
     protected List<List<Object>> uploadExcel(HttpServletRequest request, int startRowNumber) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
@@ -86,53 +70,6 @@ abstract class BaseController {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    /**
-     * 获取解密后数据
-     *
-     * @param encodeData
-     *            传递的加密数据
-     * @return 解码后用户数据
-     * @throws ClassCastException
-     *             转换异常
-     */
-    @SuppressWarnings("all")
-    protected List<Map<String, Object>> getDecodeData(String encodeData) throws ClassCastException {
-        getRoleId();
-        byte[] jsonDecode = Base64.getDecoder().decode(encodeData);
-        return (List<Map<String, Object>>)JSON.parse(jsonDecode);
-    }
-
-    /**
-     * 设置联系方式集合
-     *
-     * @param phoneNumbers
-     *            需要设置的集合
-     * @param phoneNumberSourceTypeEnum
-     *            来源类型
-     * @param sourceId
-     *            来源编号
-     */
-    protected R setPhoneNumbers(PhoneNumberService phoneNumberService, List<PhoneNumber> phoneNumbers,
-        PhoneNumberSourceTypeEnum phoneNumberSourceTypeEnum, String sourceId) {
-        for (PhoneNumber phoneNumber : phoneNumbers) {
-            phoneNumber.setSourceType(phoneNumberSourceTypeEnum);
-            phoneNumber.setSourceId(sourceId);
-            if (phoneNumber.getPhoneType() == null) {
-                if (PhoneUtil.isTel(phoneNumber.getPhoneNumber())) {
-                    phoneNumber.setPhoneType(PhoneTypeEnum.LANDLINE);
-                } else if (PhoneUtil.isMobile(phoneNumber.getPhoneNumber())) {
-                    phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
-                } else {
-                    phoneNumber.setPhoneType(PhoneTypeEnum.UNKNOWN);
-                }
-            }
-        }
-        if (phoneNumberService.saveOrUpdateBatch(phoneNumbers)) {
-            return R.ok();
-        }
-        throw new JsonException("联系方式添加失败！");
     }
 
     /**

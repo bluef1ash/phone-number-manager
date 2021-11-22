@@ -1,8 +1,5 @@
 package com.github.phonenumbermanager.constant;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 /**
  * 系统常量
  *
@@ -92,22 +89,4 @@ public final class SystemConstant {
      * 系统用户键名
      */
     public static final String SYSTEM_USER_KEY = "system_user";
-    /**
-     * 最小日期
-     */
-    public static Date DATABASE_DATETIME_MIN;
-    /**
-     * 最大日期
-     */
-    public static Date DATABASE_DATETIME_MAX;
-
-    static {
-        try {
-            DATABASE_DATETIME_MIN = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1000-01-01 00:00:00");
-            DATABASE_DATETIME_MAX = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("9999-12-31 23:59:59");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 }

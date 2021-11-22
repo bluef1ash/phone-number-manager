@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.service;
 
+import java.util.List;
+
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,15 +19,17 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
     /**
      * 认证密码
      *
-     * @param username
-     *            用户名
+     * @param phoneNumber
+     *            联系方式
      * @param password
      *            密码
+     * @param clientIp
+     *            客户端IP地址
      * @throws LoginException
      *             登录异常
      * @return 认证对象
      */
-    Authentication authentication(String username, String password) throws LoginException;
+    Authentication authentication(String phoneNumber, String password, String clientIp) throws LoginException;
 
     /**
      * 判断权限
@@ -37,4 +41,20 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
      * @return 是否享受
      */
     boolean hasPermission(HttpServletRequest request, Authentication authentication);
+
+    /**
+     * 查找所有系统用户与所属联系方式
+     *
+     * @return 所有系统用户与所属联系方式
+     */
+    List<SystemUser> listCorrelationPhoneNumber();
+
+    /**
+     * 通过单位编号查找
+     *
+     * @param companyId
+     *            单位编号
+     * @return 系统用户集合
+     */
+    List<SystemUser> listCorrelationByCompanyId(Long companyId);
 }

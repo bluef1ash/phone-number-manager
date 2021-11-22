@@ -3,6 +3,7 @@
 <mapper namespace="com.github.phonenumbermanager.mapper.CompanyMapper">
     <resultMap type="com.github.phonenumbermanager.entity.Company" id="commonResultMap">
         <result column="actual_number" property="actualNumber"/>
+        <result column="level" property="level"/>
         <result column="parent_id" property="parentId"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.Company" id="baseResultMap" extends="commonResultMap">
@@ -25,116 +26,50 @@
                     resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
     </resultMap>
     <select id="selectCorrelation" resultMap="collectionResultMap">
-        SELECT `pm_company`.`id` AS 'company_id',
-            `pm_company`.`name` AS 'company_name',
-            `pm_company`.`actual_number`,
-            `pm_company`.`create_time` AS 'company_create_time',
-            `pm_company`.`update_time` AS 'company_update_time',
-            `pm_company`.`parent_id`,
-            `pm_phone_number`.`phone_number`
-        FROM `pm_company`
-                 LEFT JOIN `pm_phone_number` ON `pm_company`.`id` = `pm_phone_number`.`source_id`
-        WHERE `pm_phone_number`.`source_type` = 3
-        ORDER BY `pm_company`.`parent_id`
+        SELECT pm_company.id AS 'company_id',
+            pm_company.name AS 'company_name',
+            pm_company.actual_number,
+            pm_company.create_time AS 'company_create_time',
+            pm_company.update_time AS 'company_update_time',
+            pm_company.parent_id,
+            pm_phone_number.phone_number
+        FROM pm_company
+                 LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+                 LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
     </select>
     <select id="selectCorrelationById" resultMap="collectionResultMap">
-        SELECT `pm_company`.`id` AS 'company_id',
-            `pm_company`.`name` AS 'company_name',
-            `pm_company`.`actual_number`,
-            `pm_company`.`create_time` AS 'company_create_time',
-            `pm_company`.`update_time` AS 'company_update_time',
-            `pm_company`.`parent_id`,
-            `pm_phone_number`.`phone_number`
-        FROM `pm_company`
-                 LEFT JOIN `pm_phone_number` ON `pm_company`.`id` = `pm_phone_number`.`source_id`
-        WHERE `pm_company`.`id` = #{id} AND `pm_phone_number`.`source_type` = 3
+        SELECT pm_company.id AS 'company_id',
+            pm_company.name AS 'company_name',
+            pm_company.actual_number,
+            pm_company.create_time AS 'company_create_time',
+            pm_company.update_time AS 'company_update_time',
+            pm_company.level,
+            pm_company.parent_id,
+            pm_phone_number.phone_number
+        FROM pm_company
+                 LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+                 LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
+        WHERE pm_company.id = #{id}
     </select>
-    <select id="selectCorrelationBySubdistrictId" resultMap="correlationResultMap">
-        SELECT `pm_company`.`id` AS 'company_id',
-            `pm_company`.`name` AS 'company_name',
-            `pm_subdistrict`.id AS 'subdistrict_id',
-            `pm_subdistrict`.`name` AS 'subdistrict_name'
-        FROM `pm_company`
-                 LEFT JOIN `pm_subdistrict` ON `pm_company`.`subdistrict_id` = `pm_subdistrict`.`id`
-        WHERE `pm_company`.`subdistrict_id` = #{subdistrictId}
-    </select>
-    <select id="selectBySubdistrictId" resultMap="baseResultMap">
-        SELECT `id`, `name`, `subdistrict_id`
-        FROM `pm_company`
-        WHERE `subdistrict_id` = #{subdistrictId}
-    </select>
-    <select id="selectIdByName" resultType="java.lang.Long">
-        SELECT `id`
-        FROM `pm_company`
-        WHERE `name` LIKE CONCAT('%', #{name}, '%')
-    </select>
-    <select id="selectBySubdistrictName" resultMap="correlationResultMap">
-        SELECT `pm_company`.`id` AS 'company_id',
-            `pm_company`.`name` AS 'company_name',
-            `pm_company`.`subdistrict_id`,
-            `pm_subdistrict`.`name` AS 'subdistrict_name'
-        FROM `pm_company`
-                 LEFT JOIN `pm_subdistrict` ON `pm_company`.`subdistrict_id` = `pm_subdistrict`.`id`
-        WHERE `pm_subdistrict`.`name` = #{subdistrictName}
-    </select>
-    <select id="selectActualNumberById" resultType="java.lang.Long">
-        SELECT `actual_number`
-        FROM `pm_company`
-        WHERE `id` = #{id}
-    </select>
-    <select id="sumActualNumberBySubdistrictId" resultType="java.lang.Long">
-        SELECT SUM(`pm_company`.`actual_number`)
-        FROM `pm_company`
-                 LEFT JOIN `pm_subdistrict` ON `pm_company`.`subdistrict_id` = `pm_subdistrict`.`id`
-        WHERE `pm_company`.`subdistrict_id` = #{subdistrictId}
-    </select>
-    <select id="sumActualNumber" resultType="java.lang.Long">
-        SELECT SUM(`actual_number`)
-        FROM `pm_company`
-    </select>
-    <select id="countBySubdistrictId" resultMap="baseResultMap">
-        SELECT `pm_company`.`name`,
-            COUNT(`pm_community_resident`.`id`) AS 'actual_number'
-        FROM `pm_company`
-                 LEFT JOIN `pm_community_resident` ON `pm_community_resident`.`community_id` = `pm_company`.`id`
-        WHERE `pm_company`.`subdistrict_id` = #{subdistrictId}
-        GROUP BY `pm_company`.`name`;
-    </select>
-    <select id="selectForIdAndName" resultMap="baseResultMap">
-        SELECT `id`,
-            `name`
-        FROM `pm_company`
-    </select>
-    <select id="selectByObject" resultMap="baseResultMap">
-        SELECT
-        `id`,
-        `name`
-        FROM `pm_company`
+    <select id="selectCorrelationByCompanies" resultMap="collectionResultMap">
+        SELECT pm_company.id,
+        pm_company.name,
+        pm_company.actual_number,
+        pm_company.parent_id,
+        pm_company.create_time,
+        pm_company.update_time,
+        pm_company.level,
+        pm_company_phone_number.company_id,
+        pm_phone_number.id,
+        pm_phone_number.phone_number,
+        pm_phone_number.phone_type
+        FROM pm_company
+        LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+        LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
         <where>
-            <choose>
-                <when test="id != null">
-                    `id` = #{id}
-                </when>
-                <when test="name != null">
-                    OR `name` = #{name}
-                </when>
-            </choose>
+            <foreach collection="companies" item="company" separator="OR">
+                pm_company.id = #{company.id} OR pm_company.parent_id = #{company.id}
+            </foreach>
         </where>
-    </select>
-    <select id="selectCorrelationSubdistrictsAll" resultMap="correlationResultMap">
-        SELECT `pm_company`.`id` AS 'company_id',
-            `pm_company`.`name` AS 'company_name',
-            `pm_subdistrict`.`id` AS `subdistrict_id`,
-            `pm_subdistrict`.`name` AS 'subdistrict_name'
-        FROM `pm_company`
-                 LEFT JOIN `pm_subdistrict` ON `pm_company`.`subdistrict_id` = `pm_subdistrict`.`id`
-    </select>
-    <select id="selectSubmittedById" resultType="java.lang.Boolean">
-        SELECT
-        <choose>
-            <when test="submitType == 0">`resident_submitted`</when>
-            <otherwise>`dormitory_submitted`</otherwise>
-        </choose>
-        FROM `pm_company` WHERE `id` = #{id}
     </select>
 </mapper>

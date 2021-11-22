@@ -1,7 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +40,8 @@ public class AccountController extends BaseController {
     /**
      * 用户登录
      *
+     * @param request
+     *            HTTP请求对象
      * @param systemUser
      *            前端传入的用户对象
      * @return JSON对象
@@ -48,14 +50,15 @@ public class AccountController extends BaseController {
      */
     @PostMapping("/login")
     @ApiOperation("用户登录")
-    public R login(@ApiParam(name = "系统用户对象", required = true) @RequestBody @Validated SystemUser systemUser)
+    public R login(HttpServletRequest request,
+        @ApiParam(name = "系统用户对象", required = true) @RequestBody @Validated SystemUser systemUser)
         throws LoginException {
-        Authentication authentication =
-            systemUserService.authentication(systemUser.getUsername(), systemUser.getPassword());
+        Authentication authentication = systemUserService.authentication(systemUser.getPhoneNumber().getPhoneNumber(),
+            systemUser.getPassword(), ServletUtil.getClientIP(request));
         SystemUser principal = (SystemUser)authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>(2);
         claims.put(SystemConstant.SYSTEM_USER_KEY, principal);
-        claims.put(SystemConstant.CLAIM_KEY_CREATED, new Date());
+        claims.put(SystemConstant.CLAIM_KEY_CREATED, LocalDateTime.now());
         return R.ok().put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
     }

@@ -6,8 +6,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.PhoneNumber;
+
+import cn.hutool.core.util.PhoneUtil;
 
 /**
  * 此类中收集Java编程中WEB开发常用到的一些工具。 为避免生成此类的实例，构造方法被申明为private类型的。
@@ -15,23 +21,7 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
  * @author 廿二月的天
  */
 public class CommonUtil {
-
-    /**
-     * 设置联系方式
-     *
-     * @param numbers
-     *            联系方式集合字符串
-     * @return 联系方式集合对象
-     */
-    public static List<PhoneNumber> setPhoneNumbers(List<String> numbers) {
-        List<PhoneNumber> phoneNumbers = new ArrayList<>();
-        for (String number : numbers) {
-            PhoneNumber phoneNumber = new PhoneNumber();
-            phoneNumber.setPhoneNumber(number);
-            phoneNumbers.add(phoneNumber);
-        }
-        return phoneNumbers;
-    }
+    private static final Pattern SPECIAL_PATTERN = Pattern.compile("[\\s\\t\\r\\n]");
 
     /**
      * 读取 SQL 文件，获取 SQL 语句
@@ -75,5 +65,34 @@ public class CommonUtil {
             statement.addBatch(sql);
         }
         statement.executeBatch();
+    }
+
+    /**
+     * 联系方式包装为对象
+     *
+     * @param number
+     *            联系方式字符串
+     * @return 联系方式对象
+     */
+    public static PhoneNumber phoneNumber2Object(String number) {
+        PhoneNumber phoneNumber = new PhoneNumber();
+        phoneNumber.setId(IdWorker.getId()).setPhoneNumber(number);
+        if (PhoneUtil.isMobile(number)) {
+            phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
+        } else if (PhoneUtil.isTel(number)) {
+            phoneNumber.setPhoneType(PhoneTypeEnum.LANDLINE);
+        } else {
+            phoneNumber.setPhoneType(PhoneTypeEnum.UNKNOWN);
+        }
+        return phoneNumber;
+    }
+
+    public static String replaceSpecialStr(String str) {
+        String repl = "";
+        if (str != null) {
+            Matcher m = SPECIAL_PATTERN.matcher(str);
+            repl = m.replaceAll("");
+        }
+        return repl;
     }
 }

@@ -1,7 +1,12 @@
 package com.github.phonenumbermanager.service.impl;
 
-import java.io.Serializable;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -20,29 +25,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.entity.UserPrivilege;
-import com.github.phonenumbermanager.entity.UserRoleRelation;
+import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
-import com.github.phonenumbermanager.mapper.UserRoleRelationMapper;
+import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.ConfigurationService;
+import com.github.phonenumbermanager.service.SystemUserCompanyService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.RedisUtil;
 
 import cn.hutool.core.convert.Convert;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 系统用户业务实现
  *
  * @author 廿二月的天
  */
-@Slf4j
 @Service("systemUserService")
 public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, SystemUser> implements SystemUserService {
     @Resource
@@ -50,38 +55,44 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Resource
     private RedisUtil redisUtil;
     @Resource
-    private UserRoleRelationMapper userRoleRelationMapper;
+    private SystemUserCompanyService systemUserCompanyService;
     @Resource
     private ConfigurationService configurationService;
+    @Resource
+    private CompanyService companyService;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
-        SystemUser systemUser = baseMapper.selectAndRolesByName(username);
+    public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException, SystemClosedException {
+        SystemUser systemUser = baseMapper.selectAndCompaniesByPhoneNumber(phoneNumber);
         @SuppressWarnings("all")
-        Map<String, Object> configurationsMap =
-            (Map<String, Object>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
+        Map<String, Configuration> configurationsMap =
+            (Map<String, Configuration>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
         if (configurationsMap == null) {
             List<Configuration> configurations = configurationService.list(null);
-            configurationsMap = new HashMap<>(configurations.size() + 1);
-            for (Configuration configuration : configurations) {
-                configurationsMap.put(configuration.getKey(), configuration.getValue());
-            }
+            configurationsMap =
+                configurations.stream().collect(Collectors.toMap(Configuration::getName, Function.identity()));
             redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, configurationsMap);
         }
-        String systemAdministratorName = String.valueOf(configurationsMap.get("system_administrator_name"));
-        Integer systemIsActive = Convert.toInt(configurationsMap.get("system_is_active"));
-        if (systemIsActive == 0 && !systemAdministratorName.equals(systemUser.getUsername())) {
+        Long systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id").getContent());
+        boolean systemIsActive = Convert.toBool(configurationsMap.get("system_is_active").getContent());
+        if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
             throw new SystemClosedException("该系统已经禁止登录，请联系管理员！");
         }
         return systemUser;
     }
 
     @Override
-    public Authentication authentication(String username, String password) {
+    public Authentication authentication(String phoneNumber, String password, String clientIp) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-            new UsernamePasswordAuthenticationToken(username, password);
+            new UsernamePasswordAuthenticationToken(phoneNumber, password);
         Authentication authenticate =
             authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
+        SystemUser systemUser = (SystemUser)authenticate.getPrincipal();
+        baseMapper
+            .update(
+                new SystemUser().setLoginTime(LocalDateTime.now())
+                    .setCredentialExpireTime(LocalDateTime.now().plusDays(7)).setLoginIp(clientIp),
+                new UpdateWrapper<SystemUser>().eq("username", systemUser.getId()));
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         return authenticate;
     }
@@ -91,7 +102,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     public boolean save(SystemUser systemUser) {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
-        systemUser.setLoginTime(new Date(0));
+        systemUser.setLoginTime(LocalDateTime.MIN);
         return baseMapper.insert(systemUser) > 0;
     }
 
@@ -106,14 +117,21 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     }
 
     @Override
-    public IPage<SystemUser> getCorrelation(Integer pageNumber, Integer pageDataSize) {
-        Page<SystemUser> page = new Page<>(pageNumber, pageDataSize);
-        return baseMapper.selectAndRoles(page);
+    public List<SystemUser> listCorrelationPhoneNumber() {
+        return baseMapper.selectAndPhoneNumber();
     }
 
     @Override
-    public SystemUser getCorrelation(Serializable id) {
-        return baseMapper.selectAndRoleById(id);
+    public IPage<SystemUser> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize) {
+        List<Long> companyIds = new ArrayList<>();
+        List<Company> companyAll = companyService.list();
+        companyService.listRecursionCompanyIds(companyIds, companies, companyAll, null);
+        return baseMapper.selectCorrelationByCompanyIds(companyIds, new Page<>(pageNumber, pageDataSize));
+    }
+
+    @Override
+    public SystemUser getCorrelation(Long id) {
+        return baseMapper.selectAndCompanyById(id);
     }
 
     @Override
@@ -149,29 +167,13 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeCorrelationById(Serializable id) {
-        QueryWrapper<UserRoleRelation> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", id);
-        return baseMapper.deleteById(id) > 0 && userRoleRelationMapper.delete(wrapper) > 0;
+    public boolean removeCorrelationById(Long id) {
+        return baseMapper.deleteById(id) > 0
+            && systemUserCompanyService.remove(new QueryWrapper<SystemUserCompany>().eq("user_id", id));
     }
 
-    /**
-     * 递归系统用户权限
-     *
-     * @param userPrivileges
-     *            需要递归的系统权限
-     * @param parentId
-     *            上级系统权限编号
-     * @return 处理后的系统权限集合
-     */
-    private Set<UserPrivilege> recursionPrivileges(Set<UserPrivilege> userPrivileges, Long parentId) {
-        Set<UserPrivilege> userPrivilegeList = new LinkedHashSet<>();
-        for (UserPrivilege userPrivilege : userPrivileges) {
-            if (parentId.equals(userPrivilege.getParentId())) {
-                userPrivilege.setSubUserPrivileges(recursionPrivileges(userPrivileges, userPrivilege.getId()));
-                userPrivilegeList.add(userPrivilege);
-            }
-        }
-        return userPrivilegeList;
+    @Override
+    public List<SystemUser> listCorrelationByCompanyId(Long companyId) {
+        return baseMapper.selectByCompanyId(companyId);
     }
 }

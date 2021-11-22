@@ -1,12 +1,9 @@
 package com.github.phonenumbermanager.service;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import com.github.phonenumbermanager.entity.Community;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.SystemUser;
 
 /**
  * 单位业务接口
@@ -14,53 +11,33 @@ import com.github.phonenumbermanager.entity.SystemUser;
  * @author 廿二月的天
  */
 public interface CompanyService extends BaseService<Company> {
+    /**
+     * 通过单位对象集合获取最下级单位编号
+     *
+     * @param companyIds
+     *            取下级单位编号集合
+     * @param companies
+     *            单位对象集合
+     * @param companyAll
+     *            所有单位对象集合
+     * @param parents
+     *            上级单位
+     */
+    void listSubmissionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
+        Map<Long, String> parents);
 
     /**
-     * 通过系统用户查找
+     * 递归获取链条单位编号
      *
-     * @param systemUser
-     *            系统用户对象
-     * @param communityCompanyType
-     *            社区级角色编号
-     * @param subdistrictCompanyType
-     *            街道级角色编号
-     * @return 查找到的社区对象的集合
+     * @param companyIds
+     *            递归单位编号集合
+     * @param companies
+     *            单位对象集合
+     * @param companyAll
+     *            所有单位对象集合
+     * @param parentId
+     *            上级单位编号
      */
-    List<Community> get(SystemUser systemUser, Serializable communityCompanyType, Serializable subdistrictCompanyType);
-
-    /**
-     * 通过街道编号查找
-     *
-     * @param subdistrictId
-     *            街道编号
-     * @return 查找到的社区对象的集合
-     */
-    List<Community> getBySubdistrictId(Serializable subdistrictId);
-
-    /**
-     * 更改是否允许更删改信息
-     *
-     * @param data
-     *            用户数据
-     * @param changeType
-     *            更改类型
-     * @param communityCompanyType
-     *            社区级角色编号
-     * @param subdistrictCompanyType
-     *            街道级角色编号
-     * @return 是否更改成功
-     */
-    boolean update(List<Map<String, Object>> data, Integer changeType, Serializable communityCompanyType,
-        Serializable subdistrictCompanyType);
-
-    /**
-     * 是否已经提报
-     *
-     * @param submitType
-     *            提交类型
-     * @param id
-     *            查询编号
-     * @return 是否已经提报
-     */
-    boolean isSubmittedById(Integer submitType, Serializable id);
+    void listRecursionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
+        Long parentId);
 }

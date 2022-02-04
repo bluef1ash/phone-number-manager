@@ -3,6 +3,8 @@ package com.github.phonenumbermanager.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.http.HttpStatus;
 
 /**
@@ -13,7 +15,7 @@ import org.apache.http.HttpStatus;
 public class R extends HashMap<String, Object> {
 
     public R() {
-        put("code", 0);
+        put("code", HttpStatus.SC_OK);
         put("message", "success");
     }
 
@@ -26,6 +28,22 @@ public class R extends HashMap<String, Object> {
     }
 
     public static R error(int code, String message) {
+        R r = new R();
+        r.put("code", code);
+        r.put("message", message);
+        return r;
+    }
+
+    public static R error(HttpServletResponse response, int statusCode, int code, String message) {
+        response.setStatus(statusCode);
+        R r = new R();
+        r.put("code", code);
+        r.put("message", message);
+        return r;
+    }
+
+    public static R error(HttpServletResponse response, int code, String message) {
+        response.setStatus(code);
         R r = new R();
         r.put("code", code);
         r.put("message", message);

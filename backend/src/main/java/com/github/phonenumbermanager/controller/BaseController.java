@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.util.RedisUtil;
 
-import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -34,18 +36,21 @@ import cn.hutool.poi.excel.style.StyleUtil;
 abstract class BaseController {
     @Resource
     private RedisUtil redisUtil;
-    SystemUser systemUser;
-    Map<String, Configuration> configurationsMap;
-    Long systemAdministratorId;
+    protected SystemUser systemUser;
+    protected Map<String, JSONObject> configurationMap;
 
     /**
      * 获取环境变量
      */
-    @SuppressWarnings("all")
     protected void getEnvironmentVariable() {
-        systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        configurationsMap = (Map<String, Configuration>)redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY);
-        systemAdministratorId = Convert.toLong(configurationsMap.get("system_administrator_id").getContent());
+        if (!SystemConstant.ANONYMOUS_USER
+            .equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
+            systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        }
+        if (configurationMap == null || configurationMap.isEmpty()) {
+            configurationMap =
+                JSONUtil.parseObj(redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY)).toBean(Map.class);
+        }
     }
 
     /**
@@ -103,5 +108,31 @@ abstract class BaseController {
         font.setBold(isBold);
         cellStyle.setFont(font);
         cellStyle.setWrapText(isWrapText);
+    }
+
+    /**
+     * 获取查找Wrapper
+     *
+     * @param request
+     *            HTTP请求对象
+     */
+    protected void getSearchWrapper(HttpServletRequest request, QueryWrapper<?> wrapper) {
+        String params = request.getParameter("params");
+        if (!StrUtil.isEmptyIfStr(params)) {
+            JSONObject paramsJson = JSONUtil.parseObj(params);
+            JSONObject search = (JSONObject)paramsJson.get("search");
+            JSONObject sort = (JSONObject)paramsJson.get("sort");
+            if (search != null) {
+                for (Map.Entry<String, Object> entry : search.entrySet()) {
+                    wrapper.and(w -> w.like(entry.getKey(), entry.getValue()));
+                }
+            }
+            if (sort != null) {
+                for (Map.Entry<String, Object> entry : sort.entrySet()) {
+                    wrapper.orderBy(true, "ascend".equals(entry.getValue()),
+                        "CONVERT(" + entry.getKey() + " USING gbk) COLLATE gbk_chinese_ci");
+                }
+            }
+        }
     }
 }

@@ -14,11 +14,14 @@ import com.github.phonenumbermanager.exception.HttpStatusOkException;
 import com.github.phonenumbermanager.exception.NotfoundException;
 import com.github.phonenumbermanager.util.R;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 控制器钩子
  *
  * @author 廿二月的天
  */
+@Slf4j
 @RestControllerAdvice(basePackages = "com.github.phonenumbermanager.controller")
 public class RestControllerAdvisor {
 
@@ -32,6 +35,7 @@ public class RestControllerAdvisor {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R methodArgumentNotValid(MethodArgumentNotValidException exception) {
+        log.error("An exception occurs and the behavior is terminated", exception);
         Map<String, String> errorMap = new HashMap<>(exception.getBindingResult().getAllErrors().size());
         exception.getBindingResult().getFieldErrors()
             .forEach(fieldError -> errorMap.put(fieldError.getField(), fieldError.getDefaultMessage()));
@@ -48,8 +52,9 @@ public class RestControllerAdvisor {
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R methodArgumentTypeMismatch(Throwable throwable) {
-        return R.error(ExceptionCode.UNKNOWN_EXCEPTION.getCode(), ExceptionCode.UNKNOWN_EXCEPTION.getDescription())
-            .put("exception", throwable);
+        log.error("An exception occurs and the behavior is terminated", throwable);
+        return R.error(ExceptionCode.UNKNOWN_EXCEPTION.getCode(), throwable.getMessage()).put("defaultMessage",
+            ExceptionCode.UNKNOWN_EXCEPTION.getDescription());
     }
 
     /**
@@ -62,7 +67,7 @@ public class RestControllerAdvisor {
     @ExceptionHandler(NotfoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public R notfound(NotfoundException exception) {
-        exception.printStackTrace();
+        log.error("An exception occurs and the behavior is terminated", exception);
         return R.error(HttpStatus.NOT_FOUND.value(), exception.getMessage());
     }
 

@@ -20,6 +20,7 @@ import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.vo.CommunityResidentSearchVo;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.json.JSONObject;
 
 /**
  * 社区居民业务实现
@@ -67,24 +68,24 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Long streetId, Map<String, Configuration> configurationsMap) {
+    public boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap) {
         List<CommunityResident> residents = new ArrayList<>();
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = new ArrayList<>();
         int excelCommunityCellNumber =
-            Convert.toInt(configurationsMap.get("excel_resident_community_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_community_name_cell_number").get("content"));
         int excelCommunityResidentNameCellNumber =
-            Convert.toInt(configurationsMap.get("excel_resident_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_name_cell_number").get("content"));
         int excelResidentAddressCellNumber =
-            Convert.toInt(configurationsMap.get("excel_resident_address_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_address_cell_number").get("content"));
         int excelPhone1CellNumber =
-            Convert.toInt(configurationsMap.get("excel_resident_phone1_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_phone1_cell_number").get("content"));
         int excelPhone2CellNumber =
-            Convert.toInt(configurationsMap.get("excel_resident_phone2_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_phone2_cell_number").get("content"));
         int excelPhone3CellNumber =
-            Convert.toInt(configurationsMap.get("excel_resident_phone3_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_phone3_cell_number").get("content"));
         int excelSubcontractorCellNumber =
-            Convert.toInt(configurationsMap.get("excel_resident_subcontractor_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_subcontractor_name_cell_number").get("content"));
         List<SystemUser> systemUsers = systemUserService.listCorrelationByCompanyId(streetId);
         List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", streetId));
         for (List<Object> datum : data) {

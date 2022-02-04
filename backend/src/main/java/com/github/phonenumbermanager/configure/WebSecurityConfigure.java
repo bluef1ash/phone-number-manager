@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -15,7 +14,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -40,15 +38,15 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     @Resource
     private JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    @Resource
+    private JwtTokenFilter jwtTokenFilter;
 
     @SuppressWarnings("all")
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
 
-            .csrf().disable()
-
-            .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+            .csrf().disable().addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
 
             .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
             .accessDeniedHandler(jwtAccessDeniedHandler)
@@ -57,12 +55,12 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
 
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-            .and().authorizeRequests().antMatchers(SystemConstant.PERMIT_WHITELIST).permitAll()
+            .and().addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+
+            .authorizeRequests().antMatchers(SystemConstant.PERMIT_WHITELIST).permitAll()
             .antMatchers(SystemConstant.ANONYMOUS_WHITELIST).anonymous().anyRequest()
 
-            .access("@systemUserService.hasPermission(request, authentication)")
-
-            .and().apply(new JwtConfigurer());
+            .access("@systemUserService.hasPermission(request, authentication)");
     }
 
     @Override
@@ -90,22 +88,15 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
         return daoAuthenticationProvider;
     }
 
-    private CorsFilter corsFilter() {
+    @Bean
+    public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");
+        config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
-    }
-
-    private static class JwtConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
-
-        @Override
-        public void configure(HttpSecurity http) {
-            http.addFilterBefore(new JwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-        }
     }
 }

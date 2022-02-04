@@ -3,8 +3,7 @@
 <mapper namespace="com.github.phonenumbermanager.mapper.PhoneNumberMapper">
     <resultMap type="com.github.phonenumbermanager.entity.PhoneNumber" id="commonResultMap">
         <result column="phone_number" property="phoneNumber"/>
-        <result column="phone_type" property="phoneType"
-                typeHandler="com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler"/>
+        <result column="phone_type" property="phoneType"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.PhoneNumber" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>

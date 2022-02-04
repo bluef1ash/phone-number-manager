@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.constant;
 
+import java.time.LocalDateTime;
+
 /**
  * 系统常量
  *
@@ -37,25 +39,17 @@ public final class SystemConstant {
     /**
      * 通过白名单
      */
-    public static final String[] PERMIT_WHITELIST =
-        {"/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**"};
+    public static final String[] PERMIT_WHITELIST = {"/favicon.ico", "/404", "/swagger-resources/**",
+        "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**", "/exception"};
     /**
      * 匿名用户白名单
      */
-    public static final String[] ANONYMOUS_WHITELIST = {"/account/login", "/account/getRecaptcha", "/loginError"};
+    public static final String[] ANONYMOUS_WHITELIST = {"/account/login", "/account/recaptcha"};
     /**
      * 权限通过
      */
-    public static final String[] PRIVILEGE_PERMITS = {"/", "/index/getmenu", "/community/select", "/index/getcomputed",
-        "/community/subcontractor/load", "system/user_role/user/edit"};
-    /**
-     * JWTToken过期时间
-     */
-    public static final long TOKEN_VALIDITY_IN_MILLISECONDS = 86400L;
-    /**
-     * JWTToken“记住我”过期时间
-     */
-    public static final long TOKEN_VALIDITY_IN_MILLISECONDS_FOR_REMEMBER_ME = 108000L;
+    public static final String[] PERMISSION_PERMITS =
+        {"/account/logout", "/index/menu", "/account/current-user", "/index/computed", "system/user/{id}"};
     /**
      * Token前缀
      */
@@ -88,5 +82,23 @@ public final class SystemConstant {
     /**
      * 系统用户键名
      */
-    public static final String SYSTEM_USER_KEY = "system_user";
+    public static final String SYSTEM_USER_ID_KEY = "system_user_id";
+    /**
+     * 数据库最小时间
+     */
+    public static final LocalDateTime DATABASE_MIX_DATETIME = LocalDateTime.of(1000, 1, 1, 0, 0, 0);
+    /**
+     * 数据库最大时间
+     */
+    public static final LocalDateTime DATABASE_MAX_DATETIME = LocalDateTime.of(9999, 12, 31, 23, 59, 59);
+    /**
+     * 匿名用户名
+     */
+    public static final String ANONYMOUS_USER = "anonymousUser";
+    /** 默认日期时间格式 */
+    public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    /** 默认日期格式 */
+    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+    /** 默认时间格式 */
+    public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
 }

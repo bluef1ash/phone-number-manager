@@ -7,7 +7,9 @@ import java.util.Map;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.vo.SelectListVo;
+
+import cn.hutool.json.JSONObject;
 
 /**
  * Service层基本接口
@@ -38,9 +40,14 @@ public interface BaseService<T> extends IService<T> {
      *            分页页码
      * @param pageDataSize
      *            每页显示的条目数
+     * @param search
+     *            搜索条件
+     * @param sort
+     *            排序条件
      * @return 查找到的所有对象与所属对象与分页对象
      */
-    IPage<T> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize);
+    IPage<T> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize, JSONObject search,
+        JSONObject sort);
 
     /**
      * 获取柱状图数据
@@ -60,11 +67,11 @@ public interface BaseService<T> extends IService<T> {
      *            Excel数据
      * @param streetId
      *            导入的街道编号
-     * @param configurationsMap
+     * @param configurationMap
      *            系统配置
      * @return 导入的行数
      */
-    boolean save(List<List<Object>> data, Long streetId, Map<String, Configuration> configurationsMap);
+    boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap);
 
     /**
      * 通过编号关联查找
@@ -92,4 +99,11 @@ public interface BaseService<T> extends IService<T> {
      * @return 删除是否成功
      */
     boolean removeCorrelationById(Long id);
+
+    /**
+     * 获取树形表单列表
+     *
+     * @return 树形表单列表集合
+     */
+    List<SelectListVo> treeSelectList();
 }

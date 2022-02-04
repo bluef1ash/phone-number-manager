@@ -4,7 +4,10 @@
     <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="commonResultMap">
         <result column="username" property="username"/>
         <result column="password" property="password"/>
-        <result column="position" property="position"/>
+        <result column="positions" property="positions"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="titles" property="titles"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
         <result column="login_time" property="loginTime"/>
         <result column="login_ip" property="loginIp"/>
         <result column="is_locked" property="isLocked"/>
@@ -36,7 +39,8 @@
     <select id="selectCorrelationByCompanyIds" resultMap="collectionResultMap">
         SELECT pm_system_user.id AS 'system_user_id',
         pm_system_user.username,
-        pm_system_user.position,
+        pm_system_user.positions,
+        pm_system_user.titles,
         pm_system_user.login_time,
         pm_system_user.login_ip,
         pm_system_user.is_locked,
@@ -58,12 +62,27 @@
             <foreach collection="companyIds" item="companyId" separator="OR">
                 pm_company.id = #{companyId}
             </foreach>
+            <if test="search != null">
+                <foreach collection="search" index="key" item="value" separator="AND" open="AND">
+                    #{key} LIKE CONCAT('%', #{value}, '%')
+                </foreach>
+            </if>
         </where>
+        <if test="sort != null">
+            ORDER BY
+            <foreach collection="sort" index="key" item="value" separator=",">
+                CONVERT(#{key} USING gbk) COLLATE gbk_chinese_ci
+                <if test="value eq 'descend'">
+                    DESC
+                </if>
+            </foreach>
+        </if>
     </select>
     <select id="selectAndCompanyById" resultMap="collectionResultMap">
         SELECT pm_system_user.id AS 'system_user_id',
             pm_system_user.username,
-            pm_system_user.position,
+            pm_system_user.positions,
+            pm_system_user.titles,
             pm_system_user.is_locked,
             pm_system_user.is_enabled,
             pm_system_user.account_expire_time,
@@ -83,7 +102,8 @@
         SELECT pm_system_user.id AS 'system_user_id',
             pm_system_user.username,
             pm_system_user.password,
-            pm_system_user.position,
+            pm_system_user.positions,
+            pm_system_user.titles,
             pm_system_user.login_time,
             pm_system_user.login_ip,
             pm_system_user.is_locked,
@@ -108,7 +128,8 @@
         SELECT pm_system_user.id AS 'system_user_id',
             pm_system_user.username,
             pm_system_user.password,
-            pm_system_user.position,
+            pm_system_user.positions,
+            pm_system_user.titles,
             pm_system_user.login_time,
             pm_system_user.login_ip,
             pm_system_user.is_locked,
@@ -126,7 +147,8 @@
     <select id="selectAndPhoneNumber" resultMap="collectionResultMap">
         SELECT pm_system_user.id AS 'system_user_id',
             pm_system_user.username,
-            pm_system_user.position,
+            pm_system_user.positions,
+            pm_system_user.titles,
             pm_system_user.login_time,
             pm_system_user.login_ip,
             pm_system_user.is_locked,

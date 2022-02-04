@@ -67,9 +67,11 @@
         LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
         LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
         <where>
-            <foreach collection="companies" item="company" separator="OR">
-                pm_company.id = #{company.id} OR pm_company.parent_id = #{company.id}
-            </foreach>
+            <if test="companies != null and companies.length > 0">
+                <foreach collection="companies" item="company" separator="OR">
+                    pm_company.id = #{company.id} OR pm_company.parent_id = #{company.id}
+                </foreach>
+            </if>
         </where>
     </select>
 </mapper>

@@ -5,9 +5,11 @@ import java.util.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.mapper.BaseMapper;
 import com.github.phonenumbermanager.service.BaseService;
+import com.github.phonenumbermanager.vo.SelectListVo;
+
+import cn.hutool.json.JSONObject;
 
 /**
  * 基础业务实现
@@ -23,12 +25,13 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public boolean save(List<List<Object>> data, Long streetId, Map<String, Configuration> configurationsMap) {
+    public boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap) {
         return false;
     }
 
     @Override
-    public IPage<T> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize) {
+    public IPage<T> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
+        JSONObject search, JSONObject sort) {
         return null;
     }
 
@@ -50,6 +53,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     @Override
     public boolean removeCorrelationById(Long id) {
         return false;
+    }
+
+    @Override
+    public List<SelectListVo> treeSelectList() {
+        return null;
     }
 
     /**

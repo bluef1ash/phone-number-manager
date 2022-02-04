@@ -56,7 +56,7 @@ public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @TableField(exist = false)
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
-    @ApiModelProperty(hidden = true)
+    @ApiModelProperty("下级单位")
     private List<Company> children;
 
     @Override

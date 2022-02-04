@@ -4,12 +4,9 @@
     <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="commonResultMap">
         <result column="gender" property="gender"/>
         <result column="birth" property="birth"/>
-        <result column="political_status" property="politicalStatus"
-                typeHandler="com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler"/>
-        <result column="employment_status" property="employmentStatus"
-                typeHandler="com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler"/>
-        <result column="education" property="education"
-                typeHandler="com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler"/>
+        <result column="political_status" property="politicalStatus"/>
+        <result column="employment_status" property="employmentStatus"/>
+        <result column="education" property="education"/>
         <result column="address" property="address"/>
         <result column="manager_address" property="managerAddress"/>
         <result column="manager_count" property="managerCount"/>

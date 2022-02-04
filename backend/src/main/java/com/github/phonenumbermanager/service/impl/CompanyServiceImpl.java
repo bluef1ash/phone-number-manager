@@ -22,6 +22,8 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
 import com.github.phonenumbermanager.service.*;
 
+import cn.hutool.json.JSONObject;
+
 /**
  * 单位业务实现
  *
@@ -63,23 +65,26 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     }
 
     @Override
-    public IPage<Company> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize) {
+    public IPage<Company> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
+        JSONObject search, JSONObject sort) {
         IPage<Company> companyPage =
             baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize));
-        List<Company> companyList = companyHandler(companies, companyPage.getRecords());
-        companyPage.setRecords(companyList).setTotal(companyList.size());
+        if (companyPage != null && companyPage.getTotal() > 0) {
+            List<Company> companyList = companyHandler(companies, companyPage.getRecords());
+            companyPage.setRecords(companyList).setTotal(companyList.size());
+        }
         return companyPage;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeCorrelationById(Long id) {
-        int communityResidentCount =
+        long communityResidentCount =
             communityResidentService.count(new QueryWrapper<CommunityResident>().eq("company_id", id));
         if (communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
         }
-        int dormitoryManagerCount =
+        long dormitoryManagerCount =
             dormitoryManagerService.count(new QueryWrapper<DormitoryManager>().eq("company_id", id));
         if (dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");

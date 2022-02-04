@@ -49,19 +49,19 @@ public class DormitoryManagerController extends BaseController {
     /**
      * 社区楼长列表
      *
-     * @param page
+     * @param current
      *            分页页码
-     * @param limit
+     * @param pageSize
      *            每页数据
      * @return JSON对象
      */
     @GetMapping
     @ApiOperation("社区楼长列表")
-    public R dormitoryManagerList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据") Integer limit,
+    public R dormitoryManagerList(@ApiParam(name = "分页页码") Integer current, @ApiParam(name = "每页数据") Integer pageSize,
         @ApiParam(name = "社区楼片长搜索对象") DormitoryManagerSearchVo dormitoryManagerSearchVo) {
         getEnvironmentVariable();
-        Page<DormitoryManager> dormitoryManagerPage = new Page<>(page, limit);
-        return R.ok().put("dormitoryManagers",
+        Page<DormitoryManager> dormitoryManagerPage = new Page<>(current, pageSize);
+        return R.ok().put("data",
             dormitoryManagerService.page(systemUser.getCompanies(), dormitoryManagerSearchVo, dormitoryManagerPage));
     }
 
@@ -75,7 +75,7 @@ public class DormitoryManagerController extends BaseController {
     @GetMapping("/{id}")
     @ApiOperation("通过编号查找社区楼长")
     public R getDormitoryManagerById(@ApiParam(name = "社区楼长的编号", required = true) @PathVariable Long id) {
-        return R.ok().put("dormitoryManager", dormitoryManagerService.getCorrelation(id));
+        return R.ok().put("data", dormitoryManagerService.getCorrelation(id));
     }
 
     /**
@@ -143,8 +143,8 @@ public class DormitoryManagerController extends BaseController {
         @ApiParam(name = "导入的街道编号", required = true) @PathVariable Long streetId) {
         getEnvironmentVariable();
         List<List<Object>> data = uploadExcel(request,
-            Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number").getContent()));
-        if (data != null && dormitoryManagerService.save(data, streetId, configurationsMap)) {
+            Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").get("content")));
+        if (data != null && dormitoryManagerService.save(data, streetId, configurationMap)) {
             return R.ok("上传成功！");
         }
         throw new JsonException("上传文件失败！");
@@ -162,8 +162,9 @@ public class DormitoryManagerController extends BaseController {
     @ApiOperation("导出社区楼长信息到Excel")
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response,
         @ApiParam(name = "需要生成的Excel表单位编号", required = true) Long companyId) {
-        String excelDormitoryTitleUp = Convert.toStr(configurationsMap.get("excel_dormitory_title_up").getContent());
-        String excelDormitoryTitle = Convert.toStr(configurationsMap.get("excel_dormitory_title").getContent());
+        getEnvironmentVariable();
+        String excelDormitoryTitleUp = Convert.toStr(configurationMap.get("excel_dormitory_title_up").get("content"));
+        String excelDormitoryTitle = Convert.toStr(configurationMap.get("excel_dormitory_title").get("content"));
         // 获取业务数据集
         List<LinkedHashMap<String, Object>> dataResult = dormitoryManagerService.listCorrelationToMap(companyId);
         if (!dataResult.isEmpty()) {

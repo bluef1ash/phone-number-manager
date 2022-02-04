@@ -16,12 +16,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 
 import cn.hutool.extra.servlet.ServletUtil;
+import cn.hutool.json.JSONObject;
 
 /**
  * 验证码过滤器
@@ -73,7 +73,7 @@ public class CaptchaValidFilter extends OncePerRequestFilter {
             returnObj.put("fieldName", "captcha");
             returnObj.put("message", "图形验证码验证失败！");
             PrintWriter writer = httpServletResponse.getWriter();
-            writer.write(returnObj.toJSONString());
+            writer.write(returnObj.toStringPretty());
             writer.flush();
         }
     }

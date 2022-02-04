@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -35,6 +37,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Accessors(chain = true)
 @ApiModel("系统用户对象实体")
+@TableName(autoResultMap = true)
 public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @ApiModelProperty("系统用户编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
@@ -48,9 +51,14 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @NotBlank(groups = CreateInputGroup.class, message = "系统用户密码不能为空！")
     private String password;
     @ApiModelProperty("系统用户职务")
-    @NotBlank(groups = CreateInputGroup.class, message = "系统用户职务不能为空！")
-    @Length(max = 10, message = "系统用户职务不允许超过10个字符！")
-    private String position;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private String[] positions;
+    @ApiModelProperty("系统用户职称")
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private String[] titles;
+    @ApiModelProperty("是否参加社区分包")
+    @NotNull(groups = CreateInputGroup.class, message = "是否参加分包不能为空！")
+    private Boolean isSubcontract;
     @ApiModelProperty("系统用户登录时间")
     @Past
     private LocalDateTime loginTime;
@@ -62,19 +70,21 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @ApiModelProperty("系统用户是否启用")
     @NotBlank(groups = CreateInputGroup.class, message = "用户是否开启不能为空！")
     private Boolean isEnabled;
+    @ApiModelProperty("系统用户过期时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime accountExpireTime;
+    @ApiModelProperty("系统用户本次登录过期时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime credentialExpireTime;
-    @ApiModelProperty("是否参加社区分包")
-    @NotNull(groups = CreateInputGroup.class, message = "是否参加分包不能为空！")
-    private Boolean isSubcontract;
     @ApiModelProperty("联系方式编号")
     private Long phoneNumberId;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<Company> companies;
-    @ApiModelProperty("联系方式")
+    @TableField(exist = false)
+    @ApiModelProperty(hidden = true)
+    private List<String> companyNames;
+    @ApiModelProperty("系统用户联系方式")
     @TableField(exist = false)
     private PhoneNumber phoneNumber;
 
@@ -85,7 +95,7 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !isLocked;
+        return isLocked != null && !isLocked;
     }
 
     @Override
@@ -95,7 +105,7 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isEnabled;
+        return isEnabled != null && isEnabled;
     }
 
     @Override

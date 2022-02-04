@@ -10,9 +10,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
+import cn.hutool.json.JSONException;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 
 /**
  * 极验工具类
@@ -160,8 +160,8 @@ public class GeetestLibUtil {
                 return 0;
             }
             gtlog("result:" + resultStr);
-            JSONObject jsonObject = JSON.parseObject(resultStr);
-            String returnChallenge = jsonObject.getString("challenge");
+            JSONObject jsonObject = JSONUtil.parseObj(resultStr);
+            String returnChallenge = jsonObject.getStr("challenge");
             gtlog("return_challenge:" + returnChallenge);
             if (returnChallenge.length() == 32) {
                 this.responseStr = this.getSuccessPreProcessRes(this.md5Encode(returnChallenge + this.privateKey));
@@ -289,8 +289,8 @@ public class GeetestLibUtil {
 
         try {
 
-            JSONObject returnMap = JSON.parseObject(response);
-            return_seccode = returnMap.getString("seccode");
+            JSONObject returnMap = JSONUtil.parseObj(response);
+            return_seccode = returnMap.getStr("seccode");
             gtlog("md5: " + md5Encode(return_seccode));
 
             if (return_seccode.equals(md5Encode(seccode))) {

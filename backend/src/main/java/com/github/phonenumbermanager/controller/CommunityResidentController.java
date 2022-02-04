@@ -48,9 +48,9 @@ public class CommunityResidentController extends BaseController {
     /**
      * 社区居民列表
      *
-     * @param page
+     * @param current
      *            分页页码
-     * @param limit
+     * @param pageSize
      *            每页数据数量
      * @param communityResidentSearchVo
      *            社区居民搜索视图对象
@@ -58,11 +58,12 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping
     @ApiOperation("社区居民列表")
-    public R communityResidentList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据数量") Integer limit,
+    public R communityResidentList(@ApiParam(name = "分页页码") Integer current,
+        @ApiParam(name = "每页数据数量") Integer pageSize,
         @ApiParam(name = "社区居民搜索视图对象") CommunityResidentSearchVo communityResidentSearchVo) {
         getEnvironmentVariable();
-        return R.ok().put("communityResidents", communityResidentService.page(systemUser.getCompanies(),
-            communityResidentSearchVo, new Page<>(page, limit)));
+        return R.ok().put("data", communityResidentService.page(systemUser.getCompanies(), communityResidentSearchVo,
+            new Page<>(current, pageSize)));
     }
 
     /**
@@ -75,7 +76,7 @@ public class CommunityResidentController extends BaseController {
     @GetMapping("/{id}")
     @ApiOperation("通过编号查找社区居民")
     public R getCommunityResidentById(@ApiParam(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
-        return R.ok().put("communityResident", communityResidentService.getCorrelation(id));
+        return R.ok().put("data", communityResidentService.getCorrelation(id));
     }
 
     /**
@@ -142,9 +143,11 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("导入居民信息进系统")
     public R communityResidentImportAsSystem(HttpServletRequest request,
         @ApiParam(name = "导入的街道编号", required = true) @PathVariable Long streetId) {
-        int startRowNumber = Convert.toInt(configurationsMap.get("read_dormitory_excel_start_row_number"));
+        getEnvironmentVariable();
+        int startRowNumber =
+            Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").get("content"));
         List<List<Object>> data = uploadExcel(request, startRowNumber);
-        if (data != null && !communityResidentService.save(data, streetId, configurationsMap)) {
+        if (data != null && !communityResidentService.save(data, streetId, configurationMap)) {
             return R.ok();
         }
         throw new JsonException("上传文件失败！");
@@ -162,8 +165,8 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("导出居民信息到Excel")
     public void communityResidentSaveAsExcel(HttpServletResponse response,
         @ApiParam(name = "需要生成的Excel表单位编号", required = true) Long companyId) {
-        String excelResidentTitleUp = configurationsMap.get("excel_resident_title_up").getContent();
-        String excelResidentTitle = configurationsMap.get("excel_resident_title").getContent();
+        String excelResidentTitleUp = Convert.toStr(configurationMap.get("excel_resident_title_up").get("content"));
+        String excelResidentTitle = Convert.toStr(configurationMap.get("excel_resident_title").get("content"));
         List<LinkedHashMap<String, Object>> dataResult = communityResidentService.listCorrelationToMap(companyId);
         if (!dataResult.isEmpty()) {
             ExcelWriter excelWriter = ExcelUtil.getWriter();

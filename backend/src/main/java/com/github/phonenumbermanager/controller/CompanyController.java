@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.springframework.validation.annotation.Validated;
@@ -31,17 +33,22 @@ public class CompanyController extends BaseController {
     /**
      * 单位列表
      *
-     * @param page
+     * @param current
      *            分页页码
-     * @param limit
+     * @param pageSize
      *            每页数据条数
      * @return 视图页面
      */
     @GetMapping
     @ApiOperation("单位列表")
-    public R companyList(@ApiParam(name = "分页页码") Integer page, @ApiParam(name = "每页数据条数") Integer limit) {
+    public R companyList(@ApiParam(name = "分页页码") Integer current, @ApiParam(name = "每页数据条数") Integer pageSize) {
         getEnvironmentVariable();
-        return R.ok().put("companies", companyService.pageCorrelation(systemUser.getCompanies(), page, limit));
+        List<Company> companies = systemUser.getCompanies();
+        if (companies == null
+            && systemUser.getId().equals(configurationMap.get("system_administrator_id").get("content"))) {
+            companies = companyService.list();
+        }
+        return R.ok().put("data", companyService.pageCorrelation(companies, current, pageSize, null, null));
     }
 
     /**
@@ -54,7 +61,7 @@ public class CompanyController extends BaseController {
     @GetMapping("/{id}")
     @ApiOperation("通过单位编号获取")
     public R getCompanyById(@ApiParam(name = "需要编辑的单位编号", required = true) @PathVariable Long id) {
-        return R.ok().put("companies", companyService.getCorrelation(id));
+        return R.ok().put("data", companyService.getCorrelation(id));
     }
 
     /**

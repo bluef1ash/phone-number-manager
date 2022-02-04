@@ -91,7 +91,8 @@ CREATE TABLE pm_system_user (
     id                     BIGINT UNSIGNED      NOT NULL COMMENT '系统用户编号',
     username               VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '系统用户名称',
     password               CHAR(88)             NOT NULL DEFAULT '' COMMENT '系统用户密码',
-    position               VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '系统用户职务',
+    positions              VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '系统用户职务;允许多个',
+    titles                 VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '系统用户职称;允许多个',
     login_ip               VARCHAR(15)          NOT NULL DEFAULT '' COMMENT '最后一次登录的IP地址',
     login_time             DATETIME             NOT NULL COMMENT '最后一次登录的时间',
     is_locked              TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '是否已锁定;0：未锁定，1：已锁定',
@@ -125,11 +126,11 @@ CREATE TABLE pm_system_permission (
     name          VARCHAR(30)          NOT NULL DEFAULT '' COMMENT '系统用户权限名称',
     function_name VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '系统用户权限约束描述',
     uri           VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '访问URI地址',
-    http_method   VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '方法类型;可有多个，英文逗号分隔，0：ALL，1：GET，2：HEAD，3：POST，4：PUT，5：PATCH，6：DELETE，7：OPTIONS，8：TRACE',
+    http_methods  VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '方法类型;可有多个',
     level         TINYINT(2) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '系统用户权限层级;0：最顶层，依次递增',
     parent_id     BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级系统用户权限编号',
-    icon_name     VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '图标名称',
     order_by      TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单排序',
+    menu_type     TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单类型;0：全部，1：前端，2：后端',
     is_display    TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '是否在菜单栏中显示;0：不显示，1：显示',
     create_time   DATETIME             NOT NULL COMMENT '增加时间',
     update_time   DATETIME             NOT NULL COMMENT '更新时间',
@@ -137,9 +138,6 @@ CREATE TABLE pm_system_permission (
     PRIMARY KEY (id)
 ) COMMENT = '系统用户权限表';
 
-
-CREATE UNIQUE INDEX uk_name ON pm_system_permission(name);
-CREATE UNIQUE INDEX uk_uri_method ON pm_system_permission(uri, http_method);
 
 DROP TABLE IF EXISTS pm_community_resident_phone_number;
 CREATE TABLE pm_community_resident_phone_number (
@@ -174,10 +172,10 @@ CREATE TABLE pm_dormitory_manager_phone_number (
 DROP TABLE IF EXISTS pm_configuration;
 CREATE TABLE pm_configuration (
     id          BIGINT UNSIGNED      NOT NULL COMMENT '配置编号',
-    title       VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '配置标题',
+    title       VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '配置标题',
     description VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '配置描述',
-    name        VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '变量名',
-    content     TEXT(255)            NOT NULL COMMENT '变量值',
+    name        VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '变量名',
+    content     TEXT                 NOT NULL COMMENT '变量值',
     field_type  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '字段类型',
     field_value VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '字段类型值',
     order_by    TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '排序',

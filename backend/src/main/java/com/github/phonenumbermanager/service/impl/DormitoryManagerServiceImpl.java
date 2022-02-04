@@ -22,6 +22,7 @@ import com.github.phonenumbermanager.vo.DormitoryManagerSearchVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.extra.pinyin.PinyinUtil;
+import cn.hutool.json.JSONObject;
 
 /**
  * 社区楼长业务实现
@@ -48,35 +49,35 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Long streetId, Map<String, Configuration> configurationsMap) {
+    public boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap) {
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         Integer excelDormitoryCommunityNameCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_community_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_community_name_cell_number").get("content"));
         Integer excelDormitoryNameCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_name_cell_number").get("content"));
         Integer excelDormitoryGenderCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_gender_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_gender_cell_number").get("content"));
         Integer excelDormitoryBirthCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_birth_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_birth_cell_number").get("content"));
         Integer excelDormitoryPoliticalStatusCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_political_status_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_political_status_cell_number").get("content"));
         Integer excelDormitoryEmploymentStatusCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_employment_status_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_employment_status_cell_number").get("content"));
         Integer excelDormitoryEducationCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_education_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_education_cell_number").get("content"));
         Integer excelDormitoryAddressCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_address_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_address_cell_number").get("content"));
         Integer excelDormitoryManagerAddressCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_manager_address_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_manager_address_cell_number").get("content"));
         Integer excelDormitoryManagerCountCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_manager_count_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_manager_count_cell_number").get("content"));
         Integer excelDormitoryTelephoneCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_telephone_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_telephone_cell_number").get("content"));
         Integer excelDormitoryLandlineCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_landline_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_landline_cell_number").get("content"));
         Integer excelDormitorySubcontractorTelephoneCellNumber =
-            Convert.toInt(configurationsMap.get("excel_dormitory_subcontractor_telephone_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_dormitory_subcontractor_telephone_cell_number").get("content"));
         List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", streetId));
         List<SystemUser> systemUsers = systemUserService.listCorrelationPhoneNumber();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM");
@@ -299,11 +300,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
      */
     private Map<String, Map<String, Integer>> computedBaseMessage(List<Company> companies, List<Company> companyAll,
         List<Long> companyIds) {
-        Map<String, Map<String, Integer>> baseMessage = new HashMap<>();
-        Map<String, Integer> genderCount = new HashMap<>();
+        Map<String, Map<String, Integer>> baseMessage = new HashMap<>(5);
+        Map<String, Integer> genderCount = new HashMap<>(2);
         genderCount.put("男性", 0);
         genderCount.put("女性", 0);
-        Map<String, Integer> ageCount = new HashMap<>();
+        Map<String, Integer> ageCount = new HashMap<>(8);
         ageCount.put("20岁以下", 0);
         ageCount.put("20岁~29岁", 0);
         ageCount.put("30岁~39岁", 0);

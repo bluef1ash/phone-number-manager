@@ -1,18 +1,19 @@
 package com.github.phonenumbermanager.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.phonenumbermanager.constant.ComputedDataTypes;
-import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.constant.enums.MenuTypeEnum;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
@@ -50,15 +51,27 @@ public class IndexController extends BaseController {
      *            是否显示
      * @return 视图页面
      */
-    @GetMapping("/get-menu")
+    @GetMapping("/menu")
     @ApiOperation("获取首页菜单栏内容")
     public R getMenu(@ApiParam(name = "是否显示") Boolean display) {
-        SystemUser userDetails = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return R.ok().put("systemPermissions", systemPermissionService.listMenu(display, userDetails.getCompanies()));
+        getEnvironmentVariable();
+        List<String> components = new ArrayList<>();
+        if (systemUser.getCompanies() != null && !systemUser.getCompanies().isEmpty()) {
+            List<SystemPermission> systemPermissions = systemPermissionService
+                .listByCompanyIds(systemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList()));
+            components = systemPermissions.stream()
+                .filter(systemPermission -> MenuTypeEnum.FRONTEND.equals(systemPermission.getMenuType()))
+                .map(SystemPermission::getFunctionName).collect(Collectors.toList());
+        }
+        Map<String, Object> jsonMap = new HashMap<>(2);
+        jsonMap.put("menuData", systemPermissionService.listMenu(display, systemUser.getCompanies()));
+        jsonMap.put("components", components);
+        return R.ok(jsonMap);
     }
 
     /**
      * 获取图表数据
+     *
      *
      * @param getType
      *            需要获取的类型，null全部，1基本信息，2柱状图
@@ -68,10 +81,11 @@ public class IndexController extends BaseController {
      *            柱状图表类型参数
      * @return Ajax返回JSON对象
      */
-    @GetMapping("/get-computed")
+    @GetMapping({"/computed", "/computed/{getType}/{companyId}/{barChartTypeParam}"})
     @ApiOperation("获取图表数据")
-    public R getComputedCount(@ApiParam(name = "需要获取的类型") Integer getType, @ApiParam(name = "需要获取的单位编号") Long companyId,
-        @ApiParam(name = "柱状图表类型参数") Boolean barChartTypeParam) {
+    public R getComputedCount(@ApiParam(name = "需要获取的类型") @PathVariable(required = false) Integer getType,
+        @ApiParam(name = "需要获取的单位编号") @PathVariable(required = false) Long companyId,
+        @ApiParam(name = "柱状图表类型参数") @PathVariable(required = false) Boolean barChartTypeParam) {
         getEnvironmentVariable();
         Map<String, Object> resident = new HashMap<>(3);
         Map<String, Object> user = new HashMap<>(3);

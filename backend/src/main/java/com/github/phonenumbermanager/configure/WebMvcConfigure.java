@@ -1,10 +1,7 @@
 package com.github.phonenumbermanager.configure;
 
-import org.springframework.boot.web.server.ErrorPage;
-import org.springframework.boot.web.server.ErrorPageRegistrar;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -22,14 +19,8 @@ public class WebMvcConfigure implements WebMvcConfigurer {
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 
-    /**
-     * 错误页面配置
-     *
-     * @return 错误页面
-     */
-    @Bean
-    public ErrorPageRegistrar containerCustomizer() {
-        return (errorPageRegistry -> errorPageRegistry.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/404"),
-            new ErrorPage(HttpStatus.FORBIDDEN, "/exception")));
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**").allowedOriginPatterns("*").allowCredentials(true).allowedMethods("*").maxAge(3600);
     }
 }

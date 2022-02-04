@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.SystemUser;
 
+import cn.hutool.json.JSONObject;
+
 /**
  * 系统用户Mapper接口
  *
@@ -17,15 +19,6 @@ import com.github.phonenumbermanager.entity.SystemUser;
  */
 @Mapper
 public interface SystemUserMapper extends BaseMapper<SystemUser> {
-    /**
-     * 查询所有系统用户与所属角色
-     *
-     * @return 所有系统用户与所属角色
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    List<SystemUser> selectAndCompanies() throws DataAccessException;
-
     /**
      * 查询所有系统用户与所属联系方式
      *
@@ -42,12 +35,16 @@ public interface SystemUserMapper extends BaseMapper<SystemUser> {
      *            当前已登录系统用户所属单位编号集合
      * @param page
      *            分页对象
+     * @param search
+     *            搜索条件
+     * @param sort
+     *            排序条件
      * @return 所有系统用户与所属角色
      * @throws DataAccessException
      *             数据库操作异常
      */
-    IPage<SystemUser> selectCorrelationByCompanyIds(List<Long> companyIds, Page<SystemUser> page)
-        throws DataAccessException;
+    IPage<SystemUser> selectCorrelationByCompanyIds(List<Long> companyIds, Page<SystemUser> page, JSONObject search,
+        JSONObject sort) throws DataAccessException;
 
     /**
      * 通过联系方式查询系统用户

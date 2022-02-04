@@ -9,12 +9,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * 字符串测试
  */
-@SpringBootTest
 public class StringTest {
 
     @Test

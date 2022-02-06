@@ -28,7 +28,7 @@ const LoginMessage: React.FC<{
   />
 );
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<API.ErrorResponse>({ code: 0 });
+  const [userLoginState, setUserLoginState] = useState<API.ResponseException>({ code: 0 });
   const { setInitialState } = useModel('@@initialState');
   const fetchMenuData = async (display: boolean, currentUser: API.SystemUser) => {
     const { code, menuData, components } = await queryMenuData(display);

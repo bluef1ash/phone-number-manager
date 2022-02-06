@@ -154,12 +154,10 @@ const Configuration: React.FC = () => {
           },
         ]}
         batchRemoveEventHandler={async (data) =>
-          (
-            await batchConfiguration<number[]>({
-              method: 'DELETE',
-              data,
-            })
-          ).code === 200
+          await batchConfiguration<number[]>({
+            method: 'DELETE',
+            data,
+          })
         }
         createEditModalForm={{
           element: InputElement,
@@ -167,7 +165,7 @@ const Configuration: React.FC = () => {
             title: '添加系统配置项',
           },
           formRef: createFormRef,
-          onFinish: async (formData) => (await createConfiguration(formData)).code === 200,
+          onFinish: async (formData) => await createConfiguration(formData),
         }}
         modifyEditModalForm={{
           element: InputElement,
@@ -175,11 +173,8 @@ const Configuration: React.FC = () => {
             title: '编辑系统配置项',
           },
           formRef: ModifyFormRef,
-          onFinish: async (formData) => {
-            const { code } = await modifyConfiguration(formData.id, formData);
-            return code === 0;
-          },
-          onConfirmRemove: async (id) => (await removeConfiguration(id)).code === 200,
+          onFinish: async (formData) => await modifyConfiguration(formData.id, formData),
+          onConfirmRemove: async (id) => await removeConfiguration(id),
           queryData: async (id) => await queryConfiguration(id),
         }}
       />{' '}

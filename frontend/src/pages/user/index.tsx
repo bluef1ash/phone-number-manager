@@ -318,12 +318,10 @@ const SystemUser: React.FC = () => {
           },
         ]}
         batchRemoveEventHandler={async (data) =>
-          (
-            await batchSystemUser<number[]>({
-              method: 'DELETE',
-              data,
-            })
-          ).code === 200
+          await batchSystemUser<number[]>({
+            method: 'DELETE',
+            data,
+          })
         }
         createEditModalForm={{
           element: InputElement,
@@ -331,7 +329,7 @@ const SystemUser: React.FC = () => {
             title: '添加系统用户',
           },
           formRef: createFormRef,
-          onFinish: async (formData) => (await createSystemUser(formData)).code === 200,
+          onFinish: async (formData) => await createSystemUser(formData),
         }}
         modifyEditModalForm={{
           element: InputElement,
@@ -339,8 +337,8 @@ const SystemUser: React.FC = () => {
             title: '编辑系统用户',
           },
           formRef: ModifyFormRef,
-          onFinish: async (formData) => (await modifySystemUser(formData)).code === 200,
-          onConfirmRemove: async (id) => (await removeSystemUser(id)).code === 200,
+          onFinish: async (formData) => await modifySystemUser(formData),
+          onConfirmRemove: async (id) => await removeSystemUser(id),
           queryData: async (id) => await querySystemUser(id),
         }}
       />{' '}

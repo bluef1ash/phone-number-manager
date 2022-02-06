@@ -5,7 +5,7 @@ declare namespace API {
     message: string;
   };
 
-  type ErrorResponse = {
+  type ResponseException = {
     code: number;
     defaultMessage?: string;
     message?: string;

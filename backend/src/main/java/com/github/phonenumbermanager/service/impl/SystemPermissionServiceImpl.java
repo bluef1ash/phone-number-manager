@@ -68,10 +68,14 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     public IPage<SystemPermission> treePage(Integer current, Integer pageSize, QueryWrapper<SystemPermission> wrapper) {
         Page<SystemPermission> page = new Page<>(current, pageSize);
         List<SystemPermission> systemPermissions = baseMapper.selectList(wrapper);
-        List<SystemPermission> treeSystemPermissionList =
-            systemPermissions.stream().filter(systemPermission -> systemPermission.getParentId() == 0L)
-                .peek(systemPermission -> treeSystemPermissions(systemPermission, null, systemPermissions))
-                .collect(Collectors.toList());
+        List<SystemPermission> treeSystemPermissionList = systemPermissions.stream()
+            .filter(systemPermission -> systemPermission.getParentId() == 0L).collect(Collectors.toList());
+        if (treeSystemPermissionList.size() == 0) {
+            treeSystemPermissionList = systemPermissions;
+        } else {
+            treeSystemPermissionList
+                .forEach(systemPermission -> treeSystemPermissions(systemPermission, null, systemPermissions));
+        }
         List<SystemPermission> pageList = new ArrayList<>();
         int currId = current > 1 ? (current - 1) * pageSize : 0;
         for (int i = 0; i < pageSize && i < treeSystemPermissionList.size() - currId; i++) {
@@ -89,9 +93,8 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeCorrelationById(Long id) {
-        QueryWrapper<CompanyPermission> wrapper = new QueryWrapper<>();
-        wrapper.eq("permission_id", id);
-        return baseMapper.deleteById(id) > 0 && companyPermissionService.remove(wrapper);
+        companyPermissionService.remove(new QueryWrapper<CompanyPermission>().eq("permission_id", id));
+        return baseMapper.deleteById(id) > 0;
     }
 
     @Override

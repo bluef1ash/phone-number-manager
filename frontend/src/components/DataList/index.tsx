@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ActionType, ProTableProps } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Button, message, Popconfirm, Space, Table } from 'antd';
+import { Button, message as msg, Popconfirm, Space } from 'antd';
 import type { ParamsType } from '@ant-design/pro-provider';
 import type { EditModalFormProps } from './EditModalForm';
 import EditModalForm from './EditModalForm';
@@ -9,6 +9,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ProColumns } from '@ant-design/pro-table/lib/typing';
 import type { SortOrder } from 'antd/es/table/interface';
+import type { Key } from 'antd/lib/table/interface';
 
 type DataListProps<T, U extends ParamsType> = {
   customActionRef?: React.MutableRefObject<ActionType | undefined>;
@@ -17,21 +18,23 @@ type DataListProps<T, U extends ParamsType> = {
     current?: number;
     pageSize?: number;
     params?: string;
-  }) => Promise<API.DataList<T> & API.ErrorResponse>;
-  batchRemoveEventHandler?: (selectedRowKeys: number[]) => Promise<boolean>;
+  }) => Promise<API.DataList<T> & API.ResponseException>;
+  batchRemoveEventHandler?: (
+    selectedRowKeys: number[],
+  ) => Promise<API.ResponseSuccess | API.ResponseException>;
   exportDataEventHandler?: React.MouseEventHandler<HTMLElement>;
   createEditModalForm?: {
     element?: JSX.Element;
     props?: EditModalFormProps<T>;
     formRef?: React.MutableRefObject<ProFormInstance<T> | undefined>;
-    onFinish?: (formData: T) => Promise<boolean>;
+    onFinish?: (formData: T) => Promise<API.ResponseSuccess | API.ResponseException>;
   };
   modifyEditModalForm?: {
     element?: JSX.Element;
     props?: EditModalFormProps<T>;
-    onFinish?: (formData: T) => Promise<boolean>;
-    onConfirmRemove?: (id: number) => Promise<boolean>;
-    queryData?: (id: number) => Promise<API.Data<T> & API.ErrorResponse>;
+    onFinish?: (formData: T) => Promise<API.ResponseSuccess | API.ResponseException>;
+    onConfirmRemove?: (id: number) => Promise<API.ResponseSuccess | API.ResponseException>;
+    queryData?: (id: number) => Promise<API.Data<T> & API.ResponseException>;
     formRef?: React.MutableRefObject<ProFormInstance<T> | undefined>;
   };
 } & ProTableProps<T, U>;
@@ -46,13 +49,11 @@ function DataList<T, U extends ParamsType>({
   modifyEditModalForm,
   ...restProps
 }: DataListProps<T, U>): JSX.Element {
-  const [selectedRowKeysState, setSelectedRowKeys] = useState<number[]>([]);
+  const [selectedRowKeysState, setSelectedRowKeys] = useState<Key[]>([]);
   const [createEditModalFormVisible, setCreateEditModalFormVisible] = useState<boolean | undefined>(
     undefined,
   );
-  const [modifyEditModalFormVisible, setModifyEditModalFormVisible] = useState<boolean | undefined>(
-    undefined,
-  );
+  const [modifyEditModalFormVisible] = useState<boolean | undefined>(undefined);
   const customFormColumns: ProColumns<T>[] = [
     ...(customColumns || []),
     {
@@ -61,8 +62,8 @@ function DataList<T, U extends ParamsType>({
       //@ts-ignore
       render: (node, { id }: T) => [
         <EditModalForm<T>
-          key={'edit_modal' + id}
-          trigger={<a key={'edit_button' + id}> 编辑 </a>}
+          key={'edit_modal' + id.toString()}
+          trigger={<a key={'edit_button' + id.toString()}> 编辑 </a>}
           width={600}
           submitter={{
             searchConfig: {
@@ -76,20 +77,22 @@ function DataList<T, U extends ParamsType>({
           onFinish={async (formData) => {
             //@ts-ignore
             formData.id = id;
-            if (await modifyEditModalForm?.onFinish?.(formData)) {
-              setModifyEditModalFormVisible(false);
-              message.success('修改成功！');
+            //@ts-ignore
+            const { code, message } = await modifyEditModalForm?.onFinish?.(formData);
+            if (code === 200) {
+              msg.success(message === 'success' ? '修改成功！' : message);
               customActionRef?.current?.reload();
-            } else {
-              message.error('修改失败！');
+              return true;
             }
+            msg.error(message);
+            return false;
           }}
           onVisibleChange={async (visible) => {
             if (visible) {
-              const result = await modifyEditModalForm?.queryData?.(id);
-              if (result?.code === 200) {
-                //@ts-ignore
-                modifyEditModalForm?.formRef?.current?.setFieldsValue(result?.data);
+              //@ts-ignore
+              const { code, data } = await modifyEditModalForm?.queryData?.(id);
+              if (code === 200) {
+                modifyEditModalForm?.formRef?.current?.setFieldsValue(data);
               }
             }
           }}
@@ -102,11 +105,13 @@ function DataList<T, U extends ParamsType>({
         <Popconfirm
           title="是否真的要删除此条目？"
           onConfirm={async () => {
-            if (modifyEditModalForm?.onConfirmRemove?.(id)) {
-              message.success('删除成功！');
+            //@ts-ignore
+            const { code, message } = await modifyEditModalForm?.onConfirmRemove?.(id);
+            if (code === 200) {
+              msg.success(message === 'success' ? '删除成功！' : message);
               customActionRef?.current?.reload();
             } else {
-              message.error('删除失败！');
+              msg.error(message);
             }
           }}
           okText="是"
@@ -184,12 +189,14 @@ function DataList<T, U extends ParamsType>({
           }}
           width={600}
           onFinish={async (formData) => {
-            if (await createEditModalForm?.onFinish?.(formData)) {
+            //@ts-ignore
+            const { code, message } = await createEditModalForm?.onFinish?.(formData);
+            if (code === 200) {
               setCreateEditModalFormVisible(false);
-              message.success('添加成功！');
+              msg.success(message === 'success' ? '添加成功！' : message);
               customActionRef?.current?.reload();
             } else {
-              message.error('添加失败！');
+              msg.error(message);
             }
           }}
           visible={createEditModalFormVisible}
@@ -201,11 +208,10 @@ function DataList<T, U extends ParamsType>({
       ]}
       rowSelection={{
         selectedRowKeys: selectedRowKeysState,
-        selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-        defaultSelectedRowKeys: [1],
         onChange(selectedRowKeys) {
-          setSelectedRowKeys(selectedRowKeys as number[]);
+          setSelectedRowKeys(selectedRowKeys);
         },
+        checkStrictly: false,
       }}
       tableAlertRender={({ selectedRowKeys }) => (
         <Space size={24}>
@@ -222,12 +228,15 @@ function DataList<T, U extends ParamsType>({
                 <Popconfirm
                   title="是否真的要批量删除条目？"
                   onConfirm={async () => {
-                    if (await batchRemoveEventHandler(selectedRowKeys as number[])) {
+                    const { code, message } = await batchRemoveEventHandler(
+                      selectedRowKeys as number[],
+                    );
+                    if (code === 200) {
                       setSelectedRowKeys([]);
-                      message.success('批量删除成功！');
+                      msg.success(message === 'success' ? '批量删除成功！' : message);
                       customActionRef?.current?.reload();
                     } else {
-                      message.error('批量删除失败！');
+                      msg.error(message);
                     }
                   }}
                   okText="是"

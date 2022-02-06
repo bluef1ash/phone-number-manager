@@ -49,7 +49,7 @@ const InputElement = (
       width="xl"
       name="functionName"
       label="系统权限约束名称"
-      tooltip="不能超过255个字符"
+      tooltip="只能输入英文和数字，不能超过255个字符"
       placeholder="请输入系统权限约束名称"
       rules={[
         {
@@ -59,6 +59,10 @@ const InputElement = (
         {
           max: 255,
           message: '系统权限约束名称不能超过255个字符！',
+        },
+        {
+          pattern: /^\w+$/g,
+          message: '系统权限约束名称只能输入英文和数字！',
         },
       ]}
     />{' '}
@@ -71,7 +75,21 @@ const InputElement = (
       rules={[
         {
           max: 255,
-          message: '系统权限约束名称不能超过255个字符！',
+          message: '系统权限地址不能超过255个字符！',
+        },
+        {
+          pattern: /^\/[\w\-]+$/g,
+          message: '系统权限地址不正确！',
+        },
+        {
+          validator(rule: RuleObject, value: StoreValue) {
+            const httpMethods = formRef?.current?.getFieldValue('httpMethods');
+            return typeof httpMethods !== 'undefined' &&
+              httpMethods.length > 0 &&
+              (typeof value === 'undefined' || value.length == 0)
+              ? Promise.reject('系统权限地址不能为空！')
+              : Promise.resolve();
+          },
         },
       ]}
     />{' '}
@@ -82,7 +100,7 @@ const InputElement = (
       }}
       rules={[
         {
-          validator: (rule: RuleObject, value: StoreValue) => {
+          validator(rule: RuleObject, value: StoreValue) {
             const uri = formRef?.current?.getFieldValue('uri');
             let flag = false;
             if (Array.isArray(value) && value.length > 0) {
@@ -226,6 +244,16 @@ const SystemPermission: React.FC = () => {
             dataIndex: 'httpMethods',
             sorter: true,
             ellipsis: true,
+            valueEnum: {
+              GET: { text: 'GET' },
+              HEAD: { text: 'HEAD' },
+              POST: { text: 'POST' },
+              PUT: { text: 'PUT' },
+              PATCH: { text: 'PATCH' },
+              DELETE: { text: 'DELETE' },
+              OPTIONS: { text: 'OPTIONS' },
+              TRACE: { text: 'TRACE' },
+            },
           },
           {
             title: '系统权限地址',
@@ -235,12 +263,10 @@ const SystemPermission: React.FC = () => {
           },
         ]}
         batchRemoveEventHandler={async (data) =>
-          (
-            await batchSystemPermission<number[]>({
-              method: 'DELETE',
-              data,
-            })
-          ).code === 200
+          await batchSystemPermission<number[]>({
+            method: 'DELETE',
+            data,
+          })
         }
         createEditModalForm={{
           element: InputElement(
@@ -252,8 +278,7 @@ const SystemPermission: React.FC = () => {
             title: '添加系统权限',
           },
           formRef: createFormRef,
-          onFinish: async (formData) =>
-            (await createSystemPermission(submitPreHandler(formData))).code === 200,
+          onFinish: async (formData) => await createSystemPermission(submitPreHandler(formData)),
         }}
         modifyEditModalForm={{
           element: InputElement(
@@ -265,9 +290,8 @@ const SystemPermission: React.FC = () => {
             title: '编辑系统权限',
           },
           formRef: modifyFormRef,
-          onFinish: async (formData) =>
-            (await modifySystemPermission(submitPreHandler(formData))).code === 200,
-          onConfirmRemove: async (id) => (await removeSystemPermission(id)).code === 200,
+          onFinish: async (formData) => await modifySystemPermission(submitPreHandler(formData)),
+          onConfirmRemove: async (id) => await removeSystemPermission(id),
           queryData: async (id) => {
             const result = await querySystemPermission(id);
             if (Array.isArray(result.data.httpMethods)) {

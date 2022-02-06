@@ -301,7 +301,7 @@ public class UserAndPermissionController extends BaseController {
      */
     @PostMapping("/system/user/batch")
     @ApiOperation("增删改批量操作系统用户")
-    public R configurationBatch(
+    public R systemUserBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
         getEnvironmentVariable();
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
@@ -406,10 +406,34 @@ public class UserAndPermissionController extends BaseController {
     @DeleteMapping("/system/permission/{id}")
     @ApiOperation("通过系统用户权限编号删除系统用户权限")
     public R removeSystemPermission(@ApiParam(name = "系统用户权限编号", required = true) @PathVariable Long id) {
+        if (systemPermissionService.count(new QueryWrapper<SystemPermission>().eq("parent_id", id)) > 0) {
+            throw new JsonException("不允许删除有子权限的系统权限！");
+        }
         if (!systemPermissionService.removeCorrelationById(id)) {
             throw new JsonException("删除用户权限失败！");
         }
         return R.ok();
+    }
+
+    /**
+     * 增删改批量操作系统权限
+     *
+     * @param batchRestfulVo
+     *            批量操作视图对象
+     * @return 是否成功
+     */
+    @PostMapping("/system/permission/batch")
+    @ApiOperation("增删改批量操作系统权限")
+    public R systemPermissionBatch(
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
+        getEnvironmentVariable();
+        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+            if (systemPermissionService.removeByIds(ids)) {
+                return R.ok();
+            }
+        }
+        throw new JsonException("批量操作失败！");
     }
 
     /**

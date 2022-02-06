@@ -1,9 +1,9 @@
-import request from '@config/request';
-import { system } from '@/services/api';
+import request from "@config/request";
+import { system } from "@/services/api";
 
 /** 获取系统用户列表 */
 export async function querySystemUserList(params?: any, options?: Record<string, any>) {
-  return request<API.DataList<API.SystemUser> & API.ErrorResponse>(system.user, {
+  return request<API.DataList<API.SystemUser> & API.ResponseException>(system.user, {
     method: 'GET',
     params,
     ...(options || {}),
@@ -12,7 +12,7 @@ export async function querySystemUserList(params?: any, options?: Record<string,
 
 /** 获取系统用户列表 */
 export async function querySystemUser(id: number, options?: Record<string, any>) {
-  return request<API.Data<API.SystemUser> & API.ErrorResponse>(`${system.user}/${id}`, {
+  return request<API.Data<API.SystemUser> & API.ResponseException>(`${system.user}/${id}`, {
     method: 'GET',
     ...(options || {}),
   });
@@ -24,7 +24,7 @@ export async function patchSystemUser(
   data: API.SystemUser,
   options?: Record<string, any>,
 ) {
-  return request<API.Data<API.SystemUser> & API.ErrorResponse>(`${system.user}/${id}`, {
+  return request<API.Data<API.SystemUser> & API.ResponseException>(`${system.user}/${id}`, {
     method: 'PATCH',
     data,
     ...(options || {}),
@@ -33,7 +33,7 @@ export async function patchSystemUser(
 
 /** 添加系统用户处理 */
 export async function createSystemUser(data: API.SystemUser, options?: Record<string, any>) {
-  return request<API.ResponseSuccess & API.ErrorResponse>(system.user, {
+  return request<API.ResponseSuccess & API.ResponseException>(system.user, {
     method: 'POST',
     data,
     ...(options || {}),
@@ -42,7 +42,7 @@ export async function createSystemUser(data: API.SystemUser, options?: Record<st
 
 /** 修改系统用户处理 */
 export async function modifySystemUser(data: API.SystemUser, options?: Record<string, any>) {
-  return request<API.ResponseSuccess & API.ErrorResponse>(system.user, {
+  return request<API.ResponseSuccess & API.ResponseException>(system.user, {
     method: 'PUT',
     data,
     ...(options || {}),
@@ -51,7 +51,7 @@ export async function modifySystemUser(data: API.SystemUser, options?: Record<st
 
 /** 删除系统用户 */
 export async function removeSystemUser(id: number, options?: Record<string, any>) {
-  return request<API.ResponseSuccess & API.ErrorResponse>(`${system.user}/${id}`, {
+  return request<API.ResponseSuccess & API.ResponseException>(`${system.user}/${id}`, {
     method: 'DELETE',
     ...(options || {}),
   });
@@ -59,7 +59,7 @@ export async function removeSystemUser(id: number, options?: Record<string, any>
 
 /** 批量操作系统用户 */
 export async function batchSystemUser<T>(data: API.BatchRUD<T>, options?: Record<string, any>) {
-  return request<API.ResponseSuccess & API.ErrorResponse>(system.userBatch, {
+  return request<API.ResponseSuccess & API.ResponseException>(system.userBatch, {
     method: 'POST',
     data,
     ...(options || {}),

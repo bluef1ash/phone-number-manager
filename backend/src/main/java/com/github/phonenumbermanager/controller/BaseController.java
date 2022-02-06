@@ -124,13 +124,13 @@ abstract class BaseController {
             JSONObject sort = (JSONObject)paramsJson.get("sort");
             if (search != null) {
                 for (Map.Entry<String, Object> entry : search.entrySet()) {
-                    wrapper.and(w -> w.like(entry.getKey(), entry.getValue()));
+                    wrapper.and(w -> w.like(StrUtil.toUnderlineCase(entry.getKey()), entry.getValue()));
                 }
             }
             if (sort != null) {
                 for (Map.Entry<String, Object> entry : sort.entrySet()) {
                     wrapper.orderBy(true, "ascend".equals(entry.getValue()),
-                        "CONVERT(" + entry.getKey() + " USING gbk) COLLATE gbk_chinese_ci");
+                        "CONVERT(" + StrUtil.toUnderlineCase(entry.getKey()) + " USING gbk) COLLATE gbk_chinese_ci");
                 }
             }
         }

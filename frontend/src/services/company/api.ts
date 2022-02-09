@@ -1,11 +1,19 @@
 import request from "@config/request";
-import { company, companyBatch } from "@/services/api";
+import { company, companyBatch, companySelect } from "@/services/api";
 
 /** 获取单位列表 */
 export async function queryCompanyList(params?: any, options?: Record<string, any>) {
   return request<API.DataList<API.Company> & API.ResponseException>(company, {
     method: 'GET',
     params,
+    ...(options || {}),
+  });
+}
+
+/** 获取单位表单列表 */
+export async function queryCompanySelectList(options?: Record<string, any>) {
+  return request<API.SelectList[] & API.ResponseException>(companySelect, {
+    method: 'GET',
     ...(options || {}),
   });
 }

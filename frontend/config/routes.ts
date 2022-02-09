@@ -9,6 +9,12 @@ export default [
     menuHeaderRender: false,
   },
   {
+    path: '/company',
+    name: './company',
+    component: './company',
+    access: 'normalRouteFilter',
+  },
+  {
     path: '/system/user',
     name: './user',
     component: './user',

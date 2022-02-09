@@ -17,6 +17,18 @@ declare namespace API {
     params?: [];
   };
 
+  enum PhoneTypeEnum {
+    UNKNOWN = 'UNKNOWN',
+    MOBILE = 'MOBILE',
+    LANDLINE = 'LANDLINE',
+  }
+
+  type PhoneNumber = {
+    id?: number;
+    phoneNumber?: string;
+    phoneType?: PhoneTypeEnum;
+  };
+
   type DataListData<T> = {
     records: T[];
     total: number;

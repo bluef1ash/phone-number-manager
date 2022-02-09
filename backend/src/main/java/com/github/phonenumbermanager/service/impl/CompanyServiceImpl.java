@@ -8,19 +8,18 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.phonenumbermanager.entity.CommunityResident;
-import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.CompanyPhoneNumber;
-import com.github.phonenumbermanager.entity.DormitoryManager;
+import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
 import com.github.phonenumbermanager.service.*;
+import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
 
@@ -125,6 +124,22 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
                 listRecursionCompanyIds(companyIds, companies1, companyAll, company.getId());
             }
         });
+    }
+
+    @Override
+    public List<SelectListVo> treeSelectList() {
+        SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Company> companies = baseMapper.selectList(null);
+        List<Company> userCompanies = systemUser.getCompanies();
+        if (userCompanies == null) {
+            userCompanies = companies;
+        }
+        return userCompanies.stream().filter(company -> company.getParentId() == 0L).map(company -> {
+            SelectListVo selectListVo = new SelectListVo();
+            selectListVo.setTitle(company.getName()).setValue(company.getId()).setLevel(company.getLevel());
+            treeRecursive(company, companies);
+            return selectListVo;
+        }).collect(Collectors.toList());
     }
 
     /**

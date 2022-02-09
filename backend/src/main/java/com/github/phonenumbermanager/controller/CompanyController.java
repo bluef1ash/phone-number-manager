@@ -113,4 +113,15 @@ public class CompanyController extends BaseController {
         }
         return R.ok("删除社区成功！");
     }
+
+    /**
+     * 单位表单列表
+     *
+     * @return 单位表单列表JSON
+     */
+    @GetMapping("/select-list")
+    @ApiOperation("单位表单列表")
+    public R companySelectList() {
+        return R.ok().put("data", companyService.treeSelectList());
+    }
 }

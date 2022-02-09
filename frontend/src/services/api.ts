@@ -9,6 +9,7 @@ export const index = {
 export const communityResident = baseUrl + '/resident';
 export const company = baseUrl + '/company';
 export const companyBatch = baseUrl + '/company/batch';
+export const companySelect = baseUrl + '/company/select-list';
 export const system = {
   configuration: baseUrl + '/system/configuration',
   configurationBatch: baseUrl + '/system/configuration/batch',

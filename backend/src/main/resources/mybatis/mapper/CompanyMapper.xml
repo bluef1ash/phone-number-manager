@@ -53,7 +53,7 @@
     </select>
     <select id="selectCorrelationByCompanies" resultMap="collectionResultMap">
         SELECT pm_company.id,
-        pm_company.name,
+        pm_company.name AS 'company_name',
         pm_company.actual_number,
         pm_company.parent_id,
         pm_company.create_time,
@@ -66,12 +66,26 @@
         FROM pm_company
         LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
         LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
-        <if test="companies != null and companies.size() > 0">
-            <where>
+        <where>
+            <if test="companies != null and companies.size() > 0">
                 <foreach collection="companies" item="company" separator="OR">
                     pm_company.id = #{company.id} OR pm_company.parent_id = #{company.id}
                 </foreach>
-            </where>
+            </if>
+            <if test="search != null">
+                <foreach collection="search" index="key" item="value" separator="AND" open="AND">
+                    #{key} LIKE CONCAT('%', #{value}, '%')
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null">
+            ORDER BY
+            <foreach collection="sort" index="key" item="value" separator=",">
+                CONVERT(#{key} USING gbk) COLLATE gbk_chinese_ci
+                <if test="value eq 'descend'">
+                    DESC
+                </if>
+            </foreach>
         </if>
     </select>
 </mapper>

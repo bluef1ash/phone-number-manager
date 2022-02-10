@@ -38,6 +38,8 @@ abstract class BaseController {
     private RedisUtil redisUtil;
     protected SystemUser systemUser;
     protected Map<String, JSONObject> configurationMap;
+    protected JSONObject search;
+    protected JSONObject sort;
 
     /**
      * 获取环境变量
@@ -111,27 +113,38 @@ abstract class BaseController {
     }
 
     /**
-     * 获取查找Wrapper
      *
      * @param request
      *            HTTP请求对象
      */
-    protected void getSearchWrapper(HttpServletRequest request, QueryWrapper<?> wrapper) {
+    protected void getSearchParameter(HttpServletRequest request) {
         String params = request.getParameter("params");
         if (!StrUtil.isEmptyIfStr(params)) {
             JSONObject paramsJson = JSONUtil.parseObj(params);
-            JSONObject search = (JSONObject)paramsJson.get("search");
-            JSONObject sort = (JSONObject)paramsJson.get("sort");
-            if (search != null) {
-                for (Map.Entry<String, Object> entry : search.entrySet()) {
-                    wrapper.and(w -> w.like(StrUtil.toUnderlineCase(entry.getKey()), entry.getValue()));
-                }
+            search = (JSONObject)paramsJson.get("search");
+            sort = (JSONObject)paramsJson.get("sort");
+        }
+    }
+
+    /**
+     * 获取查找Wrapper
+     *
+     * @param request
+     *            HTTP请求对象
+     * @param wrapper
+     *            查询条件对象
+     */
+    protected void getSearchWrapper(HttpServletRequest request, QueryWrapper<?> wrapper) {
+        getSearchParameter(request);
+        if (search != null) {
+            for (Map.Entry<String, Object> entry : search.entrySet()) {
+                wrapper.and(w -> w.like(StrUtil.toUnderlineCase(entry.getKey()), entry.getValue()));
             }
-            if (sort != null) {
-                for (Map.Entry<String, Object> entry : sort.entrySet()) {
-                    wrapper.orderBy(true, "ascend".equals(entry.getValue()),
-                        "CONVERT(" + StrUtil.toUnderlineCase(entry.getKey()) + " USING gbk) COLLATE gbk_chinese_ci");
-                }
+        }
+        if (sort != null) {
+            for (Map.Entry<String, Object> entry : sort.entrySet()) {
+                wrapper.orderBy(true, "ascend".equals(entry.getValue()),
+                    "CONVERT(" + StrUtil.toUnderlineCase(entry.getKey()) + " USING gbk) COLLATE gbk_chinese_ci");
             }
         }
     }

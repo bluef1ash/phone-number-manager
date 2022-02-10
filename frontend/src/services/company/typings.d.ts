@@ -5,7 +5,7 @@ declare namespace API {
     name: string;
     actualNumber?: number;
     level?: number;
-    phoneNumbers?: PhoneNumber[] | { phoneNumber: PhoneNumber }[];
+    phoneNumbers?: PhoneNumber[];
     parentId?: number;
     children?: Company[];
   };

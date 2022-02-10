@@ -16,7 +16,7 @@ public enum PhoneTypeEnum {
     /**
      *
      */
-    UNKNOWN(0, "未知"), MOBILE(1, "手机号码"), LANDLINE(2, "固定电话");
+    UNKNOWN(0, "未知"), MOBILE(1, "手机号码"), FIXED_LINE(2, "固定电话");
 
     @EnumValue
     private final int value;

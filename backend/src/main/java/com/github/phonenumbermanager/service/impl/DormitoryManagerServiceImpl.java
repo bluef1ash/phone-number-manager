@@ -112,7 +112,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             }
             if (StringUtils.isNotEmpty(landline)) {
                 PhoneNumber land = new PhoneNumber();
-                land.setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.LANDLINE);
+                land.setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.FIXED_LINE);
                 phoneNumbers.add(land);
             }
             Optional<

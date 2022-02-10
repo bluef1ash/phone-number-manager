@@ -80,7 +80,7 @@ public class CommonUtil {
         if (PhoneUtil.isMobile(number)) {
             phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
         } else if (PhoneUtil.isTel(number)) {
-            phoneNumber.setPhoneType(PhoneTypeEnum.LANDLINE);
+            phoneNumber.setPhoneType(PhoneTypeEnum.FIXED_LINE);
         } else {
             phoneNumber.setPhoneType(PhoneTypeEnum.UNKNOWN);
         }

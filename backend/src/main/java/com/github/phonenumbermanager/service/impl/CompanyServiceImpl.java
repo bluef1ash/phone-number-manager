@@ -1,9 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -39,22 +36,25 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Resource
     private CompanyPhoneNumberService companyPhoneNumberService;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(Company entity) {
         baseMapper.insert(entity);
-        // TODO: 2021/10/23 0023 测试mybatis plus 重复插入
-        List<CompanyPhoneNumber> companyPhoneNumbers = new ArrayList<>();
+        phoneNumberService.saveBatch(entity.getPhoneNumbers());
+        List<CompanyPhoneNumber> companyPhoneNumbers = entity.getPhoneNumbers().stream().map(
+            phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))
+            .collect(Collectors.toList());
         return companyPhoneNumberService.saveBatch(companyPhoneNumbers);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(Company entity) {
         baseMapper.updateById(entity);
-        // TODO: 2021/10/23 0023 测试是否有冗余数据
-        phoneNumberService.updateBatchById(entity.getPhoneNumbers());
-        List<CompanyPhoneNumber> companyPhoneNumbers = new ArrayList<>();
-        entity.getPhoneNumbers().forEach(phoneNumber -> companyPhoneNumbers
-            .add(new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId())));
+        phoneNumberService.saveBatch(entity.getPhoneNumbers());
+        List<CompanyPhoneNumber> companyPhoneNumbers = entity.getPhoneNumbers().stream().map(
+            phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))
+            .collect(Collectors.toList());
         return companyPhoneNumberService.updateBatchById(companyPhoneNumbers);
     }
 
@@ -67,9 +67,22 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     public IPage<Company> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
         JSONObject search, JSONObject sort) {
         IPage<Company> companyPage =
-            baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize));
+            baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
         if (companyPage != null && companyPage.getTotal() > 0) {
-            List<Company> companyList = companyHandler(companies, companyPage.getRecords());
+            if (companies == null) {
+                companies = baseMapper.selectCorrelation();
+            }
+            List<Company> systemUserCompanies = companies;
+            Set<Company> companySet = new HashSet<>();
+            for (Company company : companyPage.getRecords()) {
+                for (Company c : companies) {
+                    if (company.getId().equals(c.getParentId())) {
+                        companySet.add(company);
+                    }
+                }
+            }
+            List<Company> companyList = companySet.stream().map(company -> treeRecursive(company, systemUserCompanies))
+                .collect(Collectors.toList());
             companyPage.setRecords(companyList).setTotal(companyList.size());
         }
         return companyPage;
@@ -143,27 +156,6 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     }
 
     /**
-     * 单位处理
-     *
-     * @param companyList
-     *            单位集合
-     * @param companies
-     *            全部单位
-     * @return 整理后单位集合
-     */
-    private List<Company> companyHandler(List<Company> companyList, List<Company> companies) {
-        List<Company> companyList2 = new ArrayList<>();
-        for (Company company : companyList) {
-            for (Company c : companies) {
-                if (company.getId().equals(c.getId())) {
-                    companyList2.add(c);
-                }
-            }
-        }
-        return companyList2.stream().map(company -> treeRecursive(company, companyList)).collect(Collectors.toList());
-    }
-
-    /**
      * 树形递归
      *
      * @param company
@@ -175,6 +167,9 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private Company treeRecursive(Company company, List<Company> companies) {
         for (Company c : companies) {
             if (company.getId().equals(c.getParentId())) {
+                if (company.getChildren() == null) {
+                    company.setChildren(new ArrayList<>());
+                }
                 company.getChildren().add(treeRecursive(c, companies));
             }
         }

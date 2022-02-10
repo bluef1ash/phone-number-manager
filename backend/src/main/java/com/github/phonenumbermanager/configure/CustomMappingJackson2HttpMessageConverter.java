@@ -30,11 +30,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
         if (super.canWrite(clazz, mediaType)) {
             ServletRequestAttributes requestAttributes =
                 (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
-            if (requestAttributes != null) {
-                // HttpServletRequest request = requestAttributes.getRequest();
-                // String uri = request.getRequestURI();
-                return true;
-            }
+            return requestAttributes != null;
         }
         return false;
     }

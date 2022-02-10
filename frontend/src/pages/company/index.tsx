@@ -14,10 +14,12 @@ import {
   queryCompanySelectList,
   removeCompany,
 } from '@/services/company/api';
+import { isArray } from 'lodash';
+import { parsePhoneNumber } from 'libphonenumber-js/max';
 
 const InputElement = (
   companySelect: API.SelectList[],
-  setSystemPermissionIdState: { (value: React.SetStateAction<number | undefined>): void },
+  setCompanyIdState: { (value: React.SetStateAction<number | undefined>): void },
 ) => (
   <>
     <ProFormText
@@ -43,23 +45,23 @@ const InputElement = (
       label="单位分包数"
       tooltip="只能输入数字"
       placeholder="请输入单位分包数"
-      max={1000}
+      max={10000}
       fieldProps={{ precision: 0 }}
     />{' '}
     <ProFormTreeSelect
       width="xl"
       name="parentId"
-      label="单位上级编号"
+      label="上级单位"
       request={async () => companySelect}
       placeholder="请选择"
       rules={[
         {
           required: true,
-          message: '请选择单位上级编号！',
+          message: '请选择上级单位！',
         },
       ]}
       fieldProps={{
-        onChange: (value: number) => setSystemPermissionIdState(value),
+        onChange: (value: number) => setCompanyIdState(value),
       }}
     />{' '}
     <ProFormList
@@ -70,9 +72,9 @@ const InputElement = (
       rules={[
         {
           validator(rule: RuleObject, value: StoreValue) {
-            return typeof value !== 'undefined' && value.length > 0
-              ? Promise.reject('请添加联系方式！')
-              : Promise.resolve();
+            return typeof value !== 'undefined' && isArray(value)
+              ? Promise.resolve()
+              : Promise.reject('请添加联系方式！');
           },
         },
       ]}
@@ -89,9 +91,17 @@ const InputElement = (
             message: '联系方式不能为空！',
           },
           {
-            pattern:
-              /^((0\d{2,3}-)?\d{7,8}(-\d{1,6})?)|((13\d|14[579]|15[^4\D]|17[^49\D]|18\d)\d{8})$/g,
-            message: '联系方式输入不正确！',
+            validator(role: RuleObject, value: StoreValue) {
+              try {
+                return typeof value !== 'undefined' &&
+                  value.length > 0 &&
+                  parsePhoneNumber(value, 'CN').isValid()
+                  ? Promise.resolve()
+                  : Promise.reject('联系方式输入不正确！');
+              } catch (e) {
+                return Promise.reject('联系方式输入不正确！');
+              }
+            },
           },
         ]}
       />{' '}
@@ -104,7 +114,7 @@ const Company: React.FC = () => {
   const createFormRef = useRef<ProFormInstance<API.Company>>();
   const modifyFormRef = useRef<ProFormInstance<API.Company>>();
   const [companyState, setCompanyState] = useState<API.SelectList[]>();
-  const [companyIdState, setCompanyIdState] = useState<number | undefined>(undefined);
+  const [companyIdState, setCompanyIdState] = useState<number>();
   useEffect(() => {
     const companies = async () => {
       let list: API.SelectList[] = [
@@ -125,11 +135,21 @@ const Company: React.FC = () => {
   }, []);
 
   const submitPreHandler = (formData: API.Company) => {
-    if (typeof companyIdState !== 'undefined' && !companyState) {
-      //@ts-ignore
+    if (typeof companyIdState !== 'undefined' && isArray(companyState)) {
       const select = companyState.find(({ value }) => value === companyIdState);
       formData.level = (select?.level as number) + 1;
     }
+    formData.phoneNumbers = formData.phoneNumbers?.map((value) => {
+      const phoneType = parsePhoneNumber(value.phoneNumber as string, 'CN').getType();
+      let pt = '';
+      if (typeof phoneType !== 'undefined') {
+        pt = phoneType.toString();
+      }
+      return {
+        phoneType: pt,
+        phoneNumber: value.phoneNumber,
+      };
+    });
     return formData;
   };
 
@@ -163,9 +183,20 @@ const Company: React.FC = () => {
           },
           {
             title: '联系方式',
-            dataIndex: 'phoneNumber',
+            dataIndex: 'phoneNumbers',
             sorter: true,
             ellipsis: true,
+            render(dom, entity) {
+              return (
+                <>
+                  {entity.phoneNumbers?.map(
+                    (phoneNumber, index) =>
+                      phoneNumber.phoneNumber +
+                      (index + 1 == entity.phoneNumbers?.length ? '' : '，'),
+                  )}
+                </>
+              );
+            },
           },
         ]}
         batchRemoveEventHandler={async (data) =>
@@ -190,15 +221,7 @@ const Company: React.FC = () => {
           formRef: modifyFormRef,
           onFinish: async (formData) => await modifyCompany(submitPreHandler(formData)),
           onConfirmRemove: async (id) => await removeCompany(id),
-          queryData: async (id) => {
-            const result = await queryCompany(id);
-            if (Array.isArray(result.data.phoneNumbers)) {
-              result.data.phoneNumbers = result.data.phoneNumbers.map((phoneNumber) => ({
-                phoneNumber,
-              })) as { phoneNumber: API.PhoneNumber }[];
-            }
-            return result;
-          },
+          queryData: async (id) => await queryCompany(id),
         }}
       />{' '}
     </MainPageContainer>

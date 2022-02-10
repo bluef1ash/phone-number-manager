@@ -41,7 +41,7 @@ public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @Length(max = 10, message = "单位名称不能超过10个字符！")
     private String name;
     @ApiModelProperty("单位分包数")
-    @Min(value = 1, message = "单位分包数不正确！")
+    @Min(value = 0, message = "单位分包数不正确！")
     private Integer actualNumber;
     @ApiModelProperty("单位层级编号")
     @NotNull(groups = CreateInputGroup.class, message = "单位层级编号不能为空！")

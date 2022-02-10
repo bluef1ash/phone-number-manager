@@ -3,17 +3,23 @@ package com.github.phonenumbermanager.controller;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
+import com.github.phonenumbermanager.vo.BatchRestfulVo;
 
+import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -33,6 +39,8 @@ public class CompanyController extends BaseController {
     /**
      * 单位列表
      *
+     * @param request
+     *            HTTP请求对象
      * @param current
      *            分页页码
      * @param pageSize
@@ -41,14 +49,17 @@ public class CompanyController extends BaseController {
      */
     @GetMapping
     @ApiOperation("单位列表")
-    public R companyList(@ApiParam(name = "分页页码") Integer current, @ApiParam(name = "每页数据条数") Integer pageSize) {
+    public R companyList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
+        @ApiParam(name = "每页数据条数") Integer pageSize) {
         getEnvironmentVariable();
         List<Company> companies = systemUser.getCompanies();
         if (companies == null
             && systemUser.getId().equals(configurationMap.get("system_administrator_id").get("content"))) {
             companies = companyService.list();
         }
-        return R.ok().put("data", companyService.pageCorrelation(companies, current, pageSize, null, null));
+        QueryWrapper<Configuration> wrapper = new QueryWrapper<>();
+        getSearchWrapper(request, wrapper);
+        return R.ok().put("data", companyService.pageCorrelation(companies, current, pageSize, search, sort));
     }
 
     /**
@@ -123,5 +134,25 @@ public class CompanyController extends BaseController {
     @ApiOperation("单位表单列表")
     public R companySelectList() {
         return R.ok().put("data", companyService.treeSelectList());
+    }
+
+    /**
+     * 增删改批量操作
+     *
+     * @param batchRestfulVo
+     *            批量操作视图对象
+     * @return 是否成功
+     */
+    @PostMapping("/company/batch")
+    @ApiOperation("增删改批量操作")
+    public R configurationBatch(
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
+        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+            if (companyService.removeByIds(ids)) {
+                return R.ok();
+            }
+        }
+        throw new JsonException("批量操作失败！");
     }
 }

@@ -37,9 +37,7 @@ import com.github.phonenumbermanager.vo.*;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.ServletUtil;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWTUtil;
 import io.swagger.annotations.Api;
@@ -160,15 +158,7 @@ public class UserAndPermissionController extends BaseController {
             .equals(Long.valueOf((String)configurationMap.get("system_administrator_id").get("content")))) {
             companies = companyService.list();
         }
-        String params = request.getParameter("params");
-        JSONObject search = null;
-        JSONObject sort = null;
-        if (!StrUtil.isEmptyIfStr(params)) {
-            JSONObject paramsJson = JSONUtil.parseObj(params);
-            search = (JSONObject)paramsJson.get("search");
-            sort = (JSONObject)paramsJson.get("sort");
-
-        }
+        getSearchParameter(request);
         return R.ok().put("data", systemUserService.pageCorrelation(companies, current, pageSize, search, sort));
     }
 

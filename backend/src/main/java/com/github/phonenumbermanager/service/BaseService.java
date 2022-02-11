@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,34 @@ import cn.hutool.json.JSONObject;
  * @author 廿二月的天
  */
 public interface BaseService<T> extends IService<T> {
+    /**
+     * 保存忽略重复数据
+     *
+     * @param entity
+     *            需要保存的实体
+     * @return 是否保存成功
+     */
+    boolean saveIgnore(T entity);
+
+    /**
+     * 批量保存忽略重复数据
+     *
+     * @param entityList
+     *            需要保存的实体集合
+     * @return 是否保存成功
+     */
+    boolean saveIgnoreBatch(Collection<T> entityList);
+
+    /**
+     * 批量保存忽略重复数据
+     *
+     * @param entityList
+     *            需要保存的实体集合
+     * @param batchSize
+     *            批量数量
+     * @return 是否保存成功
+     */
+    boolean saveIgnoreBatch(Collection<T> entityList, int batchSize);
 
     /**
      * 获取录入统计信息

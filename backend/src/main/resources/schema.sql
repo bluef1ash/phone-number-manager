@@ -15,6 +15,7 @@ CREATE TABLE pm_phone_number (
 
 
 CREATE INDEX idx_phone_number_type ON pm_phone_number(phone_number, phone_type);
+CREATE INDEX pk_phone_number_phone_number ON pm_phone_number(phone_number);
 
 DROP TABLE IF EXISTS pm_community_resident;
 CREATE TABLE pm_community_resident (

@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.mapper;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,33 @@ import org.springframework.dao.DataAccessException;
  */
 @Mapper
 public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.BaseMapper<T> {
+    /**
+     * 批量插入数据
+     *
+     * @param list
+     *            数据对象
+     * @return 影响的行数
+     */
+    int insertBatchSomeColumn(Collection<T> list, int batchSize);
+
+    /**
+     * 插入数据忽略重复
+     *
+     * @param entity
+     *            数据对象
+     * @return 影响的行数
+     */
+    int insertIgnore(T entity);
+
+    /**
+     * 批量插入数据忽略重复
+     *
+     * @param list
+     *            数据对象
+     * @return 影响的行数
+     */
+    int insertIgnoreBatchSomeColumn(Collection<T> list, int batchSize);
+
     /**
      * 通过单位查询
      *

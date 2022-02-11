@@ -2,7 +2,11 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.util.*;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.mapper.BaseMapper;
@@ -19,6 +23,50 @@ import cn.hutool.json.JSONObject;
  * @author 廿二月的天
  */
 public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> implements BaseService<T> {
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveBatch(Collection<T> entityList) {
+        return saveBatch(entityList, 1000);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveBatch(Collection<T> entityList, int batchSize) {
+        if (CollectionUtils.isEmpty(entityList)) {
+            return false;
+        }
+        if (entityList.size() == 1) {
+            return this.executeBatch(entityList, batchSize,
+                (sqlSession, entity) -> sqlSession.insert(getSqlStatement(SqlMethod.INSERT_ONE), entity));
+        }
+        return getBaseMapper().insertBatchSomeColumn(entityList, batchSize) > 0;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveIgnore(T entity) {
+        return getBaseMapper().insertIgnore(entity) > 0;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveIgnoreBatch(Collection<T> entityList, int batchSize) {
+        if (CollectionUtils.isEmpty(entityList)) {
+            return false;
+        }
+        if (entityList.size() == 1) {
+            return this.executeBatch(entityList, batchSize,
+                (sqlSession, entity) -> getBaseMapper().insertIgnore(entity));
+        }
+        return getBaseMapper().insertIgnoreBatchSomeColumn(entityList, batchSize) > 0;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean saveIgnoreBatch(Collection<T> entityList) {
+        return saveIgnoreBatch(entityList, 1000);
+    }
+
     @Override
     public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
         return null;

@@ -1,6 +1,9 @@
 package com.github.phonenumbermanager.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -40,8 +43,11 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Override
     public boolean save(Company entity) {
         baseMapper.insert(entity);
-        phoneNumberService.saveBatch(entity.getPhoneNumbers());
-        List<CompanyPhoneNumber> companyPhoneNumbers = entity.getPhoneNumbers().stream().map(
+        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
+        QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
+        entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
+        List<PhoneNumber> phoneNumbers = phoneNumberService.list(wrapper);
+        List<CompanyPhoneNumber> companyPhoneNumbers = phoneNumbers.stream().map(
             phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))
             .collect(Collectors.toList());
         return companyPhoneNumberService.saveBatch(companyPhoneNumbers);
@@ -73,16 +79,18 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
                 companies = baseMapper.selectCorrelation();
             }
             List<Company> systemUserCompanies = companies;
-            Set<Company> companySet = new HashSet<>();
+            List<Company> companyBases = new ArrayList<>();
+            List<Long> ids = new ArrayList<>();
             for (Company company : companyPage.getRecords()) {
                 for (Company c : companies) {
-                    if (company.getId().equals(c.getParentId())) {
-                        companySet.add(company);
+                    if (company.getId().equals(c.getId()) && !ids.contains(company.getParentId())) {
+                        ids.add(company.getId());
+                        companyBases.add(company);
                     }
                 }
             }
-            List<Company> companyList = companySet.stream().map(company -> treeRecursive(company, systemUserCompanies))
-                .collect(Collectors.toList());
+            List<Company> companyList = companyBases.stream()
+                .map(company -> treeRecursive(company, systemUserCompanies)).collect(Collectors.toList());
             companyPage.setRecords(companyList).setTotal(companyList.size());
         }
         return companyPage;

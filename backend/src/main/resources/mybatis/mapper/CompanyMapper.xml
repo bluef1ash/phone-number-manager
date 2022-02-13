@@ -29,6 +29,7 @@
         SELECT pm_company.id AS 'company_id',
             pm_company.name AS 'company_name',
             pm_company.actual_number,
+            pm_company.level,
             pm_company.create_time AS 'company_create_time',
             pm_company.update_time AS 'company_update_time',
             pm_company.parent_id,
@@ -74,13 +75,18 @@
             </if>
             <if test="search != null">
                 <foreach collection="search" index="key" item="value" separator="AND" open="AND">
-                    #{key} LIKE CONCAT('%', #{value}, '%')
+                    <choose>
+                        <when test="key eq 'name'">pm_company.name</when>
+                        <when test="key eq 'phoneNumbers'">pm_phone_number.phone_number</when>
+                    </choose>
+                    LIKE CONCAT('%', #{value}, '%')
                 </foreach>
             </if>
         </where>
+        ORDER BY
+        pm_company.level ASC
         <if test="sort != null">
-            ORDER BY
-            <foreach collection="sort" index="key" item="value" separator=",">
+            <foreach collection="sort" index="key" item="value" separator="," open=",">
                 CONVERT(#{key} USING gbk) COLLATE gbk_chinese_ci
                 <if test="value eq 'descend'">
                     DESC

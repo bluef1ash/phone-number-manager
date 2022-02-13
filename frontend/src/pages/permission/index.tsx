@@ -1,5 +1,5 @@
 import type { MutableRefObject } from 'react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -23,7 +23,7 @@ import {
 import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 
 const InputElement = (
-  SystemPermissions: API.SelectList[],
+  selectListState: API.SelectList[],
   setSystemPermissionIdState: { (value: React.SetStateAction<number | undefined>): void },
   formRef: MutableRefObject<ProFormInstance<API.SystemPermission> | undefined>,
 ) => (
@@ -138,12 +138,12 @@ const InputElement = (
         }}
         placeholder="请选择"
       />{' '}
-    </ProFormList>
+    </ProFormList>{' '}
     <ProFormTreeSelect
       width="xl"
       name="parentId"
       label="系统权限上级编号"
-      request={async () => SystemPermissions}
+      request={async () => selectListState}
       placeholder="请选择"
       rules={[
         {
@@ -180,21 +180,14 @@ const SystemPermission: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const createFormRef = useRef<ProFormInstance<API.SystemPermission>>();
   const modifyFormRef = useRef<ProFormInstance<API.SystemPermission>>();
-  const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>();
+  const [selectListState, setSelectListState] = useState<API.SelectList[]>();
   const [systemPermissionIdState, setSystemPermissionIdState] = useState<number | undefined>(
     undefined,
   );
-  useEffect(() => {
-    const queryPermissions = async () => (await querySystemPermissionSelectList())?.data;
-    queryPermissions().then((result) => setSystemPermissionState(result as API.SelectList[]));
-  }, []);
 
   const submitPreHandler = (formData: API.SystemPermission) => {
-    if (
-      typeof systemPermissionIdState !== 'undefined' &&
-      typeof systemPermissionState !== 'undefined'
-    ) {
-      const select = systemPermissionState.find(({ value }) => value === systemPermissionIdState);
+    if (typeof systemPermissionIdState !== 'undefined' && typeof selectListState !== 'undefined') {
+      const select = selectListState.find(({ value }) => value === systemPermissionIdState);
       formData.level = (select?.level as number) + 1;
     }
     if (Array.isArray(formData.httpMethods) && formData.httpMethods.length > 0) {
@@ -270,7 +263,7 @@ const SystemPermission: React.FC = () => {
         }
         createEditModalForm={{
           element: InputElement(
-            systemPermissionState as API.SelectList[],
+            selectListState as API.SelectList[],
             setSystemPermissionIdState,
             createFormRef,
           ),
@@ -282,7 +275,7 @@ const SystemPermission: React.FC = () => {
         }}
         modifyEditModalForm={{
           element: InputElement(
-            systemPermissionState as API.SystemPermission[],
+            selectListState as API.SelectList[],
             setSystemPermissionIdState,
             modifyFormRef,
           ),
@@ -301,6 +294,20 @@ const SystemPermission: React.FC = () => {
             }
             return result;
           },
+        }}
+        onLoad={async () => {
+          let list: API.SelectList[] = [
+            {
+              title: '顶级权限',
+              value: 0,
+              level: 0,
+            },
+          ];
+          const data = (await querySystemPermissionSelectList())?.data;
+          if (data && data.length > 0) {
+            list = [...list, ...data];
+          }
+          setSelectListState(list);
         }}
       />{' '}
     </MainPageContainer>

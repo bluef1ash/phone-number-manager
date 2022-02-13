@@ -33,7 +33,10 @@ import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.*;
+import com.github.phonenumbermanager.vo.BatchRestfulVo;
+import com.github.phonenumbermanager.vo.CompanyVo;
+import com.github.phonenumbermanager.vo.SystemUserLoginVo;
+import com.github.phonenumbermanager.vo.SystemUserVo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
@@ -332,11 +335,7 @@ public class UserAndPermissionController extends BaseController {
     @GetMapping("/system/permission/select-list")
     @ApiOperation("系统权限列表")
     public R systemPermissionSelectList() {
-        List<SelectListVo> selectListVos = systemPermissionService.treeSelectList();
-        SelectListVo selectListVo = new SelectListVo();
-        selectListVo.setTitle("顶级权限").setValue(0L);
-        selectListVos.add(0, selectListVo);
-        return R.ok().put("data", selectListVos);
+        return R.ok().put("data", systemPermissionService.treeSelectList());
     }
 
     /**

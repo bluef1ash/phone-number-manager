@@ -22,19 +22,10 @@ import com.baomidou.mybatisplus.core.toolkit.sql.SqlScriptUtils;
  * @author 廿二月的天
  */
 public class InsertIgnoreBatchSomeColumn extends AbstractMethod {
-    private Predicate<TableFieldInfo> predicate;
-
-    public InsertIgnoreBatchSomeColumn() {
-        super("insertIgnoreBatchSomeColumn");
-    }
+    private final Predicate<TableFieldInfo> predicate;
 
     public InsertIgnoreBatchSomeColumn(Predicate<TableFieldInfo> predicate) {
         super("insertIgnoreBatchSomeColumn");
-        this.predicate = predicate;
-    }
-
-    public InsertIgnoreBatchSomeColumn(String name, Predicate<TableFieldInfo> predicate) {
-        super(name);
         this.predicate = predicate;
     }
 
@@ -43,10 +34,10 @@ public class InsertIgnoreBatchSomeColumn extends AbstractMethod {
         KeyGenerator keyGenerator = NoKeyGenerator.INSTANCE;
         List<TableFieldInfo> fieldList = tableInfo.getFieldList();
         String insertSqlColumn = tableInfo.getKeyInsertSqlColumn(true, false)
-            + this.filterTableFieldInfo(fieldList, this.predicate, TableFieldInfo::getInsertSqlColumn, "");
+            + filterTableFieldInfo(fieldList, predicate, TableFieldInfo::getInsertSqlColumn, "");
         String columnScript = "(" + insertSqlColumn.substring(0, insertSqlColumn.length() - 1) + ")";
         String insertSqlProperty = tableInfo.getKeyInsertSqlProperty(true, "et.", false)
-            + this.filterTableFieldInfo(fieldList, this.predicate, (i) -> i.getInsertSqlProperty("et."), "");
+            + filterTableFieldInfo(fieldList, predicate, (i) -> i.getInsertSqlProperty("et."), "");
         insertSqlProperty = "(" + insertSqlProperty.substring(0, insertSqlProperty.length() - 1) + ")";
         String valuesScript = SqlScriptUtils.convertForeach(insertSqlProperty, "list", null, "et", ",");
         String keyProperty = null;
@@ -65,12 +56,7 @@ public class InsertIgnoreBatchSomeColumn extends AbstractMethod {
         String sql = String.format("<script>\nINSERT IGNORE INTO %s %s VALUES %s\n</script>", tableInfo.getTableName(),
             columnScript, valuesScript);
         SqlSource sqlSource = this.languageDriver.createSqlSource(configuration, sql, modelClass);
-        return this.addInsertMappedStatement(mapperClass, modelClass, "insertIgnoreBatchSomeColumn", sqlSource,
-            keyGenerator, keyProperty, keyColumn);
-    }
-
-    public InsertIgnoreBatchSomeColumn setPredicate(final Predicate<TableFieldInfo> predicate) {
-        this.predicate = predicate;
-        return this;
+        return this.addInsertMappedStatement(mapperClass, modelClass, methodName, sqlSource, keyGenerator, keyProperty,
+            keyColumn);
     }
 }

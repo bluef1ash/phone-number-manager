@@ -119,7 +119,10 @@ abstract class BaseController {
      */
     protected void getSearchParameter(HttpServletRequest request) {
         String params = request.getParameter("params");
-        if (!StrUtil.isEmptyIfStr(params)) {
+        if (StrUtil.isEmptyIfStr(params)) {
+            search = null;
+            sort = null;
+        } else {
             JSONObject paramsJson = JSONUtil.parseObj(params);
             search = (JSONObject)paramsJson.get("search");
             sort = (JSONObject)paramsJson.get("sort");

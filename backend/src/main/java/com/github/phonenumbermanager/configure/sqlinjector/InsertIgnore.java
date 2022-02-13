@@ -40,7 +40,7 @@ public class InsertIgnore extends AbstractMethod {
                 keyColumn = tableInfo.getKeyColumn();
             } else {
                 if (null != tableInfo.getKeySequence()) {
-                    keyGenerator = TableInfoHelper.genKeyGenerator(this.methodName, tableInfo, builderAssistant);
+                    keyGenerator = TableInfoHelper.genKeyGenerator(methodName, tableInfo, builderAssistant);
                     keyProperty = tableInfo.getKeyProperty();
                     keyColumn = tableInfo.getKeyColumn();
                 }
@@ -49,7 +49,7 @@ public class InsertIgnore extends AbstractMethod {
         String sql = String.format("<script>\nINSERT IGNORE INTO %s %s VALUES %s\n</script>", tableInfo.getTableName(),
             columnScript, valuesScript);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, modelClass);
-        return this.addInsertMappedStatement(mapperClass, modelClass, "insertIgnore", sqlSource, keyGenerator,
-            keyProperty, keyColumn);
+        return this.addInsertMappedStatement(mapperClass, modelClass, methodName, sqlSource, keyGenerator, keyProperty,
+            keyColumn);
     }
 }

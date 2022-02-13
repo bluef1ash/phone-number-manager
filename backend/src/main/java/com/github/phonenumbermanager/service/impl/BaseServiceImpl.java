@@ -36,10 +36,10 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
             return false;
         }
         if (entityList.size() == 1) {
-            return this.executeBatch(entityList, batchSize,
+            return executeBatch(entityList, batchSize,
                 (sqlSession, entity) -> sqlSession.insert(getSqlStatement(SqlMethod.INSERT_ONE), entity));
         }
-        return getBaseMapper().insertBatchSomeColumn(entityList, batchSize) > 0;
+        return getBaseMapper().insertBatchSomeColumn(entityList) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -58,7 +58,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
             return this.executeBatch(entityList, batchSize,
                 (sqlSession, entity) -> getBaseMapper().insertIgnore(entity));
         }
-        return getBaseMapper().insertIgnoreBatchSomeColumn(entityList, batchSize) > 0;
+        return baseMapper.insertIgnoreBatchSomeColumn(entityList) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)

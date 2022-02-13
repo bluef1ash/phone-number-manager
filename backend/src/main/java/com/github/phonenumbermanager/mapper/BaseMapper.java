@@ -25,7 +25,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
-    int insertBatchSomeColumn(Collection<T> list, int batchSize);
+    int insertBatchSomeColumn(Collection<T> list);
 
     /**
      * 插入数据忽略重复
@@ -43,7 +43,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
-    int insertIgnoreBatchSomeColumn(Collection<T> list, int batchSize);
+    int insertIgnoreBatchSomeColumn(Collection<T> list);
 
     /**
      * 通过单位查询

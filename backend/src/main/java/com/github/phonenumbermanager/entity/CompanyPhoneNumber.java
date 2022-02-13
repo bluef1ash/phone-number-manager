@@ -26,7 +26,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ApiModel("单位与联系方式对象实体")
 public class CompanyPhoneNumber extends BaseEntity<CompanyPhoneNumber> {
-    @ApiModelProperty("所属所属单位编号")
+    @ApiModelProperty("所属单位编号")
     @NotNull(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "所属单位编号不能为空！")
     @Min(value = 0, message = "所属单位编号不正确！")
     private Long companyId;

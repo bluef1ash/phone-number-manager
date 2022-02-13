@@ -21,9 +21,9 @@ public class CustomSqlInjector extends DefaultSqlInjector {
     @Override
     public List<AbstractMethod> getMethodList(Class<?> mapperClass, TableInfo tableInfo) {
         List<AbstractMethod> methodList = super.getMethodList(mapperClass, tableInfo);
-        methodList.add(new InsertBatchSomeColumn());
+        methodList.add(new InsertBatchSomeColumn(tableFieldInfo -> !tableFieldInfo.isVersion()));
         methodList.add(new InsertIgnore());
-        methodList.add(new InsertIgnoreBatchSomeColumn());
+        methodList.add(new InsertIgnoreBatchSomeColumn(tableFieldInfo -> !tableFieldInfo.isVersion()));
         return methodList;
     }
 }

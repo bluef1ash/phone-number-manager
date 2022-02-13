@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -18,7 +18,7 @@ import { isArray } from 'lodash';
 import { parsePhoneNumber } from 'libphonenumber-js/max';
 
 const InputElement = (
-  companySelect: API.SelectList[],
+  selectListState: API.SelectList[],
   setCompanyIdState: { (value: React.SetStateAction<number | undefined>): void },
 ) => (
   <>
@@ -52,7 +52,7 @@ const InputElement = (
       width="xl"
       name="parentId"
       label="上级单位"
-      request={async () => companySelect}
+      request={async () => selectListState}
       placeholder="请选择"
       rules={[
         {
@@ -113,30 +113,12 @@ const Company: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const createFormRef = useRef<ProFormInstance<API.Company>>();
   const modifyFormRef = useRef<ProFormInstance<API.Company>>();
-  const [companyState, setCompanyState] = useState<API.SelectList[]>();
+  const [selectListState, setSelectListState] = useState<API.SelectList[]>();
   const [companyIdState, setCompanyIdState] = useState<number>();
-  useEffect(() => {
-    const companies = async () => {
-      let list: API.SelectList[] = [
-        {
-          title: '无',
-          value: 0,
-          level: 0,
-        },
-      ];
-      //@ts-ignore
-      const companySelect = (await queryCompanySelectList()).data as API.SelectList[];
-      if (companySelect.length > 0) {
-        list = [...list, ...companySelect];
-      }
-      return list;
-    };
-    companies().then((result) => setCompanyState(result as API.SelectList[]));
-  }, []);
 
   const submitPreHandler = (formData: API.Company) => {
-    if (typeof companyIdState !== 'undefined' && isArray(companyState)) {
-      const select = companyState.find(({ value }) => value === companyIdState);
+    if (typeof companyIdState !== 'undefined' && isArray(selectListState)) {
+      const select = selectListState.find(({ value }) => value === companyIdState);
       formData.level = (select?.level as number) + 1;
     }
     formData.phoneNumbers = formData.phoneNumbers?.map((value) => {
@@ -206,7 +188,7 @@ const Company: React.FC = () => {
           })
         }
         createEditModalForm={{
-          element: InputElement(companyState as API.SelectList[], setCompanyIdState),
+          element: InputElement(selectListState as API.SelectList[], setCompanyIdState),
           props: {
             title: '添加单位',
           },
@@ -214,7 +196,7 @@ const Company: React.FC = () => {
           onFinish: async (formData) => await createCompany(submitPreHandler(formData)),
         }}
         modifyEditModalForm={{
-          element: InputElement(companyState as API.SelectList[], setCompanyIdState),
+          element: InputElement(selectListState as API.SelectList[], setCompanyIdState),
           props: {
             title: '编辑单位',
           },
@@ -222,6 +204,20 @@ const Company: React.FC = () => {
           onFinish: async (formData) => await modifyCompany(submitPreHandler(formData)),
           onConfirmRemove: async (id) => await removeCompany(id),
           queryData: async (id) => await queryCompany(id),
+        }}
+        onLoad={async () => {
+          let list: API.SelectList[] = [
+            {
+              title: '无',
+              value: 0,
+              level: 0,
+            },
+          ];
+          const companySelect = (await queryCompanySelectList()).data;
+          if (companySelect.length > 0) {
+            list = [...list, ...companySelect];
+          }
+          setSelectListState(list);
         }}
       />{' '}
     </MainPageContainer>

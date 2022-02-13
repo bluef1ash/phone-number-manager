@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +23,14 @@ import com.github.phonenumbermanager.service.*;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 单位业务实现
  *
  * @author 廿二月的天
  */
+@Slf4j
 @Service("companyService")
 public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> implements CompanyService {
     @Resource
@@ -44,24 +47,16 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     public boolean save(Company entity) {
         baseMapper.insert(entity);
         phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
-        QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
-        entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
-        List<PhoneNumber> phoneNumbers = phoneNumberService.list(wrapper);
-        List<CompanyPhoneNumber> companyPhoneNumbers = phoneNumbers.stream().map(
-            phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))
-            .collect(Collectors.toList());
-        return companyPhoneNumberService.saveBatch(companyPhoneNumbers);
+        return companyPhoneNumberService.saveBatch(companyPhoneNumbersHandler(entity));
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(Company entity) {
         baseMapper.updateById(entity);
-        phoneNumberService.saveBatch(entity.getPhoneNumbers());
-        List<CompanyPhoneNumber> companyPhoneNumbers = entity.getPhoneNumbers().stream().map(
-            phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))
-            .collect(Collectors.toList());
-        return companyPhoneNumberService.updateBatchById(companyPhoneNumbers);
+        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
+        companyPhoneNumberService.remove(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", entity.getId()));
+        return companyPhoneNumberService.saveBatch(companyPhoneNumbersHandler(entity));
     }
 
     @Override
@@ -98,7 +93,11 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeCorrelationById(Long id) {
+    public boolean removeById(Serializable id) {
+        long parentIdCount = baseMapper.selectCount(new QueryWrapper<Company>().eq("parent_id", id));
+        if (parentIdCount > 0) {
+            throw new BusinessException("不允许删除存在下级单位的单位！");
+        }
         long communityResidentCount =
             communityResidentService.count(new QueryWrapper<CommunityResident>().eq("company_id", id));
         if (communityResidentCount > 0) {
@@ -155,12 +154,20 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         if (userCompanies == null) {
             userCompanies = companies;
         }
-        return userCompanies.stream().filter(company -> company.getParentId() == 0L).map(company -> {
-            SelectListVo selectListVo = new SelectListVo();
-            selectListVo.setTitle(company.getName()).setValue(company.getId()).setLevel(company.getLevel());
-            treeRecursive(company, companies);
-            return selectListVo;
-        }).collect(Collectors.toList());
+        List<SelectListVo> selectListVoBases = new ArrayList<>();
+        List<Long> ids = new ArrayList<>();
+        for (Company company : userCompanies) {
+            for (Company c : companies) {
+                if (company.getId().equals(c.getId()) && !ids.contains(company.getParentId())) {
+                    ids.add(company.getId());
+                    selectListVoBases.add(new SelectListVo().setTitle(company.getName()).setValue(company.getId())
+                        .setLevel(company.getLevel()));
+                }
+            }
+        }
+        List<Company> finalUserCompanies = userCompanies;
+        return selectListVoBases.stream().map(selectListVo -> treeRecursiveSelect(selectListVo, finalUserCompanies))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -182,5 +189,44 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             }
         }
         return company;
+    }
+
+    /**
+     * 树形递归选择框
+     *
+     * @param baseSelect
+     *            根节点
+     * @param companies
+     *            需要整理的单位集合
+     * @return 树形完成
+     */
+    private SelectListVo treeRecursiveSelect(SelectListVo baseSelect, List<Company> companies) {
+        for (Company company : companies) {
+            SelectListVo selectListVo = new SelectListVo();
+            selectListVo.setValue(company.getId()).setTitle(company.getName()).setLevel(company.getLevel());
+            if (baseSelect.getValue().equals(company.getParentId())) {
+                if (baseSelect.getChildren() == null) {
+                    baseSelect.setChildren(new ArrayList<>());
+                }
+                baseSelect.getChildren().add(treeRecursiveSelect(selectListVo, companies));
+            }
+        }
+        return baseSelect;
+    }
+
+    /**
+     * 处理单位与联系方式关联对象
+     *
+     * @param entity
+     *            单位对象
+     * @return 处理完成的对象集合
+     */
+    private List<CompanyPhoneNumber> companyPhoneNumbersHandler(Company entity) {
+        QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
+        entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
+        List<PhoneNumber> phoneNumbers = phoneNumberService.list(wrapper);
+        return phoneNumbers.stream().map(
+            phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))
+            .collect(Collectors.toList());
     }
 }

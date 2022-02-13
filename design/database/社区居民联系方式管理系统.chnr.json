@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "3.5.7",
   "createdTime": "2021-10-10 15:53:11",
-  "updatedTime": "2022-1-29 21:41:53",
+  "updatedTime": "2022-2-11 23:38:25",
   "profile": {
     "default": {
       "db": "AB840774-751C-47F4-AFC9-202B062E21BC",
@@ -465,6 +465,20 @@
             }
           ],
           "id": "E9E21AE7-C313-4756-90FA-70F368A5310F"
+        },
+        {
+          "defKey": "pk_phone_number_phone_number",
+          "defName": null,
+          "unique": true,
+          "comment": "",
+          "fields": [
+            {
+              "fieldDefKey": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
+              "ascOrDesc": "A",
+              "id": "D1942FB6-7E23-4271-AE5E-253E02B4E80F"
+            }
+          ],
+          "id": "15DF89CC-5EEF-4E16-964B-BE885B35C345"
         }
       ]
     },

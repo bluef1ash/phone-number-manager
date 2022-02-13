@@ -119,7 +119,7 @@ public class CompanyController extends BaseController {
     @DeleteMapping("/{id}")
     @ApiOperation("通过单位编号删除")
     public R removeCompany(@ApiParam(name = "需要删除的单位编号", required = true) @PathVariable Long id) {
-        if (!companyService.removeCorrelationById(id)) {
+        if (!companyService.removeById(id)) {
             throw new JsonException("删除社区失败！");
         }
         return R.ok("删除社区成功！");

@@ -1,10 +1,7 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -110,6 +107,27 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         }
         return baseMapper.deleteById(id) > 0
             && companyPhoneNumberService.remove(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", id));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean removeByIds(Collection<?> list) {
+        QueryWrapper<CommunityResident> communityResidentQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<DormitoryManager> dormitoryManagerQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<CompanyPhoneNumber> companyPhoneNumberQueryWrapper = new QueryWrapper<>();
+        list.forEach(l -> {
+            communityResidentQueryWrapper.eq("company_id", l).or();
+            dormitoryManagerQueryWrapper.eq("company_id", l).or();
+            companyPhoneNumberQueryWrapper.eq("company_id", l).or();
+        });
+        if (communityResidentService.count(communityResidentQueryWrapper) > 0) {
+            throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
+        }
+        if (dormitoryManagerService.count(dormitoryManagerQueryWrapper) > 0) {
+            throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
+        }
+        companyPhoneNumberService.remove(companyPhoneNumberQueryWrapper);
+        return super.removeByIds(list);
     }
 
     @Override

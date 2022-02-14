@@ -195,8 +195,10 @@ function DataList<T, U extends ParamsType>({
               setCreateEditModalFormVisible(false);
               msg.success(message === 'success' ? '添加成功！' : message);
               customActionRef?.current?.reload();
+              return true;
             } else {
               msg.error(message);
+              return false;
             }
           }}
           visible={createEditModalFormVisible}

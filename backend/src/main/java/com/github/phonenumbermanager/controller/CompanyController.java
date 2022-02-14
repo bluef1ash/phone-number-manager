@@ -143,7 +143,7 @@ public class CompanyController extends BaseController {
      *            批量操作视图对象
      * @return 是否成功
      */
-    @PostMapping("/company/batch")
+    @PostMapping("/batch")
     @ApiOperation("增删改批量操作")
     public R configurationBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {

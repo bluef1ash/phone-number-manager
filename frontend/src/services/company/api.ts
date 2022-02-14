@@ -62,7 +62,7 @@ export async function removeCompany(id: number, options?: Record<string, any>) {
 }
 
 /** 批量操作单位 */
-export async function batchCompany<T>(data: API.BatchRUD<T>, options?: Record<string, any>) {
+export async function batchCompany(data: API.BatchRUD<number[]>, options?: Record<string, any>) {
   return request<API.ResponseSuccess & API.ResponseException>(companyBatch, {
     method: 'POST',
     data,

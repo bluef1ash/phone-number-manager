@@ -178,8 +178,8 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             for (Company c : companies) {
                 if (company.getId().equals(c.getId()) && !ids.contains(company.getParentId())) {
                     ids.add(company.getId());
-                    selectListVoBases.add(new SelectListVo().setTitle(company.getName()).setValue(company.getId())
-                        .setLevel(company.getLevel()));
+                    selectListVoBases.add(new SelectListVo().setTitle(company.getName()).setLabel(company.getName())
+                        .setValue(company.getId()).setLevel(company.getLevel()));
                 }
             }
         }
@@ -221,7 +221,8 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private SelectListVo treeRecursiveSelect(SelectListVo baseSelect, List<Company> companies) {
         for (Company company : companies) {
             SelectListVo selectListVo = new SelectListVo();
-            selectListVo.setValue(company.getId()).setTitle(company.getName()).setLevel(company.getLevel());
+            selectListVo.setValue(company.getId()).setTitle(company.getName()).setLabel(company.getName())
+                .setLevel(company.getLevel());
             if (baseSelect.getValue().equals(company.getParentId())) {
                 if (baseSelect.getChildren() == null) {
                     baseSelect.setChildren(new ArrayList<>());

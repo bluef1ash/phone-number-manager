@@ -21,6 +21,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode
 public class SelectListVo implements Serializable {
     private String title;
+    private String label;
     private Long value;
     private Integer level;
     private List<SelectListVo> children;

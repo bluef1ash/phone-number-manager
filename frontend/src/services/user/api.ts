@@ -10,7 +10,15 @@ export async function querySystemUserList(params?: any, options?: Record<string,
   });
 }
 
-/** 获取系统用户列表 */
+/** 获取系统用户表单列表 */
+export async function querySystemUserSelectList(options?: Record<string, any>) {
+  return request<API.Data<API.SelectList[]> & API.ResponseException>(system.userSelectList, {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 获取系统用户详细信息 */
 export async function querySystemUser(id: number, options?: Record<string, any>) {
   return request<API.Data<API.SystemUser> & API.ResponseException>(`${system.user}/${id}`, {
     method: 'GET',

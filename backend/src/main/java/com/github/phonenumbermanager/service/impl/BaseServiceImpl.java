@@ -99,11 +99,6 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public boolean removeCorrelationById(Long id) {
-        return false;
-    }
-
-    @Override
     public List<SelectListVo> treeSelectList() {
         return null;
     }

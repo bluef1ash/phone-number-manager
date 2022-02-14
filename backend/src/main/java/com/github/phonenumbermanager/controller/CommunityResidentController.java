@@ -124,7 +124,7 @@ public class CommunityResidentController extends BaseController {
     @DeleteMapping("/{id}")
     @ApiOperation("通过社区居民编号删除社区居民")
     public R removeCommunityResident(@ApiParam(name = "社区居民编号", required = true) @PathVariable Long id) {
-        if (communityResidentService.removeCorrelationById(id)) {
+        if (communityResidentService.removeById(id)) {
             return R.ok();
         }
         throw new JsonException("删除社区居民失败！");

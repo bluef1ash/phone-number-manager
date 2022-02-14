@@ -21,11 +21,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
-import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
@@ -59,8 +57,6 @@ public class UserAndPermissionController extends BaseController {
     private SystemUserService systemUserService;
     @Resource
     private SystemPermissionService systemPermissionService;
-    @Resource
-    private CompanyService companyService;
     @Resource
     private RedisUtil redisUtil;
 
@@ -156,13 +152,20 @@ public class UserAndPermissionController extends BaseController {
     public R systemUserList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据") Integer pageSize) {
         getEnvironmentVariable();
-        List<Company> companies = systemUser.getCompanies();
-        if (companies == null && systemUser.getId()
-            .equals(Long.valueOf((String)configurationMap.get("system_administrator_id").get("content")))) {
-            companies = companyService.list();
-        }
         getSearchParameter(request);
-        return R.ok().put("data", systemUserService.pageCorrelation(companies, current, pageSize, search, sort));
+        return R.ok().put("data",
+            systemUserService.pageCorrelation(systemUser.getCompanies(), current, pageSize, search, sort));
+    }
+
+    /**
+     * 系统用户表单列表
+     *
+     * @return 系统用户表单列表JSON
+     */
+    @GetMapping("/system/user/select-list")
+    @ApiOperation("系统用户表单列表")
+    public R systemUserSelectList() {
+        return R.ok().put("data", systemUserService.treeSelectList());
     }
 
     /**
@@ -266,7 +269,7 @@ public class UserAndPermissionController extends BaseController {
         if (id.equals(systemAdministratorId)) {
             throw new JsonException("不允许删除超级管理员！");
         }
-        if (systemUserService.removeCorrelationById(id)) {
+        if (systemUserService.removeById(id)) {
             throw new JsonException("删除系统用户失败！");
         }
         return R.ok();
@@ -333,7 +336,7 @@ public class UserAndPermissionController extends BaseController {
      * @return 系统权限表单列表JSON
      */
     @GetMapping("/system/permission/select-list")
-    @ApiOperation("系统权限列表")
+    @ApiOperation("系统权限表单列表")
     public R systemPermissionSelectList() {
         return R.ok().put("data", systemPermissionService.treeSelectList());
     }
@@ -398,7 +401,7 @@ public class UserAndPermissionController extends BaseController {
         if (systemPermissionService.count(new QueryWrapper<SystemPermission>().eq("parent_id", id)) > 0) {
             throw new JsonException("不允许删除有子权限的系统权限！");
         }
-        if (!systemPermissionService.removeCorrelationById(id)) {
+        if (!systemPermissionService.removeById(id)) {
             throw new JsonException("删除用户权限失败！");
         }
         return R.ok();

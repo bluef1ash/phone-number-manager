@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
 import java.util.*;
 
 import javax.annotation.Resource;
@@ -216,7 +217,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeCorrelationById(Long id) {
+    public boolean removeById(Serializable id) {
         return baseMapper.deleteById(id) > 0 && communityResidentPhoneNumberService
             .remove(new QueryWrapper<CommunityResidentPhoneNumber>().eq("community_resident_id", id));
     }

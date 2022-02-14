@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -34,6 +35,7 @@ import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.*;
 import com.github.phonenumbermanager.util.RedisUtil;
+import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONObject;
@@ -131,7 +133,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         JSONObject search, JSONObject sort) {
         List<Long> companyIds = new ArrayList<>();
         List<Company> companyAll = companyService.list();
-        companyService.listRecursionCompanyIds(companyIds, companies, companyAll, 0L);
+        if (companies != null) {
+            companyService.listRecursionCompanyIds(companyIds, companies, companyAll, 0L);
+        }
         IPage<SystemUser> systemUsers =
             baseMapper.selectCorrelationByCompanyIds(companyIds, new Page<>(pageNumber, pageDataSize), search, sort);
         systemUsers.getRecords().forEach(systemUser -> {
@@ -187,7 +191,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeCorrelationById(Long id) {
+    public boolean removeById(Serializable id) {
         return baseMapper.deleteById(id) > 0
             && systemUserCompanyService.remove(new QueryWrapper<SystemUserCompany>().eq("user_id", id));
     }
@@ -195,6 +199,26 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Override
     public List<SystemUser> listCorrelationByCompanyId(Long companyId) {
         return baseMapper.selectByCompanyId(companyId);
+    }
+
+    @Override
+    public List<SelectListVo> treeSelectList() {
+        SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<SelectListVo> selectListVos;
+        if (systemUser.getCompanies() == null) {
+            selectListVos = baseMapper
+                .selectList(null).stream().map(user -> new SelectListVo().setValue(user.getId())
+                    .setTitle(user.getUsername()).setLabel(user.getUsername()).setLevel(0))
+                .collect(Collectors.toList());
+        } else {
+            selectListVos = baseMapper
+                .selectListByCompanyIds(
+                    systemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList()))
+                .stream().map(user -> new SelectListVo().setValue(user.getId()).setTitle(user.getUsername())
+                    .setLabel(user.getUsername()).setLevel(0))
+                .collect(Collectors.toList());
+        }
+        return selectListVos;
     }
 
     /**

@@ -121,15 +121,6 @@ public interface BaseService<T> extends IService<T> {
     List<LinkedHashMap<String, Object>> listCorrelationToMap(Long companyId);
 
     /**
-     * 通过编号关联删除
-     *
-     * @param id
-     *            需要删除的编号
-     * @return 删除是否成功
-     */
-    boolean removeCorrelationById(Long id);
-
-    /**
      * 获取树形表单列表
      *
      * @return 树形表单列表集合

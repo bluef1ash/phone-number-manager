@@ -16,8 +16,8 @@ public enum EducationStatusEnum {
     /**
      *
      */
-    ILLITERACY(0, "文盲"), PRIMARY_SCHOOL(1, "小学"), JUNIOR_HIGH_SCHOOL(2, "初中"), TECHNICAL_SECONDARY_SCHOOL(3, "中专"),
-    SENIOR_MIDDLE_SCHOOL(4, "高中"), JUNIOR_COLLEGE(5, "大专"), UNDERGRADUATE_COURSE(6, "本科"), MASTER(7, "硕士研究生"),
+    ILLITERACY(0, "文盲"), PRIMARY_SCHOOL(1, "小学"), JUNIOR_HIGH_SCHOOL(2, "初中"), TECHNICAL_SECONDARY_SCHOOL(3, "中学专科"),
+    SENIOR_MIDDLE_SCHOOL(4, "高中"), JUNIOR_COLLEGE(5, "大学专科"), UNDERGRADUATE_COURSE(6, "大学本科"), MASTER(7, "硕士研究生"),
     DOCTOR(8, "博士研究生");
 
     @EnumValue

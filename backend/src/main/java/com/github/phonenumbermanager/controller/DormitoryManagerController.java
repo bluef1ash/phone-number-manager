@@ -122,7 +122,7 @@ public class DormitoryManagerController extends BaseController {
     @DeleteMapping("/{id}")
     @ApiOperation("通过社区楼长编号删除")
     public R removeDormitoryManager(@ApiParam(name = "社区楼长编号", required = true) @PathVariable Long id) {
-        if (dormitoryManagerService.removeCorrelationById(id)) {
+        if (dormitoryManagerService.removeById(id)) {
             return R.ok("删除社区楼长成功！");
         }
         throw new JsonException("删除社区楼长失败！");

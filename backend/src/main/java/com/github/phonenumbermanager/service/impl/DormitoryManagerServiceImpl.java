@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -232,8 +233,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         return barChartDataHandler(label, null, "户", dormitoryManager);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeCorrelationById(Long id) {
+    public boolean removeById(Serializable id) {
         return baseMapper.deleteById(id) > 0 && dormitoryManagerPhoneNumberService
             .remove(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", id));
     }

@@ -20,7 +20,7 @@ import {
   removeSystemUser,
 } from '@/services/user/api';
 import { message as msg, Switch } from 'antd';
-import { queryCompanyList } from '@/services/company/api';
+import { queryCompanySelectList } from '@/services/company/api';
 
 const CompanyTreeSelect = (isRules: boolean) => {
   const rules = [];
@@ -40,8 +40,8 @@ const CompanyTreeSelect = (isRules: boolean) => {
       allowClear
       secondary
       request={async () => {
-        const { code, data } = await queryCompanyList({ current: 1, pageSize: 10000 });
-        return code === 200 ? data.records : [];
+        const { code, data } = await queryCompanySelectList();
+        return code === 200 ? data : [];
       }}
       fieldProps={{
         showArrow: false,

@@ -59,9 +59,11 @@
         LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
         LEFT JOIN pm_phone_number ON pm_system_user.phone_number_id = pm_phone_number.id
         <where>
-            <foreach collection="companyIds" item="companyId" separator="OR">
-                pm_company.id = #{companyId}
-            </foreach>
+            <if test="companyIds.size() gt 0">
+                <foreach collection="companyIds" item="companyId" separator="OR">
+                    pm_company.id = #{companyId}
+                </foreach>
+            </if>
             <if test="search != null">
                 <foreach collection="search" index="key" item="value" separator="AND" open="AND">
                     #{key} LIKE CONCAT('%', #{value}, '%')
@@ -161,5 +163,33 @@
             pm_phone_number.phone_number
         FROM pm_system_user
                  LEFT JOIN pm_phone_number ON pm_system_user.phone_number_id = pm_phone_number.id
+    </select>
+    <select id="selectListByCompanyIds" resultMap="collectionResultMap">
+        SELECT pm_system_user.id AS 'system_user_id',
+        pm_system_user.username,
+        pm_system_user.positions,
+        pm_system_user.titles,
+        pm_system_user.login_time,
+        pm_system_user.login_ip,
+        pm_system_user.is_locked,
+        pm_system_user.is_enabled,
+        pm_system_user.account_expire_time,
+        pm_system_user.credential_expire_time,
+        pm_system_user.create_time AS 'system_user_create_time',
+        pm_system_user.update_time AS 'system_user_update_time',
+        pm_system_user.is_subcontract,
+        pm_company.id AS 'company_id',
+        pm_company.name AS 'company_name',
+        pm_company.level,
+        pm_phone_number.phone_number
+        FROM pm_system_user
+        LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+        LEFT JOIN pm_phone_number ON pm_system_user.phone_number_id = pm_phone_number.id
+        <where>
+            <foreach collection="companyIds" item="companyId" separator="OR">
+                pm_company.id = #{companyId}
+            </foreach>
+        </where>
     </select>
 </mapper>

@@ -9,6 +9,12 @@ export default [
     menuHeaderRender: false,
   },
   {
+    path: '/dormitory',
+    name: './dormitory',
+    component: './dormitory',
+    access: 'normalRouteFilter',
+  },
+  {
     path: '/company',
     name: './company',
     component: './company',

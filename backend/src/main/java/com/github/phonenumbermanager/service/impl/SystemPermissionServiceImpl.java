@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,9 +93,9 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeCorrelationById(Long id) {
-        companyPermissionService.remove(new QueryWrapper<CompanyPermission>().eq("permission_id", id));
-        return baseMapper.deleteById(id) > 0;
+    public boolean removeById(Serializable id) {
+        return companyPermissionService.remove(new QueryWrapper<CompanyPermission>().eq("permission_id", id))
+            && baseMapper.deleteById(id) > 0;
     }
 
     @Override
@@ -103,8 +104,8 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
         return systemPermissions.stream().filter(systemPermission -> systemPermission.getParentId() == 0L)
             .map(systemPermission -> {
                 SelectListVo selectListVo = new SelectListVo();
-                selectListVo.setTitle(systemPermission.getName()).setValue(systemPermission.getId())
-                    .setLevel(systemPermission.getLevel());
+                selectListVo.setTitle(systemPermission.getName()).setLabel(systemPermission.getName())
+                    .setValue(systemPermission.getId()).setLevel(systemPermission.getLevel());
                 treeSystemPermissions(null, selectListVo, systemPermissions);
                 return selectListVo;
             }).collect(Collectors.toList());
@@ -162,8 +163,8 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
                         selectListVo.setChildren(new ArrayList<>());
                     }
                     selectList = new SelectListVo();
-                    selectList.setTitle(permission.getName()).setValue(permission.getId())
-                        .setLevel(permission.getLevel());
+                    selectList.setTitle(permission.getName()).setLabel(permission.getName())
+                        .setValue(permission.getId()).setLevel(permission.getLevel());
                     selectListVo.getChildren().add(selectList);
                 } else {
                     if (systemPermission.getChildren() == null) {

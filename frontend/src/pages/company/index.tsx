@@ -182,7 +182,7 @@ const Company: React.FC = () => {
           },
         ]}
         batchRemoveEventHandler={async (data) =>
-          await batchCompany<number[]>({
+          await batchCompany({
             method: 'DELETE',
             data,
           })

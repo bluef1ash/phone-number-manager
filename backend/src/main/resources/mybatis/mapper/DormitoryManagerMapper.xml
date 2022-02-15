@@ -4,6 +4,7 @@
     <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="commonResultMap">
         <result column="gender" property="gender"/>
         <result column="birth" property="birth"/>
+        <result column="age" property="age"/>
         <result column="political_status" property="politicalStatus"/>
         <result column="employment_status" property="employmentStatus"/>
         <result column="education" property="education"/>
@@ -63,41 +64,50 @@
                  LEFT JOIN pm_phone_number ON pm_dormitory_manager_phone_number.phone_number_id = pm_phone_number.id
         WHERE pm_dormitory_manager.id = #{id}
     </select>
-    <select id="selectBySearchVo" resultMap="collectionResultMap">
+    <select id="selectCorrelationByCompanies" resultMap="collectionResultMap">
         SELECT
         pm_dormitory_manager.id AS 'dormitory_manager_id',
         pm_dormitory_manager.name AS 'dormitory_manager_name',
         pm_dormitory_manager.gender,
         TIMESTAMPDIFF(YEAR, pm_dormitory_manager.birth, CURDATE()) AS 'age',
-        pm_dormitory_manager.employment_status,
+        pm_dormitory_manager.address,
         pm_phone_number.phone_number,
         pm_dormitory_manager.create_time AS 'dormitory_manager_create_time',
         pm_dormitory_manager.update_time AS 'dormitory_manager_update_time',
         pm_dormitory_manager.company_id,
-        pm_company.name AS 'company_name'
+        pm_company.name AS 'company_name',
+        pm_system_user.username
         FROM
         pm_dormitory_manager
         LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
         LEFT JOIN pm_dormitory_manager_phone_number ON pm_dormitory_manager.id =
         pm_dormitory_manager_phone_number.dormitory_manager_id
         LEFT JOIN pm_phone_number ON pm_dormitory_manager_phone_number.phone_number_id = pm_phone_number.id
+        LEFT JOIN pm_system_user ON pm_dormitory_manager.system_user_id = pm_system_user.id
         <where>
-            <foreach collection="companies" item="company" separator="OR">
-                pm_dormitory_manager.company_id = #{company.id}
-            </foreach>
-            <if test="searchVo.name != null">
-                AND pm_dormitory_manager.name LIKE CONCAT('%', #{searchVo.name}, '%')
+            <if test="companies != null and companies.size() gt 0">
+                <foreach collection="companies" item="company" separator="OR">
+                    pm_dormitory_manager.company_id = #{company.id}
+                </foreach>
             </if>
-            <if test="searchVo.gender != null">
-                AND pm_dormitory_manager.gender = #{searchVo.gender}
-            </if>
-            <if test="searchVo.address != null">
-                AND pm_dormitory_manager.address LIKE CONCAT('%', #{searchVo.address}, '%')
-            </if>
-            <if test="searchVo.phoneNumbers != null">
-                AND pm_phone_number.phone_number LIKE CONCAT('%', #{searchVo.phoneNumber}, '%')
+            <if test="search != null">
+                <foreach collection="search" index="key" item="value" separator="AND" open="AND">
+                    <choose>
+                        <when test="key eq 'name'">pm_dormitory_manager.name</when>
+                        <when test="key eq 'phoneNumbers'">pm_phone_number.phone_number</when>
+                    </choose>
+                    LIKE CONCAT('%', #{value}, '%')
+                </foreach>
             </if>
         </where>
         ORDER BY pm_dormitory_manager.company_id, CONVERT(pm_dormitory_manager.name USING GBK)
+        <if test="sort != null">
+            <foreach collection="sort" index="key" item="value" separator="," open=",">
+                CONVERT(#{key} USING gbk) COLLATE gbk_chinese_ci
+                <if test="value eq 'descend'">
+                    DESC
+                </if>
+            </foreach>
+        </if>
     </select>
 </mapper>

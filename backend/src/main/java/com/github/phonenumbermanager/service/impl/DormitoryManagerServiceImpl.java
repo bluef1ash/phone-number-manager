@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -13,13 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.constant.enums.*;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.service.*;
-import com.github.phonenumbermanager.vo.DormitoryManagerSearchVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.extra.pinyin.PinyinUtil;
@@ -184,10 +185,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public IPage<DormitoryManager> page(List<Company> companies, DormitoryManagerSearchVo dormitoryManagerSearchVo,
-        IPage<DormitoryManager> page) {
-        // TODO: 2021/10/19 0019 SQL需要测试
-        return baseMapper.selectBySearchVo(companies, dormitoryManagerSearchVo, page);
+    public IPage<DormitoryManager> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
+        JSONObject search, JSONObject sort) {
+        return baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
     }
 
     @Override
@@ -244,26 +244,18 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Override
     public boolean save(DormitoryManager entity) {
         baseMapper.insert(entity);
-        // TODO: 2021/10/23 0023 测试mybatis plus 重复插入
-        /* phoneNumberService.list();
-        entity.getPhoneNumbers()
-            .forEach(phoneNumber -> dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
-                .setDormitoryManagerId(entity.getId()).setPhoneNumberId(phoneNumber.getId())));*/
-        List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbers = new ArrayList<>();
-        return dormitoryManagerPhoneNumberService.saveBatch(dormitoryManagerPhoneNumbers);
+        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
+        return dormitoryManagerPhoneNumberService.saveBatch(dormitoryManagerPhoneNumbersHandler(entity));
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(DormitoryManager entity) {
         baseMapper.updateById(entity);
-        // TODO: 2021/10/23 0023 测试是否有冗余数据
-        phoneNumberService.updateBatchById(entity.getPhoneNumbers());
-        List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbers = new ArrayList<>();
-        entity.getPhoneNumbers()
-            .forEach(phoneNumber -> dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
-                .setDormitoryManagerId(entity.getId()).setPhoneNumberId(phoneNumber.getId())));
-        return dormitoryManagerPhoneNumberService.updateBatchById(dormitoryManagerPhoneNumbers);
+        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
+        dormitoryManagerPhoneNumberService
+            .remove(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", entity.getId()));
+        return dormitoryManagerPhoneNumberService.updateBatchById(dormitoryManagerPhoneNumbersHandler(entity));
     }
 
     /**
@@ -372,5 +364,20 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         baseMessage.put("politicalStatusCount", politicalStatusCount);
         baseMessage.put("employmentStatusCount", employmentStatusCount);
         return baseMessage;
+    }
+
+    /**
+     * 处理社区居民楼长联系方式关联对象
+     *
+     * @param entity
+     *            单位对象
+     * @return 处理完成的对象集合
+     */
+    private List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbersHandler(DormitoryManager entity) {
+        QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
+        entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
+        List<PhoneNumber> phoneNumbers = phoneNumberService.list(wrapper);
+        return phoneNumbers.stream().map(phoneNumber -> new DormitoryManagerPhoneNumber()
+            .setDormitoryManagerId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());
     }
 }

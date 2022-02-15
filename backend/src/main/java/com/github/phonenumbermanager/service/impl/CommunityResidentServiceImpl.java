@@ -202,14 +202,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         List<Company> companyAll = companyService.list();
         if (companyId == null) {
             companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, null);
-            communityResidents = baseMapper.countForGroupCompany(companyIds);
+            // communityResidents = baseMapper.countForGroupCompany(companyIds);
         } else {
             companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
             if (companyIds.contains(companyId)) {
                 List<Company> companyList = companyService.list(new QueryWrapper<Company>().eq("id", companyId));
                 companyIds.clear();
                 companyService.listSubmissionCompanyIds(companyIds, companyList, companyAll, null);
-                communityResidents = baseMapper.countForGroupCompany(companyIds);
+                // communityResidents = baseMapper.countForGroupCompany(companyIds);
             }
         }
         return barChartDataHandler("社区居民总户数", null, "户", communityResidents);

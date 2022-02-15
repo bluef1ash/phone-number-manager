@@ -48,4 +48,7 @@ export default defineConfig({
   alias: {
     '@config': join(__dirname),
   },
+  locale: {
+    default: 'zh-CN',
+  },
 });

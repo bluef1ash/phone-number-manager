@@ -90,7 +90,7 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return LocalDateTime.now().isBefore(accountExpireTime);
+        return accountExpireTime != null && LocalDateTime.now().isBefore(accountExpireTime);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return LocalDateTime.now().isBefore(credentialExpireTime);
+        return credentialExpireTime != null && LocalDateTime.now().isBefore(credentialExpireTime);
     }
 
     @Override

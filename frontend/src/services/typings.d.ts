@@ -1,6 +1,6 @@
 declare module '*.less';
 declare namespace API {
-  import type { NumberType } from "libphonenumber-js/types";
+  import type { NumberType } from 'libphonenumber-js/types';
 
   type ResponseSuccess = {
     code: number;
@@ -59,6 +59,6 @@ declare namespace API {
     title?: string;
     value?: number;
     level?: number;
-    children?: SelectList[];
+    children?: SelectList[] | null;
   };
 }

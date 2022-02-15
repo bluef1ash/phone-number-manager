@@ -1,12 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import {
-  ProFormDateRangePicker,
+  ProFormDatePicker,
   ProFormDigit,
   ProFormList,
+  ProFormRadio,
   ProFormSelect,
   ProFormText,
   ProFormTreeSelect,
@@ -26,6 +27,11 @@ import { queryCompanySelectList } from '@/services/company/api';
 import { querySystemUserSelectList } from '@/services/user/api';
 
 const InputElement = (
+  companiesState: API.SelectList[],
+  systemUsersState: API.SelectList[],
+  companyLowState: API.SelectList[] | null | undefined,
+  setCompanyLowState: { (value: API.SelectList[] | null | undefined): void },
+) => (
   <>
     <ProFormText
       width="xl"
@@ -44,16 +50,23 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormSelect
+    <ProFormRadio.Group
       name="gender"
-      width="xl"
       label="社区居民楼片长性别"
-      placeholder="请选择"
-      valueEnum={{
-        MALE: '男',
-        FEMALE: '女',
-        UNKNOWN: '未知',
-      }}
+      options={[
+        {
+          label: '男',
+          value: 'MALE',
+        },
+        {
+          label: '女',
+          value: 'FEMALE',
+        },
+        {
+          label: '未知',
+          value: 'UNKNOWN',
+        },
+      ]}
       rules={[
         {
           required: true,
@@ -61,7 +74,7 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormDateRangePicker
+    <ProFormDatePicker
       name="birth"
       width="xl"
       label="社区居民楼片长出生年月"
@@ -183,7 +196,7 @@ const InputElement = (
       width="xl"
       label="社区居民楼片长所属分包人"
       placeholder="请选择"
-      request={async () => (await querySystemUserSelectList()).data}
+      request={async () => systemUsersState}
       rules={[
         {
           required: true,
@@ -196,15 +209,23 @@ const InputElement = (
       width="xl"
       label="社区居民楼片长所属社区"
       placeholder="请选择"
-      request={async () => (await queryCompanySelectList()).data}
+      request={async () => companiesState}
+      fieldProps={{
+        // @ts-ignore
+        onSelect(value: number, node: API.SelectList) {
+          setCompanyLowState(node.children);
+        },
+      }}
       rules={[
         {
           required: true,
           message: '社区居民楼片长所属社区不能为空！',
         },
         {
-          validator(rule: RuleObject, value: StoreValue) {
-            return value.level !== 3 ? Promise.reject('只能选择社区一级！') : Promise.resolve();
+          validator() {
+            return companyLowState !== null
+              ? Promise.reject('只能选择社区一级！')
+              : Promise.resolve();
           },
         },
       ]}
@@ -258,6 +279,16 @@ const DormitoryManager: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const createFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
   const modifyFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
+  const [companiesState, setCompaniesState] = useState<API.SelectList[]>([]);
+  const [companyLowState, setCompanyLowState] = useState<API.SelectList[] | null | undefined>(null);
+  const [systemUsersState, setSystemUsersState] = useState<API.SelectList[]>([]);
+
+  useEffect(() => {
+    const getCompanies = async () => (await queryCompanySelectList()).data;
+    const getSystemUsers = async () => (await querySystemUserSelectList()).data;
+    getCompanies().then((value) => setCompaniesState(value));
+    getSystemUsers().then((value) => setSystemUsersState(value));
+  }, []);
 
   const submitPreHandler = (formData: API.DormitoryManager) => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value) => {
@@ -320,6 +351,15 @@ const DormitoryManager: React.FC = () => {
             },
           },
           {
+            title: '社区居民楼片长年龄',
+            dataIndex: 'age',
+            sorter: true,
+            ellipsis: true,
+            renderFormItem() {
+              return <ProFormDigit name="age" max={110} />;
+            },
+          },
+          {
             title: '社区居民楼片长地址',
             dataIndex: 'address',
             sorter: true,
@@ -327,15 +367,21 @@ const DormitoryManager: React.FC = () => {
           },
           {
             title: '所属分包人',
-            dataIndex: 'systemUser[username]',
+            dataIndex: ['systemUser', 'username'],
             sorter: true,
             ellipsis: true,
+            renderFormItem() {
+              return <ProFormSelect name="systemUserId" request={async () => systemUsersState} />;
+            },
           },
           {
             title: '所属社区',
-            dataIndex: 'company[name]',
+            dataIndex: ['company', 'name'],
             sorter: true,
             ellipsis: true,
+            renderFormItem() {
+              return <ProFormTreeSelect name="companyId" request={async () => companiesState} />;
+            },
           },
           {
             title: '联系方式',
@@ -362,17 +408,27 @@ const DormitoryManager: React.FC = () => {
           })
         }
         createEditModalForm={{
-          element: InputElement,
+          element: InputElement(
+            companiesState,
+            systemUsersState,
+            companyLowState,
+            setCompanyLowState,
+          ),
           props: {
-            title: '添加社区楼长',
+            title: '添加社区居民楼片长',
           },
           formRef: createFormRef,
           onFinish: async (formData) => await createDormitoryManager(submitPreHandler(formData)),
         }}
         modifyEditModalForm={{
-          element: InputElement,
+          element: InputElement(
+            companiesState,
+            systemUsersState,
+            companyLowState,
+            setCompanyLowState,
+          ),
           props: {
-            title: '编辑社区楼长',
+            title: '编辑社区居民楼片长',
           },
           formRef: modifyFormRef,
           onFinish: async (formData) => await modifyDormitoryManager(submitPreHandler(formData)),

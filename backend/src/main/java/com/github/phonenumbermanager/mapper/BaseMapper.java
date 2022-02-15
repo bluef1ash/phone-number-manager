@@ -9,6 +9,12 @@ import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.dao.DataAccessException;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.entity.Company;
+
+import cn.hutool.json.JSONObject;
+
 /**
  * 基础Mapper接口
  *
@@ -77,5 +83,23 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *             数据库操作异常
      */
     @MapKey("name")
-    List<Map<String, Object>> countForGroupCompany(List<Long> companyIds) throws DataAccessException;
+    List<Map<String, Object>> countForGroupCompany(List<Serializable> companyIds) throws DataAccessException;
+
+    /**
+     * 查询所有对象（分页）
+     *
+     * @param companies
+     *            需要查询的单位集合
+     * @param page
+     *            分页对象
+     * @param search
+     *            搜索条件
+     * @param sort
+     *            排序条件
+     * @return 全部查询的社区和所属街道的信息
+     * @throws DataAccessException
+     *             数据库操作异常
+     */
+    IPage<T> selectCorrelationByCompanies(List<Company> companies, Page<T> page, JSONObject search, JSONObject sort)
+        throws DataAccessException;
 }

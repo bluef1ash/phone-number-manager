@@ -92,6 +92,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
       params: initialState,
       request: (params): Promise<MenuDataItem[]> =>
         new Promise<MenuDataItem[]>((resolve) => resolve(params.menuData)),
+      locale: false,
     },
     links: isDev
       ? [

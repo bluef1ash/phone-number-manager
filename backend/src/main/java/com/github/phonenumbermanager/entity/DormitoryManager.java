@@ -52,6 +52,9 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长出生年月不能为空！")
     @Past
     private LocalDate birth;
+    @ApiModelProperty(value = "社区居民楼片长年龄", hidden = true)
+    @TableField(exist = false)
+    private Integer age;
     @ApiModelProperty("社区居民楼片长政治状况")
     @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长政治状况不能为空！")
     private PoliticalStatusEnum politicalStatus;

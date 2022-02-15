@@ -11,11 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -23,7 +21,6 @@ import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.DormitoryManagerSearchVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.IoUtil;
@@ -35,20 +32,22 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /**
- * 社区楼长控制器
+ * 社区居民楼片长控制器
  *
  * @author 廿二月的天
  */
-@Controller
+@RestController
 @RequestMapping("/dormitory")
-@Api(tags = "社区楼长控制器")
+@Api(tags = "社区居民楼片长控制器")
 public class DormitoryManagerController extends BaseController {
     @Resource
     private DormitoryManagerService dormitoryManagerService;
 
     /**
-     * 社区楼长列表
+     * 社区居民楼片长列表
      *
+     * @param request
+     *            HTTP请求对象
      * @param current
      *            分页页码
      * @param pageSize
@@ -56,76 +55,76 @@ public class DormitoryManagerController extends BaseController {
      * @return JSON对象
      */
     @GetMapping
-    @ApiOperation("社区楼长列表")
-    public R dormitoryManagerList(@ApiParam(name = "分页页码") Integer current, @ApiParam(name = "每页数据") Integer pageSize,
-        @ApiParam(name = "社区楼片长搜索对象") DormitoryManagerSearchVo dormitoryManagerSearchVo) {
+    @ApiOperation("社区居民楼片长列表")
+    public R dormitoryManagerList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
+        @ApiParam(name = "每页数据") Integer pageSize) {
         getEnvironmentVariable();
-        Page<DormitoryManager> dormitoryManagerPage = new Page<>(current, pageSize);
+        getSearchParameter(request);
         return R.ok().put("data",
-            dormitoryManagerService.page(systemUser.getCompanies(), dormitoryManagerSearchVo, dormitoryManagerPage));
+            dormitoryManagerService.pageCorrelation(systemUser.getCompanies(), current, pageSize, search, sort));
     }
 
     /**
-     * 通过编号查找社区楼长
+     * 通过编号查找社区居民楼片长
      *
      * @param id
-     *            社区楼长的编号
+     *            社区居民楼片长的编号
      * @return 视图页面
      */
     @GetMapping("/{id}")
-    @ApiOperation("通过编号查找社区楼长")
-    public R getDormitoryManagerById(@ApiParam(name = "社区楼长的编号", required = true) @PathVariable Long id) {
+    @ApiOperation("通过编号查找社区居民楼片长")
+    public R getDormitoryManagerById(@ApiParam(name = "社区居民楼片长的编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", dormitoryManagerService.getCorrelation(id));
     }
 
     /**
-     * 添加社区楼长处理
+     * 添加社区居民楼片长处理
      *
      * @param dormitoryManager
-     *            前台传递的社区楼长对象
+     *            前台传递的社区居民楼片长对象
      * @return 视图页面
      */
     @PostMapping
-    @ApiOperation("添加社区楼长处理")
-    public R dormitoryManagerCreateHandle(@ApiParam(name = "前台传递的社区楼长对象",
+    @ApiOperation("添加社区居民楼片长处理")
+    public R dormitoryManagerCreateHandle(@ApiParam(name = "前台传递的社区居民楼片长对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) DormitoryManager dormitoryManager) {
         if (dormitoryManagerService.save(dormitoryManager)) {
             return R.ok();
         }
-        throw new JsonException("添加社区楼长失败！");
+        throw new JsonException("添加社区居民楼片长失败！");
     }
 
     /**
-     * 修改社区楼长处理
+     * 修改社区居民楼片长处理
      *
      * @param dormitoryManager
-     *            前台传递的社区楼长对象
+     *            前台传递的社区居民楼片长对象
      * @return 视图页面
      */
     @PutMapping
-    @ApiOperation("修改社区楼长处理")
-    public R dormitoryManagerModifyHandle(@ApiParam(name = "前台传递的社区楼长对象",
+    @ApiOperation("修改社区居民楼片长处理")
+    public R dormitoryManagerModifyHandle(@ApiParam(name = "前台传递的社区居民楼片长对象",
         required = true) @RequestBody @Validated(ModifyInputGroup.class) DormitoryManager dormitoryManager) {
         if (dormitoryManagerService.updateById(dormitoryManager)) {
             return R.ok();
         }
-        throw new JsonException("修改社区楼长失败！");
+        throw new JsonException("修改社区居民楼片长失败！");
     }
 
     /**
-     * 通过社区楼长编号删除
+     * 通过社区居民楼片长编号删除
      *
      * @param id
      *            对应编号
      * @return Ajax信息
      */
     @DeleteMapping("/{id}")
-    @ApiOperation("通过社区楼长编号删除")
-    public R removeDormitoryManager(@ApiParam(name = "社区楼长编号", required = true) @PathVariable Long id) {
+    @ApiOperation("通过社区居民楼片长编号删除")
+    public R removeDormitoryManager(@ApiParam(name = "社区居民楼片长编号", required = true) @PathVariable Long id) {
         if (dormitoryManagerService.removeById(id)) {
-            return R.ok("删除社区楼长成功！");
+            return R.ok("删除社区居民楼片长成功！");
         }
-        throw new JsonException("删除社区楼长失败！");
+        throw new JsonException("删除社区居民楼片长失败！");
     }
 
     /**
@@ -151,7 +150,7 @@ public class DormitoryManagerController extends BaseController {
     }
 
     /**
-     * 导出社区楼长信息到Excel
+     * 导出社区居民楼片长信息到Excel
      *
      * @param response
      *            前台响应对象
@@ -159,7 +158,7 @@ public class DormitoryManagerController extends BaseController {
      *            单位编号
      */
     @GetMapping("/download")
-    @ApiOperation("导出社区楼长信息到Excel")
+    @ApiOperation("导出社区居民楼片长信息到Excel")
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response,
         @ApiParam(name = "需要生成的Excel表单位编号", required = true) Long companyId) {
         getEnvironmentVariable();

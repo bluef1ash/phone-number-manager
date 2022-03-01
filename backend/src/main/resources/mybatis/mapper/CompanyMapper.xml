@@ -87,7 +87,7 @@
         pm_company.level ASC
         <if test="sort != null">
             <foreach collection="sort" index="key" item="value" separator="," open=",">
-                CONVERT(#{key} USING gbk) COLLATE gbk_chinese_ci
+                CONVERT(${key} USING gbk) COLLATE gbk_chinese_ci
                 <if test="value eq 'descend'">
                     DESC
                 </if>

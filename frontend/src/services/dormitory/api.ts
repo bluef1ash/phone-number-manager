@@ -1,10 +1,9 @@
 import request from "@config/request";
-import { dormitoryManager, dormitoryManagerBatch } from "@/services/api";
+import { dormitoryManager, dormitoryManagerBatch, dormitoryManagerDownloadExcel } from "@/services/api";
 
 /** 获取社区楼长列表 */
 export async function queryDormitoryManagerList(params?: any, options?: Record<string, any>) {
-  return request<API.DataList<API.DormitoryManager> & API.ResponseException>(dormitoryManager, {
-    method: 'GET',
+  return request.get<API.DataList<API.DormitoryManager> & API.ResponseException>(dormitoryManager, {
     params,
     ...(options || {}),
   });
@@ -12,10 +11,9 @@ export async function queryDormitoryManagerList(params?: any, options?: Record<s
 
 /** 获取社区楼长列表 */
 export async function queryDormitoryManager(id: number, options?: Record<string, any>) {
-  return request<API.Data<API.DormitoryManager> & API.ResponseException>(
+  return request.get<API.Data<API.DormitoryManager> & API.ResponseException>(
     `${dormitoryManager}/${id}`,
     {
-      method: 'GET',
       ...(options || {}),
     },
   );
@@ -27,10 +25,9 @@ export async function patchDormitoryManager(
   data: API.DormitoryManager,
   options?: Record<string, any>,
 ) {
-  return request<API.Data<API.DormitoryManager> & API.ResponseException>(
+  return request.patch<API.Data<API.DormitoryManager> & API.ResponseException>(
     `${dormitoryManager}/${id}`,
     {
-      method: 'PATCH',
       data,
       ...(options || {}),
     },
@@ -42,8 +39,7 @@ export async function createDormitoryManager(
   data: API.DormitoryManager,
   options?: Record<string, any>,
 ) {
-  return request<API.ResponseSuccess & API.ResponseException>(dormitoryManager, {
-    method: 'POST',
+  return request.post<API.ResponseSuccess & API.ResponseException>(dormitoryManager, {
     data,
     ...(options || {}),
   });
@@ -54,8 +50,7 @@ export async function modifyDormitoryManager(
   data: API.DormitoryManager,
   options?: Record<string, any>,
 ) {
-  return request<API.ResponseSuccess & API.ResponseException>(dormitoryManager, {
-    method: 'PUT',
+  return request.put<API.ResponseSuccess & API.ResponseException>(dormitoryManager, {
     data,
     ...(options || {}),
   });
@@ -63,8 +58,7 @@ export async function modifyDormitoryManager(
 
 /** 删除社区楼长 */
 export async function removeDormitoryManager(id: number, options?: Record<string, any>) {
-  return request<API.ResponseSuccess & API.ResponseException>(`${dormitoryManager}/${id}`, {
-    method: 'DELETE',
+  return request.delete<API.ResponseSuccess & API.ResponseException>(`${dormitoryManager}/${id}`, {
     ...(options || {}),
   });
 }
@@ -74,9 +68,17 @@ export async function batchDormitoryManager(
   data: API.BatchRUD<number[]>,
   options?: Record<string, any>,
 ) {
-  return request<API.ResponseSuccess & API.ResponseException>(dormitoryManagerBatch, {
-    method: 'POST',
+  return request.post<API.ResponseSuccess & API.ResponseException>(dormitoryManagerBatch, {
     data,
+    ...(options || {}),
+  });
+}
+
+/** 下载表格 */
+export async function downloadDormitoryManagerExcel(options?: Record<string, any>) {
+  return request.get(dormitoryManagerDownloadExcel, {
+    getResponse: true,
+    responseType: 'blob',
     ...(options || {}),
   });
 }

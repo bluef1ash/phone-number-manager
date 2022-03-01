@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.constant.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public enum PoliticalStatusEnum {
     COMMUNIST_YOUTH_LEAGUE_MEMBER(3, "共青团员"), PREPARING_COMMUNIST_YOUTH_LEAGUE_MEMBER(4, "预备共青团员"), OTHER(5, "其他");
 
     @EnumValue
+    @JsonValue
     private final int value;
     private final String description;
 }

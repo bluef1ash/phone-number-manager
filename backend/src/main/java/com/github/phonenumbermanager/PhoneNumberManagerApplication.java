@@ -15,7 +15,6 @@ import springfox.documentation.oas.annotations.EnableOpenApi;
  *
  * @author 廿二月的天
  */
-
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @EnableScheduling

@@ -10,6 +10,7 @@ export const communityResident = baseUrl + '/resident';
 export const communityResidentBatch = baseUrl + '/resident/batch';
 export const dormitoryManager = baseUrl + '/dormitory';
 export const dormitoryManagerBatch = baseUrl + '/dormitory/batch';
+export const dormitoryManagerDownloadExcel = baseUrl + '/dormitory/download';
 export const company = baseUrl + '/company';
 export const companyBatch = baseUrl + '/company/batch';
 export const companySelect = baseUrl + '/company/select-list';

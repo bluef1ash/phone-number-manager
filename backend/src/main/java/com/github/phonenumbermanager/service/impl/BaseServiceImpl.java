@@ -2,6 +2,7 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.util.*;
 
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
@@ -14,6 +15,8 @@ import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
+import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.poi.excel.style.StyleUtil;
 
 /**
  * 基础业务实现
@@ -94,7 +97,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> listCorrelationToMap(Long companyId) {
+    public ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap) {
         return null;
     }
 
@@ -138,5 +141,38 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         data.put("titleLabel", titleLabel);
         data.put("formatter", formatter);
         return data;
+    }
+
+    /**
+     * 设置单元格样式
+     *
+     * @param cellStyle
+     *            单元格对象
+     * @param excelWriter
+     *            Excel写入器
+     * @param fontName
+     *            字体名称
+     * @param fontHeight
+     *            字体大小
+     * @param isBold
+     *            是否加粗
+     * @param isBorder
+     *            是否有边框
+     * @param isWrapText
+     *            是否自动换行
+     */
+    protected void setCellStyle(CellStyle cellStyle, ExcelWriter excelWriter, String fontName, short fontHeight,
+        boolean isBold, boolean isBorder, boolean isWrapText) {
+        StyleUtil.setColor(cellStyle, IndexedColors.AUTOMATIC, FillPatternType.NO_FILL);
+        if (isBorder) {
+            StyleUtil.setBorder(cellStyle, BorderStyle.THIN, IndexedColors.BLACK);
+        }
+        StyleUtil.setAlign(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        Font font = excelWriter.createFont();
+        font.setFontName(fontName);
+        font.setFontHeightInPoints(fontHeight);
+        font.setBold(isBold);
+        cellStyle.setFont(font);
+        cellStyle.setWrapText(isWrapText);
     }
 }

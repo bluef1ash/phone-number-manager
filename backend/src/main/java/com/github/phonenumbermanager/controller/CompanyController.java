@@ -145,7 +145,7 @@ public class CompanyController extends BaseController {
      */
     @PostMapping("/batch")
     @ApiOperation("增删改批量操作")
-    public R configurationBatch(
+    public R companyBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);

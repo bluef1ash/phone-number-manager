@@ -93,21 +93,93 @@
             <if test="search != null">
                 <foreach collection="search" index="key" item="value" separator="AND" open="AND">
                     <choose>
-                        <when test="key eq 'name'">pm_dormitory_manager.name</when>
-                        <when test="key eq 'phoneNumbers'">pm_phone_number.phone_number</when>
+                        <when test="key eq 'phoneNumbers'">pm_phone_number.phone_number LIKE CONCAT('%', #{value},
+                            '%')
+                        </when>
+                        <when test="key eq 'gender'">pm_dormitory_manager.gender = #{value}</when>
+                        <when test="key eq 'age'">
+                            pm_dormitory_manager.birth BETWEEN
+                            <foreach collection="value" item="v" separator="AND">#{v}</foreach>
+                        </when>
+                        <when test="key eq 'systemUser'">
+                            <foreach collection="value" item="val">
+                                <foreach collection="val" item="v" open="(" separator="OR" close=")">
+                                    pm_system_user.id = #{v}
+                                </foreach>
+                            </foreach>
+                        </when>
+                        <when test="key eq 'company'">
+                            <foreach collection="value" item="val">
+                                <foreach collection="val" item="v" open="(" separator="OR" close=")">
+                                    pm_company.id = #{v}
+                                </foreach>
+                            </foreach>
+                        </when>
+                        <otherwise>pm_dormitory_manager.${key} LIKE CONCAT('%', #{value}, '%')</otherwise>
                     </choose>
-                    LIKE CONCAT('%', #{value}, '%')
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        <choose>
+            <when test="sort != null">
+                <foreach collection="sort" index="key" item="value" separator=",">
+                    <choose>
+                        <when test="key eq 'company,name'">
+                            CONVERT(pm_company.name USING gbk) COLLATE gbk_chinese_ci
+                        </when>
+                        <when test="key eq 'systemUser,username'">
+                            CONVERT(dormitory_manager_name USING gbk) COLLATE gbk_chinese_ci
+                        </when>
+                        <when test="key eq 'age'">
+                            age
+                        </when>
+                        <otherwise>
+                            CONVERT(pm_dormitory_manager.${key} USING gbk) COLLATE gbk_chinese_ci
+                        </otherwise>
+                    </choose>
+                    <if test="value eq 'descend'">
+                        DESC
+                    </if>
+                </foreach>
+            </when>
+            <otherwise>
+                pm_dormitory_manager.company_id, CONVERT(pm_dormitory_manager.name USING GBK)
+            </otherwise>
+        </choose>
+    </select>
+    <select id="selectListByCompanyIds" resultMap="collectionResultMap">
+        SELECT
+        pm_dormitory_manager.id AS 'dormitory_manager_id',
+        pm_dormitory_manager.name AS 'dormitory_manager_name',
+        pm_dormitory_manager.gender,
+        pm_dormitory_manager.birth,
+        pm_dormitory_manager.political_status,
+        pm_dormitory_manager.employment_status,
+        pm_dormitory_manager.education,
+        pm_dormitory_manager.address,
+        pm_dormitory_manager.manager_address,
+        pm_dormitory_manager.manager_count,
+        pm_phone_number.phone_number,
+        pm_dormitory_manager.company_id,
+        pm_company.name AS 'company_name',
+        pm_company.parent_id,
+        pm_system_user.id AS 'system_user_id',
+        pm_system_user.username
+        FROM
+        pm_dormitory_manager
+        LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
+        LEFT JOIN pm_dormitory_manager_phone_number ON pm_dormitory_manager.id =
+        pm_dormitory_manager_phone_number.dormitory_manager_id
+        LEFT JOIN pm_phone_number ON pm_dormitory_manager_phone_number.phone_number_id = pm_phone_number.id
+        LEFT JOIN pm_system_user ON pm_dormitory_manager.system_user_id = pm_system_user.id
+        <where>
+            <if test="companyIds != null and companyIds.size() gt 0">
+                <foreach collection="companyIds" item="id" separator="OR">
+                    pm_dormitory_manager.company_id = #{id}
                 </foreach>
             </if>
         </where>
         ORDER BY pm_dormitory_manager.company_id, CONVERT(pm_dormitory_manager.name USING GBK)
-        <if test="sort != null">
-            <foreach collection="sort" index="key" item="value" separator="," open=",">
-                CONVERT(#{key} USING gbk) COLLATE gbk_chinese_ci
-                <if test="value eq 'descend'">
-                    DESC
-                </if>
-            </foreach>
-        </if>
     </select>
 </mapper>

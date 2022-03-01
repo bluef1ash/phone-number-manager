@@ -16,6 +16,7 @@ import {
 } from '@/services/company/api';
 import { isArray } from 'lodash';
 import { parsePhoneNumber } from 'libphonenumber-js/max';
+import { submitPrePhoneNumberHandle } from '@/services/utils';
 
 const InputElement = (
   selectListState: API.SelectList[],
@@ -121,17 +122,9 @@ const Company: React.FC = () => {
       const select = selectListState.find(({ value }) => value === companyIdState);
       formData.level = (select?.level as number) + 1;
     }
-    formData.phoneNumbers = formData.phoneNumbers?.map((value) => {
-      const phoneType = parsePhoneNumber(value.phoneNumber as string, 'CN').getType();
-      let pt = '';
-      if (typeof phoneType !== 'undefined') {
-        pt = phoneType.toString();
-      }
-      return {
-        phoneType: pt,
-        phoneNumber: value.phoneNumber,
-      };
-    });
+    formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
+      submitPrePhoneNumberHandle(value.phoneNumber as string),
+    );
     return formData;
   };
 
@@ -166,7 +159,6 @@ const Company: React.FC = () => {
           {
             title: '联系方式',
             dataIndex: 'phoneNumbers',
-            sorter: true,
             ellipsis: true,
             render(dom, entity) {
               return (
@@ -210,7 +202,7 @@ const Company: React.FC = () => {
             {
               title: '无',
               value: 0,
-              level: 0,
+              level: -1,
             },
           ];
           const companySelect = (await queryCompanySelectList()).data;

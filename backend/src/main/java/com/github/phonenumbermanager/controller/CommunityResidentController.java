@@ -1,22 +1,15 @@
 package com.github.phonenumbermanager.controller;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.CommunityResident;
-import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.R;
@@ -26,9 +19,6 @@ import com.github.phonenumbermanager.vo.CommunityResidentSearchVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
-import cn.hutool.poi.excel.StyleSet;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -161,13 +151,14 @@ public class CommunityResidentController extends BaseController {
      * @param companyId
      *            单位编号
      */
-    @GetMapping("/download")
+    /*@GetMapping("/download")
     @ApiOperation("导出居民信息到Excel")
     public void communityResidentSaveAsExcel(HttpServletResponse response,
         @ApiParam(name = "需要生成的Excel表单位编号", required = true) Long companyId) {
         String excelResidentTitleUp = Convert.toStr(configurationMap.get("excel_resident_title_up").get("content"));
         String excelResidentTitle = Convert.toStr(configurationMap.get("excel_resident_title").get("content"));
-        List<LinkedHashMap<String, Object>> dataResult = communityResidentService.listCorrelationToMap(companyId);
+        List<LinkedHashMap<String, Object>> dataResult =
+            communityResidentService.listCorrelationToMap(systemUser.getCompanies());
         if (!dataResult.isEmpty()) {
             ExcelWriter excelWriter = ExcelUtil.getWriter();
             CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
@@ -202,7 +193,7 @@ public class CommunityResidentController extends BaseController {
                 excelWriter.close();
             }
         }
-    }
+    }*/
 
     /**
      * 添加、修改到数据库前处理

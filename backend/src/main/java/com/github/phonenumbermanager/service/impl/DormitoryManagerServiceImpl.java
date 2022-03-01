@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.constant.enums.*;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
@@ -23,8 +23,13 @@ import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
 import com.github.phonenumbermanager.service.*;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.PhoneUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.pinyin.PinyinUtil;
 import cn.hutool.json.JSONObject;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.poi.excel.StyleSet;
 
 /**
  * 社区楼长业务实现
@@ -140,48 +145,123 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public List<LinkedHashMap<String, Object>> listCorrelationToMap(Long companyId) {
+    public ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap) {
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-        List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", companyId));
+        String excelDormitoryTitleUp = Convert.toStr(configurationMap.get("excel_dormitory_title_up").get("content"));
+        String excelDormitoryTitle = Convert.toStr(configurationMap.get("excel_dormitory_title").get("content"));
+        String streetTitle = "";
+        List<Company> companyAll = companyService.list();
+        List<SystemUser> systemUsers = systemUserService.listCorrelationPhoneNumber();
+        if (companies == null) {
+            companies = companyAll;
+        }
+        Company levelMax =
+            companyService.getOne(new QueryWrapper<Company>().orderByDesc("level").select("level").last("limit 1"));
         List<Long> companyIds = new ArrayList<>();
-        companyService.listSubmissionCompanyIds(companyIds, companies, companyService.list(), null);
-        List<DormitoryManager> dormitoryManagers = baseMapper.selectListByCompanyIds(companyIds);
+        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
+        List<DormitoryManager> dormitoryManagers = new ArrayList<>();
+        int current = 1;
+        while (true) {
+            IPage<DormitoryManager> dormitoryManagerPage =
+                baseMapper.selectListByCompanyIds(companyIds, new Page<>(current, 1000));
+            if (dormitoryManagerPage.getRecords().isEmpty()) {
+                break;
+            }
+            dormitoryManagers.addAll(dormitoryManagerPage.getRecords());
+            current++;
+        }
         if (!dormitoryManagers.isEmpty()) {
             long index = 1L;
-            QueryWrapper<Company> wrapper = new QueryWrapper<>();
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM");
             for (DormitoryManager dormitoryManager : dormitoryManagers) {
                 LinkedHashMap<String, Object> data = new LinkedHashMap<>();
                 // 序号
                 data.put("sequenceNumber", index);
                 // 处理社区名称
-                String communityName = dormitoryManager.getCompany().getName()
-                    .replaceAll(SystemConstant.COMMUNITY_ALIAS_NAME, "").replaceAll(SystemConstant.COMMUNITY_NAME, "");
+                String communityName = dormitoryManager.getCompany().getName().replaceAll("(?iUs)[社区居委会]", "");
                 data.put("communityName", communityName);
-                wrapper.eq("id", dormitoryManager.getCompany().getParentId());
-                Company company = companyService.getOne(wrapper);
-                String streetName = company.getName().replaceAll(SystemConstant.SUBDISTRICT_ALIAS_NAME, "")
-                    .replaceAll(SystemConstant.SUBDISTRICT_NAME, "");
+                Optional<Company> company = companyAll.stream()
+                    .filter(c -> dormitoryManager.getCompany().getParentId().equals(c.getId())).findFirst();
+                String streetName = "";
+                if (company.isPresent()) {
+                    streetName = company.get().getName().replaceAll("(?iUs)[街道办事处]", "");
+                    if (StrUtil.isBlankIfStr(streetTitle)) {
+                        streetTitle = company.get().getName();
+                    } else if (!streetTitle.equals(company.get().getName())) {
+                        streetTitle = streetTitle + "，" + company.get().getName();
+                    }
+                }
+                // 编号
                 data.put("id", PinyinUtil.getFirstLetter(streetName, "") + PinyinUtil.getFirstLetter(communityName, "")
                     + String.format("%04d", index));
+                // 姓名
+                data.put("name", dormitoryManager.getName());
+                // 性别
                 data.put("genderName", dormitoryManager.getGender().getDescription());
                 // 出生年月
                 data.put("birthString", dateTimeFormatter.format(dormitoryManager.getBirth()));
                 data.put("politicalStatusName", dormitoryManager.getPoliticalStatus().getDescription());
-                data.put("educationName", dormitoryManager.getEmploymentStatus().getDescription());
+                data.put("employmentStatusName", dormitoryManager.getEmploymentStatus().getDescription());
+                data.put("educationName", dormitoryManager.getEducation().getDescription());
                 data.put("address", dormitoryManager.getAddress());
                 data.put("managerAddress", dormitoryManager.getManagerAddress());
                 data.put("managerCount", dormitoryManager.getManagerCount());
-                data.put("telephone", dormitoryManager.getPhoneNumbers().get(0));
+                data.put("mobile", "");
+                data.put("fixedLine", "");
+                dormitoryManager.getPhoneNumbers().forEach(phoneNumber -> {
+                    if (PhoneUtil.isMobile(phoneNumber.getPhoneNumber())) {
+                        data.put("mobile", phoneNumber.getPhoneNumber());
+                    } else {
+                        data.put("fixedLine", phoneNumber.getPhoneNumber());
+                    }
+                });
                 // 处理分包人
                 data.put("subcontractorName", dormitoryManager.getSystemUser().getUsername());
-                SystemUser systemUser = systemUserService.getCorrelation(dormitoryManager.getSystemUser().getId());
-                data.put("subcontractorTelephone", systemUser.getPhoneNumber());
+                Optional<SystemUser> user = systemUsers.stream()
+                    .filter(systemUser -> dormitoryManager.getSystemUser().getId().equals(systemUser.getId()))
+                    .findFirst();
+                if (user.isPresent()) {
+                    data.put("subcontractorTelephone", user.get().getPhoneNumber().getPhoneNumber());
+                } else {
+                    data.put("subcontractorTelephone", "");
+                }
                 list.add(data);
                 index++;
             }
+            ExcelWriter excelWriter = ExcelUtil.getWriter(true);
+            CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+            setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
+            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, 1, excelDormitoryTitleUp,
+                firstRowStyle);
+            excelWriter.passCurrentRow();
+            CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+            setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
+            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, list.get(0).keySet().size(),
+                excelDormitoryTitle, titleStyle);
+            excelWriter.passCurrentRow();
+            StyleSet styleSet = excelWriter.getStyleSet();
+            setCellStyle(styleSet.getHeadCellStyle(), excelWriter, "宋体", (short)11, false, true, true);
+            setCellStyle(styleSet.getCellStyle(), excelWriter, "宋体", (short)9, false, true, true);
+            Map<String, String> tableHead = getTableHead();
+            int i = 0;
+            for (String value : tableHead.values()) {
+                if (i == tableHead.size() - 2) {
+                    excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), i, i + 1, "分包人", true);
+                    excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
+                } else if (i == tableHead.size() - 1) {
+                    excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
+                } else {
+                    excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow() + 1, i, i, value, true);
+                }
+                i++;
+            }
+            excelWriter.passCurrentRow();
+            excelWriter.passCurrentRow();
+            excelWriter.write(list, false);
+            excelWriter.autoSizeColumnAll();
+            return excelWriter;
         }
-        return list;
+        return null;
     }
 
     @Override
@@ -236,14 +316,15 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
-        return baseMapper.deleteById(id) > 0 && dormitoryManagerPhoneNumberService
+        super.removeById(id);
+        return dormitoryManagerPhoneNumberService
             .remove(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", id));
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(DormitoryManager entity) {
-        baseMapper.insert(entity);
+        super.save(entity);
         phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
         return dormitoryManagerPhoneNumberService.saveBatch(dormitoryManagerPhoneNumbersHandler(entity));
     }
@@ -251,11 +332,20 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(DormitoryManager entity) {
-        baseMapper.updateById(entity);
+        super.updateById(entity);
         phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
         dormitoryManagerPhoneNumberService
             .remove(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", entity.getId()));
         return dormitoryManagerPhoneNumberService.updateBatchById(dormitoryManagerPhoneNumbersHandler(entity));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean removeByIds(Collection<?> list) {
+        QueryWrapper<DormitoryManagerPhoneNumber> wrapper = new QueryWrapper<>();
+        list.forEach(l -> wrapper.eq("dormitory_manager_id", l).or());
+        super.removeByIds(list);
+        return dormitoryManagerPhoneNumberService.remove(wrapper);
     }
 
     /**
@@ -316,7 +406,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         Map<String, Integer> employmentStatusCount = new HashMap<>();
         Arrays.stream(EmploymentStatusEnum.values())
             .forEach(employmentStatusEnum -> employmentStatusCount.put(employmentStatusEnum.getDescription(), 0));
-        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, null);
+        Company levelMax = companyService.getOne(new QueryWrapper<Company>().orderByDesc("level").select("level"));
+        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
         QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
         companyIds.forEach(id -> wrapper.eq("company_id", id));
         List<DormitoryManager> dormitoryManagers = baseMapper.selectList(wrapper);
@@ -379,5 +470,31 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         List<PhoneNumber> phoneNumbers = phoneNumberService.list(wrapper);
         return phoneNumbers.stream().map(phoneNumber -> new DormitoryManagerPhoneNumber()
             .setDormitoryManagerId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取表格表头
+     *
+     * @return 表格表头
+     */
+    private Map<String, String> getTableHead() {
+        Map<String, String> tableHead = new LinkedHashMap<>();
+        tableHead.put("sequenceNumber", "序号");
+        tableHead.put("communityName", "社区名称");
+        tableHead.put("id", "编号");
+        tableHead.put("name", "姓名");
+        tableHead.put("genderName", "性别");
+        tableHead.put("birthString", "出生年月");
+        tableHead.put("politicalStatusName", "政治面貌");
+        tableHead.put("employmentStatusName", "工作状况");
+        tableHead.put("educationName", "文化程度");
+        tableHead.put("address", "家庭住址（具体到单元号、楼号）");
+        tableHead.put("managerAddress", "分包楼栋（具体到单元号、楼号）");
+        tableHead.put("managerCount", "联系户数");
+        tableHead.put("mobile", "手机");
+        tableHead.put("fixedLine", "座机");
+        tableHead.put("subcontractorName", "姓名");
+        tableHead.put("subcontractorTelephone", "手机");
+        return tableHead;
     }
 }

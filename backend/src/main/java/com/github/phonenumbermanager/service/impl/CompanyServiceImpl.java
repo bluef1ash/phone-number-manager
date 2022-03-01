@@ -132,9 +132,9 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
 
     @Override
     public void listSubmissionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
-        Map<Long, String> parents) {
+        Integer level, Map<Long, String> parents) {
         companies.forEach(company -> {
-            if (company.getLevel() == 0) {
+            if (level.equals(company.getLevel())) {
                 companyIds.add(company.getId());
                 if (parents != null && parents.get(company.getParentId()).isEmpty()) {
                     Optional<Company> companyOptional = companyAll.stream()
@@ -145,7 +145,7 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             } else {
                 List<Company> companyList = companyAll.stream()
                     .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
-                listSubmissionCompanyIds(companyIds, companyList, companyAll, parents);
+                listSubmissionCompanyIds(companyIds, companyList, companyAll, level, parents);
             }
         });
     }

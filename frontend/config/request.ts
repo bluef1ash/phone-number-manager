@@ -44,4 +44,10 @@ request.interceptors.request.use(
     return { url, options };
   },
 );
+request.interceptors.response.use(async (response: Response, options: RequestOptionsInit) => {
+  if (response.headers.get('Content-Type') === 'application/octet-stream') {
+    options.responseType = 'blob';
+  }
+  return response;
+});
 export default request;

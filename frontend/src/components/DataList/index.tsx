@@ -5,7 +5,7 @@ import { Button, message as msg, Popconfirm, Space } from 'antd';
 import type { ParamsType } from '@ant-design/pro-provider';
 import type { EditModalFormProps } from './EditModalForm';
 import EditModalForm from './EditModalForm';
-import { PlusOutlined } from '@ant-design/icons';
+import { ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ProColumns } from '@ant-design/pro-table/lib/typing';
 import type { SortOrder } from 'antd/es/table/interface';
@@ -22,6 +22,7 @@ type DataListProps<T, U extends ParamsType> = {
   batchRemoveEventHandler?: (
     selectedRowKeys: number[],
   ) => Promise<API.ResponseSuccess | API.ResponseException>;
+  importDataEventHandler?: React.MouseEventHandler<HTMLElement>;
   exportDataEventHandler?: React.MouseEventHandler<HTMLElement>;
   createEditModalForm?: {
     element?: JSX.Element;
@@ -44,16 +45,13 @@ function DataList<T, U extends ParamsType>({
   customColumns,
   customRequest,
   batchRemoveEventHandler,
+  importDataEventHandler,
   exportDataEventHandler,
   createEditModalForm,
   modifyEditModalForm,
   ...restProps
 }: DataListProps<T, U>): JSX.Element {
   const [selectedRowKeysState, setSelectedRowKeys] = useState<Key[]>([]);
-  const [createEditModalFormVisible, setCreateEditModalFormVisible] = useState<boolean | undefined>(
-    undefined,
-  );
-  const [modifyEditModalFormVisible] = useState<boolean | undefined>(undefined);
   const customFormColumns: ProColumns<T>[] = [
     ...(customColumns || []),
     {
@@ -96,7 +94,6 @@ function DataList<T, U extends ParamsType>({
               }
             }
           }}
-          visible={modifyEditModalFormVisible}
           formRef={modifyEditModalForm?.formRef}
           {...modifyEditModalForm?.props}
         >
@@ -128,7 +125,7 @@ function DataList<T, U extends ParamsType>({
     <ProTable<T, U>
       actionRef={customActionRef}
       columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
+        persistenceKey: 'dataList',
         persistenceType: 'localStorage',
       }}
       columns={[...customFormColumns]}
@@ -170,6 +167,36 @@ function DataList<T, U extends ParamsType>({
       }}
       dateFormatter="string"
       toolBarRender={() => [
+        ((): JSX.Element => {
+          if (typeof importDataEventHandler !== 'undefined') {
+            return (
+              <Button
+                key="importDataButton"
+                icon={<ImportOutlined />}
+                onClick={importDataEventHandler}
+              >
+                {' '}
+                导入数据{' '}
+              </Button>
+            );
+          }
+          return <></>;
+        })(),
+        ((): JSX.Element => {
+          if (typeof exportDataEventHandler !== 'undefined') {
+            return (
+              <Button
+                key="exportDataButton"
+                icon={<ExportOutlined />}
+                onClick={exportDataEventHandler}
+              >
+                {' '}
+                导出数据{' '}
+              </Button>
+            );
+          }
+          return <></>;
+        })(),
         <EditModalForm<T>
           key="createData"
           trigger={
@@ -192,16 +219,13 @@ function DataList<T, U extends ParamsType>({
             //@ts-ignore
             const { code, message } = await createEditModalForm?.onFinish?.(formData);
             if (code === 200) {
-              setCreateEditModalFormVisible(false);
               msg.success(message === 'success' ? '添加成功！' : message);
               customActionRef?.current?.reload();
               return true;
-            } else {
-              msg.error(message);
-              return false;
             }
+            msg.error(message);
+            return false;
           }}
-          visible={createEditModalFormVisible}
           formRef={createEditModalForm?.formRef}
           {...createEditModalForm?.props}
         >
@@ -249,11 +273,6 @@ function DataList<T, U extends ParamsType>({
                   <a key="batch_remove_button">批量删除</a>{' '}
                 </Popconfirm>
               );
-            }
-          })()}{' '}
-          {((): JSX.Element | void => {
-            if (typeof exportDataEventHandler !== 'undefined') {
-              return <a onClick={exportDataEventHandler}>导出数据</a>;
             }
           })()}{' '}
         </Space>

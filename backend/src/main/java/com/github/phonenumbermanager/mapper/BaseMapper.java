@@ -63,6 +63,19 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
     List<T> selectListByCompanyIds(List<Long> companyIds) throws DataAccessException;
 
     /**
+     * 通过单位查询 （包含分页）
+     *
+     * @param companyIds
+     *            单位上级编号
+     * @param page
+     *            分页对象
+     * @return 社区楼长集合
+     * @throws DataAccessException
+     *             数据库操作异常
+     */
+    IPage<T> selectListByCompanyIds(List<Long> companyIds, Page<T> page) throws DataAccessException;
+
+    /**
      * 通过编号查询对象与所属社区
      *
      * @param id

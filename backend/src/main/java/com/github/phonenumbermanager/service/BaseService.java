@@ -1,7 +1,6 @@
 package com.github.phonenumbermanager.service;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
+import cn.hutool.poi.excel.ExcelWriter;
 
 /**
  * Service层基本接口
@@ -112,13 +112,15 @@ public interface BaseService<T> extends IService<T> {
     T getCorrelation(Long id);
 
     /**
-     * 通过单位编号查找社区居民或楼片长及所属社区
+     * 通过单位编号导出Excel
      *
-     * @param companyId
-     *            单位编号
+     * @param companies
+     *            系统用户单位对象集合
+     * @param configurationMap
+     *            系统配置项
      * @return 社区居民与所属社区集合转换的JSON对象
      */
-    List<LinkedHashMap<String, Object>> listCorrelationToMap(Long companyId);
+    ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap);
 
     /**
      * 获取树形表单列表

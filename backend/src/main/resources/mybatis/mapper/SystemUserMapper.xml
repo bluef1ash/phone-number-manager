@@ -73,7 +73,7 @@
         <if test="sort != null">
             ORDER BY
             <foreach collection="sort" index="key" item="value" separator=",">
-                CONVERT(#{key} USING gbk) COLLATE gbk_chinese_ci
+                CONVERT(${key} USING gbk) COLLATE gbk_chinese_ci
                 <if test="value eq 'descend'">
                     DESC
                 </if>

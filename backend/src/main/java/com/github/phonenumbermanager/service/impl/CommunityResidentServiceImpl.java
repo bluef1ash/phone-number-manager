@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
-import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.CommunityResidentMapper;
@@ -148,7 +147,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return false;
     }
 
-    @Override
+    /*@Override
     public List<LinkedHashMap<String, Object>> listCorrelationToMap(Long companyId) {
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", companyId));
@@ -177,7 +176,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             }
         }
         return list;
-    }
+    }*/
 
     @Override
     public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
@@ -201,14 +200,14 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         List<Long> companyIds = new ArrayList<>();
         List<Company> companyAll = companyService.list();
         if (companyId == null) {
-            companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, null);
+            companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, 0, null);
             // communityResidents = baseMapper.countForGroupCompany(companyIds);
         } else {
             companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
             if (companyIds.contains(companyId)) {
                 List<Company> companyList = companyService.list(new QueryWrapper<Company>().eq("id", companyId));
                 companyIds.clear();
-                companyService.listSubmissionCompanyIds(companyIds, companyList, companyAll, null);
+                companyService.listSubmissionCompanyIds(companyIds, companyList, companyAll, 0, null);
                 // communityResidents = baseMapper.countForGroupCompany(companyIds);
             }
         }
@@ -273,7 +272,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     private Map<String, Object> computedBaseMessage(List<Company> companies, List<Company> companyAll,
         List<Long> companyIds) {
         Map<String, Object> baseMessage = new HashMap<>(2);
-        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, null);
+        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, 0, null);
         QueryWrapper<CommunityResident> communityResidentWrapper = new QueryWrapper<>();
         QueryWrapper<Company> companyWrapper = new QueryWrapper<>();
         companyWrapper.select("SUM(actual_number) AS actual");

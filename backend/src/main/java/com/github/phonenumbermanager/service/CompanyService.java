@@ -20,11 +20,13 @@ public interface CompanyService extends BaseService<Company> {
      *            单位对象集合
      * @param companyAll
      *            所有单位对象集合
+     * @param level
+     *            等级
      * @param parents
      *            上级单位
      */
     void listSubmissionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
-        Map<Long, String> parents);
+        Integer level, Map<Long, String> parents);
 
     /**
      * 递归获取链条单位编号

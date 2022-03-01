@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.github</groupId>
     <artifactId>phone-number-manager</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1</version>
     <name>phone-number-manager</name>
     <description>
         This system is written using Spring Boot + Mybatis + Spring Security + Node.js + Webpack + Vue.js architecture.
@@ -22,14 +22,14 @@
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <mybatis-plus-boot-starter.version>3.5.0</mybatis-plus-boot-starter.version>
+        <mybatis-plus-boot-starter.version>3.5.1</mybatis-plus-boot-starter.version>
         <swagger.version>3.0.0</swagger.version>
         <poi.version>5.0.0</poi.version>
         <druid.version>1.2.8</druid.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <hutool.version>5.7.19</hutool.version>
+        <hutool.version>5.7.20</hutool.version>
         <jsqlparser.version>4.3</jsqlparser.version>
     </properties>
     <repositories>
@@ -151,6 +151,10 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>${hutool.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
         </dependency>
     </dependencies>
     <build>

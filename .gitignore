@@ -206,6 +206,7 @@ local.properties
 *.iml
 out
 gen
+
 ### Sass template
 .sass-cache/
 *.css.map

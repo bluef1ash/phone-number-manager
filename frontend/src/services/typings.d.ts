@@ -1,6 +1,6 @@
 declare module '*.less';
 declare namespace API {
-  import type { NumberType } from 'libphonenumber-js/types';
+  import type { PhoneNumberType } from '@/services/enums';
 
   type ResponseSuccess = {
     code: number;
@@ -22,7 +22,7 @@ declare namespace API {
   type PhoneNumber = {
     id?: number;
     phoneNumber?: string;
-    phoneType?: NumberType;
+    phoneType?: PhoneNumberType;
   };
 
   type DataListData<T> = {

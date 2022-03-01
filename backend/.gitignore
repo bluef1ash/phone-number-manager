@@ -11,3 +11,5 @@ debug/
 warn/
 mvnw
 mvnw.cmd
+.env
+**/rebel.xml

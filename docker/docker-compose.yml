@@ -21,9 +21,13 @@ services:
     image: bluef1ash/phone-number-manager-backend:latest
     container_name: "phone-number-manager-backend"
     environment:
-      - spring.datasource.host=database
-      - spring.datasource.port=3306
-      - spring.redis=redis
+      - DATABASE_HOST=127.0.0.1
+      - DATABASE_PORT=3306
+      - DATABASE_NAME=phone_number_manager
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=root
+      - REDIS_HOST=127.0.0.1
+      - REDIS_PORT=6379
     ports:
       - "8080:8080"
     depends_on:

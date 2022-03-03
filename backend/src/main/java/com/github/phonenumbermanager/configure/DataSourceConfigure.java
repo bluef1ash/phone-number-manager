@@ -30,33 +30,35 @@ public class DataSourceConfigure {
     private String username;
     @Value("${spring.datasource.password}")
     private String password;
-    @Value("${spring.datasource.host}")
+    @Value("${DATABASE_HOST}")
     private String host;
-    @Value("${spring.datasource.port}")
+    @Value("${DATABASE_PORT}")
     private String port;
-    @Value("${spring.datasource.database-name}")
+    @Value("${DATABASE_NAME}")
     private String databaseName;
-    private final String connectUrl = "jdbc:mysql://" + host + ":" + port
-        + "/mysql?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true&autoReconnect=true";
 
     @Bean
     @ConditionalOnMissingBean
     public DataSource dataSource() {
+        String connectUrl = "jdbc:mysql://" + host + ":" + port
+            + "/mysql?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true&autoReconnect=true";
         Connection connection = null;
-        PreparedStatement state = null;
-        PreparedStatement statement = null;
+        PreparedStatement databaseStatement = null;
+        PreparedStatement createDatabaseStatement = null;
         try {
             Class.forName(driverClassName);
             connection = DriverManager.getConnection(connectUrl, username, password);
-            state = connection.prepareStatement(
+            databaseStatement = connection.prepareStatement(
                 "SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA` WHERE `SCHEMA_NAME` = ?;",
                 ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            ResultSet resultSet = state.executeQuery(databaseName);
+            databaseStatement.setString(1, databaseName);
+            ResultSet resultSet = databaseStatement.executeQuery();
             resultSet.last();
             if (resultSet.getRow() == 0) {
-                statement = connection
+                createDatabaseStatement = connection
                     .prepareStatement("CREATE DATABASE ? DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-                if (!statement.execute(databaseName)) {
+                createDatabaseStatement.setString(1, databaseName);
+                if (!createDatabaseStatement.execute()) {
                     throw new SQLException();
                 }
             }
@@ -64,13 +66,13 @@ public class DataSourceConfigure {
             e.printStackTrace();
         } finally {
             try {
-                if (null != state) {
-                    state.close();
+                if (databaseStatement != null) {
+                    databaseStatement.close();
                 }
-                if (null != statement) {
-                    statement.close();
+                if (createDatabaseStatement != null) {
+                    createDatabaseStatement.close();
                 }
-                if (null != connection) {
+                if (connection != null) {
                     connection.close();
                 }
             } catch (Throwable e) {

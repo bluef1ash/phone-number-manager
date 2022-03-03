@@ -1,6 +1,6 @@
 FROM maven:3.8.4-jdk-11-slim as backend-builder
 WORKDIR /app
-COPY src /app/src
+COPY ../backend/src /app/src
 COPY pom.xml /app
 RUN mvn -f /app/pom.xml clean package -P prod -D maven.test.skip=true -D autoconfig.charset=utf-8
 
@@ -22,17 +22,17 @@ RUN bash -c "touch /app/phone-number-manager-0.0.1.jar"
 CMD ["java", "-jar", "/app/phone-number-manager-0.0.1.jar", "--spring.profiles.active=prod"]
 
 FROM node:lts-alpine as frontend-builder
-WORKDIR /usr/src/app/
-COPY ./frontend/package.json ./
+WORKDIR /usr/src/app
+COPY ../frontend/package.json /usr/src/app
 RUN npm install
-COPY ./frontend/ ./
+COPY ../frontend/ /usr/src/app
 RUN npm run test:all && npm run fetch:blocks && npm run build
 
 FROM nginx:stable-alpine
 USER root
-WORKDIR /usr/share/nginx/html/
-COPY ./docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=frontend-builder /usr/src/app/dist /usr/share/nginx/html/
+WORKDIR /usr/share/nginx/html
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=frontend-builder /usr/src/app/dist /usr/share/nginx/html
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo 'Asia/Shanghai' > /etc/timezone
 ENV TZ=Asia/Shanghai

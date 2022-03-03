@@ -3,7 +3,7 @@ debug: true
 
 spring:
     config:
-        import: optional:file:.env[.yml]
+        import: file:backend/.env[.yml]
 
 management:
     endpoints:

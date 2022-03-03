@@ -1,4 +1,4 @@
-import { account, baseUrl } from '@/services/api';
+import { account } from '@/services/api';
 import Footer from '@/components/Footer';
 import RightContent from '@/components/RightContent';
 import { BookOutlined, LinkOutlined } from '@ant-design/icons';
@@ -16,7 +16,7 @@ import { queryMenuData } from '@/services/permission/api';
 import moment from 'moment';
 
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = account.login.substring(baseUrl.length);
+const loginPath = account.login.substring((process.env.BASE_URL as string).length);
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {

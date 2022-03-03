@@ -21,6 +21,7 @@ services:
     image: bluef1ash/phone-number-manager-backend:latest
     container_name: "phone-number-manager-backend"
     environment:
+      - SERVER_PORT=80
       - DATABASE_HOST=127.0.0.1
       - DATABASE_PORT=3306
       - DATABASE_NAME=phone_number_manager
@@ -28,8 +29,6 @@ services:
       - DATABASE_PASSWORD=root
       - REDIS_HOST=127.0.0.1
       - REDIS_PORT=6379
-    ports:
-      - "8080:8080"
     depends_on:
       - database
       - redis
@@ -38,7 +37,7 @@ services:
     image: bluef1ash/phone-number-manager-frontend:latest
     container_name: "phone-number-manager-frontend"
     environment:
-      - API_BASE_URL=http://phone-number-manager-backend/v3/api-docs
+      - BASE_URL=http://phone-number-manager-backend
     ports:
       - "80:80"
     volumes:

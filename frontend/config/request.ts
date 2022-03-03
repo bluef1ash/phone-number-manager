@@ -1,15 +1,16 @@
 import { extend, ExtendOptionsInit, RequestOptionsInit } from 'umi-request';
 import { message, notification } from 'antd';
 import { history } from 'umi';
-import { account, baseUrl } from '@/services/api';
+import { account } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
 
+const { BASE_URL } = process.env;
 const request = extend({
   errorHandler: async (error: ExtendOptionsInit) => {
     const { response, data } = error;
     if (response && response.status && data) {
       if (response.status === 401) {
-        history.push(account.login.substring(baseUrl.length));
+        history.push(account.login.substring((BASE_URL as string).length));
       } else if (data.code === 10005) {
         for (let key in data.exception) {
           notification['error']({

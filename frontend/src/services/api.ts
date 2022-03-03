@@ -1,26 +1,26 @@
-export const baseUrl = 'http://127.0.0.1:8080';
+const { BASE_URL } = process.env;
 export const account = {
-  login: baseUrl + '/account/login',
-  logout: baseUrl + '/account/logout',
+  login: BASE_URL + '/account/login',
+  logout: BASE_URL + '/account/logout',
 };
 export const index = {
-  menu: baseUrl + '/index/menu',
+  menu: BASE_URL + '/index/menu',
 };
-export const communityResident = baseUrl + '/resident';
-export const communityResidentBatch = baseUrl + '/resident/batch';
-export const dormitoryManager = baseUrl + '/dormitory';
-export const dormitoryManagerBatch = baseUrl + '/dormitory/batch';
-export const dormitoryManagerDownloadExcel = baseUrl + '/dormitory/download';
-export const company = baseUrl + '/company';
-export const companyBatch = baseUrl + '/company/batch';
-export const companySelect = baseUrl + '/company/select-list';
+export const communityResident = BASE_URL + '/resident';
+export const communityResidentBatch = BASE_URL + '/resident/batch';
+export const dormitoryManager = BASE_URL + '/dormitory';
+export const dormitoryManagerBatch = BASE_URL + '/dormitory/batch';
+export const dormitoryManagerDownloadExcel = BASE_URL + '/dormitory/download';
+export const company = BASE_URL + '/company';
+export const companyBatch = BASE_URL + '/company/batch';
+export const companySelect = BASE_URL + '/company/select-list';
 export const system = {
-  configuration: baseUrl + '/system/configuration',
-  configurationBatch: baseUrl + '/system/configuration/batch',
-  user: baseUrl + '/system/user',
-  userBatch: baseUrl + '/system/user/batch',
-  userSelectList: baseUrl + '/system/user/select-list',
-  permission: baseUrl + '/system/permission',
-  permissionBatch: baseUrl + '/system/permission/batch',
-  permissionSelectList: baseUrl + '/system/permission/select-list',
+  configuration: BASE_URL + '/system/configuration',
+  configurationBatch: BASE_URL + '/system/configuration/batch',
+  user: BASE_URL + '/system/user',
+  userBatch: BASE_URL + '/system/user/batch',
+  userSelectList: BASE_URL + '/system/user/select-list',
+  permission: BASE_URL + '/system/permission',
+  permissionBatch: BASE_URL + '/system/permission/batch',
+  permissionSelectList: BASE_URL + '/system/permission/select-list',
 };

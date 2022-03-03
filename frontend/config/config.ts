@@ -3,6 +3,7 @@ import defaultSettings from './defaultSettings';
 import { join } from 'path';
 import routes from './routes';
 
+const { BASE_URL } = process.env;
 export default defineConfig({
   hash: true,
   antd: {},
@@ -35,7 +36,7 @@ export default defineConfig({
   openAPI: [
     {
       requestLibPath: "import { request } from 'umi'",
-      schemaPath: 'http://localhost:8080/v3/api-docs',
+      schemaPath: BASE_URL + '/v3/api-docs',
       projectName: 'swagger',
     },
   ],

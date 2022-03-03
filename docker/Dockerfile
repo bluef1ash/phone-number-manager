@@ -8,10 +8,11 @@ FROM alpine:latest
 USER root
 RUN apk add --update --no-cache openjdk11-jre && rm -f /var/cache/apk/*
 WORKDIR /app
-EXPOSE 8080
+EXPOSE 80
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo 'Asia/Shanghai' > /etc/timezone
 ENV TZ=Asia/Shanghai
+ENV SERVER_PORT=80
 ENV DATABASE_HOST=127.0.0.1
 ENV DATABASE_PORT=3306
 ENV DATABASE_NAME=phone_number_manager
@@ -36,5 +37,6 @@ COPY --from=frontend-builder /usr/src/app/dist /usr/share/nginx/html
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo 'Asia/Shanghai' > /etc/timezone
 ENV TZ=Asia/Shanghai
+ENV BASE_URL=http://127.0.0.1:8080
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

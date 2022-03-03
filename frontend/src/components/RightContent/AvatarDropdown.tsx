@@ -1,4 +1,4 @@
-import { account, baseUrl } from '@/services/api';
+import { account } from '@/services/api';
 import { logout } from '@/services/account/api';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import {
@@ -15,6 +15,7 @@ import { history, useModel } from 'umi';
 import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
 
+const { BASE_URL } = process.env;
 export type GlobalHeaderRightProps = {
   menu?: boolean;
 };
@@ -45,7 +46,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
   const onMenuClick = useCallback(
     async (event: MenuInfo) => {
       const { key } = event;
-      const loginUri = account.login.substring(baseUrl.length);
+      const loginUri = account.login.substring((BASE_URL as string).length);
       if (key === 'logout') {
         await out(loginUri);
       }

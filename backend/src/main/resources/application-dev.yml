@@ -2,31 +2,8 @@
 debug: true
 
 spring:
-    datasource:
-        druid:
-            test-while-idle: true
-            test-on-borrow: false
-            test-on-return: false
-            filter:
-                stat:
-                    log-slow-sql: true
-                    slow-sql-millis: 1000
-                    merge-sql: false
-                wall:
-                    config:
-                        multi-statement-allow: true
-
-            web-stat-filter:
-                enabled: true
-                url-pattern: /*
-                exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
-                session-stat-enable: true
-                session-stat-max-count: 1000
-
-            stat-view-servlet:
-                enabled: true
-                url-pattern: /druid/*
-                reset-enable: false
+    config:
+        import: optional:file:.env[.yml]
 
 management:
     endpoints:

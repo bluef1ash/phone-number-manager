@@ -1,10 +1,6 @@
 package com.github.phonenumbermanager.configure;
 
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 import javax.sql.DataSource;
 
@@ -18,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import com.github.phonenumbermanager.util.CommonUtil;
 
 /**
  * 数据源配置
@@ -39,31 +34,31 @@ public class DataSourceConfigure {
     private String host;
     @Value("${spring.datasource.port}")
     private String port;
+    @Value("${spring.datasource.database-name}")
+    private String databaseName;
+    private final String connectUrl = "jdbc:mysql://" + host + ":" + port
+        + "/mysql?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true&autoReconnect=true";
 
-    @Bean(initMethod = "init")
+    @Bean
     @ConditionalOnMissingBean
     public DataSource dataSource() {
         Connection connection = null;
         PreparedStatement state = null;
-        InputStream resourceAsStream = null;
-        boolean flag = true;
-        String connectUrl = "jdbc:mysql://" + host + ":" + port
-            + "/mysql?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true&autoReconnect=true";
+        PreparedStatement statement = null;
         try {
             Class.forName(driverClassName);
-            // 创建连接
             connection = DriverManager.getConnection(connectUrl, username, password);
-            state = connection.prepareStatement("SHOW DATABASES;");
-            ResultSet databases = state.executeQuery();
-            while (databases.next()) {
-                if ("phone_number_manager".equals(databases.getString("Database"))) {
-                    flag = false;
-                    break;
+            state = connection.prepareStatement(
+                "SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA` WHERE `SCHEMA_NAME` = ?;",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = state.executeQuery(databaseName);
+            resultSet.last();
+            if (resultSet.getRow() == 0) {
+                statement = connection
+                    .prepareStatement("CREATE DATABASE ? DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+                if (!statement.execute(databaseName)) {
+                    throw new SQLException();
                 }
-            }
-            if (flag) {
-                resourceAsStream = getClass().getClassLoader().getResourceAsStream("schema.sql");
-                CommonUtil.executeSql(connection.createStatement(), resourceAsStream);
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -72,11 +67,11 @@ public class DataSourceConfigure {
                 if (null != state) {
                     state.close();
                 }
+                if (null != statement) {
+                    statement.close();
+                }
                 if (null != connection) {
                     connection.close();
-                }
-                if (resourceAsStream != null) {
-                    resourceAsStream.close();
                 }
             } catch (Throwable e) {
                 e.printStackTrace();

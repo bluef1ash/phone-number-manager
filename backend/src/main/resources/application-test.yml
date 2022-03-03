@@ -1,56 +1,6 @@
 # 测试环境配置文件
 debug: true
 
-spring:
-    datasource:
-        type: com.alibaba.druid.pool.DruidDataSource
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        host: 127.0.0.1
-        port: 3306
-        database-name: phone_number_manager
-        url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database-name}?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
-        username: root
-        password: root
-        druid:
-            initial-size: 10
-            min-idle: 10
-            max-active: 100
-            max-wait: 60000
-            time-between-eviction-runs-millis: 60000
-            min-evictable-idle-time-millis: 300000
-            validation-query: SELECT 1 FROM DUAL
-            test-while-idle: true
-            test-on-borrow: false
-            test-on-return: false
-            pool-prepared-statements: true
-            max-pool-prepared-statement-per-connection-size: 20
-            #Oracle需要打开注释
-            #validation-query: SELECT 1 FROM DUAL
-            filter:
-                stat:
-                    log-slow-sql: true
-                    slow-sql-millis: 1000
-                    merge-sql: false
-                wall:
-                    config:
-                        multi-statement-allow: true
-
-            web-stat-filter:
-                enabled: true
-                url-pattern: /*
-                exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
-                session-stat-enable: true
-                session-stat-max-count: 1000
-
-            stat-view-servlet:
-                enabled: true
-                url-pattern: /druid/*
-                reset-enable: false
-
-    redis:
-        host: 127.0.0.1
-        port: 6379
-
 management:
     endpoints:
         enabled-by-default: true

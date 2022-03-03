@@ -15,9 +15,6 @@ spring:
     application:
         name: phone-number-manager
 
-    config:
-        import: optional:file:.env[.yml]
-
     profiles:
         active: @profileActive@
 
@@ -60,7 +57,7 @@ spring:
             web-stat-filter:
                 enabled: true
                 url-pattern: /*
-                exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+                exclusions: "*.ico,/druid/*"
                 session-stat-enable: true
                 session-stat-max-count: 1000
 

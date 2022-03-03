@@ -3,17 +3,8 @@ spring:
     datasource:
         druid:
             test-while-idle: false
-            test-on-return: false
             stat-view-servlet:
                 enabled: false
-            filter:
-                stat:
-                    log-slow-sql: true
-                    slow-sql-millis: 1000
-                    merge-sql: false
-                wall:
-                    config:
-                        multi-statement-allow: true
 
 debug: false
 

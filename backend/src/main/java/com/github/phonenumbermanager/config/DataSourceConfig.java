@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.configure;
+package com.github.phonenumbermanager.config;
 
 import java.sql.*;
 
@@ -23,7 +23,7 @@ import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 @Configuration
 @ConditionalOnClass({DruidDataSource.class})
 @AutoConfigureBefore({DruidDataSourceAutoConfigure.class})
-public class DataSourceConfigure {
+public class DataSourceConfig {
     @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;
     @Value("${spring.datasource.username}")

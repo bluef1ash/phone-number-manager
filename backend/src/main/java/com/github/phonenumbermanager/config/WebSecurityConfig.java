@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.configure;
+package com.github.phonenumbermanager.config;
 
 import javax.annotation.Resource;
 
@@ -31,7 +31,7 @@ import com.github.phonenumbermanager.service.SystemUserService;
  * @author 廿二月的天
  */
 @EnableWebSecurity
-public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Resource
     private SystemUserService systemUserService;
     @Resource

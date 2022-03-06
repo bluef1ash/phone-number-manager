@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.configure.sqlinjector;
+package com.github.phonenumbermanager.config.sqlinjector;
 
 import java.util.List;
 import java.util.function.Predicate;

@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.configure;
+package com.github.phonenumbermanager.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author 廿二月的天
  */
 @Configuration
-public class WebMvcConfigure implements WebMvcConfigurer {
+public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

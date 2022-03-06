@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.configure;
+package com.github.phonenumbermanager.config;
 
 import java.util.List;
 
@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.injector.DefaultSqlInjector;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.extension.injector.methods.InsertBatchSomeColumn;
-import com.github.phonenumbermanager.configure.sqlinjector.InsertIgnore;
-import com.github.phonenumbermanager.configure.sqlinjector.InsertIgnoreBatchSomeColumn;
+import com.github.phonenumbermanager.config.sqlinjector.InsertIgnore;
+import com.github.phonenumbermanager.config.sqlinjector.InsertIgnoreBatchSomeColumn;
 
 /**
  * SQL 自定义注入器

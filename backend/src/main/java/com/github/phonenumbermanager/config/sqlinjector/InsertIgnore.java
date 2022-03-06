@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.configure.sqlinjector;
+package com.github.phonenumbermanager.config.sqlinjector;
 
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;

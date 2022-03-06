@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.configure;
+package com.github.phonenumbermanager.config;
 
 import java.math.BigInteger;
 import java.time.Duration;
@@ -51,7 +51,7 @@ import springfox.documentation.spring.web.plugins.Docket;
  * @author 廿二月的天
  */
 @Configuration
-public class ApplicationConfigure {
+public class ApplicationConfig {
 
     /**
      * Mybatis插件注册

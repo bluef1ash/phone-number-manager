@@ -1,9 +1,9 @@
-import { defineConfig } from 'umi';
-import defaultSettings from './defaultSettings';
-import { join } from 'path';
-import routes from './routes';
+import { defineConfig } from "umi";
+import defaultSettings from "./defaultSettings";
+import { join } from "path";
+import routes from "./routes";
 
-const { BASE_URL } = process.env;
+//const { BASE_URL } = process.env;
 export default defineConfig({
   hash: true,
   antd: {},
@@ -33,13 +33,13 @@ export default defineConfig({
     basePath: '/',
   },
   fastRefresh: {},
-  openAPI: [
+  /*openAPI: [
     {
       requestLibPath: "import { request } from 'umi'",
       schemaPath: BASE_URL + '/v3/api-docs',
       projectName: 'swagger',
     },
-  ],
+  ],*/
   nodeModulesTransform: {
     type: 'none',
   },

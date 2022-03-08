@@ -2,7 +2,6 @@ package com.github.phonenumbermanager.controller;
 
 import java.util.List;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.validation.annotation.Validated;
@@ -22,18 +21,19 @@ import cn.hutool.core.util.StrUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.AllArgsConstructor;
 
 /**
  * 社区居民控制器
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @RestController
 @RequestMapping("/resident")
 @Api(tags = "社区居民控制器")
 public class CommunityResidentController extends BaseController {
-    @Resource
-    private CommunityResidentService communityResidentService;
+    private final CommunityResidentService communityResidentService;
 
     /**
      * 社区居民列表

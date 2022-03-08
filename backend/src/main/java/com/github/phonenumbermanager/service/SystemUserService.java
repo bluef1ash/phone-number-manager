@@ -43,13 +43,6 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
     boolean hasPermission(HttpServletRequest request, Authentication authentication);
 
     /**
-     * 查找所有系统用户与所属联系方式
-     *
-     * @return 所有系统用户与所属联系方式
-     */
-    List<SystemUser> listCorrelationPhoneNumber();
-
-    /**
      * 通过单位编号查找
      *
      * @param companyId

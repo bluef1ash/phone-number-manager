@@ -3,8 +3,6 @@ package com.github.phonenumbermanager.controller;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,26 +21,22 @@ import com.github.phonenumbermanager.util.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
 
 /**
  * 首页控制器
  *
  * @author 廿二月的天
  */
-@Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/index")
 @Api(tags = "首页控制器")
 public class IndexController extends BaseController {
-    @Resource
-    private CommunityResidentService communityResidentService;
-    @Resource
-    private DormitoryManagerService dormitoryManagerService;
-    @Resource
-    private SystemUserService systemUserService;
-    @Resource
-    private SystemPermissionService systemPermissionService;
+    private final CommunityResidentService communityResidentService;
+    private final DormitoryManagerService dormitoryManagerService;
+    private final SystemUserService systemUserService;
+    private final SystemPermissionService systemPermissionService;
 
     /**
      * 获取首页菜单栏内容

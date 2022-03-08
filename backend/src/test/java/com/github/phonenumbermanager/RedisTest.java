@@ -2,9 +2,8 @@ package com.github.phonenumbermanager;
 
 import java.util.Map;
 
-import javax.annotation.Resource;
-
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.github.phonenumbermanager.constant.SystemConstant;
@@ -19,9 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @SpringBootTest
 @Slf4j
 public class RedisTest {
-    @Resource
     private ConfigurationService configurationService;
-    @Resource
     private RedisUtil redisUtil;
 
     @Test
@@ -33,5 +30,15 @@ public class RedisTest {
         JSONObject jsonObject = JSONUtil.parseObj(redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY));
         Map<String, Configuration> map = jsonObject.toBean(Map.class);
         log.info(map.toString());
+    }
+
+    @Autowired
+    public void setConfigurationService(ConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
+
+    @Autowired
+    public void setRedisUtil(RedisUtil redisUtil) {
+        this.redisUtil = redisUtil;
     }
 }

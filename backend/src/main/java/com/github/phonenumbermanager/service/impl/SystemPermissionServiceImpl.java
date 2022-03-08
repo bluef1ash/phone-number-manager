@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +16,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.CompanyPermission;
 import com.github.phonenumbermanager.entity.SystemPermission;
+import com.github.phonenumbermanager.mapper.CompanyPermissionMapper;
 import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
-import com.github.phonenumbermanager.service.CompanyPermissionService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.vo.MenuVo;
 import com.github.phonenumbermanager.vo.SelectListVo;
@@ -27,19 +25,23 @@ import com.github.phonenumbermanager.vo.SelectListVo;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.ObjectUtil;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
 
 /**
  * 系统权限业务实现
  *
  * @author 廿二月的天
  */
-@Slf4j
-@Service("systemPermissionService")
+@AllArgsConstructor
+@Service
 public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissionMapper, SystemPermission>
     implements SystemPermissionService {
-    @Resource
-    private CompanyPermissionService companyPermissionService;
+    private final CompanyPermissionMapper companyPermissionMapper;
+
+    @Override
+    public List<SystemPermission> listCorrelation() {
+        return baseMapper.selectCorrelationList();
+    }
 
     @Override
     public List<SystemPermission> listByCompanyId(Long companyId) {
@@ -94,7 +96,7 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
-        return companyPermissionService.remove(new QueryWrapper<CompanyPermission>().eq("permission_id", id))
+        return companyPermissionMapper.delete(new QueryWrapper<CompanyPermission>().eq("permission_id", id)) > 0
             && baseMapper.deleteById(id) > 0;
     }
 

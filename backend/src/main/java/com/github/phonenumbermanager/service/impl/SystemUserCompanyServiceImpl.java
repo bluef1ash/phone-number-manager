@@ -11,6 +11,6 @@ import com.github.phonenumbermanager.service.SystemUserCompanyService;
  *
  * @author 廿二月的天
  */
-@Service("systemUserCompanyService")
+@Service
 public class SystemUserCompanyServiceImpl extends BaseServiceImpl<SystemUserCompanyMapper, SystemUserCompany>
     implements SystemUserCompanyService {}

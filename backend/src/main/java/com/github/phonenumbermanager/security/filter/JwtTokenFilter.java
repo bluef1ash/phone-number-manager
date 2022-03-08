@@ -6,12 +6,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +33,6 @@ import cn.hutool.jwt.JWTUtil;
  */
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
-    @Resource
     private RedisUtil redisUtil;
 
     @Override
@@ -46,7 +45,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
         if (StringUtils.hasText(jwtToken)
             && JWTUtil.verify(jwtToken, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8))) {
-            Long systemUserId = (Long)JWTUtil.parseToken(jwtToken).getPayload(SystemConstant.SYSTEM_USER_ID_KEY);
+            String systemUserId =
+                String.valueOf(JWTUtil.parseToken(jwtToken).getPayload(SystemConstant.SYSTEM_USER_ID_KEY));
             SystemUser systemUser = JSONUtil
                 .toBean((String)redisUtil.get(SystemConstant.SYSTEM_USER_ID_KEY + systemUserId), SystemUser.class);
             Authentication authentication =
@@ -56,5 +56,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);
+    }
+
+    @Autowired
+    public void setRedisUtil(RedisUtil redisUtil) {
+        this.redisUtil = redisUtil;
     }
 }

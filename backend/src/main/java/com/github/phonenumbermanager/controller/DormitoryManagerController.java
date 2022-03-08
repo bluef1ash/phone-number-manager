@@ -3,7 +3,6 @@ package com.github.phonenumbermanager.controller;
 import java.io.IOException;
 import java.util.List;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,18 +29,19 @@ import cn.hutool.poi.excel.ExcelWriter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.AllArgsConstructor;
 
 /**
  * 社区居民楼片长控制器
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @Controller
 @RequestMapping("/dormitory")
 @Api(tags = "社区居民楼片长控制器")
 public class DormitoryManagerController extends BaseController {
-    @Resource
-    private DormitoryManagerService dormitoryManagerService;
+    private final DormitoryManagerService dormitoryManagerService;
 
     /**
      * 社区居民楼片长列表

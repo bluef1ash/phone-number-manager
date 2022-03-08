@@ -11,7 +11,7 @@ import com.github.phonenumbermanager.service.CommunityResidentPhoneNumberService
  *
  * @author 廿二月的天
  */
-@Service("communityResidentPhoneNumberService")
+@Service
 public class CommunityResidentPhoneNumberServiceImpl
     extends BaseServiceImpl<CommunityResidentPhoneNumberMapper, CommunityResidentPhoneNumber>
     implements CommunityResidentPhoneNumberService {}

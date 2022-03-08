@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.validation.annotation.Validated;
@@ -19,7 +18,6 @@ import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.util.R;
-import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
@@ -28,20 +26,19 @@ import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.AllArgsConstructor;
 
 /**
  * 系统管理控制器
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @RestController
 @RequestMapping("/system")
 @Api(tags = "系统管理控制器")
 public class SystemController extends BaseController {
-    @Resource
-    private ConfigurationService configurationService;
-    @Resource
-    private RedisUtil redisUtil;
+    private final ConfigurationService configurationService;
 
     /**
      * 系统配置列表

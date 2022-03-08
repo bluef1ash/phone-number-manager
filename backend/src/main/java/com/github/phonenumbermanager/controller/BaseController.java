@@ -5,10 +5,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,8 +34,7 @@ import cn.hutool.poi.excel.style.StyleUtil;
  */
 @CrossOrigin
 abstract class BaseController {
-    @Resource
-    private RedisUtil redisUtil;
+    protected RedisUtil redisUtil;
     protected SystemUser systemUser;
     protected Map<String, JSONObject> configurationMap;
     protected JSONObject search;
@@ -150,5 +149,10 @@ abstract class BaseController {
                     "CONVERT(" + StrUtil.toUnderlineCase(entry.getKey()) + " USING gbk) COLLATE gbk_chinese_ci");
             }
         }
+    }
+
+    @Autowired
+    public void setRedisUtil(RedisUtil redisUtil) {
+        this.redisUtil = redisUtil;
     }
 }

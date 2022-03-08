@@ -4,8 +4,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("all")
 @Component
 public class RedisUtil {
-    @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
     // -------------------key相关操作---------------------
@@ -1321,5 +1319,10 @@ public class RedisUtil {
      */
     public Cursor<TypedTuple<Object>> zScan(String key, ScanOptions options) {
         return redisTemplate.opsForZSet().scan(key, options);
+    }
+
+    @Autowired
+    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 }

@@ -11,6 +11,6 @@ import com.github.phonenumbermanager.service.ConfigurationService;
  *
  * @author 廿二月的天
  */
-@Service("configurationService")
+@Service
 public class ConfigurationServiceImpl extends BaseServiceImpl<ConfigurationMapper, Configuration>
     implements ConfigurationService {}

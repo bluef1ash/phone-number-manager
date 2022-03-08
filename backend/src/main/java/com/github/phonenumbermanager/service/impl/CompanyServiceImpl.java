@@ -1,10 +1,10 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,45 +15,41 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.mapper.CompanyMapper;
-import com.github.phonenumbermanager.service.*;
+import com.github.phonenumbermanager.mapper.*;
+import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
 
 /**
  * 单位业务实现
  *
  * @author 廿二月的天
  */
-@Slf4j
-@Service("companyService")
+@AllArgsConstructor
+@Service
 public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> implements CompanyService {
-    @Resource
-    private CommunityResidentService communityResidentService;
-    @Resource
-    private DormitoryManagerService dormitoryManagerService;
-    @Resource
-    private PhoneNumberService phoneNumberService;
-    @Resource
-    private CompanyPhoneNumberService companyPhoneNumberService;
+    private final CommunityResidentMapper communityResidentMapper;
+    private final DormitoryManagerMapper dormitoryManagerMapper;
+    private final PhoneNumberMapper phoneNumberMapper;
+    private final CompanyPhoneNumberMapper companyPhoneNumberMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(Company entity) {
         baseMapper.insert(entity);
-        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
-        return companyPhoneNumberService.saveBatch(companyPhoneNumbersHandler(entity));
+        phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
+        return companyPhoneNumberMapper.insertBatchSomeColumn(companyPhoneNumbersHandler(entity)) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(Company entity) {
         baseMapper.updateById(entity);
-        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
-        companyPhoneNumberService.remove(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", entity.getId()));
-        return companyPhoneNumberService.saveBatch(companyPhoneNumbersHandler(entity));
+        phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
+        companyPhoneNumberMapper.delete(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", entity.getId()));
+        return companyPhoneNumberMapper.insertBatchSomeColumn(companyPhoneNumbersHandler(entity)) > 0;
     }
 
     @Override
@@ -96,17 +92,17 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             throw new BusinessException("不允许删除存在下级单位的单位！");
         }
         long communityResidentCount =
-            communityResidentService.count(new QueryWrapper<CommunityResident>().eq("company_id", id));
+            communityResidentMapper.selectCount(new QueryWrapper<CommunityResident>().eq("company_id", id));
         if (communityResidentCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
         }
         long dormitoryManagerCount =
-            dormitoryManagerService.count(new QueryWrapper<DormitoryManager>().eq("company_id", id));
+            dormitoryManagerMapper.selectCount(new QueryWrapper<DormitoryManager>().eq("company_id", id));
         if (dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
         return baseMapper.deleteById(id) > 0
-            && companyPhoneNumberService.remove(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", id));
+            && companyPhoneNumberMapper.delete(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", id)) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -120,48 +116,14 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             dormitoryManagerQueryWrapper.eq("company_id", l).or();
             companyPhoneNumberQueryWrapper.eq("company_id", l).or();
         });
-        if (communityResidentService.count(communityResidentQueryWrapper) > 0) {
+        if (communityResidentMapper.selectCount(communityResidentQueryWrapper) > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
         }
-        if (dormitoryManagerService.count(dormitoryManagerQueryWrapper) > 0) {
+        if (dormitoryManagerMapper.selectCount(dormitoryManagerQueryWrapper) > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
-        companyPhoneNumberService.remove(companyPhoneNumberQueryWrapper);
+        companyPhoneNumberMapper.delete(companyPhoneNumberQueryWrapper);
         return super.removeByIds(list);
-    }
-
-    @Override
-    public void listSubmissionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
-        Integer level, Map<Long, String> parents) {
-        companies.forEach(company -> {
-            if (level.equals(company.getLevel())) {
-                companyIds.add(company.getId());
-                if (parents != null && parents.get(company.getParentId()).isEmpty()) {
-                    Optional<Company> companyOptional = companyAll.stream()
-                        .filter(company1 -> company1.getId().equals(company.getParentId())).findFirst();
-                    assert companyOptional.isPresent();
-                    parents.put(company.getParentId(), companyOptional.get().getName());
-                }
-            } else {
-                List<Company> companyList = companyAll.stream()
-                    .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
-                listSubmissionCompanyIds(companyIds, companyList, companyAll, level, parents);
-            }
-        });
-    }
-
-    @Override
-    public void listRecursionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
-        Long parentId) {
-        companies.forEach(company -> {
-            if (parentId.equals(company.getParentId())) {
-                companyIds.add(company.getId());
-            } else {
-                List<Company> companies1 = companyAll.stream()
-                    .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
-                listRecursionCompanyIds(companyIds, companies1, companyAll, company.getId());
-            }
-        });
     }
 
     @Override
@@ -243,7 +205,7 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private List<CompanyPhoneNumber> companyPhoneNumbersHandler(Company entity) {
         QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
         entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
-        List<PhoneNumber> phoneNumbers = phoneNumberService.list(wrapper);
+        List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
         return phoneNumbers.stream().map(
             phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))
             .collect(Collectors.toList());

@@ -11,6 +11,6 @@ import com.github.phonenumbermanager.service.CompanyPermissionService;
  *
  * @author 廿二月的天
  */
-@Service("companyPermissionService")
+@Service
 public class CompanyPermissionServiceImpl extends BaseServiceImpl<CompanyPermissionMapper, CompanyPermission>
     implements CompanyPermissionService {}

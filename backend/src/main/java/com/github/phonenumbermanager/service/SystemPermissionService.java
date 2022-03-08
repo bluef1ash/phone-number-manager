@@ -15,6 +15,13 @@ import com.github.phonenumbermanager.vo.MenuVo;
  */
 public interface SystemPermissionService extends BaseService<SystemPermission> {
     /**
+     * 关联查找
+     *
+     * @return 系统用户权限对象的集合
+     */
+    List<SystemPermission> listCorrelation();
+
+    /**
      * 通过单位编号查找
      *
      * @param companyId

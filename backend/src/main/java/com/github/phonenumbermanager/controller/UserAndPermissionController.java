@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +27,6 @@ import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 import com.github.phonenumbermanager.util.R;
-import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
@@ -44,21 +42,19 @@ import cn.hutool.jwt.JWTUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.AllArgsConstructor;
 
 /**
  * 系统用户与系统权限控制器
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @RestController
 @Api(tags = "系统用户与系统权限控制器")
 public class UserAndPermissionController extends BaseController {
-    @Resource
-    private SystemUserService systemUserService;
-    @Resource
-    private SystemPermissionService systemPermissionService;
-    @Resource
-    private RedisUtil redisUtil;
+    private final SystemUserService systemUserService;
+    private final SystemPermissionService systemPermissionService;
 
     /**
      * 用户登录

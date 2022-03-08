@@ -11,6 +11,6 @@ import com.github.phonenumbermanager.service.CompanyPhoneNumberService;
  *
  * @author 廿二月的天
  */
-@Service("companyPhoneNumberService")
+@Service
 public class CompanyPhoneNumberServiceImpl extends BaseServiceImpl<CompanyPhoneNumberMapper, CompanyPhoneNumber>
     implements CompanyPhoneNumberService {}

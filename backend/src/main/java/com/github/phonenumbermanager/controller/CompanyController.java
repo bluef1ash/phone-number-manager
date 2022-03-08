@@ -2,7 +2,6 @@ package com.github.phonenumbermanager.controller;
 
 import java.util.List;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.validation.annotation.Validated;
@@ -23,18 +22,19 @@ import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.AllArgsConstructor;
 
 /**
  * 单位控制器
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @RestController
 @RequestMapping("/company")
 @Api(tags = "单位控制器")
 public class CompanyController extends BaseController {
-    @Resource
-    private CompanyService companyService;
+    private final CompanyService companyService;
 
     /**
      * 单位列表

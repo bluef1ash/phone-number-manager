@@ -16,7 +16,7 @@ import { queryMenuData } from '@/services/permission/api';
 import moment from 'moment';
 
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = account.login.substring((process.env.BASE_URL as string).length);
+const loginPath = account.login.substring((REACT_APP_API_BASE_URL as string).length);
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {

@@ -16,6 +16,15 @@ import com.github.phonenumbermanager.entity.SystemPermission;
 @Mapper
 public interface SystemPermissionMapper extends BaseMapper<SystemPermission> {
     /**
+     * 关联查询所有系统权限
+     *
+     * @return 系统用户权限列表
+     * @throws DataAccessException
+     *             数据库操作异常
+     */
+    List<SystemPermission> selectCorrelationList() throws DataAccessException;
+
+    /**
      * 通过单位编号查询
      *
      * @param companyId

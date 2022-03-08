@@ -6,8 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.enums.*;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.mapper.DormitoryManagerMapper;
-import com.github.phonenumbermanager.service.*;
+import com.github.phonenumbermanager.mapper.*;
+import com.github.phonenumbermanager.service.DormitoryManagerService;
+import com.github.phonenumbermanager.util.CommonUtil;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.PhoneUtil;
@@ -30,24 +29,22 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import cn.hutool.poi.excel.StyleSet;
+import lombok.AllArgsConstructor;
 
 /**
  * 社区楼长业务实现
  *
  * @author 廿二月的天
  */
-@Service("dormitoryManagerService")
+@AllArgsConstructor
+@Service
 public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManagerMapper, DormitoryManager>
     implements DormitoryManagerService {
     private static final String DATA_COLUMN_NAME = "人数";
-    @Resource
-    private CompanyService companyService;
-    @Resource
-    private SystemUserService systemUserService;
-    @Resource
-    private PhoneNumberService phoneNumberService;
-    @Resource
-    private DormitoryManagerPhoneNumberService dormitoryManagerPhoneNumberService;
+    private final CompanyMapper companyMapper;
+    private final SystemUserMapper systemUserMapper;
+    private final PhoneNumberMapper phoneNumberMapper;
+    private final DormitoryManagerPhoneNumberMapper dormitoryManagerPhoneNumberMapper;
 
     @Override
     public DormitoryManager getCorrelation(Long id) {
@@ -85,8 +82,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             Convert.toInt(configurationMap.get("excel_dormitory_landline_cell_number").get("content"));
         Integer excelDormitorySubcontractorTelephoneCellNumber =
             Convert.toInt(configurationMap.get("excel_dormitory_subcontractor_telephone_cell_number").get("content"));
-        List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", streetId));
-        List<SystemUser> systemUsers = systemUserService.listCorrelationPhoneNumber();
+        List<Company> companies = companyMapper.selectList(new QueryWrapper<Company>().eq("parent_id", streetId));
+        List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM");
         for (List<Object> datum : data) {
             DormitoryManager dormitoryManager = new DormitoryManager();
@@ -138,7 +135,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
             companies.forEach(company -> wrapper.eq("company_id", company.getId()).or());
             baseMapper.delete(wrapper.or());
-            phoneNumberService.saveBatch(phoneNumbers);
+            phoneNumberMapper.insertIgnoreBatchSomeColumn(phoneNumbers);
             return saveBatch(dormitoryManagers);
         }
         throw new BusinessException("上传失败！");
@@ -150,15 +147,15 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         String excelDormitoryTitleUp = Convert.toStr(configurationMap.get("excel_dormitory_title_up").get("content"));
         String excelDormitoryTitle = Convert.toStr(configurationMap.get("excel_dormitory_title").get("content"));
         String streetTitle = "";
-        List<Company> companyAll = companyService.list();
-        List<SystemUser> systemUsers = systemUserService.listCorrelationPhoneNumber();
+        List<Company> companyAll = companyMapper.selectList(null);
+        List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
         if (companies == null) {
             companies = companyAll;
         }
         Company levelMax =
-            companyService.getOne(new QueryWrapper<Company>().orderByDesc("level").select("level").last("limit 1"));
+            companyMapper.selectOne(new QueryWrapper<Company>().orderByDesc("level").select("level").last("limit 1"));
         List<Long> companyIds = new ArrayList<>();
-        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
+        CommonUtil.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
         int current = 1;
         while (true) {
@@ -272,10 +269,10 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
 
     @Override
     public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
-        List<Company> companyAll = companyService.list();
+        List<Company> companyAll = companyMapper.selectList(null);
         List<Long> companyIds = new ArrayList<>();
         if (companyId != null) {
-            companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
+            CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
         }
         Map<String, Map<String, Integer>> computedBaseMessage = computedBaseMessage(companies, companyAll, companyIds);
         Map<String, Object> baseMessage = new HashMap<>();
@@ -304,11 +301,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long companyId, Boolean typeParam) {
         String label = "社区楼长分包总户数";
-        List<Company> companyAll = companyService.list();
+        List<Company> companyAll = companyMapper.selectList(null);
         LinkedList<Map<String, Object>> dormitoryManager = new LinkedList<>();
         List<Long> companyIds = new ArrayList<>();
         if (companyId == null) {
-            companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
+            CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
         }
         return barChartDataHandler(label, null, "户", dormitoryManager);
     }
@@ -316,27 +313,27 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
-        super.removeById(id);
-        return dormitoryManagerPhoneNumberService
-            .remove(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", id));
+        baseMapper.deleteById(id);
+        return dormitoryManagerPhoneNumberMapper
+            .delete(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", id)) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(DormitoryManager entity) {
-        super.save(entity);
-        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
-        return dormitoryManagerPhoneNumberService.saveBatch(dormitoryManagerPhoneNumbersHandler(entity));
+        baseMapper.insert(entity);
+        phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
+        return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbersHandler(entity)) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(DormitoryManager entity) {
         super.updateById(entity);
-        phoneNumberService.saveIgnoreBatch(entity.getPhoneNumbers());
-        dormitoryManagerPhoneNumberService
-            .remove(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", entity.getId()));
-        return dormitoryManagerPhoneNumberService.updateBatchById(dormitoryManagerPhoneNumbersHandler(entity));
+        phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
+        dormitoryManagerPhoneNumberMapper
+            .delete(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", entity.getId()));
+        return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbersHandler(entity)) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -344,8 +341,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     public boolean removeByIds(Collection<?> list) {
         QueryWrapper<DormitoryManagerPhoneNumber> wrapper = new QueryWrapper<>();
         list.forEach(l -> wrapper.eq("dormitory_manager_id", l).or());
-        super.removeByIds(list);
-        return dormitoryManagerPhoneNumberService.remove(wrapper);
+        baseMapper.deleteBatchIds(list);
+        return dormitoryManagerPhoneNumberMapper.delete(wrapper) > 0;
     }
 
     /**
@@ -406,8 +403,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         Map<String, Integer> employmentStatusCount = new HashMap<>();
         Arrays.stream(EmploymentStatusEnum.values())
             .forEach(employmentStatusEnum -> employmentStatusCount.put(employmentStatusEnum.getDescription(), 0));
-        Company levelMax = companyService.getOne(new QueryWrapper<Company>().orderByDesc("level").select("level"));
-        companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
+        Company levelMax = companyMapper.selectOne(new QueryWrapper<Company>().orderByDesc("level").select("level"));
+        CommonUtil.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
         QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
         companyIds.forEach(id -> wrapper.eq("company_id", id));
         List<DormitoryManager> dormitoryManagers = baseMapper.selectList(wrapper);
@@ -467,7 +464,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbersHandler(DormitoryManager entity) {
         QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
         entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
-        List<PhoneNumber> phoneNumbers = phoneNumberService.list(wrapper);
+        List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
         return phoneNumbers.stream().map(phoneNumber -> new DormitoryManagerPhoneNumber()
             .setDormitoryManagerId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());
     }

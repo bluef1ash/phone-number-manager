@@ -11,7 +11,7 @@ import com.github.phonenumbermanager.service.DormitoryManagerPhoneNumberService;
  *
  * @author 廿二月的天
  */
-@Service("dormitoryManagerPhoneNumberService")
+@Service
 public class DormitoryManagerPhoneNumberServiceImpl
     extends BaseServiceImpl<DormitoryManagerPhoneNumberMapper, DormitoryManagerPhoneNumber>
     implements DormitoryManagerPhoneNumberService {}

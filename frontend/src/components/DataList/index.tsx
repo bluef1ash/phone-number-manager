@@ -5,7 +5,7 @@ import { Button, message as msg, Popconfirm, Space } from 'antd';
 import type { ParamsType } from '@ant-design/pro-provider';
 import type { EditModalFormProps } from './EditModalForm';
 import EditModalForm from './EditModalForm';
-import { ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ProColumns } from '@ant-design/pro-table/lib/typing';
 import type { SortOrder } from 'antd/es/table/interface';
@@ -22,8 +22,8 @@ type DataListProps<T, U extends ParamsType> = {
   batchRemoveEventHandler?: (
     selectedRowKeys: number[],
   ) => Promise<API.ResponseSuccess | API.ResponseException>;
-  importDataEventHandler?: React.MouseEventHandler<HTMLElement>;
-  exportDataEventHandler?: React.MouseEventHandler<HTMLElement>;
+  importDataButton?: JSX.Element;
+  exportDataButton?: JSX.Element;
   createEditModalForm?: {
     element?: JSX.Element;
     props?: EditModalFormProps<T>;
@@ -45,8 +45,8 @@ function DataList<T, U extends ParamsType>({
   customColumns,
   customRequest,
   batchRemoveEventHandler,
-  importDataEventHandler,
-  exportDataEventHandler,
+  importDataButton,
+  exportDataButton,
   createEditModalForm,
   modifyEditModalForm,
   ...restProps
@@ -167,36 +167,8 @@ function DataList<T, U extends ParamsType>({
       }}
       dateFormatter="string"
       toolBarRender={() => [
-        ((): JSX.Element => {
-          if (typeof importDataEventHandler !== 'undefined') {
-            return (
-              <Button
-                key="importDataButton"
-                icon={<ImportOutlined />}
-                onClick={importDataEventHandler}
-              >
-                {' '}
-                导入数据{' '}
-              </Button>
-            );
-          }
-          return <></>;
-        })(),
-        ((): JSX.Element => {
-          if (typeof exportDataEventHandler !== 'undefined') {
-            return (
-              <Button
-                key="exportDataButton"
-                icon={<ExportOutlined />}
-                onClick={exportDataEventHandler}
-              >
-                {' '}
-                导出数据{' '}
-              </Button>
-            );
-          }
-          return <></>;
-        })(),
+        ((): JSX.Element => (typeof importDataButton !== 'undefined' ? importDataButton : <></>))(),
+        ((): JSX.Element => (typeof exportDataButton !== 'undefined' ? exportDataButton : <></>))(),
         <EditModalForm<T>
           key="createData"
           trigger={

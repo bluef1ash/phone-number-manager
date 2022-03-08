@@ -28,7 +28,8 @@ import {
 import { queryCompanySelectList } from '@/services/company/api';
 import { querySystemUserSelectList } from '@/services/user/api';
 import { submitPrePhoneNumberHandle } from '@/services/utils';
-import { message, Spin } from 'antd';
+import { Dropdown, message, Spin } from 'antd';
+import { DownOutlined, ExportOutlined } from '@ant-design/icons';
 
 const InputElement = (
   companiesState: API.SelectList[],
@@ -439,38 +440,47 @@ const DormitoryManager: React.FC = () => {
             onConfirmRemove: async (id) => await removeDormitoryManager(id),
             queryData: async (id) => await queryDormitoryManager(id),
           }}
-          importDataEventHandler={async () => {}}
-          exportDataEventHandler={async () => {
-            setSpinTipState('正在生成社区楼片长花名册中...');
-            setSpinState(true);
-            const { data, response } = await downloadDormitoryManagerExcel();
-            if (typeof data.code === 'undefined' && data) {
-              let filename = response.headers.get('Content-Disposition');
-              if (filename !== null) {
-                filename = decodeURI(filename.substring('attachment;filename='.length));
-              } else {
-                filename = '街道（园区）社区楼片长花名册.xlsx';
-              }
-              const blob = await data;
-              setSpinTipState('正在下载社区楼片长花名册中...');
-              const link = document.createElement('a');
-              if ('download' in link) {
-                link.style.display = 'none';
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                URL.revokeObjectURL(link.href);
-                document.body.removeChild(link);
-              } else {
-                //@ts-ignore
-                navigator.msSaveBlob(blob, filename);
-              }
-            } else {
-              message.error('导出失败，请稍后再试！');
-            }
-            setSpinState(false);
-          }}
+          importDataButton={<></>}
+          exportDataButton={
+            <Dropdown.Button
+              icon={<DownOutlined />}
+              onClick={async () => {
+                setSpinTipState('正在生成社区楼片长花名册中...');
+                setSpinState(true);
+                const { data, response } = await downloadDormitoryManagerExcel();
+                if (typeof data.code === 'undefined' && data) {
+                  let filename = response.headers.get('Content-Disposition');
+                  if (filename !== null) {
+                    filename = decodeURI(filename.substring('attachment;filename='.length));
+                  } else {
+                    filename = '街道（园区）社区楼片长花名册.xlsx';
+                  }
+                  const blob = await data;
+                  setSpinTipState('正在下载社区楼片长花名册中...');
+                  const link = document.createElement('a');
+                  if ('download' in link) {
+                    link.style.display = 'none';
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    document.body.removeChild(link);
+                  } else {
+                    //@ts-ignore
+                    navigator.msSaveBlob(blob, filename);
+                  }
+                } else {
+                  message.error('导出失败，请稍后再试！');
+                }
+                setSpinState(false);
+              }}
+              overlay={<ProFormTreeSelect request={async () => companiesState} />}
+            >
+              {' '}
+              <ExportOutlined /> 导出数据{' '}
+            </Dropdown.Button>
+          }
         />{' '}
       </MainPageContainer>{' '}
     </Spin>

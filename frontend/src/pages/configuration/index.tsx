@@ -80,13 +80,28 @@ const InputElement = (
     />{' '}
     <ProFormSelect
       width="xl"
-      valueEnum={{
-        UNKNOWN: '未知类型',
-        BOOLEAN: '布尔类型',
-        STRING: '字符串类型',
-        NUMBER: '数值类型',
-        SYSTEM_USER: '系统用户类型',
-      }}
+      options={[
+        {
+          value: 0,
+          label: '未知类型',
+        },
+        {
+          value: 1,
+          label: '布尔类型',
+        },
+        {
+          value: 2,
+          label: '字符串类型',
+        },
+        {
+          value: 3,
+          label: '数值类型',
+        },
+        {
+          value: 4,
+          label: '系统用户类型',
+        },
+      ]}
       name="fieldType"
       label="系统配置字段类型"
       rules={[

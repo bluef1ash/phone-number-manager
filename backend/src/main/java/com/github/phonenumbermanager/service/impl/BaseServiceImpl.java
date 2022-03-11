@@ -29,17 +29,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean saveBatch(Collection<T> entityList) {
-        return saveBatch(entityList, 1000);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public boolean saveBatch(Collection<T> entityList, int batchSize) {
         if (CollectionUtils.isEmpty(entityList)) {
             return false;
         }
         if (entityList.size() == 1) {
-            return executeBatch(entityList, batchSize,
+            return executeBatch(entityList, 1,
                 (sqlSession, entity) -> sqlSession.insert(getSqlStatement(SqlMethod.INSERT_ONE), entity));
         }
         return getBaseMapper().insertBatchSomeColumn(entityList) > 0;

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.phonenumbermanager.mapper.CompanyExtraMapper">
+    <resultMap type="com.github.phonenumbermanager.entity.CompanyExtra" id="commonResultMap">
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="content" property="content"/>
+        <result column="field_type" property="fieldType"/>
+        <result column="company_id" property="companyId"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.CompanyExtra" id="baseResultMap" extends="commonResultMap">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+    <resultMap type="com.github.phonenumbermanager.entity.CompanyExtra" id="aliasResultMap" extends="commonResultMap">
+        <id column="company_extra_id" property="id"/>
+        <result column="company_extra_name" property="name"/>
+        <result column="company_extra_create_time" property="createTime"/>
+        <result column="company_extra_update_time" property="updateTime"/>
+        <result column="company_extra_version" property="version"/>
+    </resultMap>
+</mapper>

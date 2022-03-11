@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.github.phonenumbermanager.constant.enums.ConfigurationFieldTypeEnum;
+import com.github.phonenumbermanager.constant.enums.FieldTypeEnum;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -48,7 +48,7 @@ public class Configuration extends BaseEntity<Configuration> {
     private String content;
     @ApiModelProperty("系统配置字段类型")
     @NotNull(groups = CreateInputGroup.class, message = "系统配置字段类型不能为空！")
-    private ConfigurationFieldTypeEnum fieldType;
+    private FieldTypeEnum fieldType;
     @ApiModelProperty("系统配置字段值")
     @Length(max = 255, message = "系统配置字段值不能超过255个字符！")
     private String fieldValue;

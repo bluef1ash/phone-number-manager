@@ -2,7 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.phonenumbermanager.mapper.CompanyMapper">
     <resultMap type="com.github.phonenumbermanager.entity.Company" id="commonResultMap">
-        <result column="actual_number" property="actualNumber"/>
         <result column="level" property="level"/>
         <result column="parent_id" property="parentId"/>
     </resultMap>
@@ -24,11 +23,12 @@
                extends="aliasResultMap">
         <collection property="phoneNumbers" ofType="com.github.phonenumbermanager.entity.PhoneNumber"
                     resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
+        <collection property="companyExtras" ofType="com.github.phonenumbermanager.entity.CompanyExtra"
+                    resultMap="com.github.phonenumbermanager.mapper.CompanyExtraMapper.aliasResultMap"/>
     </resultMap>
     <select id="selectCorrelation" resultMap="collectionResultMap">
         SELECT pm_company.id AS 'company_id',
             pm_company.name AS 'company_name',
-            pm_company.actual_number,
             pm_company.level,
             pm_company.create_time AS 'company_create_time',
             pm_company.update_time AS 'company_update_time',
@@ -41,26 +41,30 @@
     <select id="selectCorrelationById" resultMap="collectionResultMap">
         SELECT pm_company.id AS 'company_id',
             pm_company.name AS 'company_name',
-            pm_company.actual_number,
             pm_company.create_time AS 'company_create_time',
             pm_company.update_time AS 'company_update_time',
             pm_company.level,
             pm_company.parent_id,
+            pm_company_extra.id,
+            pm_company_extra.title,
+            pm_company_extra.description,
+            pm_company_extra.name AS 'company_extra_name',
+            pm_company_extra.content,
+            pm_company_extra.field_type,
             pm_phone_number.phone_number
         FROM pm_company
+                 LEFT JOIN pm_company_extra ON pm_company.id = pm_company_extra.company_id
                  LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
                  LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
         WHERE pm_company.id = #{id}
     </select>
     <select id="selectCorrelationByCompanies" resultMap="collectionResultMap">
-        SELECT pm_company.id,
+        SELECT pm_company.id AS 'company_id',
         pm_company.name AS 'company_name',
-        pm_company.actual_number,
         pm_company.parent_id,
         pm_company.create_time,
         pm_company.update_time,
         pm_company.level,
-        pm_company_phone_number.company_id,
         pm_phone_number.id,
         pm_phone_number.phone_number,
         pm_phone_number.phone_type

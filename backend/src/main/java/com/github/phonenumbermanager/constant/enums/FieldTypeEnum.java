@@ -7,13 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 配置类别枚举
+ * 数据类别枚举
  *
  * @author 廿二月的天
  */
 @AllArgsConstructor
 @Getter
-public enum ConfigurationFieldTypeEnum {
+public enum FieldTypeEnum {
     /**
      *
      */

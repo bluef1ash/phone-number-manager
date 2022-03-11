@@ -16,6 +16,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
+import com.github.phonenumbermanager.service.CompanyExtraService;
 import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
@@ -34,11 +35,14 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private final DormitoryManagerMapper dormitoryManagerMapper;
     private final PhoneNumberMapper phoneNumberMapper;
     private final CompanyPhoneNumberMapper companyPhoneNumberMapper;
+    private final CompanyExtraService companyExtraService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(Company entity) {
         baseMapper.insert(entity);
+        entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
+        companyExtraService.saveBatch(entity.getCompanyExtras());
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         return companyPhoneNumberMapper.insertBatchSomeColumn(companyPhoneNumbersHandler(entity)) > 0;
     }
@@ -47,6 +51,9 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Override
     public boolean updateById(Company entity) {
         baseMapper.updateById(entity);
+        companyExtraService.remove(new QueryWrapper<CompanyExtra>().eq("company_id", entity.getId()));
+        entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
+        companyExtraService.saveBatch(entity.getCompanyExtras());
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         companyPhoneNumberMapper.delete(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", entity.getId()));
         return companyPhoneNumberMapper.insertBatchSomeColumn(companyPhoneNumbersHandler(entity)) > 0;
@@ -101,6 +108,7 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         if (dormitoryManagerCount > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
+        companyExtraService.remove(new QueryWrapper<CompanyExtra>().eq("company_id", id));
         return baseMapper.deleteById(id) > 0
             && companyPhoneNumberMapper.delete(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", id)) > 0;
     }
@@ -108,10 +116,12 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeByIds(Collection<?> list) {
+        QueryWrapper<CompanyExtra> companyExtraQueryWrapper = new QueryWrapper<>();
         QueryWrapper<CommunityResident> communityResidentQueryWrapper = new QueryWrapper<>();
         QueryWrapper<DormitoryManager> dormitoryManagerQueryWrapper = new QueryWrapper<>();
         QueryWrapper<CompanyPhoneNumber> companyPhoneNumberQueryWrapper = new QueryWrapper<>();
         list.forEach(l -> {
+            companyExtraQueryWrapper.eq("company_id", l).or();
             communityResidentQueryWrapper.eq("company_id", l).or();
             dormitoryManagerQueryWrapper.eq("company_id", l).or();
             companyPhoneNumberQueryWrapper.eq("company_id", l).or();
@@ -122,8 +132,9 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         if (dormitoryManagerMapper.selectCount(dormitoryManagerQueryWrapper) > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
-        companyPhoneNumberMapper.delete(companyPhoneNumberQueryWrapper);
-        return super.removeByIds(list);
+        companyExtraService.remove(companyExtraQueryWrapper);
+        return baseMapper.deleteBatchIds(list) > 0
+            && companyPhoneNumberMapper.delete(companyPhoneNumberQueryWrapper) > 0;
     }
 
     @Override

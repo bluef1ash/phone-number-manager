@@ -3,7 +3,7 @@ import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import { ProFormDigit, ProFormList, ProFormText, ProFormTreeSelect } from '@ant-design/pro-form';
+import { ProFormList, ProFormSelect, ProFormText, ProFormTreeSelect } from '@ant-design/pro-form';
 import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 import {
   batchCompany,
@@ -27,7 +27,7 @@ const InputElement = (
       width="xl"
       name="name"
       label="单位名称"
-      tooltip="不能超过10个字符"
+      tooltip="不能超过20个字符"
       placeholder="请输入单位名称"
       rules={[
         {
@@ -35,19 +35,10 @@ const InputElement = (
           message: '单位名称不能为空！',
         },
         {
-          max: 10,
-          message: '单位名称不能超过10个字符！',
+          max: 20,
+          message: '单位名称不能超过20个字符！',
         },
       ]}
-    />{' '}
-    <ProFormDigit
-      width="xl"
-      name="actualNumber"
-      label="单位分包数"
-      tooltip="只能输入数字"
-      placeholder="请输入单位分包数"
-      max={10000}
-      fieldProps={{ precision: 0 }}
     />{' '}
     <ProFormTreeSelect
       width="xl"
@@ -103,6 +94,109 @@ const InputElement = (
                 return Promise.reject('联系方式输入不正确！');
               }
             },
+          },
+        ]}
+      />{' '}
+    </ProFormList>{' '}
+    <ProFormList
+      name="companyExtras"
+      creatorButtonProps={{
+        creatorButtonText: '添加单位额外属性',
+      }}
+    >
+      {' '}
+      <ProFormText
+        name="title"
+        width="xl"
+        label="单位额外属性标题"
+        placeholder="请输入单位额外属性标题"
+        rules={[
+          {
+            required: true,
+            message: '单位额外属性标题不能为空！',
+          },
+          {
+            max: 100,
+            message: '单位额外属性标题不能超过100个字符',
+          },
+        ]}
+      />{' '}
+      <ProFormText
+        width="xl"
+        name="description"
+        label="单位额外属性描述"
+        tooltip="不能超过255个字符"
+        placeholder="请输入单位额外属性描述"
+        rules={[
+          {
+            max: 255,
+            message: '单位额外属性描述不能超过255个字符！',
+          },
+        ]}
+      />{' '}
+      <ProFormText
+        width="xl"
+        name="name"
+        label="单位额外属性变量名称"
+        tooltip="不能超过100个字符"
+        placeholder="请输入单位额外属性变量名称"
+        rules={[
+          {
+            required: true,
+            message: '单位额外属性变量名称不能为空！',
+          },
+          {
+            max: 100,
+            message: '单位额外属性变量名称不能超过100个字符！',
+          },
+        ]}
+      />{' '}
+      <ProFormText
+        width="xl"
+        name="content"
+        label="单位额外属性变量值"
+        placeholder="请输入单位额外属性变量值"
+        rules={[
+          {
+            required: true,
+            message: '单位额外属性变量值不能为空！',
+          },
+          {
+            max: 255,
+            message: '单位额外属性变量值不能超过255个字符！',
+          },
+        ]}
+      />{' '}
+      <ProFormSelect
+        width="xl"
+        options={[
+          {
+            value: 0,
+            label: '未知类型',
+          },
+          {
+            value: 1,
+            label: '布尔类型',
+          },
+          {
+            value: 2,
+            label: '字符串类型',
+          },
+          {
+            value: 3,
+            label: '数值类型',
+          },
+          {
+            value: 4,
+            label: '系统用户类型',
+          },
+        ]}
+        name="fieldType"
+        label="单位额外属性字段类型"
+        rules={[
+          {
+            required: true,
+            message: '单位额外属性字段类型不能为空！',
           },
         ]}
       />{' '}

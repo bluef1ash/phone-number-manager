@@ -67,7 +67,7 @@
         pm_community_resident.address,
         pm_system_user.username,
         pm_company.name AS 'company_name',
-        pm_company.parent_id,
+        pm_company.parent_id AS 'company_parent_id',
         pm_phone_number.phone_number
         FROM pm_community_resident
         LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id

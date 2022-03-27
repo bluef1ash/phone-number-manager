@@ -6,7 +6,7 @@ import java.util.List;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -46,11 +46,14 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     @Length(max = 10, message = "社区楼片长姓名不允许超过10个字符！")
     private String name;
     @ApiModelProperty("社区居民楼片长性别")
-    @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长性别不能为空！")
     private GenderEnum gender;
+    @ApiModelProperty("社区居民楼片长身份证号码")
+    @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长身份证号码不能为空！")
+    @Pattern(
+        regexp = "^([1-9]\\d{5}(18|19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx])|([1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3})$",
+        message = "社区居民楼片长身份证号码不正确！")
+    private String idNumber;
     @ApiModelProperty("社区居民楼片长出生年月")
-    @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长出生年月不能为空！")
-    @Past
     private LocalDate birth;
     @ApiModelProperty(value = "社区居民楼片长年龄", hidden = true)
     @TableField(exist = false)
@@ -77,16 +80,18 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     @Min(value = 1, message = "社区居民楼片长管理数最低为1！")
     private Integer managerCount;
     @ApiModelProperty("所属分包人编号")
-    @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长分包人不能为空！")
     @Min(value = 1, message = "所属分包人编号不正确！")
     private Long systemUserId;
     @ApiModelProperty("所属社区编号")
-    @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长社区不能为空！")
     @Min(value = 0, message = "所属社区编号不正确！")
     private Long companyId;
     @TableField(exist = false)
     @ApiModelProperty("社区居民楼片长联系方式")
     private List<PhoneNumber> phoneNumbers;
+    @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长分包人不能为空！")
+    @TableField(exist = false)
+    @ApiModelProperty("社区居民楼片长分包人信息")
+    private List<String> systemUserInfo;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private SystemUser systemUser;

@@ -63,7 +63,7 @@ abstract class BaseController {
      *            开始读取的行数
      * @return Excel工作簿对象
      */
-    protected List<List<Object>> uploadExcel(HttpServletRequest request, int startRowNumber) {
+    protected List<List<Object>> uploadExcelFileToData(HttpServletRequest request, int startRowNumber) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
         MultipartFile file = multipartRequest.getFile("file");
         if (file == null || file.isEmpty()) {

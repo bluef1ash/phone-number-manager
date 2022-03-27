@@ -125,19 +125,16 @@ public class CommunityResidentController extends BaseController {
      *
      * @param request
      *            HTTP请求对象
-     * @param streetId
-     *            导入的街道编号
      * @return Ajax信息
      */
-    @PostMapping("/import/{streetId}")
+    @PostMapping("/import")
     @ApiOperation("导入居民信息进系统")
-    public R communityResidentImportAsSystem(HttpServletRequest request,
-        @ApiParam(name = "导入的街道编号", required = true) @PathVariable Long streetId) {
+    public R communityResidentImportAsSystem(HttpServletRequest request) {
         getEnvironmentVariable();
         int startRowNumber =
             Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").get("content"));
-        List<List<Object>> data = uploadExcel(request, startRowNumber);
-        if (data != null && !communityResidentService.save(data, streetId, configurationMap)) {
+        List<List<Object>> data = uploadExcelFileToData(request, startRowNumber);
+        if (data != null && !communityResidentService.save(data, configurationMap)) {
             return R.ok();
         }
         throw new JsonException("上传文件失败！");

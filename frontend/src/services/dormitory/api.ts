@@ -1,5 +1,10 @@
 import request from "@config/request";
-import { dormitoryManager, dormitoryManagerBatch, dormitoryManagerDownloadExcel } from "@/services/api";
+import {
+  dormitoryManager,
+  dormitoryManagerBatch,
+  dormitoryManagerDownloadExcel,
+  dormitoryManagerImportExcel
+} from "@/services/api";
 
 /** 获取社区楼长列表 */
 export async function queryDormitoryManagerList(params?: any, options?: Record<string, any>) {
@@ -47,10 +52,11 @@ export async function createDormitoryManager(
 
 /** 修改社区楼长处理 */
 export async function modifyDormitoryManager(
+  id: number,
   data: API.DormitoryManager,
   options?: Record<string, any>,
 ) {
-  return request.put<API.ResponseSuccess & API.ResponseException>(dormitoryManager, {
+  return request.put<API.ResponseSuccess & API.ResponseException>(`${dormitoryManager}/${id}`, {
     data,
     ...(options || {}),
   });
@@ -70,6 +76,13 @@ export async function batchDormitoryManager(
 ) {
   return request.post<API.ResponseSuccess & API.ResponseException>(dormitoryManagerBatch, {
     data,
+    ...(options || {}),
+  });
+}
+
+/** 上传表格 */
+export async function uploadDormitoryManagerExcel(options?: Record<string, any>) {
+  return request.post<API.ResponseSuccess & API.ResponseException>(dormitoryManagerImportExcel, {
     ...(options || {}),
   });
 }

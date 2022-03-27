@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -77,7 +78,7 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
             treeSystemPermissionList = systemPermissions;
         } else {
             treeSystemPermissionList
-                .forEach(systemPermission -> treeSystemPermissions(systemPermission, null, systemPermissions));
+                .forEach(systemPermission -> treeSystemPermissions(systemPermission, null, systemPermissions, null));
         }
         List<SystemPermission> pageList = new ArrayList<>();
         int currId = current > 1 ? (current - 1) * pageSize : 0;
@@ -96,21 +97,25 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
-        return companyPermissionMapper.delete(new QueryWrapper<CompanyPermission>().eq("permission_id", id)) > 0
+        return companyPermissionMapper
+            .delete(new LambdaQueryWrapper<CompanyPermission>().eq(CompanyPermission::getPermissionId, id)) > 0
             && baseMapper.deleteById(id) > 0;
     }
 
     @Override
-    public List<SelectListVo> treeSelectList() {
-        List<SystemPermission> systemPermissions = baseMapper.selectList(null);
-        return systemPermissions.stream().filter(systemPermission -> systemPermission.getParentId() == 0L)
-            .map(systemPermission -> {
-                SelectListVo selectListVo = new SelectListVo();
-                selectListVo.setTitle(systemPermission.getName()).setLabel(systemPermission.getName())
-                    .setValue(systemPermission.getId()).setLevel(systemPermission.getLevel());
-                treeSystemPermissions(null, selectListVo, systemPermissions);
-                return selectListVo;
-            }).collect(Collectors.toList());
+    public List<SelectListVo> treeSelectList(Long parentId) {
+        List<Long> parentIds =
+            baseMapper.selectList(new LambdaQueryWrapper<SystemPermission>().select(SystemPermission::getParentId))
+                .stream().map(SystemPermission::getParentId).collect(Collectors.toList());
+        List<SystemPermission> systemPermissions = baseMapper
+            .selectList(new LambdaQueryWrapper<SystemPermission>().eq(SystemPermission::getParentId, parentId));
+        return systemPermissions.stream().map(systemPermission -> {
+            SelectListVo selectListVo = new SelectListVo();
+            selectListVo.setTitle(systemPermission.getName()).setLabel(systemPermission.getName())
+                .setValue(systemPermission.getId()).setIsLeaf(!parentIds.contains(systemPermission.getId()));
+            treeSystemPermissions(null, selectListVo, systemPermissions, parentIds);
+            return selectListVo;
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -148,9 +153,11 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
      *            顶级系统权限表单
      * @param systemPermissions
      *            全部系统权限集合
+     * @param parentIds
+     *            全部父级编号集合
      */
     private void treeSystemPermissions(SystemPermission systemPermission, SelectListVo selectListVo,
-        List<SystemPermission> systemPermissions) {
+        List<SystemPermission> systemPermissions, List<Long> parentIds) {
         systemPermissions.forEach(permission -> {
             Long id;
             if (systemPermission == null) {
@@ -166,7 +173,8 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
                     }
                     selectList = new SelectListVo();
                     selectList.setTitle(permission.getName()).setLabel(permission.getName())
-                        .setValue(permission.getId()).setLevel(permission.getLevel());
+                        .setValue(permission.getId())
+                        .setIsLeaf(parentIds == null || !parentIds.contains(permission.getId()));
                     selectListVo.getChildren().add(selectList);
                 } else {
                     if (systemPermission.getChildren() == null) {
@@ -174,7 +182,7 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
                     }
                     systemPermission.getChildren().add(permission);
                 }
-                treeSystemPermissions(permission, selectList, systemPermissions);
+                treeSystemPermissions(permission, selectList, systemPermissions, parentIds);
             }
         });
     }

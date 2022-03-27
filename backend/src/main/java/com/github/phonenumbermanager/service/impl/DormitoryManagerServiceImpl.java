@@ -2,17 +2,19 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.enums.*;
 import com.github.phonenumbermanager.entity.*;
@@ -22,6 +24,7 @@ import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.util.CommonUtil;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.pinyin.PinyinUtil;
@@ -29,14 +32,14 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import cn.hutool.poi.excel.StyleSet;
-import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 社区楼长业务实现
  *
  * @author 廿二月的天
  */
-@AllArgsConstructor
+@Slf4j
 @Service
 public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManagerMapper, DormitoryManager>
     implements DormitoryManagerService {
@@ -45,220 +48,161 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private final SystemUserMapper systemUserMapper;
     private final PhoneNumberMapper phoneNumberMapper;
     private final DormitoryManagerPhoneNumberMapper dormitoryManagerPhoneNumberMapper;
+    private Integer excelDormitoryCommunityNameCellNumber;
+    private Integer excelDormitoryNameCellNumber;
+    private Integer excelDormitoryBirthCellNumber;
+    private Integer excelDormitoryPoliticalStatusCellNumber;
+    private Integer excelDormitoryEmploymentStatusCellNumber;
+    private Integer excelDormitoryEducationCellNumber;
+    private Integer excelDormitoryAddressCellNumber;
+    private Integer excelDormitoryManagerAddressCellNumber;
+    private Integer excelDormitoryManagerCountCellNumber;
+    private Integer excelDormitoryTelephoneCellNumber;
+    private Integer excelDormitoryLandlineCellNumber;
+    private Integer excelDormitorySubcontractorTelephoneCellNumber;
+
+    @Autowired
+    public DormitoryManagerServiceImpl(CompanyMapper companyMapper, SystemUserMapper systemUserMapper,
+        PhoneNumberMapper phoneNumberMapper, DormitoryManagerPhoneNumberMapper dormitoryManagerPhoneNumberMapper) {
+        this.companyMapper = companyMapper;
+        this.systemUserMapper = systemUserMapper;
+        this.phoneNumberMapper = phoneNumberMapper;
+        this.dormitoryManagerPhoneNumberMapper = dormitoryManagerPhoneNumberMapper;
+    }
 
     @Override
     public DormitoryManager getCorrelation(Long id) {
-        return baseMapper.selectAndCompanyById(id);
+        List<String> info = new ArrayList<>();
+        DormitoryManager dormitoryManager = baseMapper.selectAndCompanyById(id);
+        info.add(dormitoryManager.getCompany().getName());
+        info.add(dormitoryManager.getSystemUser().getUsername());
+        dormitoryManager.setSystemUserInfo(info);
+        return dormitoryManager;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap) {
+    public boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap) {
         List<DormitoryManager> dormitoryManagers = new ArrayList<>();
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
-        Integer excelDormitoryCommunityNameCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_community_name_cell_number").get("content"));
-        Integer excelDormitoryNameCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_name_cell_number").get("content"));
-        Integer excelDormitoryGenderCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_gender_cell_number").get("content"));
-        Integer excelDormitoryBirthCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_birth_cell_number").get("content"));
-        Integer excelDormitoryPoliticalStatusCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_political_status_cell_number").get("content"));
-        Integer excelDormitoryEmploymentStatusCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_employment_status_cell_number").get("content"));
-        Integer excelDormitoryEducationCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_education_cell_number").get("content"));
-        Integer excelDormitoryAddressCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_address_cell_number").get("content"));
-        Integer excelDormitoryManagerAddressCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_manager_address_cell_number").get("content"));
-        Integer excelDormitoryManagerCountCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_manager_count_cell_number").get("content"));
-        Integer excelDormitoryTelephoneCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_telephone_cell_number").get("content"));
-        Integer excelDormitoryLandlineCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_landline_cell_number").get("content"));
-        Integer excelDormitorySubcontractorTelephoneCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_subcontractor_telephone_cell_number").get("content"));
-        List<Company> companies = companyMapper.selectList(new QueryWrapper<Company>().eq("parent_id", streetId));
+        List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbers = new ArrayList<>();
+        getUploadExcelVariable(configurationMap);
+        List<Company> companies = companyMapper.selectList(null);
         List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM");
         for (List<Object> datum : data) {
             DormitoryManager dormitoryManager = new DormitoryManager();
-            Optional<Company> company = companies.stream()
-                .filter(c -> c.getName().contains(String.valueOf(datum.get(excelDormitoryCommunityNameCellNumber))))
-                .findFirst();
+            String companyName = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryCommunityNameCellNumber)));
+            Optional<Company> company = companies.stream().filter(c -> c.getName().contains(companyName)).findFirst();
             if (company.isEmpty()) {
                 throw new BusinessException("单位读取失败！");
             }
-            LocalDate birth =
-                LocalDate.parse(String.valueOf(datum.get(excelDormitoryBirthCellNumber)), dateTimeFormatter);
-            dormitoryManager.setCompanyId(company.get().getId())
-                .setName(String.valueOf(datum.get(excelDormitoryNameCellNumber)))
-                .setGender(GenderEnum.valueOf(String.valueOf(datum.get(excelDormitoryGenderCellNumber))))
-                .setBirth(birth)
-                .setPoliticalStatus(
-                    PoliticalStatusEnum.valueOf(String.valueOf(datum.get(excelDormitoryPoliticalStatusCellNumber))))
-                .setEmploymentStatus(
-                    EmploymentStatusEnum.valueOf(String.valueOf(datum.get(excelDormitoryEmploymentStatusCellNumber))))
-                .setEducation(EducationStatusEnum.valueOf(String.valueOf(datum.get(excelDormitoryEducationCellNumber))))
-                .setAddress(String.valueOf(datum.get(excelDormitoryAddressCellNumber)))
-                .setManagerAddress(String.valueOf(datum.get(excelDormitoryManagerAddressCellNumber)))
-                .setManagerCount((Integer)datum.get(excelDormitoryManagerCountCellNumber));
-            String telephone = String.valueOf(datum.get(excelDormitoryTelephoneCellNumber));
-            String landline = String.valueOf(datum.get(excelDormitoryLandlineCellNumber));
-            if (StringUtils.isNotEmpty(telephone)) {
+            long dormitoryManagerId = IdWorker.getId();
+            long telephoneId;
+            long landlineId;
+            String idNumber = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryBirthCellNumber)));
+            dormitoryManager.setId(dormitoryManagerId).setCompanyId(company.get().getId())
+                .setName(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryNameCellNumber))))
+                .setIdNumber(idNumber).setGender(GenderEnum.getEnum(IdcardUtil.getGenderByIdCard(idNumber)))
+                .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(idNumber), IdcardUtil.getMonthByIdCard(idNumber),
+                    IdcardUtil.getDayByIdCard(idNumber)))
+                .setPoliticalStatus(PoliticalStatusEnum
+                    .getEnum(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryPoliticalStatusCellNumber)))))
+                .setEmploymentStatus(EmploymentStatusEnum
+                    .getEnum(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryEmploymentStatusCellNumber)))))
+                .setEducation(EducationStatusEnum
+                    .getEnum(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryEducationCellNumber)))))
+                .setAddress(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryAddressCellNumber))))
+                .setManagerAddress(
+                    StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryManagerAddressCellNumber))))
+                .setManagerCount(Convert.toInt(datum.get(excelDormitoryManagerCountCellNumber)));
+            String telephone = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryTelephoneCellNumber)));
+            String landline = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryLandlineCellNumber)));
+            if (StrUtil.isNotEmpty(telephone)) {
+                telephoneId = IdWorker.getId();
                 PhoneNumber tel = new PhoneNumber();
-                tel.setPhoneNumber(telephone).setPhoneType(PhoneTypeEnum.MOBILE);
+                tel.setId(telephoneId).setPhoneNumber(telephone).setPhoneType(PhoneTypeEnum.MOBILE);
                 phoneNumbers.add(tel);
+                dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
+                    .setDormitoryManagerId(dormitoryManagerId).setPhoneNumberId(telephoneId));
             }
-            if (StringUtils.isNotEmpty(landline)) {
+            if (StrUtil.isNotEmpty(landline)) {
+                landlineId = IdWorker.getId();
                 PhoneNumber land = new PhoneNumber();
-                land.setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.FIXED_LINE);
+                land.setId(landlineId).setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.FIXED_LINE);
                 phoneNumbers.add(land);
+                dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
+                    .setDormitoryManagerId(dormitoryManagerId).setPhoneNumberId(landlineId));
             }
-            Optional<
-                SystemUser> user =
-                    systemUsers.stream()
-                        .filter(systemUser -> systemUser.getPhoneNumber().getPhoneNumber()
-                            .equals(String.valueOf(datum.get(excelDormitorySubcontractorTelephoneCellNumber))))
-                        .findFirst();
-            if (user.isEmpty()) {
+            String systemUserPhoneNumber =
+                StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitorySubcontractorTelephoneCellNumber)));
+            Optional<SystemUser> systemUser = systemUsers.stream()
+                .filter(user -> user.getPhoneNumber().getPhoneNumber().equals(systemUserPhoneNumber)).findFirst();
+            if (systemUser.isEmpty()) {
                 throw new BusinessException("未找到对应的分包人信息，请重试！");
             }
-            dormitoryManager.setSystemUserId(user.get().getId());
+            dormitoryManager.setSystemUserId(systemUser.get().getId());
             dormitoryManagers.add(dormitoryManager);
         }
-        if (dormitoryManagers.size() > 0) {
-            QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
-            companies.forEach(company -> wrapper.eq("company_id", company.getId()).or());
-            baseMapper.delete(wrapper.or());
-            phoneNumberMapper.insertIgnoreBatchSomeColumn(phoneNumbers);
-            return saveBatch(dormitoryManagers);
+        if (dormitoryManagers.size() == 0) {
+            throw new BusinessException("上传失败！");
         }
-        throw new BusinessException("上传失败！");
+        LambdaQueryWrapper<DormitoryManager> wrapper = new LambdaQueryWrapper<>();
+        companies.forEach(company -> wrapper.eq(DormitoryManager::getCompanyId, company.getId()).or());
+        baseMapper.delete(wrapper.or());
+        phoneNumberMapper.insertIgnoreBatchSomeColumn(phoneNumbers);
+        baseMapper.insertBatchSomeColumn(dormitoryManagers);
+        return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbers) > 0;
     }
 
     @Override
     public ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap) {
-        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         String excelDormitoryTitleUp = Convert.toStr(configurationMap.get("excel_dormitory_title_up").get("content"));
         String excelDormitoryTitle = Convert.toStr(configurationMap.get("excel_dormitory_title").get("content"));
-        String streetTitle = "";
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         List<Company> companyAll = companyMapper.selectList(null);
-        List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
-        if (companies == null) {
-            companies = companyAll;
+        SystemUser principal = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (systemAdministratorId.equals(principal.getId()) && companies == null) {
+            companies = companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
         }
-        Company levelMax =
-            companyMapper.selectOne(new QueryWrapper<Company>().orderByDesc("level").select("level").last("limit 1"));
         List<Long> companyIds = new ArrayList<>();
-        CommonUtil.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
-        List<DormitoryManager> dormitoryManagers = new ArrayList<>();
-        int current = 1;
-        while (true) {
-            IPage<DormitoryManager> dormitoryManagerPage =
-                baseMapper.selectListByCompanyIds(companyIds, new Page<>(current, 1000));
-            if (dormitoryManagerPage.getRecords().isEmpty()) {
-                break;
-            }
-            dormitoryManagers.addAll(dormitoryManagerPage.getRecords());
-            current++;
+        companies.forEach(company -> CommonUtil.listRecursionCompanyIds(companyIds, companyAll, company.getId()));
+        List<DormitoryManager> dormitoryManagers = baseMapper.selectListByCompanyIds(companyIds);
+        if (dormitoryManagers.isEmpty()) {
+            return null;
         }
-        if (!dormitoryManagers.isEmpty()) {
-            long index = 1L;
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM");
-            for (DormitoryManager dormitoryManager : dormitoryManagers) {
-                LinkedHashMap<String, Object> data = new LinkedHashMap<>();
-                // 序号
-                data.put("sequenceNumber", index);
-                // 处理社区名称
-                String communityName = dormitoryManager.getCompany().getName().replaceAll("(?iUs)[社区居委会]", "");
-                data.put("communityName", communityName);
-                Optional<Company> company = companyAll.stream()
-                    .filter(c -> dormitoryManager.getCompany().getParentId().equals(c.getId())).findFirst();
-                String streetName = "";
-                if (company.isPresent()) {
-                    streetName = company.get().getName().replaceAll("(?iUs)[街道办事处]", "");
-                    if (StrUtil.isBlankIfStr(streetTitle)) {
-                        streetTitle = company.get().getName();
-                    } else if (!streetTitle.equals(company.get().getName())) {
-                        streetTitle = streetTitle + "，" + company.get().getName();
-                    }
-                }
-                // 编号
-                data.put("id", PinyinUtil.getFirstLetter(streetName, "") + PinyinUtil.getFirstLetter(communityName, "")
-                    + String.format("%04d", index));
-                // 姓名
-                data.put("name", dormitoryManager.getName());
-                // 性别
-                data.put("genderName", dormitoryManager.getGender().getDescription());
-                // 出生年月
-                data.put("birthString", dateTimeFormatter.format(dormitoryManager.getBirth()));
-                data.put("politicalStatusName", dormitoryManager.getPoliticalStatus().getDescription());
-                data.put("employmentStatusName", dormitoryManager.getEmploymentStatus().getDescription());
-                data.put("educationName", dormitoryManager.getEducation().getDescription());
-                data.put("address", dormitoryManager.getAddress());
-                data.put("managerAddress", dormitoryManager.getManagerAddress());
-                data.put("managerCount", dormitoryManager.getManagerCount());
-                data.put("mobile", "");
-                data.put("fixedLine", "");
-                dormitoryManager.getPhoneNumbers().forEach(phoneNumber -> {
-                    if (PhoneUtil.isMobile(phoneNumber.getPhoneNumber())) {
-                        data.put("mobile", phoneNumber.getPhoneNumber());
-                    } else {
-                        data.put("fixedLine", phoneNumber.getPhoneNumber());
-                    }
-                });
-                // 处理分包人
-                data.put("subcontractorName", dormitoryManager.getSystemUser().getUsername());
-                Optional<SystemUser> user = systemUsers.stream()
-                    .filter(systemUser -> dormitoryManager.getSystemUser().getId().equals(systemUser.getId()))
-                    .findFirst();
-                if (user.isPresent()) {
-                    data.put("subcontractorTelephone", user.get().getPhoneNumber().getPhoneNumber());
-                } else {
-                    data.put("subcontractorTelephone", "");
-                }
-                list.add(data);
-                index++;
+        List<LinkedHashMap<String, Object>> list = exportData(companyAll, dormitoryManagers);
+        ExcelWriter excelWriter = ExcelUtil.getWriter(true);
+        CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+        setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
+        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, 1, excelDormitoryTitleUp,
+            firstRowStyle);
+        excelWriter.passCurrentRow();
+        CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+        setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
+        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, list.get(0).keySet().size(),
+            excelDormitoryTitle, titleStyle);
+        excelWriter.passCurrentRow();
+        StyleSet styleSet = excelWriter.getStyleSet();
+        setCellStyle(styleSet.getHeadCellStyle(), excelWriter, "宋体", (short)11, false, true, true);
+        setCellStyle(styleSet.getCellStyle(), excelWriter, "宋体", (short)9, false, true, true);
+        Map<String, String> tableHead = getTableHead();
+        int i = 0;
+        for (String value : tableHead.values()) {
+            if (i == tableHead.size() - 2) {
+                excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), i, i + 1, "分包人", true);
+                excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
+            } else if (i == tableHead.size() - 1) {
+                excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
+            } else {
+                excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow() + 1, i, i, value, true);
             }
-            ExcelWriter excelWriter = ExcelUtil.getWriter(true);
-            CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
-            setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
-            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, 1, excelDormitoryTitleUp,
-                firstRowStyle);
-            excelWriter.passCurrentRow();
-            CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
-            setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
-            excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, list.get(0).keySet().size(),
-                excelDormitoryTitle, titleStyle);
-            excelWriter.passCurrentRow();
-            StyleSet styleSet = excelWriter.getStyleSet();
-            setCellStyle(styleSet.getHeadCellStyle(), excelWriter, "宋体", (short)11, false, true, true);
-            setCellStyle(styleSet.getCellStyle(), excelWriter, "宋体", (short)9, false, true, true);
-            Map<String, String> tableHead = getTableHead();
-            int i = 0;
-            for (String value : tableHead.values()) {
-                if (i == tableHead.size() - 2) {
-                    excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), i, i + 1, "分包人", true);
-                    excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
-                } else if (i == tableHead.size() - 1) {
-                    excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
-                } else {
-                    excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow() + 1, i, i, value, true);
-                }
-                i++;
-            }
-            excelWriter.passCurrentRow();
-            excelWriter.passCurrentRow();
-            excelWriter.write(list, false);
-            excelWriter.autoSizeColumnAll();
-            return excelWriter;
+            i++;
         }
-        return null;
+        excelWriter.passCurrentRow();
+        excelWriter.passCurrentRow();
+        excelWriter.write(list, false);
+        excelWriter.autoSizeColumnAll();
+        return excelWriter;
     }
 
     @Override
@@ -321,6 +265,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(DormitoryManager entity) {
+        entity.setGender(GenderEnum.getEnum(IdcardUtil.getGenderByIdCard(entity.getIdNumber())))
+            .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(entity.getIdNumber()),
+                IdcardUtil.getMonthByIdCard(entity.getIdNumber()), IdcardUtil.getDayByIdCard(entity.getIdNumber())))
+            .setCompanyId(Long.valueOf(entity.getSystemUserInfo().get(0)))
+            .setSystemUserId(Long.valueOf(entity.getSystemUserInfo().get(1)));
         baseMapper.insert(entity);
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbersHandler(entity)) > 0;
@@ -329,11 +278,18 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(DormitoryManager entity) {
-        super.updateById(entity);
-        phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
-        dormitoryManagerPhoneNumberMapper
-            .delete(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", entity.getId()));
-        return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbersHandler(entity)) > 0;
+        entity.setGender(GenderEnum.getEnum(IdcardUtil.getGenderByIdCard(entity.getIdNumber())))
+            .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(entity.getIdNumber()),
+                IdcardUtil.getMonthByIdCard(entity.getIdNumber()), IdcardUtil.getDayByIdCard(entity.getIdNumber())))
+            .setCompanyId(Long.valueOf(entity.getSystemUserInfo().get(0)))
+            .setSystemUserId(Long.valueOf(entity.getSystemUserInfo().get(1)));
+        boolean isSuccess = baseMapper.updateById(entity) > 0;
+        if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
+            dormitoryManagerPhoneNumberMapper
+                .delete(new QueryWrapper<DormitoryManagerPhoneNumber>().eq("dormitory_manager_id", entity.getId()));
+            dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbersHandler(entity));
+        }
+        return isSuccess;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -382,7 +338,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private Map<String, Map<String, Integer>> computedBaseMessage(List<Company> companies, List<Company> companyAll,
         List<Long> companyIds) {
         Map<String, Map<String, Integer>> baseMessage = new HashMap<>(5);
-        Map<String, Integer> genderCount = new HashMap<>(2);
+        /*Map<String, Integer> genderCount = new HashMap<>(2);
         genderCount.put("男性", 0);
         genderCount.put("女性", 0);
         Map<String, Integer> ageCount = new HashMap<>(8);
@@ -403,12 +359,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         Map<String, Integer> employmentStatusCount = new HashMap<>();
         Arrays.stream(EmploymentStatusEnum.values())
             .forEach(employmentStatusEnum -> employmentStatusCount.put(employmentStatusEnum.getDescription(), 0));
-        Company levelMax = companyMapper.selectOne(new QueryWrapper<Company>().orderByDesc("level").select("level"));
-        CommonUtil.listSubmissionCompanyIds(companyIds, companies, companyAll, levelMax.getLevel(), null);
+        CommonUtil.listSubmissionCompanyIds(companyIds, companies, companyAll, null);
         QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
         companyIds.forEach(id -> wrapper.eq("company_id", id));
         List<DormitoryManager> dormitoryManagers = baseMapper.selectList(wrapper);
-        LocalDate now = LocalDate.now();
+        YearMonth now = YearMonth.now();
         for (DormitoryManager dormitoryManager : dormitoryManagers) {
             switch (dormitoryManager.getGender()) {
                 case MALE:
@@ -421,7 +376,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                     genderCount.put("未知", genderCount.get("未知") + 1);
                     break;
             }
-            int age = dormitoryManager.getBirth().until(now).getYears();
+            long age = dormitoryManager.getBirth().until(now, ChronoUnit.YEARS);
             if (age < 20) {
                 ageCount.put("20岁以下", ageCount.get("20岁以下") + 1);
             } else if (age < 30) {
@@ -450,7 +405,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         baseMessage.put("ageCount", ageCount);
         baseMessage.put("educationCount", educationCount);
         baseMessage.put("politicalStatusCount", politicalStatusCount);
-        baseMessage.put("employmentStatusCount", employmentStatusCount);
+        baseMessage.put("employmentStatusCount", employmentStatusCount);*/
         return baseMessage;
     }
 
@@ -481,7 +436,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         tableHead.put("id", "编号");
         tableHead.put("name", "姓名");
         tableHead.put("genderName", "性别");
-        tableHead.put("birthString", "出生年月");
+        tableHead.put("idNumber", "身份证号码");
         tableHead.put("politicalStatusName", "政治面貌");
         tableHead.put("employmentStatusName", "工作状况");
         tableHead.put("educationName", "文化程度");
@@ -493,5 +448,110 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         tableHead.put("subcontractorName", "姓名");
         tableHead.put("subcontractorTelephone", "手机");
         return tableHead;
+    }
+
+    /**
+     * 获取上传Excel的变量
+     *
+     * @param configurationMap
+     *            配置项
+     */
+    private void getUploadExcelVariable(Map<String, JSONObject> configurationMap) {
+        excelDormitoryCommunityNameCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_community_name_cell_number").get("content"));
+        excelDormitoryNameCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_name_cell_number").get("content"));
+        excelDormitoryBirthCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_birth_cell_number").get("content"));
+        excelDormitoryPoliticalStatusCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_political_status_cell_number").get("content"));
+        excelDormitoryEmploymentStatusCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_employment_status_cell_number").get("content"));
+        excelDormitoryEducationCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_education_cell_number").get("content"));
+        excelDormitoryAddressCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_address_cell_number").get("content"));
+        excelDormitoryManagerAddressCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_manager_address_cell_number").get("content"));
+        excelDormitoryManagerCountCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_manager_count_cell_number").get("content"));
+        excelDormitoryTelephoneCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_telephone_cell_number").get("content"));
+        excelDormitoryLandlineCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_landline_cell_number").get("content"));
+        excelDormitorySubcontractorTelephoneCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_subcontractor_telephone_cell_number").get("content"));
+    }
+
+    /**
+     * 导出数据库数据
+     *
+     * @param companyAll
+     *            所有单位集合
+     * @param dormitoryManagers
+     *            需要导出的数据集合
+     * @return 数据集合
+     */
+    private List<LinkedHashMap<String, Object>> exportData(List<Company> companyAll,
+        List<DormitoryManager> dormitoryManagers) {
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+        long index = 1L;
+        List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
+        String streetTitle = "";
+        for (DormitoryManager dormitoryManager : dormitoryManagers) {
+            LinkedHashMap<String, Object> data = new LinkedHashMap<>();
+            // 序号
+            data.put("sequenceNumber", index);
+            // 处理社区名称
+            String communityName = dormitoryManager.getCompany().getName().replaceAll("(?iUs)[社区村居民委员会]", "");
+            data.put("communityName", communityName);
+            Optional<Company> company = companyAll.stream()
+                .filter(c -> dormitoryManager.getCompany().getParentId().equals(c.getId())).findFirst();
+            String streetName = "";
+            if (company.isPresent()) {
+                streetName = company.get().getName().replaceAll("(?iUs)[乡镇街道办事处]", "");
+                if (StrUtil.isBlankIfStr(streetTitle)) {
+                    streetTitle = company.get().getName();
+                } else if (!streetTitle.equals(company.get().getName())) {
+                    streetTitle = streetTitle + "，" + company.get().getName();
+                }
+            }
+            // 编号
+            String companyFirstLetter = PinyinUtil.getFirstLetter(streetName, "").toUpperCase()
+                + PinyinUtil.getFirstLetter(communityName, "").toUpperCase();
+            data.put("id", companyFirstLetter + String.format("%04d", index));
+            // 姓名
+            data.put("name", dormitoryManager.getName());
+            // 性别
+            data.put("genderName", dormitoryManager.getGender().getDescription());
+            data.put("idNumber", dormitoryManager.getIdNumber());
+            data.put("politicalStatusName", dormitoryManager.getPoliticalStatus().getDescription());
+            data.put("employmentStatusName", dormitoryManager.getEmploymentStatus().getDescription());
+            data.put("educationName", dormitoryManager.getEducation().getDescription());
+            data.put("address", dormitoryManager.getAddress());
+            data.put("managerAddress", dormitoryManager.getManagerAddress());
+            data.put("managerCount", dormitoryManager.getManagerCount());
+            data.put("mobile", "");
+            data.put("fixedLine", "");
+            dormitoryManager.getPhoneNumbers().forEach(phoneNumber -> {
+                if (PhoneUtil.isMobile(phoneNumber.getPhoneNumber())) {
+                    data.put("mobile", phoneNumber.getPhoneNumber());
+                } else {
+                    data.put("fixedLine", phoneNumber.getPhoneNumber());
+                }
+            });
+            // 处理分包人
+            data.put("subcontractorName", dormitoryManager.getSystemUser().getUsername());
+            Optional<SystemUser> user = systemUsers.stream()
+                .filter(systemUser -> dormitoryManager.getSystemUser().getId().equals(systemUser.getId())).findFirst();
+            if (user.isPresent()) {
+                data.put("subcontractorTelephone", user.get().getPhoneNumber().getPhoneNumber());
+            } else {
+                data.put("subcontractorTelephone", "");
+            }
+            list.add(data);
+            index++;
+        }
+        return list;
     }
 }

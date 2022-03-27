@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.Company;
@@ -95,14 +96,19 @@ public class CompanyController extends BaseController {
     /**
      * 单位修改处理
      *
+     * @param id
+     *            要修改的单位编号
      * @param company
      *            单位对象
      * @return 视图页面
      */
-    @PutMapping
+    @PutMapping("/{id}")
     @ApiOperation("单位修改处理")
-    public R companyModifyHandle(@ApiParam(name = "需要修改的单位对象",
-        required = true) @RequestBody @Validated(ModifyInputGroup.class) Company company) {
+    public R companyModifyHandle(@ApiParam(name = "要修改的单位编号", required = true) @PathVariable Long id,
+        @ApiParam(name = "需要修改的单位对象",
+            required = true) @RequestBody @Validated(ModifyInputGroup.class) Company company) {
+        Company one = companyService.getOne(new LambdaQueryWrapper<Company>().eq(Company::getId, id));
+        company.setId(id).setVersion(one.getVersion());
         if (companyService.updateById(company)) {
             return R.ok();
         }
@@ -133,7 +139,7 @@ public class CompanyController extends BaseController {
     @GetMapping("/select-list")
     @ApiOperation("单位表单列表")
     public R companySelectList() {
-        return R.ok().put("data", companyService.treeSelectList());
+        return R.ok().put("data", companyService.treeSelectList(null));
     }
 
     /**

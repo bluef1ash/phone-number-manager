@@ -9,13 +9,10 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,17 +21,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.SystemPermission;
-import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.entity.SystemUserCompany;
+import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
+import com.github.phonenumbermanager.mapper.PhoneNumberMapper;
 import com.github.phonenumbermanager.mapper.SystemUserCompanyMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.SystemUserService;
@@ -43,6 +38,8 @@ import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
@@ -60,6 +57,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     private final RedisUtil redisUtil;
     private final SystemUserCompanyMapper systemUserCompanyMapper;
     private final CompanyMapper companyMapper;
+    private final PhoneNumberMapper phoneNumberMapper;
 
     @Override
     public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException, SystemClosedException {
@@ -107,17 +105,21 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()))
             .setCredentialExpireTime(SystemConstant.DATABASE_MIX_DATETIME)
             .setLoginTime(SystemConstant.DATABASE_MIX_DATETIME);
-        return baseMapper.insert(systemUser) > 0;
+        baseMapper.insert(systemUser);
+        return saveOrUpdateHandle(systemUser) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(SystemUser systemUser) {
-        if (StringUtils.isNotEmpty(systemUser.getPassword())) {
+        if (StrUtil.isNotEmpty(systemUser.getPassword())) {
             BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
             systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
         }
-        return baseMapper.updateById(systemUser) > 0;
+        systemUserCompanyMapper.delete(
+            new LambdaQueryWrapper<SystemUserCompany>().eq(SystemUserCompany::getSystemUserId, systemUser.getId()));
+        baseMapper.updateById(systemUser);
+        return saveOrUpdateHandle(systemUser) > 0;
     }
 
     @SuppressWarnings("all")
@@ -129,24 +131,22 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             Map<String, JSONObject> config =
                 JSONUtil.parseObj(redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY)).toBean(Map.class);
             JSONObject id = config.get("system_administrator_id");
-            if (ArrayUtils.contains(SystemConstant.PERMISSION_PERMITS, uri)
+            if (ArrayUtil.contains(SystemConstant.PERMISSION_PERMITS, uri)
                 || systemUser.getId().equals(Long.valueOf((String)id.get("content")))) {
                 return true;
             }
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            if (authorities != null && authorities.size() > 0) {
-                for (GrantedAuthority authority : authorities) {
-                    List<SystemPermission> systemPermissions =
-                        (List<SystemPermission>)redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY);
-                    if (systemPermissions.stream()
-                        .filter(
-                            systemPermission -> systemPermission.getId().equals(Long.valueOf(authority.getAuthority())))
-                        .anyMatch(
-                            systemPermission -> uri.contains(systemPermission.getUri().replaceAll("//\\{.*}/", ""))
-                                && Arrays.asList(systemPermission.getHttpMethods()).contains(method))) {
-                        return true;
-                    }
+            List<Company> companies = (List<Company>)authentication.getAuthorities();
+            if (companies != null && companies.size() > 0) {
+                List<SystemPermission> systemPermissions =
+                    (List<SystemPermission>)redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY);
+                Optional<List<Company>> optionalCompanies = systemPermissions.stream()
+                    .filter(systemPermission -> uri.contains(systemPermission.getUri().replaceAll("//\\{.*}/", ""))
+                        && Arrays.asList(systemPermission.getHttpMethods()).contains(method))
+                    .map(SystemPermission::getCompanies).findFirst();
+                if (optionalCompanies.isPresent()) {
+                    return companies.stream().anyMatch(company -> optionalCompanies.get().stream()
+                        .anyMatch(company1 -> company.getId().equals(company1.getId())));
                 }
             }
         }
@@ -164,10 +164,8 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         IPage<SystemUser> systemUsers =
             baseMapper.selectCorrelationByCompanyIds(companyIds, new Page<>(pageNumber, pageDataSize), search, sort);
         systemUsers.getRecords().forEach(systemUser -> {
-            if (systemUser.getCompanies() != null && !systemUser.getCompanies().isEmpty()
-                && systemUser.getCompanies().get(0).getId() != null) {
-                systemUser.getCompanies().forEach(company -> systemUser.getCompanyNames().add(company.getName()));
-            } else {
+            if (systemUser.getCompanies() == null || systemUser.getCompanies().isEmpty()
+                || systemUser.getCompanies().get(0).getId() == null) {
                 systemUser.setCompanies(null);
             }
         });
@@ -182,8 +180,8 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
-        return baseMapper.deleteById(id) > 0
-            && systemUserCompanyMapper.delete(new QueryWrapper<SystemUserCompany>().eq("user_id", id)) > 0;
+        return baseMapper.deleteById(id) > 0 && systemUserCompanyMapper
+            .delete(new LambdaQueryWrapper<SystemUserCompany>().eq(SystemUserCompany::getSystemUserId, id)) > 0;
     }
 
     @Override
@@ -192,21 +190,74 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     }
 
     @Override
-    public List<SelectListVo> treeSelectList() {
+    public List<SelectListVo> treeSelectList(Long parentId) {
         SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<SelectListVo> selectListVos;
-        if (systemUser.getCompanies() == null) {
-            selectListVos = baseMapper
-                .selectList(null).stream().map(user -> new SelectListVo().setValue(user.getId())
-                    .setTitle(user.getUsername()).setLabel(user.getUsername()).setLevel(0))
-                .collect(Collectors.toList());
+        List<SelectListVo> selectListVos = new ArrayList<>();
+        Set<Long> parentIds = companyMapper.selectList(new LambdaQueryWrapper<Company>().select(Company::getParentId))
+            .stream().map(Company::getParentId).collect(Collectors.toSet());
+        if (parentId == null) {
+            if (systemUser.getCompanies() == null) {
+                selectListVos = companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0L))
+                    .stream().map(company -> new SelectListVo().setValue(company.getId()).setLabel(company.getName())
+                        .setIsLeaf(false))
+                    .collect(Collectors.toList());
+            } else {
+                List<Long> ids = systemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList());
+                selectListVos.addAll(getSelectVos(ids, parentIds));
+            }
         } else {
-            selectListVos = baseMapper
-                .selectListByCompanyIds(
-                    systemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList()))
-                .stream().map(user -> new SelectListVo().setValue(user.getId()).setTitle(user.getUsername())
-                    .setLabel(user.getUsername()).setLevel(0))
-                .collect(Collectors.toList());
+            List<Long> ids = new ArrayList<>();
+            ids.add(parentId);
+            selectListVos.addAll(getSelectVos(ids, parentIds));
+        }
+        return selectListVos;
+    }
+
+    /**
+     * 保存和更新关联操作
+     *
+     * @param systemUser
+     *            操作的对象
+     * @return 成功行数
+     */
+    private int saveOrUpdateHandle(SystemUser systemUser) {
+        PhoneNumber phoneNumber = phoneNumberMapper.selectOne(new LambdaQueryWrapper<PhoneNumber>()
+            .eq(PhoneNumber::getPhoneNumber, systemUser.getPhoneNumber().getPhoneNumber()));
+        if (phoneNumber == null) {
+            phoneNumberMapper.insert(systemUser.getPhoneNumber());
+            systemUser.setPhoneNumberId(systemUser.getPhoneNumber().getId());
+        } else {
+            systemUser.setPhoneNumberId(phoneNumber.getId());
+        }
+        List<SystemUserCompany> systemUserCompanies = systemUser.getCompanies().stream()
+            .map(company -> new SystemUserCompany().setCompanyId(company.getId()).setSystemUserId(systemUser.getId()))
+            .collect(Collectors.toList());
+        return systemUserCompanyMapper.insertBatchSomeColumn(systemUserCompanies);
+    }
+
+    /**
+     * 获取表单对象集合
+     *
+     * @param ids
+     *            查询的编号集合
+     * @param parentIds
+     *            所有父级编号
+     * @return 表单对象集合
+     */
+    private List<SelectListVo> getSelectVos(List<Long> ids, Set<Long> parentIds) {
+        List<SelectListVo> selectListVos = new ArrayList<>();
+        LambdaQueryWrapper<Company> companyWrapper = new LambdaQueryWrapper<>();
+        ids.stream().filter(parentIds::contains).forEach(id -> companyWrapper.eq(Company::getParentId, id));
+        List<Long> subIds = ids.stream().filter(id -> !parentIds.contains(id)).collect(Collectors.toList());
+        if (companyWrapper.nonEmptyOfWhere()) {
+            selectListVos.addAll(companyMapper.selectList(companyWrapper).stream().map(
+                company -> new SelectListVo().setLabel(company.getName()).setValue(company.getId()).setIsLeaf(false))
+                .collect(Collectors.toList()));
+        }
+        if (!subIds.isEmpty()) {
+            selectListVos.addAll(baseMapper.selectListByCompanyIds(subIds).stream()
+                .map(user -> new SelectListVo().setLabel(user.getUsername()).setValue(user.getId()).setIsLeaf(true))
+                .collect(Collectors.toList()));
         }
         return selectListVos;
     }

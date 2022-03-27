@@ -1,7 +1,6 @@
 package com.github.phonenumbermanager;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 
 import org.junit.jupiter.api.Test;
@@ -42,7 +41,7 @@ public class ExcelTest {
         writer.addHeaderAlias("id", "编号");
         writer.addHeaderAlias("name", "姓名");
         writer.addHeaderAlias("genderName", "性别");
-        writer.addHeaderAlias("birthString", "出生年月");
+        writer.addHeaderAlias("idNumber", "身份证号码");
         writer.addHeaderAlias("politicalStatusName", "政治面貌");
         writer.addHeaderAlias("workStatusName", "工作状况");
         writer.addHeaderAlias("educationName", "文化程度");
@@ -77,7 +76,7 @@ public class ExcelTest {
         data.put("id", "DHY00001");
         data.put("name", "姓名");
         data.put("genderName", "性别");
-        data.put("birthString", new Date());
+        data.put("idNumber", "");
         data.put("politicalStatusName", "政治面貌");
         data.put("workStatusName", "工作状况");
         data.put("educationName", "文化程度");

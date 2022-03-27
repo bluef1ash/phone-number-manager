@@ -3,8 +3,7 @@ import { index, system } from "@/services/api";
 
 /** 获取菜单 */
 export async function queryMenuData(display: boolean, options?: Record<string, any>) {
-  return request<API.ResponseMenu>(index.menu, {
-    method: 'GET',
+  return request.get<API.ResponseMenu>(index.menu, {
     params: {
       display,
     },
@@ -14,27 +13,34 @@ export async function queryMenuData(display: boolean, options?: Record<string, a
 
 /** 获取系统权限列表 */
 export async function querySystemPermissionList(params?: any, options?: Record<string, any>) {
-  return request<API.DataList<API.SystemPermission> & API.ResponseException>(system.permission, {
-    method: 'GET',
-    params,
-    ...(options || {}),
-  });
+  return request.get<API.DataList<API.SystemPermission> & API.ResponseException>(
+    system.permission,
+    {
+      params,
+      ...(options || {}),
+    },
+  );
 }
 
 /** 获取系统权限列表表单 */
-export async function querySystemPermissionSelectList(options?: Record<string, any>) {
-  return request<API.Data<API.SelectList[]> & API.ResponseException>(system.permissionSelectList, {
-    method: 'GET',
-    ...(options || {}),
-  });
+export async function querySystemPermissionSelectList(
+  parentId: number,
+  options?: Record<string, any>,
+) {
+  return request.get<API.Data<API.SelectList[]> & API.ResponseException>(
+    system.permissionSelectList,
+    {
+      params: { parentId },
+      ...(options || {}),
+    },
+  );
 }
 
 /** 获取系统权限列表 */
 export async function querySystemPermission(id: number, options?: Record<string, any>) {
-  return request<API.Data<API.SystemPermission> & API.ResponseException>(
+  return request.get<API.Data<API.SystemPermission> & API.ResponseException>(
     `${system.permission}/${id}`,
     {
-      method: 'GET',
       ...(options || {}),
     },
   );
@@ -46,10 +52,9 @@ export async function patchSystemPermission(
   data: API.SystemPermission,
   options?: Record<string, any>,
 ) {
-  return request<API.Data<API.SystemPermission> & API.ResponseException>(
+  return request.patch<API.Data<API.SystemPermission> & API.ResponseException>(
     `${system.permission}/${id}`,
     {
-      method: 'PATCH',
       data,
       ...(options || {}),
     },
@@ -61,8 +66,7 @@ export async function createSystemPermission(
   data: API.SystemPermission,
   options?: Record<string, any>,
 ) {
-  return request<API.ResponseSuccess & API.ResponseException>(system.permission, {
-    method: 'POST',
+  return request.post<API.ResponseSuccess & API.ResponseException>(system.permission, {
     data,
     ...(options || {}),
   });
@@ -70,11 +74,11 @@ export async function createSystemPermission(
 
 /** 修改系统权限处理 */
 export async function modifySystemPermission(
+  id: number,
   data: API.SystemPermission,
   options?: Record<string, any>,
 ) {
-  return request<API.ResponseSuccess & API.ResponseException>(system.permission, {
-    method: 'PUT',
+  return request.put<API.ResponseSuccess & API.ResponseException>(`${system.permission}/${id}`, {
     data,
     ...(options || {}),
   });
@@ -82,8 +86,7 @@ export async function modifySystemPermission(
 
 /** 删除系统权限 */
 export async function removeSystemPermission(id: number, options?: Record<string, any>) {
-  return request<API.ResponseSuccess & API.ResponseException>(`${system.permission}/${id}`, {
-    method: 'DELETE',
+  return request.delete<API.ResponseSuccess & API.ResponseException>(`${system.permission}/${id}`, {
     ...(options || {}),
   });
 }
@@ -93,8 +96,7 @@ export async function batchSystemPermission<T>(
   data: API.BatchRUD<T>,
   options?: Record<string, any>,
 ) {
-  return request<API.ResponseSuccess & API.ResponseException>(system.permissionBatch, {
-    method: 'POST',
+  return request.post<API.ResponseSuccess & API.ResponseException>(system.permissionBatch, {
     data,
     ...(options || {}),
   });

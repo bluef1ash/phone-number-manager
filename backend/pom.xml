@@ -24,12 +24,12 @@
         <maven.compiler.target>11</maven.compiler.target>
         <mybatis-plus-boot-starter.version>3.5.0</mybatis-plus-boot-starter.version>
         <swagger.version>3.0.0</swagger.version>
-        <poi.version>5.0.0</poi.version>
+        <poi.version>5.2.0</poi.version>
         <druid.version>1.2.8</druid.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <hutool.version>5.7.20</hutool.version>
+        <hutool.version>5.7.22</hutool.version>
         <jsqlparser.version>4.3</jsqlparser.version>
     </properties>
     <repositories>
@@ -79,10 +79,6 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

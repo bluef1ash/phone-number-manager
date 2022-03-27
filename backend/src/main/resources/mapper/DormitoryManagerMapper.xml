@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.phonenumbermanager.mapper.DormitoryManagerMapper">
     <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="commonResultMap">
+        <result column="id_number" property="idNumber"/>
         <result column="gender" property="gender"/>
         <result column="birth" property="birth"/>
         <result column="age" property="age"/>
@@ -42,6 +43,7 @@
     <select id="selectAndCompanyById" resultMap="collectionResultMap">
         SELECT pm_dormitory_manager.id AS 'dormitory_manager_id',
             pm_dormitory_manager.name AS 'dormitory_manager_name',
+            pm_dormitory_manager.id_number,
             pm_dormitory_manager.gender,
             pm_dormitory_manager.birth,
             pm_dormitory_manager.political_status,
@@ -55,7 +57,8 @@
             pm_dormitory_manager.update_time AS 'dormitory_manager_update_time',
             pm_dormitory_manager.system_user_id,
             pm_dormitory_manager.company_id,
-            pm_company.name AS 'company_name'
+            pm_company.name AS 'company_name',
+            pm_system_user.username
         FROM pm_dormitory_manager
                  LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
                  LEFT JOIN pm_system_user ON pm_dormitory_manager.system_user_id = pm_system_user.id
@@ -68,6 +71,7 @@
         SELECT
         pm_dormitory_manager.id AS 'dormitory_manager_id',
         pm_dormitory_manager.name AS 'dormitory_manager_name',
+        pm_dormitory_manager.id_number,
         pm_dormitory_manager.gender,
         TIMESTAMPDIFF(YEAR, pm_dormitory_manager.birth, CURDATE()) AS 'age',
         pm_dormitory_manager.address,
@@ -96,6 +100,7 @@
                         <when test="key eq 'phoneNumbers'">pm_phone_number.phone_number LIKE CONCAT('%', #{value},
                             '%')
                         </when>
+                        <when test="key eq 'id_number'">pm_dormitory_manager.id_number = #{value}</when>
                         <when test="key eq 'gender'">pm_dormitory_manager.gender = #{value}</when>
                         <when test="key eq 'age'">
                             pm_dormitory_manager.birth BETWEEN
@@ -152,6 +157,7 @@
         SELECT
         pm_dormitory_manager.id AS 'dormitory_manager_id',
         pm_dormitory_manager.name AS 'dormitory_manager_name',
+        pm_dormitory_manager.id_number,
         pm_dormitory_manager.gender,
         pm_dormitory_manager.birth,
         pm_dormitory_manager.political_status,
@@ -163,7 +169,7 @@
         pm_phone_number.phone_number,
         pm_dormitory_manager.company_id,
         pm_company.name AS 'company_name',
-        pm_company.parent_id,
+        pm_company.parent_id AS 'company_parent_id',
         pm_system_user.id AS 'system_user_id',
         pm_system_user.username
         FROM

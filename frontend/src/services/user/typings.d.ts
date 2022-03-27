@@ -1,10 +1,10 @@
 declare module '*.less';
 declare namespace API {
   type SystemUser = {
-    id?: number;
+    id: number;
     username?: string;
-    position?: string[];
-    title?: string[];
+    positions?: string[] | { position: string }[];
+    titles?: string[] | { title: string }[];
     isSubcontract?: boolean;
     loginTime?: Date;
     loginIp?: string;
@@ -14,6 +14,7 @@ declare namespace API {
     credentialExpireTime?: Date;
     phoneNumberId?: number;
     companies?: Company[];
-    phoneNumber?: string;
+    companyIds?: number[];
+    phoneNumber?: PhoneNumber;
   };
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.exception.BusinessException;
@@ -100,14 +101,20 @@ public class DormitoryManagerController extends BaseController {
     /**
      * 修改社区居民楼片长处理
      *
+     * @param id
+     *            要修改的单位编号
      * @param dormitoryManager
      *            前台传递的社区居民楼片长对象
      * @return 视图页面
      */
-    @PutMapping
+    @PutMapping("/{id}")
+    @ResponseBody
     @ApiOperation("修改社区居民楼片长处理")
-    public R dormitoryManagerModifyHandle(@ApiParam(name = "前台传递的社区居民楼片长对象",
-        required = true) @RequestBody @Validated(ModifyInputGroup.class) DormitoryManager dormitoryManager) {
+    public R dormitoryManagerModifyHandle(@ApiParam(name = "要修改的单位编号", required = true) @PathVariable Long id,
+        @ApiParam(name = "前台传递的社区居民楼片长对象",
+            required = true) @RequestBody @Validated(ModifyInputGroup.class) DormitoryManager dormitoryManager) {
+        dormitoryManager.setId(id).setVersion(dormitoryManagerService
+            .getOne(new LambdaQueryWrapper<DormitoryManager>().eq(DormitoryManager::getId, id)).getVersion());
         if (dormitoryManagerService.updateById(dormitoryManager)) {
             return R.ok();
         }
@@ -136,19 +143,16 @@ public class DormitoryManagerController extends BaseController {
      *
      * @param request
      *            HTTP请求对象
-     * @param streetId
-     *            导入的街道编号
      * @return Ajax信息
      */
-    @PostMapping("/import/{streetId}")
+    @PostMapping("/import")
     @ResponseBody
     @ApiOperation("导入楼长信息进系统")
-    public R dormitoryManagerImportAsSystem(HttpServletRequest request,
-        @ApiParam(name = "导入的街道编号", required = true) @PathVariable Long streetId) {
+    public R dormitoryManagerImportAsSystem(HttpServletRequest request) {
         getEnvironmentVariable();
-        List<List<Object>> data = uploadExcel(request,
+        List<List<Object>> data = uploadExcelFileToData(request,
             Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").get("content")));
-        if (data != null && dormitoryManagerService.save(data, streetId, configurationMap)) {
+        if (data != null && dormitoryManagerService.save(data, configurationMap)) {
             return R.ok("上传成功！");
         }
         throw new JsonException("上传文件失败！");

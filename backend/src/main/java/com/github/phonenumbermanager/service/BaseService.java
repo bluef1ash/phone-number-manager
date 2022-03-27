@@ -7,6 +7,7 @@ import java.util.Map;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
@@ -48,6 +49,15 @@ public interface BaseService<T> extends IService<T> {
      * @return 是否保存成功
      */
     boolean saveIgnoreBatch(Collection<T> entityList, int batchSize);
+
+    /**
+     * 关联保存
+     *
+     * @param entity
+     *            需要保存的实体对象
+     * @return 是否成功
+     */
+    boolean saveCorrelation(SystemUser entity);
 
     /**
      * 获取录入统计信息
@@ -94,13 +104,11 @@ public interface BaseService<T> extends IService<T> {
      *
      * @param data
      *            Excel数据
-     * @param streetId
-     *            导入的街道编号
      * @param configurationMap
      *            系统配置
      * @return 导入的行数
      */
-    boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap);
+    boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap);
 
     /**
      * 通过编号关联查找
@@ -125,7 +133,9 @@ public interface BaseService<T> extends IService<T> {
     /**
      * 获取树形表单列表
      *
+     * @param parentId
+     *            父级编号
      * @return 树形表单列表集合
      */
-    List<SelectListVo> treeSelectList();
+    List<SelectListVo> treeSelectList(Long parentId);
 }

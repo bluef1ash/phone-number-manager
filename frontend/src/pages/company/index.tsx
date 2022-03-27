@@ -3,7 +3,7 @@ import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import { ProFormList, ProFormSelect, ProFormText, ProFormTreeSelect } from '@ant-design/pro-form';
+import { ProFormCascader, ProFormList, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 import {
   batchCompany,
@@ -17,10 +17,12 @@ import {
 import { isArray } from 'lodash';
 import { parsePhoneNumber } from 'libphonenumber-js/max';
 import { submitPrePhoneNumberHandle } from '@/services/utils';
+import { querySystemPermissionSelectList } from '@/services/permission/api';
 
 const InputElement = (
   selectListState: API.SelectList[],
-  setCompanyIdState: { (value: React.SetStateAction<number | undefined>): void },
+  systemPermissionState: API.SelectList[],
+  setSystemPermissionState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
 ) => (
   <>
     <ProFormText
@@ -40,11 +42,13 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormTreeSelect
+    <ProFormCascader
       width="xl"
       name="parentId"
       label="上级单位"
-      request={async () => selectListState}
+      fieldProps={{
+        options: selectListState,
+      }}
       placeholder="请选择"
       rules={[
         {
@@ -52,9 +56,6 @@ const InputElement = (
           message: '请选择上级单位！',
         },
       ]}
-      fieldProps={{
-        onChange: (value: number) => setCompanyIdState(value),
-      }}
     />{' '}
     <ProFormList
       name="phoneNumbers"
@@ -200,7 +201,30 @@ const InputElement = (
           },
         ]}
       />{' '}
-    </ProFormList>
+    </ProFormList>{' '}
+    <ProFormCascader
+      width="xl"
+      name="systemPermissionSelectList"
+      label="单位所属权限"
+      placeholder="请选择"
+      fieldProps={{
+        options: systemPermissionState,
+        async loadData(selectedOptions) {
+          const targetOption = selectedOptions[selectedOptions.length - 1];
+          targetOption.loading = true;
+          const data = (await querySystemPermissionSelectList(targetOption.value as number)).data;
+          targetOption.loading = false;
+          if (data.length === 0) {
+            targetOption.isLeaf = true;
+          } else {
+            //@ts-ignore
+            targetOption.children = data;
+          }
+          setSystemPermissionState([...systemPermissionState]);
+        },
+        multiple: true,
+      }}
+    />
   </>
 );
 
@@ -209,16 +233,16 @@ const Company: React.FC = () => {
   const createFormRef = useRef<ProFormInstance<API.Company>>();
   const modifyFormRef = useRef<ProFormInstance<API.Company>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>();
-  const [companyIdState, setCompanyIdState] = useState<number>();
+  const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>();
 
   const submitPreHandler = (formData: API.Company) => {
-    if (typeof companyIdState !== 'undefined' && isArray(selectListState)) {
-      const select = selectListState.find(({ value }) => value === companyIdState);
-      formData.level = (select?.level as number) + 1;
-    }
     formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
       submitPrePhoneNumberHandle(value.phoneNumber as string),
     );
+    //@ts-ignore
+    formData.systemPermissions = formData.systemPermissionSelectList?.map((value) => ({
+      id: value[0],
+    }));
     return formData;
   };
 
@@ -274,7 +298,11 @@ const Company: React.FC = () => {
           })
         }
         createEditModalForm={{
-          element: InputElement(selectListState as API.SelectList[], setCompanyIdState),
+          element: InputElement(
+            selectListState as API.SelectList[],
+            systemPermissionState as API.SelectList[],
+            setSystemPermissionState as React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+          ),
           props: {
             title: '添加单位',
           },
@@ -282,21 +310,35 @@ const Company: React.FC = () => {
           onFinish: async (formData) => await createCompany(submitPreHandler(formData)),
         }}
         modifyEditModalForm={{
-          element: InputElement(selectListState as API.SelectList[], setCompanyIdState),
+          element: InputElement(
+            selectListState as API.SelectList[],
+            systemPermissionState as API.SelectList[],
+            setSystemPermissionState as React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+          ),
           props: {
             title: '编辑单位',
           },
           formRef: modifyFormRef,
-          onFinish: async (formData) => await modifyCompany(submitPreHandler(formData)),
+          onFinish: async (formData) =>
+            await modifyCompany(formData.id, submitPreHandler(formData)),
           onConfirmRemove: async (id) => await removeCompany(id),
-          queryData: async (id) => await queryCompany(id),
+          queryData: async (id) => {
+            const result = await queryCompany(id);
+            result.data.systemPermissionSelectList = result.data.systemPermissions?.map(
+              (systemPermission) => ({
+                value: systemPermission.id,
+                label: systemPermission.name,
+              }),
+            );
+            return result;
+          },
         }}
         onLoad={async () => {
           let list: API.SelectList[] = [
             {
+              label: '无',
               title: '无',
               value: 0,
-              level: -1,
             },
           ];
           const companySelect = (await queryCompanySelectList()).data;
@@ -304,6 +346,8 @@ const Company: React.FC = () => {
             list = [...list, ...companySelect];
           }
           setSelectListState(list);
+          const systemPermissionBases = (await querySystemPermissionSelectList(0)).data;
+          setSystemPermissionState(systemPermissionBases);
         }}
       />{' '}
     </MainPageContainer>

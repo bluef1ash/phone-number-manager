@@ -109,26 +109,22 @@ public class CommonUtil {
      *            单位对象集合
      * @param companyAll
      *            所有单位对象集合
-     * @param level
-     *            等级
      * @param parents
      *            上级单位
      */
     public static void listSubmissionCompanyIds(List<Long> companyIds, List<Company> companies,
-        List<Company> companyAll, Integer level, Map<Long, String> parents) {
+        List<Company> companyAll, Map<Long, String> parents) {
         companies.forEach(company -> {
-            if (level.equals(company.getLevel())) {
-                companyIds.add(company.getId());
-                if (parents != null && parents.get(company.getParentId()).isEmpty()) {
-                    Optional<Company> companyOptional = companyAll.stream()
-                        .filter(company1 -> company1.getId().equals(company.getParentId())).findFirst();
-                    assert companyOptional.isPresent();
-                    parents.put(company.getParentId(), companyOptional.get().getName());
-                }
+            companyIds.add(company.getId());
+            if (parents != null && parents.get(company.getParentId()).isEmpty()) {
+                Optional<Company> companyOptional =
+                    companyAll.stream().filter(company1 -> company1.getId().equals(company.getParentId())).findFirst();
+                assert companyOptional.isPresent();
+                parents.put(company.getParentId(), companyOptional.get().getName());
             } else {
                 List<Company> companyList = companyAll.stream()
                     .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
-                listSubmissionCompanyIds(companyIds, companyList, companyAll, level, parents);
+                listSubmissionCompanyIds(companyIds, companyList, companyAll, parents);
             }
         });
     }
@@ -154,6 +150,25 @@ public class CommonUtil {
                 List<Company> companies1 = companyAll.stream()
                     .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
                 listRecursionCompanyIds(companyIds, companies1, companyAll, company.getId());
+            }
+        });
+    }
+
+    /**
+     * 递归获取链条单位编号
+     *
+     * @param companyIds
+     *            递归单位编号集合
+     * @param companies
+     *            单位对象集合
+     * @param parentId
+     *            上级单位编号
+     */
+    public static void listRecursionCompanyIds(List<Long> companyIds, List<Company> companies, Long parentId) {
+        companies.forEach(company -> {
+            if (parentId.equals(company.getParentId())) {
+                listRecursionCompanyIds(companyIds, companies, company.getId());
+                companyIds.add(company.getId());
             }
         });
     }

@@ -6,7 +6,6 @@
         <result column="description" property="description"/>
         <result column="content" property="content"/>
         <result column="field_type" property="fieldType"/>
-        <result column="company_id" property="companyId"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.CompanyExtra" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>

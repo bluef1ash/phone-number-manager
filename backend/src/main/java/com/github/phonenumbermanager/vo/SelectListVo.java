@@ -20,9 +20,12 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode
 public class SelectListVo implements Serializable {
+    private Long id;
+    private String name;
     private String title;
     private String label;
     private Long value;
-    private Integer level;
+    private Boolean isLeaf;
+    private Boolean loading;
     private List<SelectListVo> children;
 }

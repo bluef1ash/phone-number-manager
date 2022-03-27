@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.constant.ExceptionCode;
@@ -156,12 +157,14 @@ public class UserAndPermissionController extends BaseController {
     /**
      * 系统用户表单列表
      *
+     * @param parentId
+     *            父级编号
      * @return 系统用户表单列表JSON
      */
     @GetMapping("/system/user/select-list")
     @ApiOperation("系统用户表单列表")
-    public R systemUserSelectList() {
-        return R.ok().put("data", systemUserService.treeSelectList());
+    public R systemUserSelectList(Long parentId) {
+        return R.ok().put("data", systemUserService.treeSelectList(parentId));
     }
 
     /**
@@ -179,7 +182,6 @@ public class UserAndPermissionController extends BaseController {
         @ApiParam(name = "系统用户编号", required = true) @PathVariable Long id,
         @ApiParam(name = "系统用户对象", required = true) @RequestBody SystemUser systemUser) {
         getEnvironmentVariable();
-        systemUser.setId(id);
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (id.equals(systemAdministratorId)) {
             if (systemUser.getIsEnabled() != null && !systemUser.isEnabled()) {
@@ -189,6 +191,8 @@ public class UserAndPermissionController extends BaseController {
                 return R.error(response, ExceptionCode.NOT_MODIFIED.getCode(), "不能锁定系统管理员！");
             }
         }
+        systemUser.setId(id).setVersion(
+            systemUserService.getOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getId, id)).getVersion());
         if (systemUserService.updateById(systemUser)) {
             return R.ok();
         }
@@ -220,10 +224,10 @@ public class UserAndPermissionController extends BaseController {
     @ApiOperation("添加处理系统用户")
     public R systemUserCreateHandle(@ApiParam(name = "系统用户对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) SystemUser systemUser) {
-        if (!systemUserService.save(systemUser)) {
-            throw new JsonException("添加用户失败！");
+        if (systemUserService.save(systemUser)) {
+            return R.ok();
         }
-        return R.ok();
+        throw new JsonException("添加用户失败！");
     }
 
     /**
@@ -239,15 +243,16 @@ public class UserAndPermissionController extends BaseController {
         @ApiParam(name = "系统用户对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemUser systemUser) {
         getEnvironmentVariable();
-        systemUser.setId(id);
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (!id.equals(systemAdministratorId)) {
             systemUser.setIsLocked(false).setIsEnabled(true);
         }
-        if (!systemUserService.updateById(systemUser)) {
-            throw new JsonException("修改用户失败！");
+        systemUser.setId(id).setVersion(
+            systemUserService.getOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getId, id)).getVersion());
+        if (systemUserService.updateById(systemUser)) {
+            return R.ok();
         }
-        return R.ok();
+        throw new JsonException("修改用户失败！");
     }
 
     /**
@@ -266,9 +271,9 @@ public class UserAndPermissionController extends BaseController {
             throw new JsonException("不允许删除超级管理员！");
         }
         if (systemUserService.removeById(id)) {
-            throw new JsonException("删除系统用户失败！");
+            return R.ok();
         }
-        return R.ok();
+        throw new JsonException("删除系统用户失败！");
     }
 
     /**
@@ -329,12 +334,14 @@ public class UserAndPermissionController extends BaseController {
     /**
      * 系统权限表单列表
      *
+     * @param parentId
+     *            查找的父级编号
      * @return 系统权限表单列表JSON
      */
     @GetMapping("/system/permission/select-list")
     @ApiOperation("系统权限表单列表")
-    public R systemPermissionSelectList() {
-        return R.ok().put("data", systemPermissionService.treeSelectList());
+    public R systemPermissionSelectList(Long parentId) {
+        return R.ok().put("data", systemPermissionService.treeSelectList(parentId));
     }
 
     /**
@@ -361,27 +368,32 @@ public class UserAndPermissionController extends BaseController {
     @ApiOperation("添加处理系统权限")
     public R systemPermissionCreateHandle(@ApiParam(name = "系统用户权限对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) SystemPermission systemPermission) {
-        if (!systemPermissionService.save(systemPermission)) {
-            throw new JsonException("添加权限失败！");
+        if (systemPermissionService.save(systemPermission)) {
+            return R.ok();
         }
-        return R.ok();
+        throw new JsonException("添加权限失败！");
     }
 
     /**
      * 修改处理系统权限
      *
+     * @param id
+     *            要修改的系统权限编号
      * @param systemPermission
      *            系统权限对象
      * @return 视图页面
      */
-    @PutMapping("/system/permission")
+    @PutMapping("/system/permission/{id}")
     @ApiOperation("修改处理系统权限")
-    public R systemPermissionModifyHandle(@ApiParam(name = "系统用户权限对象",
-        required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemPermission systemPermission) {
-        if (!systemPermissionService.updateById(systemPermission)) {
-            throw new JsonException("修改权限失败！");
+    public R systemPermissionModifyHandle(@ApiParam(name = "要修改的系统权限编号", required = true) @PathVariable Long id,
+        @ApiParam(name = "系统用户权限对象",
+            required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemPermission systemPermission) {
+        systemPermission.setId(id).setVersion(systemPermissionService
+            .getOne(new LambdaQueryWrapper<SystemPermission>().eq(SystemPermission::getId, id)).getVersion());
+        if (systemPermissionService.updateById(systemPermission)) {
+            return R.ok();
         }
-        return R.ok();
+        throw new JsonException("修改权限失败！");
     }
 
     /**
@@ -394,7 +406,8 @@ public class UserAndPermissionController extends BaseController {
     @DeleteMapping("/system/permission/{id}")
     @ApiOperation("通过系统用户权限编号删除系统用户权限")
     public R removeSystemPermission(@ApiParam(name = "系统用户权限编号", required = true) @PathVariable Long id) {
-        if (systemPermissionService.count(new QueryWrapper<SystemPermission>().eq("parent_id", id)) > 0) {
+        if (systemPermissionService
+            .count(new LambdaQueryWrapper<SystemPermission>().eq(SystemPermission::getParentId, id)) > 0) {
             throw new JsonException("不允许删除有子权限的系统权限！");
         }
         if (!systemPermissionService.removeById(id)) {

@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,6 +19,7 @@ import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.json.JSONObject;
 
@@ -44,7 +44,7 @@ public class CaptchaValidFilter extends OncePerRequestFilter {
         String challenge = httpServletRequest.getParameter(GeetestLibUtil.FN_GEETEST_CHALLENGE);
         String validate = httpServletRequest.getParameter(GeetestLibUtil.FN_GEETEST_VALIDATE);
         String secCode = httpServletRequest.getParameter(GeetestLibUtil.FN_GEETEST_SECCODE);
-        if (StringUtils.isEmpty(challenge) || StringUtils.isEmpty(validate) || StringUtils.isEmpty(secCode)) {
+        if (StrUtil.isEmpty(challenge) || StrUtil.isEmpty(validate) || StrUtil.isEmpty(secCode)) {
             FilterInvocation filterInvocation =
                 new FilterInvocation(httpServletRequest, httpServletResponse, filterChain);
             filterInvocation.getChain().doFilter(filterInvocation.getRequest(), filterInvocation.getResponse());

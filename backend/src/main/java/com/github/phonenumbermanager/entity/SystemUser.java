@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -61,6 +62,7 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     private Boolean isSubcontract;
     @ApiModelProperty("系统用户登录时间")
     @Past
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime loginTime;
     @ApiModelProperty("系统用户登录IP地址")
     private String loginIp;
@@ -68,22 +70,21 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @NotNull(groups = CreateInputGroup.class, message = "系统用户是否被锁定不能为空！")
     private Boolean isLocked;
     @ApiModelProperty("系统用户是否启用")
-    @NotBlank(groups = CreateInputGroup.class, message = "用户是否开启不能为空！")
+    @NotNull(groups = CreateInputGroup.class, message = "用户是否开启不能为空！")
     private Boolean isEnabled;
     @ApiModelProperty("系统用户过期时间")
     @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime accountExpireTime;
     @ApiModelProperty("系统用户本次登录过期时间")
     @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime credentialExpireTime;
     @ApiModelProperty("联系方式编号")
     private Long phoneNumberId;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<Company> companies;
-    @TableField(exist = false)
-    @ApiModelProperty(hidden = true)
-    private List<String> companyNames;
     @ApiModelProperty("系统用户联系方式")
     @TableField(exist = false)
     private PhoneNumber phoneNumber;

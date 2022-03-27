@@ -10,7 +10,7 @@ declare namespace API {
   };
 
   type SystemPermission = {
-    id?: number;
+    id: number;
     name?: string;
     functionName?: string;
     uri?: string;

@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "3.5.7",
   "createdTime": "2021-10-10 15:53:11",
-  "updatedTime": "2022-3-8 23:04:56",
+  "updatedTime": "2022-3-22 00:03:39",
   "profile": {
     "default": {
       "db": "AB840774-751C-47F4-AFC9-202B062E21BC",
@@ -445,32 +445,7 @@
           "id": "91E2F33C-BF09-4AD1-AAE5-FAB6A8919802"
         }
       ],
-      "correlations": [
-        {
-          "myField": "93BED554-03CB-41DE-B336-20EA7FBC5B96",
-          "refEntity": "39D2A1CF-3CF3-4E5B-BB5B-F5D64ECA1E65",
-          "refField": "A443215B-44EC-4BA0-914E-918150E3CDB7",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        },
-        {
-          "myField": "93BED554-03CB-41DE-B336-20EA7FBC5B96",
-          "refEntity": "E01BF466-11FA-4C40-B7CD-C4A2BB156DDD",
-          "refField": "A443215B-44EC-4BA0-914E-918150E3CDB7",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        },
-        {
-          "myField": "93BED554-03CB-41DE-B336-20EA7FBC5B96",
-          "refEntity": "A7981A03-AAB4-425D-BDA5-D0CECB4C2C62",
-          "refField": "5582F6EB-F03F-4541-BE7D-D98E80FB12EA",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": [
         {
           "defKey": "idx_phone_number_type",
@@ -711,32 +686,7 @@
           "id": "91E2F33C-BF09-4AD1-AAE5-FAB6A8919802"
         }
       ],
-      "correlations": [
-        {
-          "myField": "F68BDD4D-DC8C-4880-9075-E90D504DFDED",
-          "refEntity": "A7981A03-AAB4-425D-BDA5-D0CECB4C2C62",
-          "refField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        },
-        {
-          "myField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "refEntity": "E01BF466-11FA-4C40-B7CD-C4A2BB156DDD",
-          "refField": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        },
-        {
-          "myField": "A8FD5B33-F0B6-4AF9-B22D-90EDD3995F08",
-          "refEntity": "4547F569-945E-4CF2-BCAA-2C32AF9F5732",
-          "refField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": [
         {
           "defKey": "uk_name_address",
@@ -892,28 +842,11 @@
           "uiHint": "E1DA823C-08CE-407F-BE95-EFC8C845A94D"
         },
         {
-          "defKey": "gender",
-          "defName": "性别",
-          "comment": "0:男，1:女，2:未知",
-          "type": "TINYINT",
-          "len": "1",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "0",
-          "hideInGraph": false,
-          "refDict": "",
-          "domain": "",
-          "id": "69557A60-46EC-4E38-8B77-13FFF1431C4F",
-          "uiHint": "65B3A8DC-7BD6-4849-B839-0B3655A55A44"
-        },
-        {
-          "defKey": "birth",
-          "defName": "出生年月",
+          "defKey": "id_number",
+          "defName": "身份证号码",
           "comment": "",
-          "type": "DATE",
-          "len": "",
+          "type": "CHAR",
+          "len": 18,
           "scale": "",
           "primaryKey": false,
           "notNull": true,
@@ -923,7 +856,40 @@
           "refDict": "",
           "domain": "",
           "id": "8FAC3C3D-0C42-42A7-97DC-922ED6480159",
-          "uiHint": "2051CD3F-9EF9-44CA-91BE-377C4A62C484"
+          "uiHint": "E1DA823C-08CE-407F-BE95-EFC8C845A94D"
+        },
+        {
+          "defKey": "gender",
+          "defName": "性别",
+          "comment": "0：女，1：男，2：未知",
+          "type": "TINYINT(1) UNSIGNED",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "domain": "",
+          "id": "108BB61D-E5AD-47A0-AE48-1AB95FC331FA",
+          "uiHint": ""
+        },
+        {
+          "defKey": "birth",
+          "defName": "出生年月",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": false,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "domain": "EBC1F57E-58E5-4653-8EC5-621C5880EC6E",
+          "id": "9EA81FF0-94CC-41B6-AFE0-52FDC5C668A3"
         },
         {
           "defKey": "political_status",
@@ -1110,24 +1076,7 @@
           "id": "91E2F33C-BF09-4AD1-AAE5-FAB6A8919802"
         }
       ],
-      "correlations": [
-        {
-          "myField": "7CE6AE34-005F-450A-BDB6-BDF5F0355CD1",
-          "refEntity": "A7981A03-AAB4-425D-BDA5-D0CECB4C2C62",
-          "refField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        },
-        {
-          "myField": "A8FD5B33-F0B6-4AF9-B22D-90EDD3995F08",
-          "refEntity": "4547F569-945E-4CF2-BCAA-2C32AF9F5732",
-          "refField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": [
         {
           "defKey": "uk_name_address",
@@ -1283,23 +1232,6 @@
           "uiHint": "E1DA823C-08CE-407F-BE95-EFC8C845A94D"
         },
         {
-          "defKey": "actual_number",
-          "defName": "辖区内人数",
-          "comment": "",
-          "type": "MEDIUMINT(8) UNSIGNED",
-          "len": "",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "0",
-          "hideInGraph": false,
-          "refDict": "",
-          "domain": "",
-          "id": "D7546FB7-9DEF-47C1-BE50-04D12F0BF48A",
-          "uiHint": "AB6B564E-95A1-4F55-8D17-790D0B15CFD6"
-        },
-        {
           "defKey": "level",
           "defName": "单位层级",
           "comment": "0：最底层，依次递增",
@@ -1382,24 +1314,7 @@
           "id": "91E2F33C-BF09-4AD1-AAE5-FAB6A8919802"
         }
       ],
-      "correlations": [
-        {
-          "myField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "refEntity": "8798947C-9D27-492A-B7F7-4C8B83DC2EBC",
-          "refField": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43",
-          "myRows": "1",
-          "refRows": "1",
-          "innerType": ""
-        },
-        {
-          "myField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "refEntity": "F24E1B1F-208E-418F-B6FB-CB116F534187",
-          "refField": "A443215B-44EC-4BA0-914E-918150E3CDB7",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": [
         {
           "defKey": "uk_name",
@@ -1428,6 +1343,20 @@
             }
           ],
           "id": "5EE432D0-CBEA-4387-BEE3-A8F600872179"
+        },
+        {
+          "defKey": "idx_level",
+          "defName": null,
+          "unique": false,
+          "comment": "",
+          "fields": [
+            {
+              "fieldDefKey": "DA7AD76E-C906-4C48-8FE5-4AB89B099958",
+              "ascOrDesc": "A",
+              "id": "D960CF39-276F-469F-9A53-9E9E4395F9F7"
+            }
+          ],
+          "id": "3F20FDB4-6E6A-4192-8F07-03B0498465D8"
         }
       ]
     },
@@ -1911,21 +1840,12 @@
           "id": "91E2F33C-BF09-4AD1-AAE5-FAB6A8919802"
         }
       ],
-      "correlations": [
-        {
-          "myField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "refEntity": "F24E1B1F-208E-418F-B6FB-CB116F534187",
-          "refField": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": [
         {
-          "defKey": "idx_phone_number_id",
+          "defKey": "uni_phone_number_id",
           "defName": null,
-          "unique": false,
+          "unique": true,
           "comment": "",
           "fields": [
             {
@@ -2083,16 +2003,7 @@
           "id": "A95FC749-2F5C-42B4-93BE-8E4722AB1B40"
         }
       ],
-      "correlations": [
-        {
-          "myField": "8633168C-9858-4FDE-BF08-54993528B453",
-          "refEntity": "4547F569-945E-4CF2-BCAA-2C32AF9F5732",
-          "refField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "myRows": "1",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": []
     },
     {
@@ -2375,16 +2286,7 @@
           "id": "EFCA5015-6B7D-45E9-B517-153E757DFCEB"
         }
       ],
-      "correlations": [
-        {
-          "myField": "4F6702C0-93D1-49AF-90B9-E79B8B9216AD",
-          "refEntity": "78C828B0-E35E-4B7B-9259-0A10E16E6593",
-          "refField": "95987E7C-4042-4FF9-A87D-5B2DA249E185",
-          "myRows": "1",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": [
         {
           "defKey": "uk_name",
@@ -2710,16 +2612,7 @@
           "id": "582C3A6B-F5A7-4812-BDAC-D94663DDF71D"
         }
       ],
-      "correlations": [
-        {
-          "myField": "A443215B-44EC-4BA0-914E-918150E3CDB7",
-          "refEntity": "12651E79-8D36-4A7F-801B-979C34D684C9",
-          "refField": "93BED554-03CB-41DE-B336-20EA7FBC5B96",
-          "myRows": "1",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": []
     },
     {
@@ -2865,16 +2758,7 @@
           "id": "582C3A6B-F5A7-4812-BDAC-D94663DDF71D"
         }
       ],
-      "correlations": [
-        {
-          "myField": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43",
-          "refEntity": "354BD452-B069-4D4C-BC6E-7AAE65B4DF8F",
-          "refField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": []
     },
     {
@@ -3371,16 +3255,7 @@
           "id": "C7DE9520-F433-429E-8D34-18754E742905"
         }
       ],
-      "correlations": [
-        {
-          "myField": "FB59D5C7-46C5-4669-8A97-633477233348",
-          "refEntity": "4547F569-945E-4CF2-BCAA-2C32AF9F5732",
-          "refField": "318133EF-5A03-4B54-8356-65A2D5FDA1A2",
-          "myRows": "n",
-          "refRows": "1",
-          "innerType": ""
-        }
-      ],
+      "correlations": [],
       "indexes": [
         {
           "defKey": "idx_company_id",

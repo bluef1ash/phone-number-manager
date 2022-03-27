@@ -192,7 +192,13 @@ const SystemPermission: React.FC = () => {
     }
     if (Array.isArray(formData.httpMethods) && formData.httpMethods.length > 0) {
       formData.httpMethods = formData.httpMethods.map(
-        (value) => (value as { httpMethod: API.HttpMethod }).httpMethod,
+        (value) =>
+          (
+            value as {
+              //@ts-ignore
+              httpMethod: API.HttpMethod;
+            }
+          ).httpMethod,
       );
     }
     return formData;
@@ -283,14 +289,18 @@ const SystemPermission: React.FC = () => {
             title: '编辑系统权限',
           },
           formRef: modifyFormRef,
-          onFinish: async (formData) => await modifySystemPermission(submitPreHandler(formData)),
+          onFinish: async (formData) =>
+            await modifySystemPermission(formData.id, submitPreHandler(formData)),
           onConfirmRemove: async (id) => await removeSystemPermission(id),
           queryData: async (id) => {
             const result = await querySystemPermission(id);
             if (Array.isArray(result.data.httpMethods)) {
               result.data.httpMethods = result.data.httpMethods.map((httpMethod) => ({
                 httpMethod,
-              })) as { httpMethod: API.HttpMethod }[];
+              })) as {
+                //@ts-ignore
+                httpMethod: API.HttpMethod;
+              }[];
             }
             return result;
           },

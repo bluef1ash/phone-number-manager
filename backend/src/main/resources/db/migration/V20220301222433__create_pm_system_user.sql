@@ -20,4 +20,4 @@ CREATE TABLE pm_system_user (
 ) COMMENT = '系统用户表';
 
 
-CREATE INDEX idx_phone_number_id ON pm_system_user(phone_number_id);
+CREATE UNIQUE INDEX uk_phone_number_id ON pm_system_user(phone_number_id);

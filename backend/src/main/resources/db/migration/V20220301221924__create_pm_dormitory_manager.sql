@@ -2,7 +2,8 @@ DROP TABLE IF EXISTS pm_dormitory_manager;
 CREATE TABLE pm_dormitory_manager (
     id                BIGINT UNSIGNED      NOT NULL COMMENT '社区楼片长编号',
     name              VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '楼片长姓名',
-    gender            TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '性别;0:男，1:女，2:未知',
+    id_number         CHAR(18)             NOT NULL DEFAULT '' COMMENT '身份证号码',
+    gender            TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '性别;0：女，1：男，2：未知',
     birth             DATE                 NOT NULL COMMENT '出生年月',
     political_status  TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '政治面貌;0：群众，1：共产党员，2：预备共产党员，3：共青团员，4：预备共青团员，5：其它',
     employment_status TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '工作状况;0：在职，1：退休，2：无业',
@@ -19,6 +20,6 @@ CREATE TABLE pm_dormitory_manager (
 ) COMMENT = '社区楼片长信息表';
 
 
-CREATE UNIQUE INDEX uk_name_address ON pm_dormitory_manager(name, address);
+CREATE UNIQUE INDEX uk_id_number ON pm_dormitory_manager(id_number);
 CREATE INDEX idx_company_id ON pm_dormitory_manager(company_id);
 CREATE INDEX idx_system_user_id ON pm_dormitory_manager(system_user_id);

@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.constant.enums;
 
+import java.util.Arrays;
+
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -17,10 +19,14 @@ public enum EmploymentStatusEnum {
     /**
      *
      */
-    WORK(0, "在职"), RETIREMENT(1, "退休"), UNEMPLOYED(2, "无业");
+    WORK(0, "在职"), RETIREMENT(1, "退休"), UNEMPLOYED(2, "无业"), UNEMPLOYMENT(3, "失业"), FREELANCE(4, "自由职业");
 
     @EnumValue
     @JsonValue
     private final int value;
     private final String description;
+
+    public static EmploymentStatusEnum getEnum(String description) {
+        return Arrays.stream(values()).filter(e -> e.getDescription().equals(description)).findFirst().orElse(null);
+    }
 }

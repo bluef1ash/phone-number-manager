@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -41,8 +43,10 @@ public class SystemUserVo implements Serializable {
     @ApiModelProperty("系统用户是否启用")
     private Boolean isEnabled;
     @ApiModelProperty("系统用户过期时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime accountExpireTime;
     @ApiModelProperty("系统用户本次登录过期时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime credentialExpireTime;
     @ApiModelProperty("联系方式编号")
     private Long phoneNumberId;

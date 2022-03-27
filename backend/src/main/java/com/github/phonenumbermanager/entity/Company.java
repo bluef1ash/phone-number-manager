@@ -40,9 +40,6 @@ public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @NotBlank(groups = CreateInputGroup.class, message = "单位名称不能为空！")
     @Length(max = 20, message = "单位名称不能超过10个字符！")
     private String name;
-    @ApiModelProperty("单位层级编号")
-    @NotNull(groups = CreateInputGroup.class, message = "单位层级编号不能为空！")
-    private Integer level;
     @ApiModelProperty("上级单位编号")
     @NotNull(groups = CreateInputGroup.class, message = "上级单位不能为空！")
     @Min(value = 0, message = "上级单位编号不正确！")
@@ -57,6 +54,10 @@ public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @TableField(exist = false)
     @ApiModelProperty("单位额外属性")
     private List<CompanyExtra> companyExtras;
+    @NotNull(groups = CreateInputGroup.class, message = "系统权限不能为空！")
+    @ApiModelProperty("系统权限")
+    @TableField(exist = false)
+    private List<SystemPermission> systemPermissions;
 
     @Override
     public String getAuthority() {

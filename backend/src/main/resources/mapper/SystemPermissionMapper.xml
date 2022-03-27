@@ -10,12 +10,12 @@
         <result column="menu_type" property="menuType"/>
         <result column="is_display" property="isDisplay"/>
         <result column="level" property="level"/>
-        <result column="parent_id" property="parentId"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="baseResultMap"
                extends="commonResultMap">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
+        <result column="parent_id" property="parentId"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="version" property="version"/>
@@ -24,6 +24,7 @@
                extends="commonResultMap">
         <id column="permission_id" property="id"/>
         <result column="permission_name" property="name"/>
+        <result column="permission_parent_id" property="parentId"/>
         <result column="permission_create_time" property="createTime"/>
         <result column="permission_update_time" property="updateTime"/>
         <result column="permission_version" property="version"/>
@@ -40,7 +41,7 @@
         pm_system_permission.uri,
         pm_system_permission.http_methods,
         pm_system_permission.level,
-        pm_system_permission.parent_id,
+        pm_system_permission.parent_id AS 'permission_parent_id',
         pm_system_permission.order_by,
         pm_system_permission.menu_type,
         pm_system_permission.is_display,
@@ -67,7 +68,7 @@
             pm_system_permission.uri,
             pm_system_permission.http_methods,
             pm_system_permission.level,
-            pm_system_permission.parent_id,
+            pm_system_permission.parent_id AS 'permission_parent_id',
             pm_system_permission.order_by,
             pm_system_permission.menu_type,
             pm_system_permission.is_display,
@@ -84,8 +85,9 @@
             pm_system_permission.uri,
             pm_system_permission.http_methods,
             pm_system_permission.level,
-            pm_system_permission.parent_id,
-            pm_system_permission.menu_type
+            pm_system_permission.parent_id AS 'permission_parent_id',
+            pm_system_permission.menu_type,
+            pm_company_permission.company_id
         FROM pm_system_permission
                  LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
     </select>
@@ -96,7 +98,7 @@
         pm_system_permission.uri,
         pm_system_permission.http_methods,
         pm_system_permission.level,
-        pm_system_permission.parent_id,
+        pm_system_permission.parent_id AS 'permission_parent_id',
         pm_system_permission.order_by,
         pm_system_permission.menu_type,
         pm_system_permission.is_display,

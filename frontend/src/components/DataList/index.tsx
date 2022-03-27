@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import type { ActionType, ProTableProps } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { Button, message as msg, Popconfirm, Space } from 'antd';
+import { Button, message as msg, Popconfirm, Space, Upload } from 'antd';
 import type { ParamsType } from '@ant-design/pro-provider';
 import type { EditModalFormProps } from './EditModalForm';
 import EditModalForm from './EditModalForm';
-import { PlusOutlined } from '@ant-design/icons';
+import { ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ProColumns } from '@ant-design/pro-table/lib/typing';
 import type { SortOrder } from 'antd/es/table/interface';
 import type { Key } from 'antd/lib/table/interface';
+import type { UploadProps } from 'antd/lib/upload/interface';
 
 type DataListProps<T, U extends ParamsType> = {
   customActionRef?: React.MutableRefObject<ActionType | undefined>;
@@ -22,8 +23,8 @@ type DataListProps<T, U extends ParamsType> = {
   batchRemoveEventHandler?: (
     selectedRowKeys: number[],
   ) => Promise<API.ResponseSuccess | API.ResponseException>;
-  importDataButton?: JSX.Element;
-  exportDataButton?: JSX.Element;
+  importDataUploadProps?: UploadProps;
+  exportDataEventHandler?: React.MouseEventHandler<HTMLElement>;
   createEditModalForm?: {
     element?: JSX.Element;
     props?: EditModalFormProps<T>;
@@ -45,8 +46,8 @@ function DataList<T, U extends ParamsType>({
   customColumns,
   customRequest,
   batchRemoveEventHandler,
-  importDataButton,
-  exportDataButton,
+  importDataUploadProps,
+  exportDataEventHandler,
   createEditModalForm,
   modifyEditModalForm,
   ...restProps
@@ -167,8 +168,35 @@ function DataList<T, U extends ParamsType>({
       }}
       dateFormatter="string"
       toolBarRender={() => [
-        ((): JSX.Element => (typeof importDataButton !== 'undefined' ? importDataButton : <></>))(),
-        ((): JSX.Element => (typeof exportDataButton !== 'undefined' ? exportDataButton : <></>))(),
+        ((): JSX.Element => {
+          if (typeof importDataUploadProps !== 'undefined') {
+            return (
+              <Upload {...importDataUploadProps}>
+                {' '}
+                <Button key="importDataButton" icon={<ImportOutlined />}>
+                  {' '}
+                  导入数据{' '}
+                </Button>{' '}
+              </Upload>
+            );
+          }
+          return <></>;
+        })(),
+        ((): JSX.Element => {
+          if (typeof exportDataEventHandler !== 'undefined') {
+            return (
+              <Button
+                key="exportDataButton"
+                icon={<ExportOutlined />}
+                onClick={exportDataEventHandler}
+              >
+                {' '}
+                导出数据{' '}
+              </Button>
+            );
+          }
+          return <></>;
+        })(),
         <EditModalForm<T>
           key="createData"
           trigger={
@@ -196,7 +224,7 @@ function DataList<T, U extends ParamsType>({
               return true;
             }
             msg.error(message);
-            return false;
+            return undefined;
           }}
           formRef={createEditModalForm?.formRef}
           {...createEditModalForm?.props}

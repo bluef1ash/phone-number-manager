@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.*;
@@ -36,13 +36,22 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private final PhoneNumberMapper phoneNumberMapper;
     private final CompanyPhoneNumberMapper companyPhoneNumberMapper;
     private final CompanyExtraService companyExtraService;
+    private final CompanyPermissionMapper companyPermissionMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(Company entity) {
         baseMapper.insert(entity);
-        entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
-        companyExtraService.saveBatch(entity.getCompanyExtras());
+        if (entity.getCompanyExtras() != null && !entity.getCompanyExtras().isEmpty()) {
+            entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
+            companyExtraService.saveBatch(entity.getCompanyExtras());
+        }
+        if (entity.getSystemPermissions() != null && !entity.getSystemPermissions().isEmpty()) {
+            companyPermissionMapper.insertBatchSomeColumn(entity
+                .getSystemPermissions().stream().map(systemPermission -> new CompanyPermission()
+                    .setCompanyId(entity.getId()).setPermissionId(systemPermission.getId()))
+                .collect(Collectors.toList()));
+        }
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         return companyPhoneNumberMapper.insertBatchSomeColumn(companyPhoneNumbersHandler(entity)) > 0;
     }
@@ -50,13 +59,29 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(Company entity) {
-        baseMapper.updateById(entity);
-        companyExtraService.remove(new QueryWrapper<CompanyExtra>().eq("company_id", entity.getId()));
-        entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
-        companyExtraService.saveBatch(entity.getCompanyExtras());
-        phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
-        companyPhoneNumberMapper.delete(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", entity.getId()));
-        return companyPhoneNumberMapper.insertBatchSomeColumn(companyPhoneNumbersHandler(entity)) > 0;
+        if (baseMapper.selectCount(new LambdaQueryWrapper<Company>().eq(Company::getParentId, entity.getId())) > 0
+            || entity.getId().equals(entity.getParentId())) {
+            throw new BusinessException("上级单位不允许选择自己或已经是下级的单位！");
+        }
+        boolean isSuccess = baseMapper.updateById(entity) > 0;
+        if (entity.getSystemPermissions() != null && !entity.getSystemPermissions().isEmpty()) {
+            companyPermissionMapper.delete(
+                new LambdaQueryWrapper<CompanyPermission>().eq(CompanyPermission::getCompanyId, entity.getId()));
+            companyPermissionMapper.insertBatchSomeColumn(entity
+                .getSystemPermissions().stream().map(systemPermission -> new CompanyPermission()
+                    .setCompanyId(entity.getId()).setPermissionId(systemPermission.getId()))
+                .collect(Collectors.toList()));
+        }
+        if (entity.getCompanyExtras() != null && !entity.getCompanyExtras().isEmpty()) {
+            entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
+            companyExtraService.updateBatchById(entity.getCompanyExtras());
+        }
+        if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
+            companyPhoneNumberMapper.delete(
+                new LambdaQueryWrapper<CompanyPhoneNumber>().eq(CompanyPhoneNumber::getCompanyId, entity.getId()));
+        }
+        companyPhoneNumberMapper.insertIgnoreBatchSomeColumn(companyPhoneNumbersHandler(entity));
+        return isSuccess;
     }
 
     @Override
@@ -94,37 +119,34 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
-        long parentIdCount = baseMapper.selectCount(new QueryWrapper<Company>().eq("parent_id", id));
-        if (parentIdCount > 0) {
+        if (baseMapper.selectCount(new LambdaQueryWrapper<Company>().eq(Company::getParentId, id)) > 0) {
             throw new BusinessException("不允许删除存在下级单位的单位！");
         }
-        long communityResidentCount =
-            communityResidentMapper.selectCount(new QueryWrapper<CommunityResident>().eq("company_id", id));
-        if (communityResidentCount > 0) {
+        if (communityResidentMapper
+            .selectCount(new LambdaQueryWrapper<CommunityResident>().eq(CommunityResident::getCompanyId, id)) > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
         }
-        long dormitoryManagerCount =
-            dormitoryManagerMapper.selectCount(new QueryWrapper<DormitoryManager>().eq("company_id", id));
-        if (dormitoryManagerCount > 0) {
+        if (dormitoryManagerMapper
+            .selectCount(new LambdaQueryWrapper<DormitoryManager>().eq(DormitoryManager::getCompanyId, id)) > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民楼长的社区单位！");
         }
-        companyExtraService.remove(new QueryWrapper<CompanyExtra>().eq("company_id", id));
-        return baseMapper.deleteById(id) > 0
-            && companyPhoneNumberMapper.delete(new QueryWrapper<CompanyPhoneNumber>().eq("company_id", id)) > 0;
+        companyExtraService.remove(new LambdaQueryWrapper<CompanyExtra>().eq(CompanyExtra::getCompanyId, id));
+        return baseMapper.deleteById(id) > 0 && companyPhoneNumberMapper
+            .delete(new LambdaQueryWrapper<CompanyPhoneNumber>().eq(CompanyPhoneNumber::getCompanyId, id)) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeByIds(Collection<?> list) {
-        QueryWrapper<CompanyExtra> companyExtraQueryWrapper = new QueryWrapper<>();
-        QueryWrapper<CommunityResident> communityResidentQueryWrapper = new QueryWrapper<>();
-        QueryWrapper<DormitoryManager> dormitoryManagerQueryWrapper = new QueryWrapper<>();
-        QueryWrapper<CompanyPhoneNumber> companyPhoneNumberQueryWrapper = new QueryWrapper<>();
+        LambdaQueryWrapper<CompanyExtra> companyExtraQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<CommunityResident> communityResidentQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<DormitoryManager> dormitoryManagerQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<CompanyPhoneNumber> companyPhoneNumberQueryWrapper = new LambdaQueryWrapper<>();
         list.forEach(l -> {
-            companyExtraQueryWrapper.eq("company_id", l).or();
-            communityResidentQueryWrapper.eq("company_id", l).or();
-            dormitoryManagerQueryWrapper.eq("company_id", l).or();
-            companyPhoneNumberQueryWrapper.eq("company_id", l).or();
+            companyExtraQueryWrapper.eq(CompanyExtra::getCompanyId, l).or();
+            communityResidentQueryWrapper.eq(CommunityResident::getCompanyId, l).or();
+            dormitoryManagerQueryWrapper.eq(DormitoryManager::getCompanyId, l).or();
+            companyPhoneNumberQueryWrapper.eq(CompanyPhoneNumber::getCompanyId, l).or();
         });
         if (communityResidentMapper.selectCount(communityResidentQueryWrapper) > 0) {
             throw new BusinessException("不允许删除存在有下属社区居民的社区单位！");
@@ -138,7 +160,7 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     }
 
     @Override
-    public List<SelectListVo> treeSelectList() {
+    public List<SelectListVo> treeSelectList(Long parentId) {
         SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Company> companies = baseMapper.selectList(null);
         List<Company> userCompanies = systemUser.getCompanies();
@@ -152,7 +174,7 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
                 if (company.getId().equals(c.getId()) && !ids.contains(company.getParentId())) {
                     ids.add(company.getId());
                     selectListVoBases.add(new SelectListVo().setTitle(company.getName()).setLabel(company.getName())
-                        .setValue(company.getId()).setLevel(company.getLevel()));
+                        .setName(company.getName()).setId(company.getId()).setValue(company.getId()));
                 }
             }
         }
@@ -194,8 +216,8 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private SelectListVo treeRecursiveSelect(SelectListVo baseSelect, List<Company> companies) {
         for (Company company : companies) {
             SelectListVo selectListVo = new SelectListVo();
-            selectListVo.setValue(company.getId()).setTitle(company.getName()).setLabel(company.getName())
-                .setLevel(company.getLevel());
+            selectListVo.setValue(company.getId()).setId(company.getId()).setTitle(company.getName())
+                .setLabel(company.getName()).setName(company.getName());
             if (baseSelect.getValue().equals(company.getParentId())) {
                 if (baseSelect.getChildren() == null) {
                     baseSelect.setChildren(new ArrayList<>());
@@ -214,8 +236,9 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
      * @return 处理完成的对象集合
      */
     private List<CompanyPhoneNumber> companyPhoneNumbersHandler(Company entity) {
-        QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
-        entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
+        LambdaQueryWrapper<PhoneNumber> wrapper = new LambdaQueryWrapper<>();
+        entity.getPhoneNumbers()
+            .forEach(phoneNumber -> wrapper.eq(PhoneNumber::getPhoneNumber, phoneNumber.getPhoneNumber()).or());
         List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
         return phoneNumbers.stream().map(
             phoneNumber -> new CompanyPhoneNumber().setCompanyId(entity.getId()).setPhoneNumberId(phoneNumber.getId()))

@@ -1,23 +1,26 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
-import com.github.phonenumbermanager.entity.*;
-import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.entity.CommunityResident;
+import com.github.phonenumbermanager.entity.CommunityResidentPhoneNumber;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.vo.CommunityResidentSearchVo;
 
-import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
 
@@ -64,8 +67,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap) {
-        List<CommunityResident> residents = new ArrayList<>();
+    public boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap) {
+        /*List<CommunityResident> residents = new ArrayList<>();
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = new ArrayList<>();
         int excelCommunityCellNumber =
@@ -82,8 +85,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             Convert.toInt(configurationMap.get("excel_resident_phone3_cell_number").get("content"));
         int excelSubcontractorCellNumber =
             Convert.toInt(configurationMap.get("excel_resident_subcontractor_name_cell_number").get("content"));
-        List<SystemUser> systemUsers = systemUserMapper.selectByCompanyId(streetId);
-        List<Company> companies = companyMapper.selectList(new QueryWrapper<Company>().eq("parent_id", streetId));
+        //List<SystemUser> systemUsers = systemUserMapper.selectByCompanyId(streetId);
+        //List<Company> companies = companyMapper.selectList(new QueryWrapper<Company>().eq("parent_id", streetId));
         for (List<Object> datum : data) {
             CommunityResident communityResident = new CommunityResident();
             communityResident.setId(IdWorker.getId())
@@ -139,7 +142,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             phoneNumberMapper.insertBatchSomeColumn(phoneNumbers);
             return communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers) > 0;
 
-        }
+        }*/
         return false;
     }
 
@@ -245,7 +248,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     private void phoneNumberHandle(String phoneNumber, Long communityResidentId, QueryWrapper<PhoneNumber> wrapper,
         List<PhoneNumber> phoneNumbers, List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers) {
         String phone = CommonUtil.replaceSpecialStr(phoneNumber);
-        if (StringUtils.isNotEmpty(phone)) {
+        if (StrUtil.isNotEmpty(phone)) {
             PhoneNumber phoneNumber1 = CommonUtil.phoneNumber2Object(phone);
             phoneNumbers.add(phoneNumber1);
             communityResidentPhoneNumbers.add(new CommunityResidentPhoneNumber()

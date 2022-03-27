@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
@@ -68,7 +69,8 @@ public class SystemController extends BaseController {
     @GetMapping("/configuration/{id}")
     @ApiOperation("通过系统配置项编号查找")
     public R getConfigurationById(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
-        return R.ok().put("data", configurationService.getOne(new QueryWrapper<Configuration>().eq("id", id)));
+        return R.ok().put("data",
+            configurationService.getOne(new LambdaQueryWrapper<Configuration>().eq(Configuration::getId, id)));
     }
 
     /**
@@ -101,7 +103,8 @@ public class SystemController extends BaseController {
     public R configurationModifyHandle(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id,
         @ApiParam(name = "系统配置对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) Configuration configuration) {
-        configuration.setId(id);
+        configuration.setId(id).setVersion(configurationService
+            .getOne(new LambdaQueryWrapper<Configuration>().eq(Configuration::getId, id)).getVersion());
         if (configurationService.updateById(configuration)) {
             refreshConfiguration();
             return R.ok();

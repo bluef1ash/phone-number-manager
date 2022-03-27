@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.BaseMapper;
 import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.vo.SelectListVo;
@@ -65,12 +66,17 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
+    public boolean saveCorrelation(SystemUser entity) {
+        return false;
+    }
+
+    @Override
     public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
         return null;
     }
 
     @Override
-    public boolean save(List<List<Object>> data, Long streetId, Map<String, JSONObject> configurationMap) {
+    public boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap) {
         return false;
     }
 
@@ -96,7 +102,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public List<SelectListVo> treeSelectList() {
+    public List<SelectListVo> treeSelectList(Long parentId) {
         return null;
     }
 

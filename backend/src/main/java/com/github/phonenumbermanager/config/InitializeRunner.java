@@ -18,19 +18,26 @@ import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 
 /**
- * 缓存数据初始化
+ * 初始化
  *
  * @author 廿二月的天
  */
 @AllArgsConstructor
 @Component
-public class CacheDataInitializeRunner implements CommandLineRunner {
+public class InitializeRunner implements CommandLineRunner {
     private final ConfigurationService configurationService;
     private final SystemPermissionService systemPermissionService;
     private final RedisUtil redisUtil;
 
     @Override
     public void run(String... args) {
+        cacheInitialize();
+    }
+
+    /**
+     * 初始化缓存数据
+     */
+    private void cacheInitialize() {
         List<Configuration> configurationList = configurationService.list();
         Map<String, Configuration> configurationM =
             configurationList.stream().collect(Collectors.toMap(Configuration::getName, Function.identity()));

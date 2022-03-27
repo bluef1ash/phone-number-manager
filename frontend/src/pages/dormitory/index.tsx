@@ -1,14 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import {
-  ProFormDatePicker,
+  ProFormCascader,
   ProFormDateRangePicker,
   ProFormDigit,
   ProFormList,
-  ProFormRadio,
   ProFormSelect,
   ProFormText,
   ProFormTreeSelect,
@@ -26,16 +25,15 @@ import {
   removeDormitoryManager,
 } from '@/services/dormitory/api';
 import { queryCompanySelectList } from '@/services/company/api';
-import { querySystemUserSelectList } from '@/services/user/api';
 import { submitPrePhoneNumberHandle } from '@/services/utils';
-import { Dropdown, message, Spin } from 'antd';
-import { DownOutlined, ExportOutlined } from '@ant-design/icons';
+import { message, Spin, Upload } from 'antd';
+import { dormitoryManagerImportExcel } from '@/services/api';
+import { SESSION_TOKEN_KEY } from '@config/constant';
+import { querySystemUserSelectList } from '@/services/user/api';
 
 const InputElement = (
-  companiesState: API.SelectList[],
-  systemUsersState: API.SelectList[],
-  companyLowState: API.SelectList[] | null | undefined,
-  setCompanyLowState: { (value: API.SelectList[] | null | undefined): void },
+  systemUsersSelectState: API.SelectList[],
+  setSystemUsersSelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
 ) => (
   <>
     <ProFormText
@@ -55,38 +53,19 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormRadio.Group
-      name="gender"
-      label="社区居民楼片长性别"
-      options={[
-        {
-          label: '男',
-          value: 0,
-        },
-        {
-          label: '女',
-          value: 1,
-        },
-        {
-          label: '未知',
-          value: 2,
-        },
-      ]}
-      rules={[
-        {
-          required: true,
-          message: '社区居民楼片长性别不能为空！',
-        },
-      ]}
-    />{' '}
-    <ProFormDatePicker
-      name="birth"
+    <ProFormText
+      name="idNumber"
       width="xl"
-      label="社区居民楼片长出生年月"
+      label="社区居民楼片长身份证号码"
       rules={[
         {
           required: true,
-          message: '社区居民楼片长出生年月不能为空！',
+          message: '社区居民楼片长身份证号码不能为空！',
+        },
+        {
+          pattern:
+            /^([1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx])|([1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3})$/g,
+          message: '社区居民楼片长身份证号码不正确！',
         },
       ]}
     />{' '}
@@ -95,14 +74,14 @@ const InputElement = (
       width="xl"
       label="社区居民楼片长政治状况"
       placeholder="请选择"
-      valueEnum={{
-        0: '群众',
-        1: '共产党员',
-        2: '预备共产党员',
-        3: '共青团员',
-        4: '预备共青团员',
-        5: '其他',
-      }}
+      options={[
+        { value: 0, label: '群众' },
+        { value: 1, label: '共产党员' },
+        { value: 2, label: '预备共产党员' },
+        { value: 3, label: '共青团员' },
+        { value: 4, label: '预备共青团员' },
+        { value: 5, label: '民主党派' },
+      ]}
       rules={[
         {
           required: true,
@@ -115,11 +94,13 @@ const InputElement = (
       width="xl"
       label="社区居民楼片长就业情况"
       placeholder="请选择"
-      valueEnum={{
-        0: '在职',
-        1: '退休',
-        2: '无业',
-      }}
+      options={[
+        { value: 0, label: '在职' },
+        { value: 1, label: '退休' },
+        { value: 2, label: '无业' },
+        { value: 3, label: '失业' },
+        { value: 4, label: '自由职业' },
+      ]}
       rules={[
         {
           required: true,
@@ -132,17 +113,17 @@ const InputElement = (
       width="xl"
       label="社区居民楼片长教育情况"
       placeholder="请选择"
-      valueEnum={{
-        0: '文盲',
-        1: '小学',
-        2: '初中',
-        3: '中学专科',
-        4: '高中',
-        5: '大学专科',
-        6: '大学本科',
-        7: '硕士研究生',
-        8: '博士研究生',
-      }}
+      options={[
+        { value: 0, label: '文盲' },
+        { value: 1, label: '小学' },
+        { value: 2, label: '初级中学' },
+        { value: 3, label: '中学专科' },
+        { value: 4, label: '高级中学' },
+        { value: 5, label: '大学专科' },
+        { value: 6, label: '大学本科' },
+        { value: 7, label: '硕士研究生' },
+        { value: 8, label: '博士研究生' },
+      ]}
       rules={[
         {
           required: true,
@@ -196,42 +177,27 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormSelect
-      name="systemUserId"
+    <ProFormCascader
+      name="systemUserInfo"
       width="xl"
       label="社区居民楼片长所属分包人"
       placeholder="请选择"
-      request={async () => systemUsersState}
-      rules={[
-        {
-          required: true,
-          message: '社区居民楼片长所属分包人不能为空！',
-        },
-      ]}
-    />{' '}
-    <ProFormTreeSelect
-      name="companyId"
-      width="xl"
-      label="社区居民楼片长所属社区"
-      placeholder="请选择"
-      request={async () => companiesState}
       fieldProps={{
-        // @ts-ignore
-        onSelect(value: number, node: API.SelectList) {
-          setCompanyLowState(node.children);
+        options: systemUsersSelectState,
+        async loadData(selectedOptions) {
+          const targetOption = selectedOptions[selectedOptions.length - 1];
+          targetOption.loading = true;
+          const data = (await querySystemUserSelectList(targetOption.value as number)).data;
+          targetOption.loading = false;
+          //@ts-ignore
+          targetOption.children = data;
+          setSystemUsersSelectState([...systemUsersSelectState]);
         },
       }}
       rules={[
         {
           required: true,
-          message: '社区居民楼片长所属社区不能为空！',
-        },
-        {
-          validator() {
-            return companyLowState !== null
-              ? Promise.reject('只能选择社区一级！')
-              : Promise.resolve();
-          },
+          message: '社区居民楼片长所属分包人不能为空！',
         },
       ]}
     />{' '}
@@ -285,22 +251,15 @@ const DormitoryManager: React.FC = () => {
   const createFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
   const modifyFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
   const [companiesState, setCompaniesState] = useState<API.SelectList[]>([]);
-  const [companyLowState, setCompanyLowState] = useState<API.SelectList[] | null | undefined>(null);
-  const [systemUsersState, setSystemUsersState] = useState<API.SelectList[]>([]);
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
-
-  useEffect(() => {
-    const getCompanies = async () => (await queryCompanySelectList()).data;
-    const getSystemUsers = async () => (await querySystemUserSelectList()).data;
-    getCompanies().then((value) => setCompaniesState(value));
-    getSystemUsers().then((value) => setSystemUsersState(value));
-  }, []);
+  const [systemUsersSelectState, setSystemUsersSelectState] = useState<API.SelectList[]>([]);
 
   const submitPreHandler = (formData: API.DormitoryManager) => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
       submitPrePhoneNumberHandle(value.phoneNumber as string),
     );
+    formData.systemUserInfo = formData.systemUserInfo?.slice(-2);
     return formData;
   };
 
@@ -335,16 +294,23 @@ const DormitoryManager: React.FC = () => {
               ellipsis: true,
             },
             {
+              title: '社区居民楼片长身份证号码',
+              dataIndex: 'idNumber',
+              sorter: true,
+              ellipsis: true,
+              hideInTable: true,
+            },
+            {
               title: '社区居民楼片长性别',
               dataIndex: 'gender',
               sorter: true,
               ellipsis: true,
               valueEnum: {
                 0: {
-                  text: '男',
+                  text: '女',
                 },
                 1: {
-                  text: '女',
+                  text: '男',
                 },
                 2: {
                   text: '未知',
@@ -372,7 +338,9 @@ const DormitoryManager: React.FC = () => {
               sorter: true,
               ellipsis: true,
               renderFormItem() {
-                return <ProFormSelect mode="multiple" request={async () => systemUsersState} />;
+                return (
+                  <ProFormTreeSelect request={async () => (await queryCompanySelectList()).data} />
+                );
               },
             },
             {
@@ -413,12 +381,7 @@ const DormitoryManager: React.FC = () => {
             })
           }
           createEditModalForm={{
-            element: InputElement(
-              companiesState,
-              systemUsersState,
-              companyLowState,
-              setCompanyLowState,
-            ),
+            element: InputElement(systemUsersSelectState, setSystemUsersSelectState),
             props: {
               title: '添加社区居民楼片长',
             },
@@ -426,61 +389,74 @@ const DormitoryManager: React.FC = () => {
             onFinish: async (formData) => await createDormitoryManager(submitPreHandler(formData)),
           }}
           modifyEditModalForm={{
-            element: InputElement(
-              companiesState,
-              systemUsersState,
-              companyLowState,
-              setCompanyLowState,
-            ),
+            element: InputElement(systemUsersSelectState, setSystemUsersSelectState),
             props: {
               title: '编辑社区居民楼片长',
             },
             formRef: modifyFormRef,
-            onFinish: async (formData) => await modifyDormitoryManager(submitPreHandler(formData)),
+            onFinish: async (formData) =>
+              await modifyDormitoryManager(formData.id as number, submitPreHandler(formData)),
             onConfirmRemove: async (id) => await removeDormitoryManager(id),
             queryData: async (id) => await queryDormitoryManager(id),
           }}
-          importDataButton={<></>}
-          exportDataButton={
-            <Dropdown.Button
-              icon={<DownOutlined />}
-              onClick={async () => {
-                setSpinTipState('正在生成社区楼片长花名册中...');
-                setSpinState(true);
-                const { data, response } = await downloadDormitoryManagerExcel();
-                if (typeof data.code === 'undefined' && data) {
-                  let filename = response.headers.get('Content-Disposition');
-                  if (filename !== null) {
-                    filename = decodeURI(filename.substring('attachment;filename='.length));
-                  } else {
-                    filename = '街道（园区）社区楼片长花名册.xlsx';
-                  }
-                  const blob = await data;
-                  setSpinTipState('正在下载社区楼片长花名册中...');
-                  const link = document.createElement('a');
-                  if ('download' in link) {
-                    link.style.display = 'none';
-                    link.href = URL.createObjectURL(blob);
-                    link.download = filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    URL.revokeObjectURL(link.href);
-                    document.body.removeChild(link);
-                  } else {
-                    //@ts-ignore
-                    navigator.msSaveBlob(blob, filename);
-                  }
-                } else {
-                  message.error('导出失败，请稍后再试！');
-                }
-                setSpinState(false);
-              }}
-              overlay={<ProFormTreeSelect request={async () => companiesState} />}
-            >
-              {' '}
-              <ExportOutlined /> 导出数据{' '}
-            </Dropdown.Button>
-          }
+          importDataUploadProps={{
+            action: dormitoryManagerImportExcel,
+            name: 'file',
+            headers: {
+              Authorization: `Bearer_${localStorage.getItem(SESSION_TOKEN_KEY)}`,
+            },
+            async beforeUpload(file) {
+              const isXlsx =
+                file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+              if (!isXlsx) {
+                message.error('只能上传Excel文件！');
+              }
+              return isXlsx || Upload.LIST_IGNORE;
+            },
+            async onChange({ file }) {
+              if (file.status === 'done') {
+                message.success('上传成功！');
+                actionRef.current?.reload();
+              } else if (file.status === 'error') {
+                message.error('上传失败！');
+              }
+            },
+          }}
+          exportDataEventHandler={async () => {
+            setSpinTipState('正在生成社区楼片长花名册中...');
+            setSpinState(true);
+            const { data, response } = await downloadDormitoryManagerExcel();
+            if (typeof data.code === 'undefined' && data) {
+              let filename = response.headers.get('Content-Disposition');
+              if (filename !== null) {
+                filename = decodeURI(filename.substring('attachment;filename='.length));
+              } else {
+                filename = '街道（园区）社区楼片长花名册.xlsx';
+              }
+              const blob = await data;
+              setSpinTipState('正在下载社区楼片长花名册中...');
+              const link = document.createElement('a');
+              if ('download' in link) {
+                link.style.display = 'none';
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                URL.revokeObjectURL(link.href);
+                document.body.removeChild(link);
+              } else {
+                //@ts-ignore
+                navigator.msSaveBlob(blob, filename);
+              }
+            } else {
+              message.error('导出失败，请稍后再试！');
+            }
+            setSpinState(false);
+          }}
+          onLoad={async () => {
+            setCompaniesState((await queryCompanySelectList()).data);
+            setSystemUsersSelectState((await querySystemUserSelectList(null)).data);
+          }}
         />{' '}
       </MainPageContainer>{' '}
     </Spin>

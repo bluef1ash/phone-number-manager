@@ -61,9 +61,12 @@ declare namespace API {
   };
 
   type SelectList = {
+    label?: string;
     title?: string;
     value?: number;
     level?: number;
+    isLeaf?: boolean;
+    loading?: boolean;
     children?: SelectList[] | null;
   };
 }

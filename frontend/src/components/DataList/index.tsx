@@ -12,7 +12,7 @@ import type { SortOrder } from 'antd/es/table/interface';
 import type { Key } from 'antd/lib/table/interface';
 import type { UploadProps } from 'antd/lib/upload/interface';
 
-type DataListProps<T, U extends ParamsType> = {
+export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
   customActionRef?: React.MutableRefObject<ActionType | undefined>;
   customColumns?: ProColumns<T>[];
   customRequest?: (responseParams: {
@@ -39,7 +39,7 @@ type DataListProps<T, U extends ParamsType> = {
     queryData?: (id: number) => Promise<API.Data<T> & API.ResponseException>;
     formRef?: React.MutableRefObject<ProFormInstance<T> | undefined>;
   };
-} & ProTableProps<T, U>;
+} & Omit<ProTableProps<T, U>, 'children'>;
 
 function DataList<T, U extends ParamsType>({
   customActionRef,
@@ -51,7 +51,8 @@ function DataList<T, U extends ParamsType>({
   createEditModalForm,
   modifyEditModalForm,
   ...restProps
-}: DataListProps<T, U>): JSX.Element {
+}: //@ts-ignore
+DataListProps<T, U>): JSX.Element {
   const [selectedRowKeysState, setSelectedRowKeys] = useState<Key[]>([]);
   const customFormColumns: ProColumns<T>[] = [
     ...(customColumns || []),

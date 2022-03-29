@@ -6,8 +6,7 @@ declare namespace API {
     GenderEnum,
     PoliticalStatusEnum,
   } from '@/services/enums';
-  type DormitoryManager = {
-    id?: number;
+  type DormitoryManager = BaseEntity & {
     name?: string;
     gender?: GenderEnum;
     birth?: Date;
@@ -20,6 +19,6 @@ declare namespace API {
     systemUserId?: number;
     companyId?: number;
     phoneNumbers?: PhoneNumber[];
-    systemUserInfo?: string[];
+    subcontractorInfo?: string[];
   };
 }

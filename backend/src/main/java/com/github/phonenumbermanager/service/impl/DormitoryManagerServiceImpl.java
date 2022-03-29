@@ -76,7 +76,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         DormitoryManager dormitoryManager = baseMapper.selectAndCompanyById(id);
         info.add(dormitoryManager.getCompany().getName());
         info.add(dormitoryManager.getSystemUser().getUsername());
-        dormitoryManager.setSystemUserInfo(info);
+        dormitoryManager.setSubcontractorInfo(info);
         return dormitoryManager;
     }
 
@@ -268,8 +268,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         entity.setGender(GenderEnum.getEnum(IdcardUtil.getGenderByIdCard(entity.getIdNumber())))
             .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(entity.getIdNumber()),
                 IdcardUtil.getMonthByIdCard(entity.getIdNumber()), IdcardUtil.getDayByIdCard(entity.getIdNumber())))
-            .setCompanyId(Long.valueOf(entity.getSystemUserInfo().get(0)))
-            .setSystemUserId(Long.valueOf(entity.getSystemUserInfo().get(1)));
+            .setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
+            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         baseMapper.insert(entity);
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbersHandler(entity)) > 0;
@@ -281,8 +281,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         entity.setGender(GenderEnum.getEnum(IdcardUtil.getGenderByIdCard(entity.getIdNumber())))
             .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(entity.getIdNumber()),
                 IdcardUtil.getMonthByIdCard(entity.getIdNumber()), IdcardUtil.getDayByIdCard(entity.getIdNumber())))
-            .setCompanyId(Long.valueOf(entity.getSystemUserInfo().get(0)))
-            .setSystemUserId(Long.valueOf(entity.getSystemUserInfo().get(1)));
+            .setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
+            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.updateById(entity) > 0;
         if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
             dormitoryManagerPhoneNumberMapper

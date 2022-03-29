@@ -1,10 +1,6 @@
 declare module '*.less';
 declare namespace API {
-  type Configuration = {
-    createTime: Date;
-    updateTime: Date;
-    version: number;
-    id: number;
+  type Configuration = BaseEntity & {
     title: string;
     description: string;
     name: string;

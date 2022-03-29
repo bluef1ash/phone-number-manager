@@ -44,13 +44,15 @@ public class CommunityResident extends BaseEntity<CommunityResident> {
     @Length(max = 255, message = "社区居民地址不能超过255个字符！")
     private String address;
     @ApiModelProperty("所属社区分包人编号")
-    @NotNull(groups = CreateInputGroup.class, message = "社区分包人不能为空！")
     @Min(value = 1, message = "所属社区分包人编号不正确！")
     private Long systemUserId;
     @ApiModelProperty("所属社区编号")
-    @NotNull(groups = CreateInputGroup.class, message = "社区不能为空！")
     @Min(value = 1, message = "所属社区编号不正确！")
     private Long companyId;
+    @NotNull(groups = CreateInputGroup.class, message = "社区居民分包人不能为空！")
+    @TableField(exist = false)
+    @ApiModelProperty("社区居民分包人信息")
+    private List<String> subcontractorInfo;
     @ApiModelProperty("社区居民联系方式")
     @NotNull(message = "社区居民的联系方式不能为空！")
     @TableField(exist = false)

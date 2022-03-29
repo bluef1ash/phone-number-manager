@@ -4,7 +4,6 @@ import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ProFormCascader, ProFormList, ProFormSelect, ProFormText } from '@ant-design/pro-form';
-import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 import {
   batchCompany,
   createCompany,
@@ -14,10 +13,9 @@ import {
   queryCompanySelectList,
   removeCompany,
 } from '@/services/company/api';
-import { isArray } from 'lodash';
-import { parsePhoneNumber } from 'libphonenumber-js/max';
 import { submitPrePhoneNumberHandle } from '@/services/utils';
 import { querySystemPermissionSelectList } from '@/services/permission/api';
+import PhoneNumberList from '@/components/PhoneNumberList';
 
 const InputElement = (
   selectListState: API.SelectList[],
@@ -57,48 +55,16 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormList
+    <PhoneNumberList
       name="phoneNumbers"
-      creatorButtonProps={{
-        creatorButtonText: '添加联系方式',
+      creatorButtonText="添加单位联系方式"
+      listValidRejectMessage="请添加单位联系方式！"
+      phoneNumberFormProps={{
+        name: 'phoneNumber',
+        label: '单位联系方式',
+        placeholder: '请输入单位联系方式',
       }}
-      rules={[
-        {
-          validator(rule: RuleObject, value: StoreValue) {
-            return typeof value !== 'undefined' && isArray(value)
-              ? Promise.resolve()
-              : Promise.reject('请添加联系方式！');
-          },
-        },
-      ]}
-    >
-      {' '}
-      <ProFormText
-        name="phoneNumber"
-        width="xl"
-        label="联系方式"
-        placeholder="请输入联系方式"
-        rules={[
-          {
-            required: true,
-            message: '联系方式不能为空！',
-          },
-          {
-            validator(role: RuleObject, value: StoreValue) {
-              try {
-                return typeof value !== 'undefined' &&
-                  value.length > 0 &&
-                  parsePhoneNumber(value, 'CN').isValid()
-                  ? Promise.resolve()
-                  : Promise.reject('联系方式输入不正确！');
-              } catch (e) {
-                return Promise.reject('联系方式输入不正确！');
-              }
-            },
-          },
-        ]}
-      />{' '}
-    </ProFormList>{' '}
+    />{' '}
     <ProFormList
       name="companyExtras"
       creatorButtonProps={{

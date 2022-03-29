@@ -1,9 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
-import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.DormitoryManager;
-import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.util.R;
@@ -23,8 +20,6 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import io.swagger.annotations.Api;
@@ -110,11 +105,11 @@ public class DormitoryManagerController extends BaseController {
     @PutMapping("/{id}")
     @ResponseBody
     @ApiOperation("修改社区居民楼片长处理")
-    public R dormitoryManagerModifyHandle(@ApiParam(name = "要修改的单位编号", required = true) @PathVariable Long id,
+    public R dormitoryManagerModifyHandle(@ApiParam(name = "要修改的社区居民楼片长编号", required = true) @PathVariable Long id,
         @ApiParam(name = "前台传递的社区居民楼片长对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) DormitoryManager dormitoryManager) {
-        dormitoryManager.setId(id).setVersion(dormitoryManagerService
-            .getOne(new LambdaQueryWrapper<DormitoryManager>().eq(DormitoryManager::getId, id)).getVersion());
+        dormitoryManager.setId(id).setVersion(dormitoryManagerService.getOne(new LambdaQueryWrapper<DormitoryManager>()
+            .eq(DormitoryManager::getId, id).select(DormitoryManager::getVersion)).getVersion());
         if (dormitoryManagerService.updateById(dormitoryManager)) {
             return R.ok();
         }
@@ -170,22 +165,7 @@ public class DormitoryManagerController extends BaseController {
         getEnvironmentVariable();
         ExcelWriter excelWriter =
             dormitoryManagerService.listCorrelationExportExcel(systemUser.getCompanies(), configurationMap);
-        if (excelWriter != null) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLUtil
-                .encode(excelWriter.getCell(0, 1).getStringCellValue() + System.currentTimeMillis() + ".xlsx"));
-            try {
-                ServletOutputStream outputStream = response.getOutputStream();
-                excelWriter.flush(outputStream, true);
-                IoUtil.close(outputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new BusinessException("导出Excel文件失败！");
-            } finally {
-                excelWriter.close();
-            }
-        }
+        downloadExcelFile(response, excelWriter, excelWriter.getCell(0, 1).getStringCellValue());
     }
 
     /**

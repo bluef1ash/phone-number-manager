@@ -5,10 +5,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,9 +18,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.util.RedisUtil;
 
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelReader;
@@ -151,8 +155,32 @@ abstract class BaseController {
         }
     }
 
-    @Autowired
-    public void setRedisUtil(RedisUtil redisUtil) {
-        this.redisUtil = redisUtil;
+    /**
+     * 下载Excel文件
+     *
+     * @param response
+     *            HTTP响应对象
+     * @param excelWriter
+     *            Excel写入对象
+     * @param filename
+     *            文件名
+     */
+    protected void downloadExcelFile(HttpServletResponse response, ExcelWriter excelWriter, String filename) {
+        if (excelWriter != null) {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            response.setHeader("Content-Disposition",
+                "attachment;filename=" + URLUtil.encode(filename + System.currentTimeMillis() + ".xlsx"));
+            ServletOutputStream outputStream = null;
+            try (excelWriter) {
+                outputStream = response.getOutputStream();
+                excelWriter.flush(outputStream, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new BusinessException("导出Excel文件失败！");
+            } finally {
+                IoUtil.close(outputStream);
+            }
+        }
     }
 }

@@ -24,6 +24,13 @@ declare namespace API {
     params?: [];
   };
 
+  type BaseEntity = {
+    id: number;
+    createTime?: Date;
+    updateTime?: Date;
+    version?: number;
+  };
+
   type PhoneNumber = {
     id?: number;
     phoneNumber?: string;

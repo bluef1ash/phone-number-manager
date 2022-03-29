@@ -4,32 +4,28 @@ import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import {
-  ProFormCascader,
   ProFormDateRangePicker,
   ProFormDigit,
-  ProFormList,
   ProFormSelect,
   ProFormText,
   ProFormTreeSelect,
 } from '@ant-design/pro-form';
-import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
-import { isArray } from 'lodash';
-import { parsePhoneNumber } from 'libphonenumber-js/max';
 import {
   batchDormitoryManager,
   createDormitoryManager,
-  downloadDormitoryManagerExcel,
   modifyDormitoryManager,
   queryDormitoryManager,
   queryDormitoryManagerList,
   removeDormitoryManager,
 } from '@/services/dormitory/api';
 import { queryCompanySelectList } from '@/services/company/api';
-import { submitPrePhoneNumberHandle } from '@/services/utils';
+import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils';
 import { message, Spin, Upload } from 'antd';
 import { dormitoryManagerImportExcel } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
 import { querySystemUserSelectList } from '@/services/user/api';
+import PhoneNumberList from '@/components/PhoneNumberList';
+import Subcontractor from '@/components/Subcontractor';
 
 const InputElement = (
   systemUsersSelectState: API.SelectList[],
@@ -177,72 +173,23 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormCascader
-      name="systemUserInfo"
-      width="xl"
+    <Subcontractor
+      name="subcontractorInfo"
       label="社区居民楼片长所属分包人"
-      placeholder="请选择"
-      fieldProps={{
-        options: systemUsersSelectState,
-        async loadData(selectedOptions) {
-          const targetOption = selectedOptions[selectedOptions.length - 1];
-          targetOption.loading = true;
-          const data = (await querySystemUserSelectList(targetOption.value as number)).data;
-          targetOption.loading = false;
-          //@ts-ignore
-          targetOption.children = data;
-          setSystemUsersSelectState([...systemUsersSelectState]);
-        },
-      }}
-      rules={[
-        {
-          required: true,
-          message: '社区居民楼片长所属分包人不能为空！',
-        },
-      ]}
+      requiredMessage="社区居民楼片长所属分包人不能为空！"
+      systemUsersSelectState={systemUsersSelectState}
+      setSystemUsersSelectState={setSystemUsersSelectState}
     />{' '}
-    <ProFormList
+    <PhoneNumberList
       name="phoneNumbers"
-      creatorButtonProps={{
-        creatorButtonText: '添加社区居民楼片长联系方式',
+      creatorButtonText="添加社区居民楼片长的联系方式"
+      listValidRejectMessage="请添加社区居民楼片长的联系方式！"
+      phoneNumberFormProps={{
+        name: 'phoneNumber',
+        label: '社区居民楼片长的联系方式',
+        placeholder: '请输入社区居民楼片长的联系方式',
       }}
-      rules={[
-        {
-          validator(rule: RuleObject, value: StoreValue) {
-            return typeof value !== 'undefined' && isArray(value)
-              ? Promise.resolve()
-              : Promise.reject('请添加社区居民楼片长联系方式！');
-          },
-        },
-      ]}
-    >
-      {' '}
-      <ProFormText
-        name="phoneNumber"
-        width="xl"
-        label="社区居民楼片长联系方式"
-        placeholder="请输入社区居民楼片长联系方式"
-        rules={[
-          {
-            required: true,
-            message: '社区居民楼片长联系方式不能为空！',
-          },
-          {
-            validator(role: RuleObject, value: StoreValue) {
-              try {
-                return typeof value !== 'undefined' &&
-                  value.length > 0 &&
-                  parsePhoneNumber(value, 'CN').isValid()
-                  ? Promise.resolve()
-                  : Promise.reject('联系方式输入不正确！');
-              } catch (e) {
-                return Promise.reject('联系方式输入不正确！');
-              }
-            },
-          },
-        ]}
-      />{' '}
-    </ProFormList>
+    />{' '}
   </>
 );
 
@@ -259,7 +206,7 @@ const DormitoryManager: React.FC = () => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
       submitPrePhoneNumberHandle(value.phoneNumber as string),
     );
-    formData.systemUserInfo = formData.systemUserInfo?.slice(-2);
+    formData.subcontractorInfo = formData.subcontractorInfo?.slice(-2);
     return formData;
   };
 
@@ -422,37 +369,7 @@ const DormitoryManager: React.FC = () => {
               }
             },
           }}
-          exportDataEventHandler={async () => {
-            setSpinTipState('正在生成社区楼片长花名册中...');
-            setSpinState(true);
-            const { data, response } = await downloadDormitoryManagerExcel();
-            if (typeof data.code === 'undefined' && data) {
-              let filename = response.headers.get('Content-Disposition');
-              if (filename !== null) {
-                filename = decodeURI(filename.substring('attachment;filename='.length));
-              } else {
-                filename = '街道（园区）社区楼片长花名册.xlsx';
-              }
-              const blob = await data;
-              setSpinTipState('正在下载社区楼片长花名册中...');
-              const link = document.createElement('a');
-              if ('download' in link) {
-                link.style.display = 'none';
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                URL.revokeObjectURL(link.href);
-                document.body.removeChild(link);
-              } else {
-                //@ts-ignore
-                navigator.msSaveBlob(blob, filename);
-              }
-            } else {
-              message.error('导出失败，请稍后再试！');
-            }
-            setSpinState(false);
-          }}
+          exportDataEventHandler={async () => downloadExcelFile(setSpinState, setSpinTipState)}
           onLoad={async () => {
             setCompaniesState((await queryCompanySelectList()).data);
             setSystemUsersSelectState((await querySystemUserSelectList(null)).data);

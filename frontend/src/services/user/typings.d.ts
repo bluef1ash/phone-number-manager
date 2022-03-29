@@ -1,7 +1,6 @@
 declare module '*.less';
 declare namespace API {
-  type SystemUser = {
-    id: number;
+  type SystemUser = BaseEntity & {
     username?: string;
     positions?: string[] | { position: string }[];
     titles?: string[] | { title: string }[];

@@ -7,6 +7,8 @@ export const index = {
 };
 export const communityResident = REACT_APP_API_BASE_URL + '/resident';
 export const communityResidentBatch = REACT_APP_API_BASE_URL + '/resident/batch';
+export const communityResidentImportExcel = REACT_APP_API_BASE_URL + '/dormitory/import';
+export const communityResidentDownloadExcel = REACT_APP_API_BASE_URL + '/dormitory/download';
 export const dormitoryManager = REACT_APP_API_BASE_URL + '/dormitory';
 export const dormitoryManagerBatch = REACT_APP_API_BASE_URL + '/dormitory/batch';
 export const dormitoryManagerImportExcel = REACT_APP_API_BASE_URL + '/dormitory/import';

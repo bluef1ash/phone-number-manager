@@ -9,8 +9,7 @@ declare namespace API {
     components?: string[];
   };
 
-  type SystemPermission = {
-    id: number;
+  type SystemPermission = BaseEntity & {
     name?: string;
     functionName?: string;
     uri?: string;

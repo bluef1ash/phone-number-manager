@@ -5,12 +5,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.CommunityResidentPhoneNumber;
 import com.github.phonenumbermanager.entity.Company;
@@ -18,7 +21,6 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.vo.CommunityResidentSearchVo;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
@@ -41,17 +43,28 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(CommunityResident entity) {
-        baseMapper.insert(entity);
-        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = communityResidentPhoneNumbersHandler(entity);
-        return communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers) > 0;
+        boolean isSuccess = baseMapper.insert(entity) > 0;
+        phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
+        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = entity
+            .getPhoneNumbers().stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
+                .setPhoneNumberId(phoneNumber.getId()).setCommunityResidentId(entity.getId()))
+            .collect(Collectors.toList());
+        communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers);
+        return isSuccess;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(CommunityResident entity) {
-        baseMapper.updateById(entity);
-        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = communityResidentPhoneNumbersHandler(entity);
-        return communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers) > 0;
+        boolean isSuccess = baseMapper.updateById(entity) > 0;
+        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = entity
+            .getPhoneNumbers().stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
+                .setPhoneNumberId(phoneNumber.getId()).setCommunityResidentId(entity.getId()))
+            .collect(Collectors.toList());
+        communityResidentPhoneNumberMapper.delete(new LambdaQueryWrapper<CommunityResidentPhoneNumber>()
+            .eq(CommunityResidentPhoneNumber::getCommunityResidentId, entity.getId()));
+        communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers);
+        return isSuccess;
     }
 
     @Override
@@ -60,9 +73,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public IPage<CommunityResident> page(List<Company> companies, CommunityResidentSearchVo communityResidentSearchVo,
-        IPage<CommunityResident> page) {
-        return baseMapper.selectBySearchVo(companies, communityResidentSearchVo, page);
+    public IPage<CommunityResident> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
+        JSONObject search, JSONObject sort) {
+        return baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -147,7 +160,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     /*@Override
-    public List<LinkedHashMap<String, Object>> listCorrelationToMap(Long companyId) {
+    public ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap) {
+        String excelResidentTitleUp = Convert.toStr(configurationMap.get("excel_resident_title_up").get("content"));
+        String excelResidentTitle = Convert.toStr(configurationMap.get("excel_resident_title").get("content"));
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         List<Company> companies = companyService.list(new QueryWrapper<Company>().eq("parent_id", companyId));
         List<Long> companyIds = new ArrayList<>();
@@ -175,6 +190,27 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             }
         }
         return list;
+        ExcelWriter excelWriter = ExcelUtil.getWriter();
+        CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+        setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
+        excelWriter.writeCellValue(0, 0, excelResidentTitleUp);
+        excelWriter.passCurrentRow();
+        CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+        setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
+        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0,
+            dataResult.get(0).keySet().size(), excelResidentTitle, titleStyle);
+        excelWriter.passCurrentRow();
+        CellStyle dateRowStyle = excelWriter.getOrCreateCellStyle(6, excelWriter.getCurrentRow());
+        setCellStyle(dateRowStyle, excelWriter, "宋体", (short)11, false, false, true);
+        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6, 1, new Date(), dateRowStyle);
+        excelWriter.passCurrentRow();
+        StyleSet styleSet = excelWriter.getStyleSet();
+        CellStyle headCellStyle = styleSet.getHeadCellStyle();
+        setCellStyle(headCellStyle, excelWriter, "宋体", (short)11, false, true, false);
+        CellStyle cellStyle = styleSet.getCellStyle();
+        setCellStyle(cellStyle, excelWriter, "宋体", (short)9, false, true, true);
+        excelWriter.write(dataResult, true);
+        excelWriter.setColumnWidth(-1, 22);
     }*/
 
     @Override
@@ -218,31 +254,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     public boolean removeById(Serializable id) {
         return baseMapper.deleteById(id) > 0 && communityResidentPhoneNumberMapper
             .delete(new QueryWrapper<CommunityResidentPhoneNumber>().eq("community_resident_id", id)) > 0;
-    }
-
-    /**
-     * 保存、更新联系方式处理
-     *
-     * @param entity
-     *            需要处理的对象
-     * @return 社区居民与联系方式中间对象
-     */
-    private List<CommunityResidentPhoneNumber> communityResidentPhoneNumbersHandler(CommunityResident entity) {
-        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = new ArrayList<>();
-        entity.getPhoneNumbers().forEach(phoneNumber -> {
-            PhoneNumber number = phoneNumberMapper
-                .selectOne(new QueryWrapper<PhoneNumber>().eq("phone_number", phoneNumber.getPhoneNumber()));
-            long phoneNumberId;
-            if (number == null) {
-                phoneNumberMapper.insert(phoneNumber);
-                phoneNumberId = phoneNumber.getId();
-            } else {
-                phoneNumberId = number.getId();
-            }
-            communityResidentPhoneNumbers.add(new CommunityResidentPhoneNumber().setCommunityResidentId(entity.getId())
-                .setPhoneNumberId(phoneNumberId));
-        });
-        return communityResidentPhoneNumbers;
     }
 
     private void phoneNumberHandle(String phoneNumber, Long communityResidentId, QueryWrapper<PhoneNumber> wrapper,

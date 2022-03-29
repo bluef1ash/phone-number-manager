@@ -1,7 +1,6 @@
 declare module '*.less';
 declare namespace API {
-  type Company = {
-    id: number;
+  type Company = BaseEntity & {
     name?: string;
     actualNumber?: number;
     level?: number;

@@ -91,7 +91,7 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     @NotNull(groups = CreateInputGroup.class, message = "社区居民楼片长分包人不能为空！")
     @TableField(exist = false)
     @ApiModelProperty("社区居民楼片长分包人信息")
-    private List<String> systemUserInfo;
+    private List<String> subcontractorInfo;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private SystemUser systemUser;

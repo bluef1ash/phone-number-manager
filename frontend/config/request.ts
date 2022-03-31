@@ -3,6 +3,7 @@ import { message, notification } from 'antd';
 import { history } from 'umi';
 import { account } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
+import { ExceptionCode } from '@/services/enums';
 
 const { REACT_APP_API_BASE_URL } = process.env;
 const request = extend({
@@ -11,7 +12,7 @@ const request = extend({
     if (response && response.status && data) {
       if (response.status === 401) {
         history.push(account.login.substring((REACT_APP_API_BASE_URL as string).length));
-      } else if (data.code === 10005) {
+      } else if (data.code === ExceptionCode.METHOD_ARGUMENT_NOT_VALID) {
         for (let key in data.exception) {
           notification['error']({
             message: data.exception[key],

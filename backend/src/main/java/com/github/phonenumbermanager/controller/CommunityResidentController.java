@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,7 +11,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.entity.CommunityResident;
+import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.R;
@@ -84,6 +87,10 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("添加社区居民处理")
     public R communityResidentCreateHandle(@ApiParam(name = "前台传递的社区居民对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) CommunityResident communityResident) {
+        String repeatMessage = validatePhoneNumber(communityResident.getPhoneNumbers());
+        if (repeatMessage != null) {
+            return R.error(ExceptionCode.REPEAT_DATA_FAILED.getCode(), repeatMessage);
+        }
         if (communityResidentService.save(communityResident)) {
             return R.ok();
         }
@@ -105,6 +112,10 @@ public class CommunityResidentController extends BaseController {
     public R communityResidentModifyHandle(@ApiParam(name = "要修改的社区居民编号", required = true) @PathVariable Long id,
         @ApiParam(name = "前台传递的社区居民对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) CommunityResident communityResident) {
+        String repeatMessage = validatePhoneNumber(communityResident.getPhoneNumbers());
+        if (repeatMessage != null) {
+            return R.error(ExceptionCode.REPEAT_DATA_FAILED.getCode(), repeatMessage);
+        }
         communityResident.setId(id)
             .setVersion(communityResidentService.getOne(new LambdaQueryWrapper<CommunityResident>()
                 .eq(CommunityResident::getId, id).select(CommunityResident::getVersion)).getVersion());
@@ -164,5 +175,29 @@ public class CommunityResidentController extends BaseController {
         ExcelWriter excelWriter =
             communityResidentService.listCorrelationExportExcel(systemUser.getCompanies(), configurationMap);
         downloadExcelFile(response, excelWriter, excelWriter.getCell(0, 1).getStringCellValue());
+    }
+
+    /**
+     * 验证联系方式
+     *
+     * @param phoneNumbers
+     *            需要验证的数据集合
+     */
+    private String validatePhoneNumber(List<PhoneNumber> phoneNumbers) {
+        if (phoneNumbers != null && !phoneNumbers.isEmpty()) {
+            List<CommunityResident> communityResidents = communityResidentService.listByPhoneNumbers(phoneNumbers);
+            if (!communityResidents.isEmpty()) {
+                StringBuilder output = new StringBuilder();
+                for (CommunityResident communityResident : communityResidents) {
+                    String phone = communityResident.getPhoneNumbers().stream()
+                        .map(phoneNumber -> "输入的联系方式：" + phoneNumber.getPhoneNumber() + "，已经存在于"
+                            + communityResident.getCompany().getName() + "单位的" + communityResident.getName() + "居民")
+                        .collect(Collectors.joining(", "));
+                    output.append(phone);
+                }
+                return output.toString();
+            }
+        }
+        return null;
     }
 }

@@ -1,3 +1,14 @@
+export enum ExceptionCode {
+  NOT_LOGGED = 10000,
+  ADD_FAILED,
+  EDIT_FAILED,
+  DELETE_FAILED,
+  NOT_MODIFIED,
+  METHOD_ARGUMENT_NOT_VALID,
+  UNKNOWN_EXCEPTION,
+  REPEAT_DATA_FAILED,
+}
+
 export enum PhoneNumberType {
   UNKNOWN,
   MOBILE,

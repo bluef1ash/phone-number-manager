@@ -57,6 +57,7 @@ const InputElement = (
     />{' '}
     <PhoneNumberList
       name="phoneNumbers"
+      initialValue={[{ phoneNumber: '' }]}
       creatorButtonText="添加单位联系方式"
       listValidRejectMessage="请添加单位联系方式！"
       phoneNumberFormProps={{

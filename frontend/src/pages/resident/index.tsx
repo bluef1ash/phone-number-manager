@@ -14,18 +14,31 @@ import {
 } from '@/services/resident/api';
 import { queryCompanySelectList } from '@/services/company/api';
 import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils';
-import { message, Spin, Upload } from 'antd';
+import { Alert, message, Spin, Upload } from 'antd';
 import { communityResidentImportExcel } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
 import { querySystemUserSelectList } from '@/services/user/api';
 import PhoneNumberList from '@/components/PhoneNumberList';
 import Subcontractor from '@/components/Subcontractor';
+import { ExceptionCode } from '@/services/enums';
 
 const InputElement = (
   systemUsersSelectState: API.SelectList[],
   setSystemUsersSelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+  repeatExceptionMessageState: string | null,
 ) => (
   <>
+    {repeatExceptionMessageState === null ? (
+      <></>
+    ) : (
+      <Alert
+        message={repeatExceptionMessageState}
+        type="error"
+        showIcon
+        closable={true}
+        style={{ marginBottom: 20 }}
+      />
+    )}{' '}
     <ProFormText
       width="xl"
       name="name"
@@ -60,15 +73,9 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <Subcontractor
-      name="subcontractor"
-      label="社区居民所属分包人"
-      requiredMessage="社区居民所属分包人不能为空！"
-      systemUsersSelectState={systemUsersSelectState}
-      setSystemUsersSelectState={setSystemUsersSelectState}
-    />{' '}
     <PhoneNumberList
       name="phoneNumbers"
+      initialValue={[{ phoneNumber: '' }]}
       creatorButtonText="添加社区居民联系方式"
       listValidRejectMessage="请添加社区居民联系方式！"
       phoneNumberFormProps={{
@@ -77,6 +84,13 @@ const InputElement = (
         placeholder: '请输入社区居民联系方式',
       }}
     />
+    <Subcontractor
+      name="subcontractorInfo"
+      label="社区居民所属分包人"
+      requiredMessage="社区居民所属分包人不能为空！"
+      systemUsersSelectState={systemUsersSelectState}
+      setSystemUsersSelectState={setSystemUsersSelectState}
+    />{' '}
   </>
 );
 
@@ -88,6 +102,9 @@ const CommunityResident: React.FC = () => {
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
   const [systemUsersSelectState, setSystemUsersSelectState] = useState<API.SelectList[]>([]);
+  const [repeatExceptionMessageState, setRepeatExceptionMessageState] = useState<string | null>(
+    null,
+  );
 
   const submitPreHandler = (formData: API.CommunityResident) => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
@@ -182,21 +199,43 @@ const CommunityResident: React.FC = () => {
             })
           }
           createEditModalForm={{
-            element: InputElement(systemUsersSelectState, setSystemUsersSelectState),
+            element: InputElement(
+              systemUsersSelectState,
+              setSystemUsersSelectState,
+              repeatExceptionMessageState,
+            ),
             props: {
               title: '添加社区居民',
             },
             formRef: createFormRef,
-            onFinish: async (formData) => await createCommunityResident(submitPreHandler(formData)),
+            onFinish: async (formData) => {
+              const result = await createCommunityResident(submitPreHandler(formData));
+              if (result.code === ExceptionCode.REPEAT_DATA_FAILED) {
+                setRepeatExceptionMessageState(result.message);
+              }
+              return result;
+            },
           }}
           modifyEditModalForm={{
-            element: InputElement(systemUsersSelectState, setSystemUsersSelectState),
+            element: InputElement(
+              systemUsersSelectState,
+              setSystemUsersSelectState,
+              repeatExceptionMessageState,
+            ),
             props: {
               title: '编辑社区居民',
             },
             formRef: modifyFormRef,
-            onFinish: async (formData) =>
-              await modifyCommunityResident(formData.id as number, submitPreHandler(formData)),
+            onFinish: async (formData) => {
+              const result = await modifyCommunityResident(
+                formData.id as number,
+                submitPreHandler(formData),
+              );
+              if (result.code === ExceptionCode.REPEAT_DATA_FAILED) {
+                setRepeatExceptionMessageState(result.message);
+              }
+              return result;
+            },
             onConfirmRemove: async (id) => await removeCommunityResident(id),
             queryData: async (id) => await queryCommunityResident(id),
           }}

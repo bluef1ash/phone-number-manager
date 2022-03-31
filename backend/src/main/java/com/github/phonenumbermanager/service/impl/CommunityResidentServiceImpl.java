@@ -43,27 +43,25 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(CommunityResident entity) {
+        entity.setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
+            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.insert(entity) > 0;
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
-        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = entity
-            .getPhoneNumbers().stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
-                .setPhoneNumberId(phoneNumber.getId()).setCommunityResidentId(entity.getId()))
-            .collect(Collectors.toList());
-        communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers);
+        communityResidentPhoneNumberMapper.insertBatchSomeColumn(phoneNumbersHandler(entity));
         return isSuccess;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(CommunityResident entity) {
+        entity.setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
+            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.updateById(entity) > 0;
-        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = entity
-            .getPhoneNumbers().stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
-                .setPhoneNumberId(phoneNumber.getId()).setCommunityResidentId(entity.getId()))
-            .collect(Collectors.toList());
-        communityResidentPhoneNumberMapper.delete(new LambdaQueryWrapper<CommunityResidentPhoneNumber>()
-            .eq(CommunityResidentPhoneNumber::getCommunityResidentId, entity.getId()));
-        communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers);
+        if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
+            communityResidentPhoneNumberMapper.delete(new LambdaQueryWrapper<CommunityResidentPhoneNumber>()
+                .eq(CommunityResidentPhoneNumber::getCommunityResidentId, entity.getId()));
+            communityResidentPhoneNumberMapper.insertBatchSomeColumn(phoneNumbersHandler(entity));
+        }
         return isSuccess;
     }
 
@@ -256,6 +254,11 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             .delete(new QueryWrapper<CommunityResidentPhoneNumber>().eq("community_resident_id", id)) > 0;
     }
 
+    @Override
+    public List<CommunityResident> listByPhoneNumbers(List<PhoneNumber> phoneNumbers) {
+        return baseMapper.selectCorrelationByPhoneNumbers(phoneNumbers);
+    }
+
     private void phoneNumberHandle(String phoneNumber, Long communityResidentId, QueryWrapper<PhoneNumber> wrapper,
         List<PhoneNumber> phoneNumbers, List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers) {
         String phone = CommonUtil.replaceSpecialStr(phoneNumber);
@@ -293,5 +296,20 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         baseMessage.put("addCount", count(communityResidentWrapper));
         // baseMessage.put("haveToCount", companyMapper.select(companyWrapper).get("actual"));
         return baseMessage;
+    }
+
+    /**
+     * 处理社区居民联系方式关联对象
+     *
+     * @param entity
+     *            单位对象
+     * @return 处理完成的对象集合
+     */
+    private List<CommunityResidentPhoneNumber> phoneNumbersHandler(CommunityResident entity) {
+        QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
+        entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
+        List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
+        return phoneNumbers.stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
+            .setCommunityResidentId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());
     }
 }

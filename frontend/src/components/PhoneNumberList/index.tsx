@@ -25,7 +25,7 @@ const PhoneNumberList: React.FC<PhoneNumberListProps> = ({
     rules={[
       {
         validator(rule: RuleObject, value: StoreValue) {
-          return typeof value !== 'undefined' && isArray(value)
+          return typeof value !== 'undefined' && isArray(value) && value.length > 0
             ? Promise.resolve()
             : Promise.reject(
                 typeof listValidRejectMessage === 'undefined'

@@ -182,6 +182,7 @@ const InputElement = (
     />{' '}
     <PhoneNumberList
       name="phoneNumbers"
+      initialValue={[{ phoneNumber: '' }]}
       creatorButtonText="添加社区居民楼片长的联系方式"
       listValidRejectMessage="请添加社区居民楼片长的联系方式！"
       phoneNumberFormProps={{

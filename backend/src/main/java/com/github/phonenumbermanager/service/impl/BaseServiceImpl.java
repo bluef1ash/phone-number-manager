@@ -13,6 +13,7 @@ import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.BaseMapper;
 import com.github.phonenumbermanager.service.BaseService;
+import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
@@ -174,5 +175,20 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         font.setBold(isBold);
         cellStyle.setFont(font);
         cellStyle.setWrapText(isWrapText);
+    }
+
+    /**
+     * 获取最下级单位编号
+     *
+     * @param companies
+     *            登录的系统用户单位集合
+     * @param companyAll
+     *            所有单位集合
+     * @return 最下级单位编号集合
+     */
+    protected List<Long> getSubordinateCompanyIds(List<Company> companies, List<Company> companyAll) {
+        List<Long> companyIds = new ArrayList<>();
+        companies.forEach(company -> CommonUtil.listRecursionCompanyIds(companyIds, companyAll, company.getId()));
+        return companyIds;
     }
 }

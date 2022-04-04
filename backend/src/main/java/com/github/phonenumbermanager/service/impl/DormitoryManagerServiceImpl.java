@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.constant.enums.*;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
@@ -158,20 +160,20 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     public ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap) {
         String excelDormitoryTitleUp = Convert.toStr(configurationMap.get("excel_dormitory_title_up").get("content"));
         String excelDormitoryTitle = Convert.toStr(configurationMap.get("excel_dormitory_title").get("content"));
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         List<Company> companyAll = companyMapper.selectList(null);
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         SystemUser principal = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (systemAdministratorId.equals(principal.getId()) && companies == null) {
             companies = companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
         }
-        List<Long> companyIds = new ArrayList<>();
-        companies.forEach(company -> CommonUtil.listRecursionCompanyIds(companyIds, companyAll, company.getId()));
+        List<Long> companyIds = getSubordinateCompanyIds(companies, companyAll);
         List<DormitoryManager> dormitoryManagers = baseMapper.selectListByCompanyIds(companyIds);
         if (dormitoryManagers.isEmpty()) {
             return null;
         }
         List<LinkedHashMap<String, Object>> list = exportData(companyAll, dormitoryManagers);
-        ExcelWriter excelWriter = ExcelUtil.getWriter(true);
+        ExcelWriter excelWriter = ExcelUtil.getBigWriter();
+        SXSSFSheet sheet = (SXSSFSheet)excelWriter.getSheet();
         CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
         setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
         excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, 1, excelDormitoryTitleUp,
@@ -201,6 +203,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         excelWriter.passCurrentRow();
         excelWriter.passCurrentRow();
         excelWriter.write(list, false);
+        sheet.trackAllColumnsForAutoSizing();
         excelWriter.autoSizeColumnAll();
         return excelWriter;
     }
@@ -503,13 +506,14 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             // 序号
             data.put("sequenceNumber", index);
             // 处理社区名称
-            String communityName = dormitoryManager.getCompany().getName().replaceAll("(?iUs)[社区村居民委员会]", "");
+            String communityName =
+                dormitoryManager.getCompany().getName().replaceAll(SystemConstant.COMMUNITY_NAME_PATTERN, "");
             data.put("communityName", communityName);
             Optional<Company> company = companyAll.stream()
                 .filter(c -> dormitoryManager.getCompany().getParentId().equals(c.getId())).findFirst();
             String streetName = "";
             if (company.isPresent()) {
-                streetName = company.get().getName().replaceAll("(?iUs)[乡镇街道办事处]", "");
+                streetName = company.get().getName().replaceAll(SystemConstant.STREET_NAME_PATTERN, "");
                 if (StrUtil.isBlankIfStr(streetTitle)) {
                     streetTitle = company.get().getName();
                 } else if (!streetTitle.equals(company.get().getName())) {

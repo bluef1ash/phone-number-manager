@@ -19,6 +19,7 @@ export type SubcontractorProps = {
   systemUsersSelectState: API.SelectList[];
   setSystemUsersSelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>;
   requiredMessage?: string;
+  cascaderFieldProps?: ProFieldProps & CascaderProps<any>;
 } & Omit<ProFormItemProps, 'valueType'> &
   ExtendsProps &
   ProFormFieldRemoteProps &
@@ -28,6 +29,7 @@ const Subcontractor: React.FC<SubcontractorProps> = ({
   systemUsersSelectState,
   setSystemUsersSelectState,
   requiredMessage,
+  cascaderFieldProps,
   ...restProps
 }) => (
   <ProFormCascader
@@ -44,12 +46,15 @@ const Subcontractor: React.FC<SubcontractorProps> = ({
         targetOption.children = data;
         setSystemUsersSelectState([...systemUsersSelectState]);
       },
+      ...cascaderFieldProps,
     }}
     rules={[
-      {
-        required: true,
-        message: typeof requiredMessage === 'undefined' ? '所属分包人不能为空！' : requiredMessage,
-      },
+      typeof requiredMessage === 'undefined'
+        ? {
+            required: true,
+            message: requiredMessage,
+          }
+        : {},
     ]}
     {...restProps}
   />

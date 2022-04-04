@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpStatus;
+import org.springframework.http.HttpStatus;
 
 /**
  * 返回结果对象
@@ -15,16 +15,16 @@ import org.apache.http.HttpStatus;
 public class R extends HashMap<String, Object> {
 
     public R() {
-        put("code", HttpStatus.SC_OK);
+        put("code", HttpStatus.OK.value());
         put("message", "success");
     }
 
     public static R error() {
-        return error(HttpStatus.SC_INTERNAL_SERVER_ERROR, "未知异常，请联系管理员");
+        return error(HttpStatus.BAD_REQUEST.value(), "未知异常，请联系管理员");
     }
 
     public static R error(String message) {
-        return error(HttpStatus.SC_INTERNAL_SERVER_ERROR, message);
+        return error(HttpStatus.BAD_REQUEST.value(), message);
     }
 
     public static R error(int code, String message) {

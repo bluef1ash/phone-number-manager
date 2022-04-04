@@ -17,21 +17,13 @@ public final class SystemConstant {
      */
     public static final String GEETEST_KEY = "07ee3abbdc56141cdc63b6d4de712505";
     /**
-     * 社区级机构名称
+     * 社区级机构名称正则表达式
      */
-    public static final String COMMUNITY_NAME = "社区";
-    /**
-     * 社区级机构别名
-     */
-    public static final String COMMUNITY_ALIAS_NAME = "居委会";
+    public static final String COMMUNITY_NAME_PATTERN = "(?iUs)[社区村居民委员会]";
     /**
      * 街道级机构名称
      */
-    public static final String SUBDISTRICT_NAME = "街道";
-    /**
-     * 街道级机构别名
-     */
-    public static final String SUBDISTRICT_ALIAS_NAME = "办事处";
+    public static final String STREET_NAME_PATTERN = "(?iUs)[乡镇街道办事处]";
     /**
      * 毫秒时间差
      */

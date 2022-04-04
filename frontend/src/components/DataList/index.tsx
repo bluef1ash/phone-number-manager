@@ -11,6 +11,7 @@ import type { ProColumns } from '@ant-design/pro-table/lib/typing';
 import type { SortOrder } from 'antd/es/table/interface';
 import type { Key } from 'antd/lib/table/interface';
 import type { UploadProps } from 'antd/lib/upload/interface';
+import { cloneDeep } from 'lodash';
 
 export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
   customActionRef?: React.MutableRefObject<ActionType | undefined>;
@@ -133,7 +134,7 @@ DataListProps<T, U>): JSX.Element {
       columns={[...customFormColumns]}
       request={async (params, sort) => {
         const { current, pageSize } = params;
-        const searchParams = Object.assign({}, params);
+        const searchParams = cloneDeep(params);
         delete searchParams.current;
         delete searchParams.pageSize;
         const otherParams: { search?: U; sort?: Record<string, SortOrder> } = {};

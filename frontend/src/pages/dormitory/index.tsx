@@ -13,6 +13,7 @@ import {
 import {
   batchDormitoryManager,
   createDormitoryManager,
+  downloadDormitoryManagerExcel,
   modifyDormitoryManager,
   queryDormitoryManager,
   queryDormitoryManagerList,
@@ -370,7 +371,15 @@ const DormitoryManager: React.FC = () => {
               }
             },
           }}
-          exportDataEventHandler={async () => downloadExcelFile(setSpinState, setSpinTipState)}
+          exportDataEventHandler={async () =>
+            downloadExcelFile(
+              setSpinState,
+              setSpinTipState,
+              downloadDormitoryManagerExcel(),
+              ['正在生成社区居民楼片长花名册中...', '正在下载社区居民楼片长花名册中...'],
+              '社区楼片长花名册.xlsx',
+            )
+          }
           onLoad={async () => {
             setCompaniesState((await queryCompanySelectList()).data);
             setSystemUsersSelectState((await querySystemUserSelectList(null)).data);

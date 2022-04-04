@@ -1,6 +1,5 @@
 import { parsePhoneNumber } from "libphonenumber-js/max";
 import { PhoneNumberType } from "@/services/enums";
-import { downloadCommunityResidentExcel } from "@/services/resident/api";
 import { message } from "antd";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -28,35 +27,41 @@ export function submitPrePhoneNumberHandle(number: string): API.PhoneNumber {
  * 下载Excel文件
  * @param setSpinState
  * @param setSpinTipState
+ * @param downloadUrl
+ * @param spinTip
+ * @param filename
  */
 export async function downloadExcelFile(
   setSpinState: Dispatch<SetStateAction<boolean>>,
   setSpinTipState: Dispatch<SetStateAction<string>>,
+  downloadUrl: Promise<any>,
+  spinTip: string[],
+  filename?: string,
 ) {
-  setSpinTipState('正在生成社区居民花名册中...');
+  setSpinTipState(spinTip[0]);
   setSpinState(true);
-  const { data, response } = await downloadCommunityResidentExcel();
+  const { data, response } = await downloadUrl;
   if (typeof data.code === 'undefined' && data) {
-    let filename = response.headers.get('Content-Disposition');
-    if (filename !== null) {
-      filename = decodeURI(filename.substring('attachment;filename='.length));
+    let customFilename = response.headers.get('Content-Disposition');
+    if (customFilename !== null) {
+      customFilename = decodeURI(customFilename.substring('attachment;filename='.length));
     } else {
-      filename = '“评社区”活动电话库登记表.xlsx';
+      customFilename = filename;
     }
     const blob = await data;
-    setSpinTipState('正在下载社区居民花名册中...');
+    setSpinTipState(spinTip[1]);
     const link = document.createElement('a');
     if ('download' in link) {
       link.style.display = 'none';
       link.href = URL.createObjectURL(blob);
-      link.download = filename;
+      link.download = customFilename;
       document.body.appendChild(link);
       link.click();
       URL.revokeObjectURL(link.href);
       document.body.removeChild(link);
     } else {
       //@ts-ignore
-      navigator.msSaveBlob(blob, filename);
+      navigator.msSaveBlob(blob, customFilename);
     }
   } else {
     message.error('导出失败，请稍后再试！');

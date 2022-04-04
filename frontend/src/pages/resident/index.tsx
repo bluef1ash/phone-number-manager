@@ -3,16 +3,16 @@ import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import { ProFormText, ProFormTreeSelect } from '@ant-design/pro-form';
+import { ProFormText } from '@ant-design/pro-form';
 import {
   batchCommunityResident,
   createCommunityResident,
+  downloadCommunityResidentExcel,
   modifyCommunityResident,
   queryCommunityResident,
   queryCommunityResidentList,
   removeCommunityResident,
 } from '@/services/resident/api';
-import { queryCompanySelectList } from '@/services/company/api';
 import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils';
 import { Alert, message, Spin, Upload } from 'antd';
 import { communityResidentImportExcel } from '@/services/api';
@@ -98,7 +98,6 @@ const CommunityResident: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const createFormRef = useRef<ProFormInstance<API.CommunityResident>>();
   const modifyFormRef = useRef<ProFormInstance<API.CommunityResident>>();
-  const [companiesState, setCompaniesState] = useState<API.SelectList[]>([]);
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
   const [systemUsersSelectState, setSystemUsersSelectState] = useState<API.SelectList[]>([]);
@@ -157,7 +156,13 @@ const CommunityResident: React.FC = () => {
               ellipsis: true,
               renderFormItem() {
                 return (
-                  <ProFormTreeSelect request={async () => (await queryCompanySelectList()).data} />
+                  <Subcontractor
+                    systemUsersSelectState={systemUsersSelectState}
+                    setSystemUsersSelectState={setSystemUsersSelectState}
+                    cascaderFieldProps={{
+                      multiple: true,
+                    }}
+                  />
                 );
               },
             },
@@ -166,14 +171,7 @@ const CommunityResident: React.FC = () => {
               dataIndex: ['company', 'name'],
               sorter: true,
               ellipsis: true,
-              renderFormItem() {
-                return (
-                  <ProFormTreeSelect
-                    fieldProps={{ treeCheckable: true }}
-                    request={async () => companiesState}
-                  />
-                );
-              },
+              search: false,
             },
             {
               title: '联系方式',
@@ -262,9 +260,16 @@ const CommunityResident: React.FC = () => {
               }
             },
           }}
-          exportDataEventHandler={async () => downloadExcelFile(setSpinState, setSpinTipState)}
+          exportDataEventHandler={async () =>
+            downloadExcelFile(
+              setSpinState,
+              setSpinTipState,
+              downloadCommunityResidentExcel(),
+              ['正在生成社区居民花名册中...', '正在下载社区居民花名册中...'],
+              '“评社区”活动电话库登记表.xlsx',
+            )
+          }
           onLoad={async () => {
-            setCompaniesState((await queryCompanySelectList()).data);
             setSystemUsersSelectState((await querySystemUserSelectList(null)).data);
           }}
         />{' '}

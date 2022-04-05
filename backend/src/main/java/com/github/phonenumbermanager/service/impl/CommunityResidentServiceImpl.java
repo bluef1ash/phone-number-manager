@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,7 +212,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             list.add(hashMap);
         }
         ExcelWriter excelWriter = ExcelUtil.getBigWriter();
-        SXSSFSheet sheet = (SXSSFSheet)excelWriter.getSheet();
         CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
         setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
         excelWriter.writeCellValue(0, 0, excelResidentTitleUp);
@@ -225,18 +223,20 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             excelResidentTitle, titleStyle);
         excelWriter.passCurrentRow();
         CellStyle dateRowStyle = excelWriter.getOrCreateCellStyle(6, excelWriter.getCurrentRow());
-        setCellStyle(dateRowStyle, excelWriter, "宋体", (short)11, false, false, true);
+        setCellStyle(dateRowStyle, excelWriter, "宋体", (short)11, false, false, false);
         excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6, 7,
             "时间：" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")), dateRowStyle);
         excelWriter.passCurrentRow();
+        int titleRowNumber = excelWriter.getCurrentRow();
         StyleSet styleSet = excelWriter.getStyleSet();
         CellStyle headCellStyle = styleSet.getHeadCellStyle();
         setCellStyle(headCellStyle, excelWriter, "黑体", (short)12, false, true, false);
         CellStyle cellStyle = styleSet.getCellStyle();
-        setCellStyle(cellStyle, excelWriter, "仿宋_GB2312", (short)9, false, true, true);
+        setCellStyle(cellStyle, excelWriter, "仿宋_GB2312", (short)9, false, true, false);
         excelWriter.write(list, true);
-        sheet.trackAllColumnsForAutoSizing();
-        excelWriter.autoSizeColumnAll();
+        for (int i = 0; i < excelWriter.getColumnCount(titleRowNumber); ++i) {
+            excelWriter.autoSizeColumn(i);
+        }
         return excelWriter;
     }
 

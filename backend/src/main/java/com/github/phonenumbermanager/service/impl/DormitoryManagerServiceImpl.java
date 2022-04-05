@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -173,7 +172,6 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         }
         List<LinkedHashMap<String, Object>> list = exportData(companyAll, dormitoryManagers);
         ExcelWriter excelWriter = ExcelUtil.getBigWriter();
-        SXSSFSheet sheet = (SXSSFSheet)excelWriter.getSheet();
         CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
         setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
         excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, 1, excelDormitoryTitleUp,
@@ -188,23 +186,26 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         setCellStyle(styleSet.getHeadCellStyle(), excelWriter, "宋体", (short)11, false, true, true);
         setCellStyle(styleSet.getCellStyle(), excelWriter, "宋体", (short)9, false, true, true);
         Map<String, String> tableHead = getTableHead();
-        int i = 0;
+        int index = 0;
         for (String value : tableHead.values()) {
-            if (i == tableHead.size() - 2) {
-                excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), i, i + 1, "分包人", true);
-                excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
-            } else if (i == tableHead.size() - 1) {
-                excelWriter.writeCellValue(i, excelWriter.getCurrentRow() + 1, value);
+            if (index == tableHead.size() - 2) {
+                excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), index, index + 1, "分包人",
+                    true);
+                excelWriter.writeCellValue(index, excelWriter.getCurrentRow() + 1, value);
+            } else if (index == tableHead.size() - 1) {
+                excelWriter.writeCellValue(index, excelWriter.getCurrentRow() + 1, value);
             } else {
-                excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow() + 1, i, i, value, true);
+                excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow() + 1, index, index, value,
+                    true);
             }
-            i++;
+            index++;
         }
         excelWriter.passCurrentRow();
         excelWriter.passCurrentRow();
         excelWriter.write(list, false);
-        sheet.trackAllColumnsForAutoSizing();
-        excelWriter.autoSizeColumnAll();
+        for (int i = 0; i < excelWriter.getColumnCount(tableHead.size()); ++i) {
+            excelWriter.autoSizeColumn(i);
+        }
         return excelWriter;
     }
 

@@ -22,9 +22,7 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.util.RedisUtil;
 
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelReader;
@@ -168,19 +166,15 @@ abstract class BaseController {
      */
     protected void downloadExcelFile(HttpServletResponse response, ExcelWriter excelWriter, String filename) {
         if (excelWriter != null) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setContentType(excelWriter.getContentType());
             response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
             response.setHeader("Content-Disposition",
-                "attachment;filename=" + URLUtil.encode(filename + System.currentTimeMillis() + ".xlsx"));
-            ServletOutputStream outputStream = null;
+                excelWriter.getDisposition(filename + System.currentTimeMillis(), null));
             try (excelWriter) {
-                outputStream = response.getOutputStream();
+                ServletOutputStream outputStream = response.getOutputStream();
                 excelWriter.flush(outputStream, true);
             } catch (IOException e) {
-                e.printStackTrace();
-                throw new BusinessException("导出Excel文件失败！");
-            } finally {
-                IoUtil.close(outputStream);
+                throw new BusinessException("导出Excel文件失败！", e);
             }
         }
     }

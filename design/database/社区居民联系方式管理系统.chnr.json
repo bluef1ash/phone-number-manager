@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "3.5.7",
   "createdTime": "2021-10-10 15:53:11",
-  "updatedTime": "2022-3-22 00:03:39",
+  "updatedTime": "2022-4-5 20:03:29",
   "profile": {
     "default": {
       "db": "AB840774-751C-47F4-AFC9-202B062E21BC",
@@ -574,7 +574,7 @@
           "defName": "社区居民姓名",
           "comment": "",
           "type": "VARCHAR",
-          "len": 10,
+          "len": 20,
           "scale": "",
           "primaryKey": false,
           "notNull": true,
@@ -688,25 +688,6 @@
       ],
       "correlations": [],
       "indexes": [
-        {
-          "defKey": "uk_name_address",
-          "defName": null,
-          "unique": true,
-          "comment": "",
-          "fields": [
-            {
-              "fieldDefKey": "EBA8B8FD-3115-48BD-9478-022E24DDFCCA",
-              "ascOrDesc": "A",
-              "id": "4606A339-D58E-49B6-9381-871809592DAA"
-            },
-            {
-              "fieldDefKey": "BA34F5A0-0B8E-4686-BB23-663B47BB1961",
-              "ascOrDesc": "A",
-              "id": "C07FAED9-E99E-47C2-9558-99EA612EE761"
-            }
-          ],
-          "id": "CE6B9501-616E-44AF-88F4-E1D1FA7FDD27"
-        },
         {
           "defKey": "idx_company_id",
           "defName": null,

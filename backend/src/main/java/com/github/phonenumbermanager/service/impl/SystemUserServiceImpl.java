@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.*;
@@ -102,11 +103,11 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Override
     public boolean save(SystemUser systemUser) {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()))
+        systemUser.setId(IdWorker.getId()).setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()))
             .setCredentialExpireTime(SystemConstant.DATABASE_MIX_DATETIME)
             .setLoginTime(SystemConstant.DATABASE_MIX_DATETIME);
-        baseMapper.insert(systemUser);
-        return saveOrUpdateHandle(systemUser) > 0;
+        saveOrUpdateHandle(systemUser);
+        return baseMapper.insert(systemUser) > 0;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -118,8 +119,8 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         }
         systemUserCompanyMapper.delete(
             new LambdaQueryWrapper<SystemUserCompany>().eq(SystemUserCompany::getSystemUserId, systemUser.getId()));
-        baseMapper.updateById(systemUser);
-        return saveOrUpdateHandle(systemUser) > 0;
+        saveOrUpdateHandle(systemUser);
+        return baseMapper.updateById(systemUser) > 0;
     }
 
     @SuppressWarnings("all")

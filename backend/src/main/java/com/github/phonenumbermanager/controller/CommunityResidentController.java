@@ -156,7 +156,7 @@ public class CommunityResidentController extends BaseController {
         getEnvironmentVariable();
         int startRowNumber = Convert.toInt(configurationMap.get("read_resident_excel_start_row_number").get("content"));
         List<List<Object>> data = uploadExcelFileToData(request, startRowNumber);
-        if (data != null && !communityResidentService.save(data, configurationMap)) {
+        if (communityResidentService.save(data, configurationMap)) {
             return R.ok();
         }
         throw new JsonException("上传文件失败！");
@@ -174,7 +174,7 @@ public class CommunityResidentController extends BaseController {
         getEnvironmentVariable();
         ExcelWriter excelWriter =
             communityResidentService.listCorrelationExportExcel(systemUser.getCompanies(), configurationMap);
-        downloadExcelFile(response, excelWriter, excelWriter.getCell(0, 1).getStringCellValue());
+        downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");
     }
 
     /**

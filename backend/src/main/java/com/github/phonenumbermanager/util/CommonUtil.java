@@ -18,6 +18,7 @@ import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 
 import cn.hutool.core.util.PhoneUtil;
+import cn.hutool.core.util.StrUtil;
 
 /**
  * 此类中收集Java编程中WEB开发常用到的一些工具。 为避免生成此类的实例，构造方法被申明为private类型的。
@@ -91,6 +92,30 @@ public class CommonUtil {
         return phoneNumber;
     }
 
+    /**
+     * 联系方式包装为对象集合
+     *
+     * @param numbers
+     *            联系方式字符串
+     * @return 联系方式对象
+     */
+    public static List<PhoneNumber> phoneNumber2List(String... numbers) {
+        List<PhoneNumber> phoneNumbers = new ArrayList<>();
+        for (String number : numbers) {
+            if (StrUtil.isNotEmpty(number)) {
+                phoneNumbers.add(phoneNumber2Object(number));
+            }
+        }
+        return phoneNumbers;
+    }
+
+    /**
+     * 字符串去除空白字符
+     *
+     * @param str
+     *            需要操作的字符串
+     * @return 去除后的字符串
+     */
     public static String replaceSpecialStr(String str) {
         String repl = "";
         if (str != null) {

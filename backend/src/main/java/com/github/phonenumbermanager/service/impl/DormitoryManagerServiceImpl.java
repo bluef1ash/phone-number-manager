@@ -11,7 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -90,6 +89,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         getUploadExcelVariable(configurationMap);
         List<Company> companies = companyMapper.selectList(null);
         List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
+        List<Long> phoneNumberIds = dormitoryManagerPhoneNumberMapper.selectList(null).stream()
+            .map(DormitoryManagerPhoneNumber::getPhoneNumberId).collect(Collectors.toList());
+        List<PhoneNumber> phoneNumberAll = phoneNumberMapper.selectList(null);
         for (List<Object> datum : data) {
             DormitoryManager dormitoryManager = new DormitoryManager();
             String companyName = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryCommunityNameCellNumber)));
@@ -97,11 +99,15 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             if (company.isEmpty()) {
                 throw new BusinessException("单位读取失败！");
             }
-            long dormitoryManagerId = IdWorker.getId();
-            long telephoneId;
-            long landlineId;
+            String systemUserPhoneNumber =
+                StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitorySubcontractorTelephoneCellNumber)));
+            Optional<SystemUser> systemUser = systemUsers.stream()
+                .filter(user -> user.getPhoneNumber().getPhoneNumber().equals(systemUserPhoneNumber)).findFirst();
+            if (systemUser.isEmpty()) {
+                throw new BusinessException("未找到对应的分包人信息，请重试！");
+            }
             String idNumber = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryBirthCellNumber)));
-            dormitoryManager.setId(dormitoryManagerId).setCompanyId(company.get().getId())
+            dormitoryManager.setId(IdWorker.getId()).setCompanyId(company.get().getId())
                 .setName(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryNameCellNumber))))
                 .setIdNumber(idNumber).setGender(GenderEnum.getEnum(IdcardUtil.getGenderByIdCard(idNumber)))
                 .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(idNumber), IdcardUtil.getMonthByIdCard(idNumber),
@@ -115,41 +121,31 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 .setAddress(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryAddressCellNumber))))
                 .setManagerAddress(
                     StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryManagerAddressCellNumber))))
-                .setManagerCount(Convert.toInt(datum.get(excelDormitoryManagerCountCellNumber)));
+                .setManagerCount(Convert.toInt(datum.get(excelDormitoryManagerCountCellNumber)))
+                .setSystemUserId(systemUser.get().getId());
             String telephone = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryTelephoneCellNumber)));
             String landline = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryLandlineCellNumber)));
             if (StrUtil.isNotEmpty(telephone)) {
-                telephoneId = IdWorker.getId();
                 PhoneNumber tel = new PhoneNumber();
-                tel.setId(telephoneId).setPhoneNumber(telephone).setPhoneType(PhoneTypeEnum.MOBILE);
+                tel.setId(IdWorker.getId()).setPhoneNumber(telephone).setPhoneType(PhoneTypeEnum.MOBILE);
+                checkPhoneNumberId(phoneNumberIds, phoneNumberAll, telephone, tel);
                 phoneNumbers.add(tel);
                 dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
-                    .setDormitoryManagerId(dormitoryManagerId).setPhoneNumberId(telephoneId));
+                    .setDormitoryManagerId(dormitoryManager.getId()).setPhoneNumberId(tel.getId()));
             }
             if (StrUtil.isNotEmpty(landline)) {
-                landlineId = IdWorker.getId();
                 PhoneNumber land = new PhoneNumber();
-                land.setId(landlineId).setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.FIXED_LINE);
+                land.setId(IdWorker.getId()).setPhoneNumber(landline).setPhoneType(PhoneTypeEnum.FIXED_LINE);
+                checkPhoneNumberId(phoneNumberIds, phoneNumberAll, landline, land);
                 phoneNumbers.add(land);
                 dormitoryManagerPhoneNumbers.add(new DormitoryManagerPhoneNumber()
-                    .setDormitoryManagerId(dormitoryManagerId).setPhoneNumberId(landlineId));
+                    .setDormitoryManagerId(dormitoryManager.getId()).setPhoneNumberId(land.getId()));
             }
-            String systemUserPhoneNumber =
-                StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitorySubcontractorTelephoneCellNumber)));
-            Optional<SystemUser> systemUser = systemUsers.stream()
-                .filter(user -> user.getPhoneNumber().getPhoneNumber().equals(systemUserPhoneNumber)).findFirst();
-            if (systemUser.isEmpty()) {
-                throw new BusinessException("未找到对应的分包人信息，请重试！");
-            }
-            dormitoryManager.setSystemUserId(systemUser.get().getId());
             dormitoryManagers.add(dormitoryManager);
         }
         if (dormitoryManagers.size() == 0) {
             throw new BusinessException("上传失败！");
         }
-        LambdaQueryWrapper<DormitoryManager> wrapper = new LambdaQueryWrapper<>();
-        companies.forEach(company -> wrapper.eq(DormitoryManager::getCompanyId, company.getId()).or());
-        baseMapper.delete(wrapper.or());
         phoneNumberMapper.insertIgnoreBatchSomeColumn(phoneNumbers);
         baseMapper.insertBatchSomeColumn(dormitoryManagers);
         return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbers) > 0;
@@ -203,7 +199,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         excelWriter.passCurrentRow();
         excelWriter.passCurrentRow();
         excelWriter.write(list, false);
-        for (int i = 0; i < excelWriter.getColumnCount(tableHead.size()); ++i) {
+        for (int i = 0; i < tableHead.size(); ++i) {
             excelWriter.autoSizeColumn(i);
         }
         return excelWriter;
@@ -558,5 +554,29 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             index++;
         }
         return list;
+    }
+
+    /**
+     * 检测联系方式编号
+     *
+     * @param phoneNumberIds
+     *            中间联系方式编号集合
+     * @param phoneNumberAll
+     *            所有联系方式集合
+     * @param number
+     *            联系方式
+     * @param phoneNumber
+     *            输出联系方式对象
+     */
+    private void checkPhoneNumberId(List<Long> phoneNumberIds, List<PhoneNumber> phoneNumberAll, String number,
+        PhoneNumber phoneNumber) {
+        Optional<PhoneNumber> numberOptional =
+            phoneNumberAll.stream().filter(num -> number.equals(num.getPhoneNumber())).findFirst();
+        if (numberOptional.isPresent()) {
+            if (phoneNumberIds.contains(numberOptional.get().getId())) {
+                throw new BusinessException("导入数据时有重复数据：" + numberOptional.get().getPhoneNumber() + "，请检查后再次导入！");
+            }
+            phoneNumber.setId(numberOptional.get().getId());
+        }
     }
 }

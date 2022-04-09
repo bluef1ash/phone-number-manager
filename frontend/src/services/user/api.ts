@@ -1,6 +1,13 @@
 import request from "@config/request";
 import { system } from "@/services/api";
 
+/** 获取当前登录系统用户 */
+export async function queryCurrentUser(options?: Record<string, any>) {
+  return request.get<API.Data<API.SystemUser> & API.ResponseException>(system.currentUser, {
+    ...(options || {}),
+  });
+}
+
 /** 获取系统用户列表 */
 export async function querySystemUserList(params?: any, options?: Record<string, any>) {
   return request.get<API.DataList<API.SystemUser> & API.ResponseException>(system.user, {

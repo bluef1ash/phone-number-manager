@@ -57,8 +57,8 @@ public class CommunityResidentController extends BaseController {
         @ApiParam(name = "每页数据数量") Integer pageSize) {
         getEnvironmentVariable();
         getSearchParameter(request);
-        return R.ok().put("data",
-            communityResidentService.pageCorrelation(systemUser.getCompanies(), current, pageSize, search, sort));
+        return R.ok().put("data", communityResidentService.pageCorrelation(currentSystemUser.getCompanies(), current,
+            pageSize, search, sort));
     }
 
     /**
@@ -173,7 +173,7 @@ public class CommunityResidentController extends BaseController {
     public void communityResidentSaveAsExcel(HttpServletResponse response) {
         getEnvironmentVariable();
         ExcelWriter excelWriter =
-            communityResidentService.listCorrelationExportExcel(systemUser.getCompanies(), configurationMap);
+            communityResidentService.listCorrelationExportExcel(currentSystemUser.getCompanies(), configurationMap);
         downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");
     }
 

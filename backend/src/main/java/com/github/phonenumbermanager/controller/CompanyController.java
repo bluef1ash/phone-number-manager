@@ -53,9 +53,9 @@ public class CompanyController extends BaseController {
     public R companyList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据条数") Integer pageSize) {
         getEnvironmentVariable();
-        List<Company> companies = systemUser.getCompanies();
+        List<Company> companies = currentSystemUser.getCompanies();
         if (companies == null
-            && systemUser.getId().equals(configurationMap.get("system_administrator_id").get("content"))) {
+            && currentSystemUser.getId().equals(configurationMap.get("system_administrator_id").get("content"))) {
             companies = companyService.list();
         }
         QueryWrapper<Configuration> wrapper = new QueryWrapper<>();

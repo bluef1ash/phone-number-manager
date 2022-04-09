@@ -38,7 +38,7 @@ import cn.hutool.poi.excel.style.StyleUtil;
 @CrossOrigin
 abstract class BaseController {
     protected RedisUtil redisUtil;
-    protected SystemUser systemUser;
+    protected SystemUser currentSystemUser;
     protected Map<String, JSONObject> configurationMap;
     protected JSONObject search;
     protected JSONObject sort;
@@ -49,7 +49,7 @@ abstract class BaseController {
     protected void getEnvironmentVariable() {
         if (!SystemConstant.ANONYMOUS_USER
             .equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
-            systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            currentSystemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         }
         if (configurationMap == null || configurationMap.isEmpty()) {
             configurationMap =

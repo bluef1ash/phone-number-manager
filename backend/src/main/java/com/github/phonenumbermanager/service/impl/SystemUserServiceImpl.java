@@ -102,10 +102,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(SystemUser systemUser) {
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        systemUser.setId(IdWorker.getId()).setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()))
-            .setCredentialExpireTime(SystemConstant.DATABASE_MIX_DATETIME)
+        systemUser.setId(IdWorker.getId()).setCredentialExpireTime(SystemConstant.DATABASE_MIX_DATETIME)
             .setLoginTime(SystemConstant.DATABASE_MIX_DATETIME);
+        passwordHandle(systemUser);
         saveOrUpdateHandle(systemUser);
         return baseMapper.insert(systemUser) > 0;
     }
@@ -113,10 +112,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(SystemUser systemUser) {
-        if (StrUtil.isNotEmpty(systemUser.getPassword())) {
-            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-            systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
-        }
+        passwordHandle(systemUser);
         systemUserCompanyMapper.delete(
             new LambdaQueryWrapper<SystemUserCompany>().eq(SystemUserCompany::getSystemUserId, systemUser.getId()));
         saveOrUpdateHandle(systemUser);
@@ -261,5 +257,18 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
                 .collect(Collectors.toList()));
         }
         return selectListVos;
+    }
+
+    /**
+     * 系统用户密码处理
+     *
+     * @param systemUser
+     *            系统用户对象
+     */
+    private void passwordHandle(SystemUser systemUser) {
+        if (StrUtil.isNotEmpty(systemUser.getPassword())) {
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+            systemUser.setPassword(bCryptPasswordEncoder.encode(systemUser.getPassword()));
+        }
     }
 }

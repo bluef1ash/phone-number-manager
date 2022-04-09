@@ -20,8 +20,10 @@ import org.springframework.boot.actuate.endpoint.web.annotation.ServletEndpoints
 import org.springframework.boot.actuate.endpoint.web.servlet.WebMvcEndpointHandlerMapping;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -182,7 +184,20 @@ public class ApplicationConfig {
         return jackson2HttpMessageConverter;
     }
 
+    /**
+     * 服务监控
+     *
+     * @param webEndpointsSupplier
+     * @param servletEndpointsSupplier
+     * @param controllerEndpointsSupplier
+     * @param endpointMediaTypes
+     * @param corsProperties
+     * @param webEndpointProperties
+     * @param environment
+     * @return
+     */
     @Bean
+    @ConditionalOnMissingBean
     public WebMvcEndpointHandlerMapping webEndpointServletHandlerMapping(WebEndpointsSupplier webEndpointsSupplier,
         ServletEndpointsSupplier servletEndpointsSupplier, ControllerEndpointsSupplier controllerEndpointsSupplier,
         EndpointMediaTypes endpointMediaTypes, CorsEndpointProperties corsProperties,
@@ -200,5 +215,17 @@ public class ApplicationConfig {
         return new WebMvcEndpointHandlerMapping(endpointMapping, webEndpoints, endpointMediaTypes,
             corsProperties.toCorsConfiguration(), new EndpointLinksResolver(allEndpoints, basePath),
             shouldRegisterLinksMapping, null);
+    }
+
+    /**
+     * 异常信息国际化处理
+     *
+     * @return 信息对象
+     */
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.addBasenames("classpath:org/springframework/security/messages");
+        return messageSource;
     }
 }

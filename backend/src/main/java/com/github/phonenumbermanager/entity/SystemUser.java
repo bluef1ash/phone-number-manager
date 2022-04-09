@@ -49,7 +49,7 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @Length(max = 10, message = "系统用户名称不允许超过10个字符！")
     private String username;
     @ApiModelProperty("系统用户密码")
-    @NotBlank(groups = CreateInputGroup.class, message = "系统用户密码不能为空！")
+    @Length(min = 6, message = "系统用户密码不允许少于6个字符！")
     private String password;
     @ApiModelProperty("系统用户职务")
     @TableField(typeHandler = JacksonTypeHandler.class)

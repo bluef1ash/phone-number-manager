@@ -93,6 +93,7 @@
             pm_system_user.is_subcontract,
             pm_company.id AS 'company_id',
             pm_company.name AS 'company_name',
+            pm_company.parent_id AS 'company_parent_id',
             pm_phone_number.phone_number
         FROM pm_system_user
                  LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id

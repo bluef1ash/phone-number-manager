@@ -118,7 +118,7 @@ public class UserAndPermissionController extends BaseController {
     public R logout() {
         getEnvironmentVariable();
         SecurityContextHolder.clearContext();
-        redisUtil.delete(SystemConstant.SYSTEM_USER_ID_KEY + systemUser.getId());
+        redisUtil.delete(SystemConstant.SYSTEM_USER_ID_KEY + currentSystemUser.getId());
         return R.ok();
     }
 
@@ -131,7 +131,7 @@ public class UserAndPermissionController extends BaseController {
     @ApiOperation("获取当前登录用户信息")
     public R currentSystemUser() {
         getEnvironmentVariable();
-        SystemUserVo systemUserVo = getSystemUserVo(systemUser);
+        SystemUserVo systemUserVo = getSystemUserVo(currentSystemUser);
         return R.ok().put("data", systemUserVo);
     }
 
@@ -151,7 +151,7 @@ public class UserAndPermissionController extends BaseController {
         getEnvironmentVariable();
         getSearchParameter(request);
         return R.ok().put("data",
-            systemUserService.pageCorrelation(systemUser.getCompanies(), current, pageSize, search, sort));
+            systemUserService.pageCorrelation(currentSystemUser.getCompanies(), current, pageSize, search, sort));
     }
 
     /**
@@ -194,6 +194,7 @@ public class UserAndPermissionController extends BaseController {
         systemUser.setId(id).setVersion(
             systemUserService.getOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getId, id)).getVersion());
         if (systemUserService.updateById(systemUser)) {
+            flushCurrentUser(id, currentSystemUser.getId());
             return R.ok();
         }
         throw new JsonException();
@@ -250,6 +251,7 @@ public class UserAndPermissionController extends BaseController {
         systemUser.setId(id).setVersion(
             systemUserService.getOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getId, id)).getVersion());
         if (systemUserService.updateById(systemUser)) {
+            flushCurrentUser(id, currentSystemUser.getId());
             return R.ok();
         }
         throw new JsonException("修改用户失败！");
@@ -303,7 +305,7 @@ public class UserAndPermissionController extends BaseController {
         getEnvironmentVariable();
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
-            ids = ids.stream().filter(id -> !id.equals(systemUser.getId())).collect(Collectors.toList());
+            ids = ids.stream().filter(id -> !id.equals(currentSystemUser.getId())).collect(Collectors.toList());
             if (systemUserService.removeByIds(ids)) {
                 return R.ok();
             }
@@ -468,5 +470,20 @@ public class UserAndPermissionController extends BaseController {
             systemUserVo.setCompanies(companyVos);
         }
         return systemUserVo;
+    }
+
+    /**
+     * 刷新当前登录系统用户信息缓存
+     *
+     * @param id
+     *            更改系统用户的编号
+     * @param currentSystemUserId
+     *            当前登录系统用户编号
+     */
+    private void flushCurrentUser(Long id, Long currentSystemUserId) {
+        if (id.equals(currentSystemUserId)) {
+            SystemUser user = systemUserService.getCorrelation(id);
+            redisUtil.set(SystemConstant.SYSTEM_USER_ID_KEY + id, JSONUtil.toJsonStr(user));
+        }
     }
 }

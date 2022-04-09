@@ -11,7 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,15 +24,17 @@ import com.github.phonenumbermanager.util.RedisUtil;
 
 import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWTUtil;
+import lombok.AllArgsConstructor;
 
 /**
  * JWTToken拦截器
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
-    private RedisUtil redisUtil;
+    private final RedisUtil redisUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -56,10 +57,5 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);
-    }
-
-    @Autowired
-    public void setRedisUtil(RedisUtil redisUtil) {
-        this.redisUtil = redisUtil;
     }
 }

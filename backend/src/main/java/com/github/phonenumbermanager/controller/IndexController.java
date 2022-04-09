@@ -50,15 +50,15 @@ public class IndexController extends BaseController {
     public R getMenu(@ApiParam(name = "是否显示") Boolean display) {
         getEnvironmentVariable();
         List<String> components = new ArrayList<>();
-        if (systemUser.getCompanies() != null && !systemUser.getCompanies().isEmpty()) {
-            List<SystemPermission> systemPermissions = systemPermissionService
-                .listByCompanyIds(systemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList()));
+        if (currentSystemUser.getCompanies() != null && !currentSystemUser.getCompanies().isEmpty()) {
+            List<SystemPermission> systemPermissions = systemPermissionService.listByCompanyIds(
+                currentSystemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList()));
             components = systemPermissions.stream()
                 .filter(systemPermission -> MenuTypeEnum.FRONTEND.equals(systemPermission.getMenuType()))
                 .map(SystemPermission::getFunctionName).collect(Collectors.toList());
         }
         Map<String, Object> jsonMap = new HashMap<>(2);
-        jsonMap.put("menuData", systemPermissionService.listMenu(display, systemUser.getCompanies()));
+        jsonMap.put("menuData", systemPermissionService.listMenu(display, currentSystemUser.getCompanies()));
         jsonMap.put("components", components);
         return R.ok(jsonMap);
     }
@@ -85,25 +85,30 @@ public class IndexController extends BaseController {
         Map<String, Object> user = new HashMap<>(3);
         Map<String, Object> dormitory = new HashMap<>(3);
         if (getType == ComputedDataTypes.RESIDENT_BASE_MESSAGE.getCode()) {
-            resident.put("baseMessage", communityResidentService.getBaseMessage(systemUser.getCompanies(), companyId));
+            resident.put("baseMessage",
+                communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
         } else if (getType == ComputedDataTypes.RESIDENT_BAR_CHART.getCode()) {
-            resident.put("barChart", communityResidentService.getBarChart(systemUser.getCompanies(), companyId));
+            resident.put("barChart", communityResidentService.getBarChart(currentSystemUser.getCompanies(), companyId));
         } else if (getType == ComputedDataTypes.RESIDENT_SUBCONTRACTOR_BAR_CHART.getCode()) {
-            user.put("barChart", systemUserService.getBarChart(systemUser.getCompanies(), companyId));
+            user.put("barChart", systemUserService.getBarChart(currentSystemUser.getCompanies(), companyId));
         } else if (getType == ComputedDataTypes.DORMITORY_BASE_MESSAGE.getCode()) {
-            dormitory.put("baseMessage", dormitoryManagerService.getBaseMessage(systemUser.getCompanies(), companyId));
+            dormitory.put("baseMessage",
+                dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
         } else if (getType == ComputedDataTypes.DORMITORY_BAR_CHART.getCode()) {
             dormitory.put("barChart",
-                dormitoryManagerService.getBarChart(systemUser.getCompanies(), companyId, barChartTypeParam));
+                dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(), companyId, barChartTypeParam));
         } else {
-            resident.put("baseMessage", communityResidentService.getBaseMessage(systemUser.getCompanies(), companyId));
-            resident.put("barChart", communityResidentService.getBarChart(systemUser.getCompanies(), companyId));
-            user.put("barChart", systemUserService.getBarChart(systemUser.getCompanies(), companyId));
-            dormitory.put("baseMessage", dormitoryManagerService.getBaseMessage(systemUser.getCompanies(), companyId));
+            resident.put("baseMessage",
+                communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
+            resident.put("barChart", communityResidentService.getBarChart(currentSystemUser.getCompanies(), companyId));
+            user.put("barChart", systemUserService.getBarChart(currentSystemUser.getCompanies(), companyId));
+            dormitory.put("baseMessage",
+                dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
             dormitory.put("barChart",
-                dormitoryManagerService.getBarChart(systemUser.getCompanies(), companyId, barChartTypeParam));
+                dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(), companyId, barChartTypeParam));
         }
-        return Objects.requireNonNull(Objects.requireNonNull(R.ok().put("resident", resident)).put("systemUser", user))
+        return Objects
+            .requireNonNull(Objects.requireNonNull(R.ok().put("resident", resident)).put("currentSystemUser", user))
             .put("dormitory", dormitory);
     }
 }

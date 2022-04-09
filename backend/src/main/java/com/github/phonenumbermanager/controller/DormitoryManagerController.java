@@ -58,7 +58,7 @@ public class DormitoryManagerController extends BaseController {
         getEnvironmentVariable();
         getSearchParameter(request);
         return R.ok().put("data",
-            dormitoryManagerService.pageCorrelation(systemUser.getCompanies(), current, pageSize, search, sort));
+            dormitoryManagerService.pageCorrelation(currentSystemUser.getCompanies(), current, pageSize, search, sort));
     }
 
     /**
@@ -164,7 +164,7 @@ public class DormitoryManagerController extends BaseController {
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response) {
         getEnvironmentVariable();
         ExcelWriter excelWriter =
-            dormitoryManagerService.listCorrelationExportExcel(systemUser.getCompanies(), configurationMap);
+            dormitoryManagerService.listCorrelationExportExcel(currentSystemUser.getCompanies(), configurationMap);
         downloadExcelFile(response, excelWriter, "社区楼片长花名册");
     }
 

@@ -133,9 +133,9 @@ public interface BaseService<T> extends IService<T> {
     /**
      * 获取树形表单列表
      *
-     * @param parentId
-     *            父级编号
+     * @param parentIds
+     *            父级编号数组
      * @return 树形表单列表集合
      */
-    List<SelectListVo> treeSelectList(Long parentId);
+    List<SelectListVo> treeSelectList(Long[] parentIds);
 }

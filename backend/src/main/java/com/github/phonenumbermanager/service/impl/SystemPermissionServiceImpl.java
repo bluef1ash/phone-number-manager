@@ -25,6 +25,7 @@ import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import lombok.AllArgsConstructor;
 
@@ -103,19 +104,18 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     }
 
     @Override
-    public List<SelectListVo> treeSelectList(Long parentId) {
-        List<Long> parentIds =
-            baseMapper.selectList(new LambdaQueryWrapper<SystemPermission>().select(SystemPermission::getParentId))
-                .stream().map(SystemPermission::getParentId).collect(Collectors.toList());
-        List<SystemPermission> systemPermissions = baseMapper
-            .selectList(new LambdaQueryWrapper<SystemPermission>().eq(SystemPermission::getParentId, parentId));
-        return systemPermissions.stream().map(systemPermission -> {
-            SelectListVo selectListVo = new SelectListVo();
-            selectListVo.setTitle(systemPermission.getName()).setLabel(systemPermission.getName())
-                .setValue(systemPermission.getId()).setIsLeaf(!parentIds.contains(systemPermission.getId()));
-            treeSystemPermissions(null, selectListVo, systemPermissions, parentIds);
-            return selectListVo;
-        }).collect(Collectors.toList());
+    public List<SelectListVo> treeSelectList(Long[] parentIds) {
+        List<SystemPermission> systemPermissions = baseMapper.selectList(null);
+        List<Long> parentIdAll =
+            systemPermissions.stream().map(SystemPermission::getParentId).collect(Collectors.toList());
+        return systemPermissions.stream()
+            .filter(systemPermission -> ArrayUtil.contains(parentIds, systemPermission.getParentId()))
+            .map(systemPermission -> {
+                SelectListVo selectListVo = new SelectListVo();
+                selectListVo.setTitle(systemPermission.getName()).setLabel(systemPermission.getName())
+                    .setValue(systemPermission.getId()).setIsLeaf(!parentIdAll.contains(systemPermission.getId()));
+                return selectListVo;
+            }).collect(Collectors.toList());
     }
 
     /**

@@ -1,8 +1,6 @@
 declare module '*.less';
 
-declare global {
-  const REACT_APP_API_BASE_URL: string;
-}
+declare const REACT_APP_API_BASE_URL: string;
 
 declare namespace API {
   import type { PhoneNumberType } from '@/services/enums';

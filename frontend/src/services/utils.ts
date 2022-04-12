@@ -2,6 +2,7 @@ import { parsePhoneNumber } from "libphonenumber-js/max";
 import { PhoneNumberType } from "@/services/enums";
 import { message } from "antd";
 import type { Dispatch, SetStateAction } from "react";
+import { SESSION_SYSTEM_USER_KEY } from "@config/constant";
 
 /**
  * 提交前联系方式处理
@@ -67,4 +68,23 @@ export async function downloadExcelFile(
     message.error('导出失败，请稍后再试！');
   }
   setSpinState(false);
+}
+
+/**
+ * 获取单位父级编号数组
+ * @return
+ */
+export function getCompanyParentIds(): number[] {
+  let parentIds = [0];
+  const systemUser: API.SystemUser = JSON.parse(
+    localStorage.getItem(SESSION_SYSTEM_USER_KEY) as string,
+  );
+  if (
+    typeof systemUser.companies !== 'undefined' &&
+    systemUser.companies !== null &&
+    systemUser.companies.length > 0
+  ) {
+    parentIds = systemUser.companies.map((company) => company.parentId as number);
+  }
+  return parentIds;
 }

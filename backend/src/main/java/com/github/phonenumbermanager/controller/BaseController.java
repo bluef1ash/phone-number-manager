@@ -9,7 +9,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -28,7 +27,6 @@ import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
-import cn.hutool.poi.excel.style.StyleUtil;
 
 /**
  * 控制器父类
@@ -46,6 +44,7 @@ abstract class BaseController {
     /**
      * 获取环境变量
      */
+    @SuppressWarnings("all")
     protected void getEnvironmentVariable() {
         if (!SystemConstant.ANONYMOUS_USER
             .equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
@@ -79,39 +78,6 @@ abstract class BaseController {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    /**
-     * 设置单元格样式
-     *
-     * @param cellStyle
-     *            单元格对象
-     * @param excelWriter
-     *            Excel写入器
-     * @param fontName
-     *            字体名称
-     * @param fontHeight
-     *            字体大小
-     * @param isBold
-     *            是否加粗
-     * @param isBorder
-     *            是否有边框
-     * @param isWrapText
-     *            是否自动换行
-     */
-    protected void setCellStyle(CellStyle cellStyle, ExcelWriter excelWriter, String fontName, short fontHeight,
-        boolean isBold, boolean isBorder, boolean isWrapText) {
-        StyleUtil.setColor(cellStyle, IndexedColors.AUTOMATIC, FillPatternType.NO_FILL);
-        if (isBorder) {
-            StyleUtil.setBorder(cellStyle, BorderStyle.THIN, IndexedColors.BLACK);
-        }
-        StyleUtil.setAlign(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        Font font = excelWriter.createFont();
-        font.setFontName(fontName);
-        font.setFontHeightInPoints(fontHeight);
-        font.setBold(isBold);
-        cellStyle.setFont(font);
-        cellStyle.setWrapText(isWrapText);
     }
 
     /**

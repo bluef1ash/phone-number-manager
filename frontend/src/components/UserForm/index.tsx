@@ -1,12 +1,14 @@
 import React from 'react';
 import type { ProFormProps } from '@ant-design/pro-form';
 import { ProFormList, ProFormRadio, ProFormSwitch, ProFormText } from '@ant-design/pro-form';
-import CompanyTreeSelect from '@/components/UserForm/CompanyTreeSelect';
 import { submitPrePhoneNumberHandle } from '@/services/utils';
 import { isArray } from 'lodash';
+import SelectCascder from '@/components/SelectCascder';
+import { queryCompanySelectList } from '@/services/company/api';
 
 export type UserFormProps = {
   companySelectList: API.SelectList[];
+  setCompanySelectList: React.Dispatch<React.SetStateAction<API.SelectList[]>>;
 } & ProFormProps;
 
 export const UserFormSubmitPreHandler = (formData: API.SystemUser) => {
@@ -27,7 +29,7 @@ export const UserFormSubmitPreHandler = (formData: API.SystemUser) => {
   return formData;
 };
 
-const UserForm: React.FC<UserFormProps> = ({ companySelectList }) => {
+const UserForm: React.FC<UserFormProps> = ({ companySelectList, setCompanySelectList }) => {
   return (
     <>
       <ProFormText
@@ -156,7 +158,20 @@ const UserForm: React.FC<UserFormProps> = ({ companySelectList }) => {
       />{' '}
       <ProFormSwitch name="isLocked" label="系统用户是否被锁定" initialValue={false} />{' '}
       <ProFormSwitch name="isEnabled" label="系统用户是否启用" initialValue={true} />{' '}
-      <CompanyTreeSelect companySelectList={companySelectList} isRules={true} />
+      <SelectCascder
+        width="xl"
+        name="companyId"
+        label="系统用户所属单位"
+        querySelectList={async (value) => (await queryCompanySelectList([value])).data}
+        selectState={companySelectList}
+        setSelectState={setCompanySelectList}
+        rules={[
+          {
+            required: true,
+            message: '请选择系统用户所属单位！',
+          },
+        ]}
+      />{' '}
     </>
   );
 };

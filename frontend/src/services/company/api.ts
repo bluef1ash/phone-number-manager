@@ -10,8 +10,11 @@ export async function queryCompanyList(params?: any, options?: Record<string, an
 }
 
 /** 获取单位表单列表 */
-export async function queryCompanySelectList(options?: Record<string, any>) {
+export async function queryCompanySelectList(parentIds: number[], options?: Record<string, any>) {
   return request.get<API.Data<API.SelectList[]> & API.ResponseException>(companySelect, {
+    params: {
+      parentIds: parentIds.toString(),
+    },
     ...(options || {}),
   });
 }

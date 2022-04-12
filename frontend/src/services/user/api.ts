@@ -18,11 +18,13 @@ export async function querySystemUserList(params?: any, options?: Record<string,
 
 /** 获取系统用户表单列表 */
 export async function querySystemUserSelectList(
-  parentId: number | null,
+  parentIds: number[],
   options?: Record<string, any>,
 ) {
   return request.get<API.Data<API.SelectList[]> & API.ResponseException>(system.userSelectList, {
-    params: { parentId },
+    params: {
+      parentIds: parentIds.toString(),
+    },
     ...(options || {}),
   });
 }

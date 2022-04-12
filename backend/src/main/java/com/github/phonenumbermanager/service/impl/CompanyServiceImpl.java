@@ -2,11 +2,11 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -160,26 +160,14 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     }
 
     @Override
-    public List<SelectListVo> treeSelectList(Long parentId) {
-        SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Company> companies = baseMapper.selectList(null);
-        List<Company> userCompanies = systemUser.getCompanies();
-        if (userCompanies == null) {
-            userCompanies = companies;
-        }
-        List<SelectListVo> selectListVoBases = new ArrayList<>();
-        List<Long> ids = new ArrayList<>();
-        for (Company company : userCompanies) {
-            for (Company c : companies) {
-                if (company.getId().equals(c.getId()) && !ids.contains(company.getParentId())) {
-                    ids.add(company.getId());
-                    selectListVoBases.add(new SelectListVo().setTitle(company.getName()).setLabel(company.getName())
-                        .setName(company.getName()).setId(company.getId()).setValue(company.getId()));
-                }
-            }
-        }
-        List<Company> finalUserCompanies = userCompanies;
-        return selectListVoBases.stream().map(selectListVo -> treeRecursiveSelect(selectListVo, finalUserCompanies))
+    public List<SelectListVo> treeSelectList(Long[] parentIds) {
+        LambdaQueryWrapper<Company> wrapper = new LambdaQueryWrapper<>();
+        Arrays.stream(parentIds).forEach(parentId -> wrapper.eq(Company::getParentId, parentId));
+        return baseMapper.selectList(wrapper).stream()
+            .map(company -> new SelectListVo().setId(company.getId()).setValue(company.getId())
+                .setName(company.getName()).setLabel(company.getName()).setTitle(company.getName())
+                .setIsLeaf(baseMapper
+                    .selectCount(new LambdaQueryWrapper<Company>().eq(Company::getParentId, company.getId())) == 0))
             .collect(Collectors.toList());
     }
 

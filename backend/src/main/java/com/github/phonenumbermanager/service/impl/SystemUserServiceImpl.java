@@ -187,25 +187,24 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     }
 
     @Override
-    public List<SelectListVo> treeSelectList(Long parentId) {
+    public List<SelectListVo> treeSelectList(Long[] parentIds) {
         SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<SelectListVo> selectListVos = new ArrayList<>();
-        Set<Long> parentIds = companyMapper.selectList(new LambdaQueryWrapper<Company>().select(Company::getParentId))
-            .stream().map(Company::getParentId).collect(Collectors.toSet());
-        if (parentId == null) {
+        Set<Long> parentIdList =
+            companyMapper.selectList(new LambdaQueryWrapper<Company>().select(Company::getParentId)).stream()
+                .map(Company::getParentId).collect(Collectors.toSet());
+        if (parentIds == null) {
             if (systemUser.getCompanies() == null) {
                 selectListVos = companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0L))
                     .stream().map(company -> new SelectListVo().setValue(company.getId()).setLabel(company.getName())
                         .setIsLeaf(false))
                     .collect(Collectors.toList());
             } else {
-                List<Long> ids = systemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList());
-                selectListVos.addAll(getSelectVos(ids, parentIds));
+                Long[] ids = systemUser.getCompanies().stream().map(Company::getId).toArray(Long[]::new);
+                selectListVos.addAll(getSelectVos(ids, parentIdList));
             }
         } else {
-            List<Long> ids = new ArrayList<>();
-            ids.add(parentId);
-            selectListVos.addAll(getSelectVos(ids, parentIds));
+            selectListVos.addAll(getSelectVos(parentIds, parentIdList));
         }
         return selectListVos;
     }
@@ -217,6 +216,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
      *            操作的对象
      * @return 成功行数
      */
+    @SuppressWarnings("all")
     private int saveOrUpdateHandle(SystemUser systemUser) {
         PhoneNumber phoneNumber = phoneNumberMapper.selectOne(new LambdaQueryWrapper<PhoneNumber>()
             .eq(PhoneNumber::getPhoneNumber, systemUser.getPhoneNumber().getPhoneNumber()));
@@ -241,11 +241,11 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
      *            所有父级编号
      * @return 表单对象集合
      */
-    private List<SelectListVo> getSelectVos(List<Long> ids, Set<Long> parentIds) {
+    private List<SelectListVo> getSelectVos(Long[] ids, Set<Long> parentIds) {
         List<SelectListVo> selectListVos = new ArrayList<>();
         LambdaQueryWrapper<Company> companyWrapper = new LambdaQueryWrapper<>();
-        ids.stream().filter(parentIds::contains).forEach(id -> companyWrapper.eq(Company::getParentId, id));
-        List<Long> subIds = ids.stream().filter(id -> !parentIds.contains(id)).collect(Collectors.toList());
+        Arrays.stream(ids).filter(parentIds::contains).forEach(id -> companyWrapper.eq(Company::getParentId, id));
+        List<Long> subIds = Arrays.stream(ids).filter(id -> !parentIds.contains(id)).collect(Collectors.toList());
         if (companyWrapper.nonEmptyOfWhere()) {
             selectListVos.addAll(companyMapper.selectList(companyWrapper).stream().map(
                 company -> new SelectListVo().setLabel(company.getName()).setValue(company.getId()).setIsLeaf(false))

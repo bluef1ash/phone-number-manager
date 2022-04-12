@@ -157,14 +157,14 @@ public class UserAndPermissionController extends BaseController {
     /**
      * 系统用户表单列表
      *
-     * @param parentId
-     *            父级编号
+     * @param parentIds
+     *            父级编号数组
      * @return 系统用户表单列表JSON
      */
     @GetMapping("/system/user/select-list")
     @ApiOperation("系统用户表单列表")
-    public R systemUserSelectList(Long parentId) {
-        return R.ok().put("data", systemUserService.treeSelectList(parentId));
+    public R systemUserSelectList(Long[] parentIds) {
+        return R.ok().put("data", systemUserService.treeSelectList(parentIds));
     }
 
     /**
@@ -336,14 +336,14 @@ public class UserAndPermissionController extends BaseController {
     /**
      * 系统权限表单列表
      *
-     * @param parentId
-     *            查找的父级编号
+     * @param parentIds
+     *            查找的父级编号数组
      * @return 系统权限表单列表JSON
      */
     @GetMapping("/system/permission/select-list")
     @ApiOperation("系统权限表单列表")
-    public R systemPermissionSelectList(Long parentId) {
-        return R.ok().put("data", systemPermissionService.treeSelectList(parentId));
+    public R systemPermissionSelectList(Long[] parentIds) {
+        return R.ok().put("data", systemPermissionService.treeSelectList(parentIds));
     }
 
     /**

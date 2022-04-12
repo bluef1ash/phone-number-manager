@@ -19,8 +19,8 @@ import { communityResidentImportExcel } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
 import { querySystemUserSelectList } from '@/services/user/api';
 import PhoneNumberList from '@/components/PhoneNumberList';
-import Subcontractor from '@/components/Subcontractor';
 import { ExceptionCode } from '@/services/enums';
+import SelectCascder from '@/components/SelectCascder';
 
 const InputElement = (
   systemUsersSelectState: API.SelectList[],
@@ -84,12 +84,13 @@ const InputElement = (
         placeholder: '请输入社区居民联系方式',
       }}
     />
-    <Subcontractor
+    <SelectCascder
       name="subcontractorInfo"
       label="社区居民所属分包人"
       requiredMessage="社区居民所属分包人不能为空！"
-      systemUsersSelectState={systemUsersSelectState}
-      setSystemUsersSelectState={setSystemUsersSelectState}
+      selectState={systemUsersSelectState}
+      setSelectState={setSystemUsersSelectState}
+      querySelectList={async (value) => (await querySystemUserSelectList([value])).data}
     />{' '}
   </>
 );
@@ -156,9 +157,12 @@ const CommunityResident: React.FC = () => {
               ellipsis: true,
               renderFormItem() {
                 return (
-                  <Subcontractor
-                    systemUsersSelectState={systemUsersSelectState}
-                    setSystemUsersSelectState={setSystemUsersSelectState}
+                  <SelectCascder
+                    selectState={systemUsersSelectState}
+                    setSelectState={setSystemUsersSelectState}
+                    querySelectList={async (value) =>
+                      (await querySystemUserSelectList([value])).data
+                    }
                     cascaderFieldProps={{
                       multiple: true,
                     }}
@@ -270,7 +274,7 @@ const CommunityResident: React.FC = () => {
             )
           }
           onLoad={async () => {
-            setSystemUsersSelectState((await querySystemUserSelectList(null)).data);
+            setSystemUsersSelectState((await querySystemUserSelectList([0])).data);
           }}
         />{' '}
       </MainPageContainer>{' '}

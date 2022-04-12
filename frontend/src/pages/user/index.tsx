@@ -15,7 +15,8 @@ import {
 import { message as msg, Switch } from 'antd';
 import { queryCompanySelectList } from '@/services/company/api';
 import UserForm, { UserFormSubmitPreHandler } from '@/components/UserForm';
-import CompanyTreeSelect from '@/components/UserForm/CompanyTreeSelect';
+import { getCompanyParentIds } from '@/services/utils';
+import SelectCascder from '@/components/SelectCascder';
 
 const SystemUser: React.FC = () => {
   const actionRef = useRef<ActionType>();
@@ -137,7 +138,13 @@ const SystemUser: React.FC = () => {
               return name;
             },
             renderFormItem() {
-              return <CompanyTreeSelect isRules={false} companySelectList={companySelectState} />;
+              return (
+                <SelectCascder
+                  querySelectList={async (value) => (await queryCompanySelectList([value])).data}
+                  selectState={companySelectState}
+                  setSelectState={setCompanySelectState}
+                />
+              );
             },
           },
         ]}
@@ -148,7 +155,12 @@ const SystemUser: React.FC = () => {
           })
         }
         createEditModalForm={{
-          element: <UserForm companySelectList={companySelectState} />,
+          element: (
+            <UserForm
+              companySelectList={companySelectState}
+              setCompanySelectList={setCompanySelectState}
+            />
+          ),
           props: {
             title: '添加系统用户',
           },
@@ -156,7 +168,12 @@ const SystemUser: React.FC = () => {
           onFinish: async (formData) => await createSystemUser(UserFormSubmitPreHandler(formData)),
         }}
         modifyEditModalForm={{
-          element: <UserForm companySelectList={companySelectState} />,
+          element: (
+            <UserForm
+              companySelectList={companySelectState}
+              setCompanySelectList={setCompanySelectState}
+            />
+          ),
           props: {
             title: '编辑系统用户',
           },
@@ -181,7 +198,9 @@ const SystemUser: React.FC = () => {
             return result;
           },
         }}
-        onLoad={async () => setCompanySelectState((await queryCompanySelectList()).data)}
+        onLoad={async () =>
+          setCompanySelectState((await queryCompanySelectList(getCompanyParentIds())).data)
+        }
       />{' '}
     </MainPageContainer>
   );

@@ -1,16 +1,9 @@
-import type { MutableRefObject } from 'react';
 import React, { useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import {
-  ProFormList,
-  ProFormSelect,
-  ProFormSwitch,
-  ProFormText,
-  ProFormTreeSelect,
-} from '@ant-design/pro-form';
+import { ProFormList, ProFormSelect, ProFormSwitch, ProFormText } from '@ant-design/pro-form';
 import {
   batchSystemPermission,
   createSystemPermission,
@@ -21,11 +14,12 @@ import {
   removeSystemPermission,
 } from '@/services/permission/api';
 import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
+import SelectCascder from '@/components/SelectCascder';
 
 const InputElement = (
   selectListState: API.SelectList[],
-  setSystemPermissionIdState: { (value: React.SetStateAction<number | undefined>): void },
-  formRef: MutableRefObject<ProFormInstance<API.SystemPermission> | undefined>,
+  setSelectListState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+  formRef: React.MutableRefObject<ProFormInstance<API.SystemPermission> | undefined>,
 ) => (
   <>
     <ProFormText
@@ -139,21 +133,13 @@ const InputElement = (
         placeholder="请选择"
       />{' '}
     </ProFormList>{' '}
-    <ProFormTreeSelect
+    <SelectCascder
       width="xl"
       name="parentId"
       label="系统权限上级编号"
-      request={async () => selectListState}
-      placeholder="请选择"
-      rules={[
-        {
-          required: true,
-          message: '请选择系统权限上级编号！',
-        },
-      ]}
-      fieldProps={{
-        onChange: (value: number) => setSystemPermissionIdState(value),
-      }}
+      querySelectList={async (value) => (await querySystemPermissionSelectList([value])).data}
+      selectState={selectListState}
+      setSelectState={setSelectListState}
     />{' '}
     <ProFormSelect
       width="xl"
@@ -180,16 +166,9 @@ const SystemPermission: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const createFormRef = useRef<ProFormInstance<API.SystemPermission>>();
   const modifyFormRef = useRef<ProFormInstance<API.SystemPermission>>();
-  const [selectListState, setSelectListState] = useState<API.SelectList[]>();
-  const [systemPermissionIdState, setSystemPermissionIdState] = useState<number | undefined>(
-    undefined,
-  );
+  const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
 
   const submitPreHandler = (formData: API.SystemPermission) => {
-    if (typeof systemPermissionIdState !== 'undefined' && typeof selectListState !== 'undefined') {
-      const select = selectListState.find(({ value }) => value === systemPermissionIdState);
-      formData.level = (select?.level as number) + 1;
-    }
     if (Array.isArray(formData.httpMethods) && formData.httpMethods.length > 0) {
       formData.httpMethods = formData.httpMethods.map(
         (value) =>
@@ -268,11 +247,7 @@ const SystemPermission: React.FC = () => {
           })
         }
         createEditModalForm={{
-          element: InputElement(
-            selectListState as API.SelectList[],
-            setSystemPermissionIdState,
-            createFormRef,
-          ),
+          element: InputElement(selectListState, setSelectListState, createFormRef),
           props: {
             title: '添加系统权限',
           },
@@ -280,11 +255,7 @@ const SystemPermission: React.FC = () => {
           onFinish: async (formData) => await createSystemPermission(submitPreHandler(formData)),
         }}
         modifyEditModalForm={{
-          element: InputElement(
-            selectListState as API.SelectList[],
-            setSystemPermissionIdState,
-            modifyFormRef,
-          ),
+          element: InputElement(selectListState, setSelectListState, modifyFormRef),
           props: {
             title: '编辑系统权限',
           },
@@ -313,7 +284,7 @@ const SystemPermission: React.FC = () => {
               level: 0,
             },
           ];
-          const data = (await querySystemPermissionSelectList())?.data;
+          const data = (await querySystemPermissionSelectList([0]))?.data;
           if (data && data.length > 0) {
             list = [...list, ...data];
           }

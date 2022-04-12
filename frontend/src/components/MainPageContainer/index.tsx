@@ -9,34 +9,26 @@ export type BreadcrumbRole = {
 };
 
 export type MainPageContainerProps = {
-  routes: BreadcrumbRole[];
+  routes?: BreadcrumbRole[];
 } & PageContainerProps;
 
-const MainPageContainer: React.FC<MainPageContainerProps> = ({ routes, ...restProps }) => {
-  const itemRender = (
-    route: BreadcrumbRole,
-    params: any,
-    breadcrumbRoutes: BreadcrumbRole[],
-    paths: string[],
-  ) => {
-    return breadcrumbRoutes.indexOf(route) === breadcrumbRoutes.length - 1 || route.path === '' ? (
-      <span>{route.breadcrumbName}</span>
-    ) : (
-      <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
-    );
-  };
-  return (
-    <PageContainer
-      header={{
-        ghost: true,
-        breadcrumb: {
-          itemRender,
-          routes,
+const MainPageContainer: React.FC<MainPageContainerProps> = ({ routes, ...restProps }) => (
+  <PageContainer
+    header={{
+      breadcrumb: {
+        itemRender(route, params, breadcrumbRoutes, paths) {
+          return breadcrumbRoutes.indexOf(route) === breadcrumbRoutes.length - 1 ||
+            route.path === '' ? (
+            <span>{route.breadcrumbName}</span>
+          ) : (
+            <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
+          );
         },
-      }}
-      {...restProps}
-    />
-  );
-};
+        routes,
+      },
+    }}
+    {...restProps}
+  />
+);
 
 export default MainPageContainer;

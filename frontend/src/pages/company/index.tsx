@@ -3,7 +3,7 @@ import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import { ProFormCascader, ProFormList, ProFormSelect, ProFormText } from '@ant-design/pro-form';
+import { ProFormList, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import {
   batchCompany,
   createCompany,
@@ -13,12 +13,14 @@ import {
   queryCompanySelectList,
   removeCompany,
 } from '@/services/company/api';
-import { submitPrePhoneNumberHandle } from '@/services/utils';
+import { getCompanyParentIds, submitPrePhoneNumberHandle } from '@/services/utils';
 import { querySystemPermissionSelectList } from '@/services/permission/api';
 import PhoneNumberList from '@/components/PhoneNumberList';
+import SelectCascder from '@/components/SelectCascder';
 
 const InputElement = (
   selectListState: API.SelectList[],
+  setSelectListState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
   systemPermissionState: API.SelectList[],
   setSystemPermissionState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
 ) => (
@@ -40,14 +42,13 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <ProFormCascader
+    <SelectCascder
       width="xl"
       name="parentId"
       label="上级单位"
-      fieldProps={{
-        options: selectListState,
-      }}
-      placeholder="请选择"
+      querySelectList={async (value) => (await queryCompanySelectList([value])).data}
+      selectState={selectListState}
+      setSelectState={setSelectListState}
       rules={[
         {
           required: true,
@@ -169,29 +170,17 @@ const InputElement = (
         ]}
       />{' '}
     </ProFormList>{' '}
-    <ProFormCascader
+    <SelectCascder
       width="xl"
       name="systemPermissionSelectList"
       label="单位所属权限"
-      placeholder="请选择"
-      fieldProps={{
-        options: systemPermissionState,
-        async loadData(selectedOptions) {
-          const targetOption = selectedOptions[selectedOptions.length - 1];
-          targetOption.loading = true;
-          const data = (await querySystemPermissionSelectList(targetOption.value as number)).data;
-          targetOption.loading = false;
-          if (data.length === 0) {
-            targetOption.isLeaf = true;
-          } else {
-            //@ts-ignore
-            targetOption.children = data;
-          }
-          setSystemPermissionState([...systemPermissionState]);
-        },
+      querySelectList={async (value) => (await querySystemPermissionSelectList([value])).data}
+      selectState={systemPermissionState}
+      setSelectState={setSystemPermissionState}
+      cascaderFieldProps={{
         multiple: true,
       }}
-    />
+    />{' '}
   </>
 );
 
@@ -199,14 +188,13 @@ const Company: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const createFormRef = useRef<ProFormInstance<API.Company>>();
   const modifyFormRef = useRef<ProFormInstance<API.Company>>();
-  const [selectListState, setSelectListState] = useState<API.SelectList[]>();
-  const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>();
+  const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
+  const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>([]);
 
   const submitPreHandler = (formData: API.Company) => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
       submitPrePhoneNumberHandle(value.phoneNumber as string),
     );
-    //@ts-ignore
     formData.systemPermissions = formData.systemPermissionSelectList?.map((value) => ({
       id: value[0],
     }));
@@ -266,9 +254,10 @@ const Company: React.FC = () => {
         }
         createEditModalForm={{
           element: InputElement(
-            selectListState as API.SelectList[],
-            systemPermissionState as API.SelectList[],
-            setSystemPermissionState as React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+            selectListState,
+            setSelectListState,
+            systemPermissionState,
+            setSystemPermissionState,
           ),
           props: {
             title: '添加单位',
@@ -278,9 +267,10 @@ const Company: React.FC = () => {
         }}
         modifyEditModalForm={{
           element: InputElement(
-            selectListState as API.SelectList[],
-            systemPermissionState as API.SelectList[],
-            setSystemPermissionState as React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+            selectListState,
+            setSelectListState,
+            systemPermissionState,
+            setSystemPermissionState,
           ),
           props: {
             title: '编辑单位',
@@ -308,12 +298,13 @@ const Company: React.FC = () => {
               value: 0,
             },
           ];
-          const companySelect = (await queryCompanySelectList()).data;
+          const parentIds = getCompanyParentIds();
+          const companySelect = (await queryCompanySelectList(parentIds)).data;
           if (companySelect.length > 0) {
             list = [...list, ...companySelect];
           }
           setSelectListState(list);
-          const systemPermissionBases = (await querySystemPermissionSelectList(0)).data;
+          const systemPermissionBases = (await querySystemPermissionSelectList([0])).data;
           setSystemPermissionState(systemPermissionBases);
         }}
       />{' '}

@@ -103,7 +103,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public List<SelectListVo> treeSelectList(Long parentId) {
+    public List<SelectListVo> treeSelectList(Long[] parentIds) {
         return null;
     }
 

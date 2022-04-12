@@ -20,13 +20,17 @@ import {
   removeDormitoryManager,
 } from '@/services/dormitory/api';
 import { queryCompanySelectList } from '@/services/company/api';
-import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils';
+import {
+  downloadExcelFile,
+  getCompanyParentIds,
+  submitPrePhoneNumberHandle,
+} from '@/services/utils';
 import { message, Spin, Upload } from 'antd';
 import { dormitoryManagerImportExcel } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
 import { querySystemUserSelectList } from '@/services/user/api';
 import PhoneNumberList from '@/components/PhoneNumberList';
-import Subcontractor from '@/components/Subcontractor';
+import SelectCascder from '@/components/SelectCascder';
 
 const InputElement = (
   systemUsersSelectState: API.SelectList[],
@@ -174,12 +178,13 @@ const InputElement = (
         },
       ]}
     />{' '}
-    <Subcontractor
+    <SelectCascder
       name="subcontractorInfo"
       label="社区居民楼片长所属分包人"
       requiredMessage="社区居民楼片长所属分包人不能为空！"
-      systemUsersSelectState={systemUsersSelectState}
-      setSystemUsersSelectState={setSystemUsersSelectState}
+      selectState={systemUsersSelectState}
+      setSelectState={setSystemUsersSelectState}
+      querySelectList={async (value) => (await querySystemUserSelectList([value])).data}
     />{' '}
     <PhoneNumberList
       name="phoneNumbers"
@@ -288,7 +293,13 @@ const DormitoryManager: React.FC = () => {
               ellipsis: true,
               renderFormItem() {
                 return (
-                  <ProFormTreeSelect request={async () => (await queryCompanySelectList()).data} />
+                  <SelectCascder
+                    selectState={systemUsersSelectState}
+                    setSelectState={setSystemUsersSelectState}
+                    querySelectList={async (value) =>
+                      (await querySystemUserSelectList([value])).data
+                    }
+                  />
                 );
               },
             },
@@ -381,8 +392,9 @@ const DormitoryManager: React.FC = () => {
             )
           }
           onLoad={async () => {
-            setCompaniesState((await queryCompanySelectList()).data);
-            setSystemUsersSelectState((await querySystemUserSelectList(null)).data);
+            const parentIds = getCompanyParentIds();
+            setCompaniesState((await queryCompanySelectList(parentIds)).data);
+            setSystemUsersSelectState((await querySystemUserSelectList(parentIds)).data);
           }}
         />{' '}
       </MainPageContainer>{' '}

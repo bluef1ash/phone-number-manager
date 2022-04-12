@@ -134,12 +134,14 @@ public class CompanyController extends BaseController {
     /**
      * 单位表单列表
      *
+     * @param parentIds
+     *            父级编号数组
      * @return 单位表单列表JSON
      */
     @GetMapping("/select-list")
     @ApiOperation("单位表单列表")
-    public R companySelectList() {
-        return R.ok().put("data", companyService.treeSelectList(null));
+    public R companySelectList(Long[] parentIds) {
+        return R.ok().put("data", companyService.treeSelectList(parentIds));
     }
 
     /**

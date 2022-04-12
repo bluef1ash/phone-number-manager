@@ -24,13 +24,15 @@ export async function querySystemPermissionList(params?: any, options?: Record<s
 
 /** 获取系统权限列表表单 */
 export async function querySystemPermissionSelectList(
-  parentId: number,
+  parentIds: number[],
   options?: Record<string, any>,
 ) {
   return request.get<API.Data<API.SelectList[]> & API.ResponseException>(
     system.permissionSelectList,
     {
-      params: { parentId },
+      params: {
+        parentIds,
+      },
       ...(options || {}),
     },
   );

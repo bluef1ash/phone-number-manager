@@ -1,6 +1,6 @@
 import { account } from "@/services/api";
 import { logout } from "@/services/account/api";
-import { LogoutOutlined, SettingOutlined } from "@ant-design/icons";
+import { LogoutOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons";
 import { SESSION_COMPONENTS_KEY, SESSION_MENU_KEY, SESSION_SYSTEM_USER_KEY, SESSION_TOKEN_KEY } from "@config/constant";
 import { Avatar, Menu, message as msg, Spin } from "antd";
 import { stringify } from "querystring";
@@ -13,6 +13,7 @@ import type { ProFormInstance } from "@ant-design/pro-form";
 import UserForm, { UserFormSubmitPreHandler } from "@/components/UserForm";
 import { queryCompanySelectList } from "@/services/company/api";
 import { modifySystemUser, queryCurrentUser } from "@/services/user/api";
+import { getCompanyParentIds } from "@/services/utils";
 
 //eslint-disable-next-line @typescript-eslint/ban-types
 export type GlobalHeaderRightProps = {};
@@ -107,7 +108,8 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
           }}
           onVisibleChange={async (visible) => {
             if (visible) {
-              setCompanySelectState((await queryCompanySelectList()).data);
+              const parentIds = getCompanyParentIds();
+              setCompanySelectState((await queryCompanySelectList(parentIds)).data);
               const systemUser: API.SystemUser = JSON.parse(
                 localStorage.getItem(SESSION_SYSTEM_USER_KEY) as string,
               );
@@ -121,7 +123,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
           }}
         >
           {' '}
-          <UserForm companySelectList={companySelectState} />{' '}
+          <UserForm companySelectList={companySelectState}  setCompanySelectList={setCompanySelectState}/>{' '}
         </EditModalForm>{' '}
       </Menu.Item>{' '}
       <Menu.Divider />{' '}
@@ -134,7 +136,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
   return (
     <HeaderDropdown overlay={menuHeaderDropdown}>
       <span className={`${styles.action} ${styles.account}`}>
-        <Avatar size="small" className={styles.avatar} alt="avatar" />
+        <Avatar size="small" className={styles.avatar}  icon={<UserOutlined />} />
         <span className={`${styles.name} anticon`}>{initialState.currentUser.username}</span>
       </span>
     </HeaderDropdown>

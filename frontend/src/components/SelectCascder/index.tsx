@@ -2,11 +2,14 @@ import React from 'react';
 import type { LightFilterFooterRender, ProFormItemProps } from '@ant-design/pro-form';
 import { ProFormCascader } from '@ant-design/pro-form';
 import type { CascaderProps } from 'antd';
+import { Cascader } from 'antd';
 import type { ExtendsProps, ProFormFieldRemoteProps } from '@ant-design/pro-form/lib/interface';
 import type { FieldProps } from '@ant-design/pro-form/es/interface';
 import type { ProFieldProps } from '@ant-design/pro-utils/lib';
+import type { DefaultOptionType } from 'antd/lib/cascader';
 
-export type SubcontractorProps = {
+export type SelectCascderProps = {
+  isNotProForm?: boolean;
   fieldProps?: (FieldProps & CascaderProps<any>) | undefined;
   placeholder?: string | string[] | undefined;
   secondary?: boolean | undefined;
@@ -25,39 +28,50 @@ export type SubcontractorProps = {
   ProFormFieldRemoteProps &
   React.RefAttributes<any>;
 
-const SelectCascder: React.FC<SubcontractorProps> = ({
+const SelectCascder: React.FC<SelectCascderProps> = ({
+  isNotProForm,
   selectState,
   setSelectState,
   requiredMessage,
   cascaderFieldProps,
   querySelectList,
   ...restProps
-}) => (
-  <ProFormCascader
-    width="xl"
-    placeholder="请选择"
-    fieldProps={{
-      options: selectState,
-      async loadData(selectedOptions) {
-        const targetOption = selectedOptions[selectedOptions.length - 1];
-        targetOption.loading = true;
-        //@ts-ignore
-        targetOption.children = await querySelectList(targetOption.value as number);
-        targetOption.loading = false;
-        setSelectState([...selectState]);
-      },
-      ...cascaderFieldProps,
-    }}
-    rules={[
-      typeof requiredMessage === 'undefined'
-        ? {
-            required: true,
-            message: requiredMessage,
-          }
-        : {},
-    ]}
-    {...restProps}
-  />
-);
+}) => {
+  const loadData = async (selectedOptions: DefaultOptionType[]) => {
+    const targetOption = selectedOptions[selectedOptions.length - 1];
+    targetOption.loading = true;
+    const value = targetOption.value as number;
+    targetOption.children = await querySelectList(value);
+    targetOption.loading = false;
+    setSelectState([...selectState]);
+  };
+  return typeof isNotProForm !== 'undefined' && isNotProForm ? (
+    <Cascader
+      options={selectState}
+      loadData={loadData}
+      placeholder="请选择"
+      {...cascaderFieldProps}
+    />
+  ) : (
+    <ProFormCascader
+      width="xl"
+      placeholder="请选择"
+      fieldProps={{
+        options: selectState,
+        loadData,
+        ...cascaderFieldProps,
+      }}
+      rules={[
+        typeof requiredMessage === 'undefined'
+          ? {
+              required: true,
+              message: requiredMessage,
+            }
+          : {},
+      ]}
+      {...restProps}
+    />
+  );
+};
 
 export default SelectCascder;

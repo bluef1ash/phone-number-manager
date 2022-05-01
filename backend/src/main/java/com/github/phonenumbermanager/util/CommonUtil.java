@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,6 +16,7 @@ import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 
@@ -130,28 +130,28 @@ public class CommonUtil {
      *
      * @param companyIds
      *            取下级单位编号集合
-     * @param companies
-     *            单位对象集合
-     * @param companyAll
-     *            所有单位对象集合
-     * @param parents
-     *            上级单位
+     * @param parentId
+     *            上级单位编号
+     * @param groupByParentIdMap
+     *            根据父级编号分组的单位集合
+     * @return 当前的下级单位编号
      */
-    public static void listSubmissionCompanyIds(List<Long> companyIds, List<Company> companies,
-        List<Company> companyAll, Map<Long, String> parents) {
-        companies.forEach(company -> {
-            companyIds.add(company.getId());
-            if (parents != null && parents.get(company.getParentId()).isEmpty()) {
-                Optional<Company> companyOptional =
-                    companyAll.stream().filter(company1 -> company1.getId().equals(company.getParentId())).findFirst();
-                assert companyOptional.isPresent();
-                parents.put(company.getParentId(), companyOptional.get().getName());
-            } else {
-                List<Company> companyList = companyAll.stream()
-                    .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
-                listSubmissionCompanyIds(companyIds, companyList, companyAll, parents);
+    public static List<Long> listSubmissionCompanyIds(List<Long> companyIds, Long parentId,
+        Map<Long, List<Company>> groupByParentIdMap) {
+        List<Long> currentPidLowerChildIdList = new ArrayList<>();
+        List<Company> childCompany = groupByParentIdMap.get(parentId);
+        if (CollUtil.isEmpty(childCompany)) {
+            return null;
+        }
+        childCompany.forEach(company -> {
+            List<Long> lowerChildIdSet =
+                listSubmissionCompanyIds(currentPidLowerChildIdList, company.getId(), groupByParentIdMap);
+            if (CollUtil.isEmpty(lowerChildIdSet)) {
+                currentPidLowerChildIdList.add(company.getId());
             }
         });
+        companyIds.addAll(currentPidLowerChildIdList);
+        return currentPidLowerChildIdList;
     }
 
     /**

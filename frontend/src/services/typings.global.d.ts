@@ -73,5 +73,5 @@ declare namespace API {
     isLeaf?: boolean;
     loading?: boolean;
     children?: SelectList[] | null;
-  };
+  } & DefaultOptionType;
 }

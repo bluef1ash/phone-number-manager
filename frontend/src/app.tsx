@@ -46,18 +46,16 @@ export async function getInitialState(): Promise<{
       currentUser = JSON.parse(sessionSystemUser);
     }
     const sessionMenu = localStorage.getItem(SESSION_MENU_KEY);
-    let menuData: MenuDataItem[] | undefined = undefined;
-    if (sessionMenu !== 'undefined' && sessionMenu) {
-      menuData = JSON.parse(sessionMenu);
-    } else {
-      const menu = await fetchMenuData(true);
-      if (typeof menu !== 'undefined') {
-        menuData = menu.menuData;
-      }
-    }
+    let menuData: MenuDataItem[] | undefined = [];
     const sessionPaths = localStorage.getItem(SESSION_COMPONENTS_KEY);
-    let components = [];
-    if (sessionPaths !== 'undefined' && sessionPaths) {
+    let components: string[] | undefined = [];
+    if (
+      sessionMenu !== 'undefined' &&
+      sessionMenu &&
+      sessionPaths !== 'undefined' &&
+      sessionPaths
+    ) {
+      menuData = JSON.parse(sessionMenu);
       components = JSON.parse(sessionPaths);
     }
     return {

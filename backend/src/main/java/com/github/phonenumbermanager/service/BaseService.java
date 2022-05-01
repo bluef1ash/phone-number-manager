@@ -64,11 +64,11 @@ public interface BaseService<T> extends IService<T> {
      *
      * @param companies
      *            当前登录系统用户单位集合
-     * @param companyId
-     *            需要获取数据的单位编号
+     * @param companyIds
+     *            需要获取数据的单位编号集合
      * @return 统计信息对象
      */
-    Map<String, Object> getBaseMessage(List<Company> companies, Long companyId);
+    Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds);
 
     /**
      * 关联查找（包含分页）
@@ -93,11 +93,11 @@ public interface BaseService<T> extends IService<T> {
      *
      * @param companies
      *            正在登录中的系统用户单位集合
-     * @param companyId
-     *            需要获取的单位编号
+     * @param companyIds
+     *            需要获取的单位编号集合
      * @return 柱状图数据
      */
-    Map<String, Object> getBarChart(List<Company> companies, Long companyId);
+    Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds);
 
     /**
      * 从Excel导入数据

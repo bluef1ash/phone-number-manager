@@ -17,11 +17,11 @@ public interface DormitoryManagerService extends BaseService<DormitoryManager> {
      *
      * @param companies
      *            正在登录中的系统用户单位集合
-     * @param companyId
-     *            单位编号
+     * @param companyIds
+     *            单位编号集合
      * @param typeParam
      *            类型参数
      * @return 柱状图数据
      */
-    Map<String, Object> getBarChart(List<Company> companies, Long companyId, Boolean typeParam);
+    Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, Boolean typeParam);
 }

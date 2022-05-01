@@ -2,7 +2,7 @@ declare module '*.less';
 declare namespace API {
   type LoginResult = {
     code: number;
-    token?: string;
+    token: string;
     systemUserInfo?: SystemUser;
   };
 

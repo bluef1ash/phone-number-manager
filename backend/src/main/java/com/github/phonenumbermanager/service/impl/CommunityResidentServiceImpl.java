@@ -25,6 +25,7 @@ import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.CommonUtil;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
@@ -45,6 +46,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     private final SystemUserMapper systemUserMapper;
     private final PhoneNumberMapper phoneNumberMapper;
     private final CompanyMapper companyMapper;
+    private final CompanyExtraMapper companyExtraMapper;
     private int excelCommunityCellNumber;
     private int excelCommunityResidentNameCellNumber;
     private int excelResidentAddressCellNumber;
@@ -55,11 +57,13 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Autowired
     public CommunityResidentServiceImpl(CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper,
-        SystemUserMapper systemUserMapper, PhoneNumberMapper phoneNumberMapper, CompanyMapper companyMapper) {
+        SystemUserMapper systemUserMapper, PhoneNumberMapper phoneNumberMapper, CompanyMapper companyMapper,
+        CompanyExtraMapper companyExtraMapper) {
         this.communityResidentPhoneNumberMapper = communityResidentPhoneNumberMapper;
         this.systemUserMapper = systemUserMapper;
         this.phoneNumberMapper = phoneNumberMapper;
         this.companyMapper = companyMapper;
+        this.companyExtraMapper = companyExtraMapper;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -272,37 +276,32 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
-        List<Long> companyIds = new ArrayList<>();
+    public Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds) {
         List<Company> companyAll = companyMapper.selectList(null);
-        if (companyId == null) {
-            return computedBaseMessage(companies, companyAll, companyIds);
-        } else {
-            // companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
-            if (companyIds.contains(companyId)) {
-                List<Company> companyList = companyMapper.selectList(new QueryWrapper<Company>().eq("id", companyId));
-                return computedBaseMessage(companyList, companyAll, companyIds);
-            }
+        if (companies == null) {
+            companies = companyAll;
         }
-        return null;
+        if (companyIds == null) {
+            companyIds = companies.stream().map(Company::getId).toArray(Long[]::new);
+        }
+        return computedBaseMessage(companyAll, companyIds);
     }
 
     @Override
-    public Map<String, Object> getBarChart(List<Company> companies, Long companyId) {
+    public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds) {
         List<Map<String, Object>> communityResidents = new ArrayList<>();
-        List<Long> companyIds = new ArrayList<>();
         List<Company> companyAll = companyMapper.selectList(null);
-        if (companyId == null) {
+        if (companyIds == null) {
             // companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, 0, null);
             // communityResidents = baseMapper.countForGroupCompany(companyIds);
         } else {
             // companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
-            if (companyIds.contains(companyId)) {
-                List<Company> companyList = companyMapper.selectList(new QueryWrapper<Company>().eq("id", companyId));
-                companyIds.clear();
-                // companyService.listSubmissionCompanyIds(companyIds, companyList, companyAll, 0, null);
-                // communityResidents = baseMapper.countForGroupCompany(companyIds);
-            }
+            // if (companyIds.contains(companyI)) {
+            // List<Company> companyList = companyMapper.selectList(new QueryWrapper<Company>().eq("id", companyId));
+            // companyIds.clear();
+            // companyService.listSubmissionCompanyIds(companyIds, companyList, companyAll, 0, null);
+            // communityResidents = baseMapper.countForGroupCompany(companyIds);
+            // }
         }
         return barChartDataHandler("社区居民总户数", null, "户", communityResidents);
     }
@@ -323,26 +322,37 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      * 计算录入统计信息
      *
      * @param companies
-     *            单位集合
-     * @param companyAll
      *            所有单位集合
      * @param companyIds
      *            单位编号集合
      * @return 录入统计信息
      */
-    private Map<String, Object> computedBaseMessage(List<Company> companies, List<Company> companyAll,
-        List<Long> companyIds) {
+    private Map<String, Object> computedBaseMessage(List<Company> companies, Long[] companyIds) {
         Map<String, Object> baseMessage = new HashMap<>(2);
-        // companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, 0, null);
-        QueryWrapper<CommunityResident> communityResidentWrapper = new QueryWrapper<>();
-        QueryWrapper<Company> companyWrapper = new QueryWrapper<>();
-        companyWrapper.select("SUM(actual_number) AS actual");
-        companyIds.forEach(id -> {
-            communityResidentWrapper.eq("company_id", id).or();
-            companyWrapper.eq("company_id", id).or();
+        List<Long> subCompanyIds = new ArrayList<>();
+        Map<Long, List<Company>> groupByParentIdMap =
+            companies.stream().collect(Collectors.groupingBy(Company::getParentId));
+        Arrays.stream(companyIds).forEach(companyId -> {
+            if (CollUtil.isEmpty(groupByParentIdMap.get(companyId))) {
+                subCompanyIds.add(companyId);
+            } else {
+                CommonUtil.listSubmissionCompanyIds(subCompanyIds, companyId, groupByParentIdMap);
+            }
         });
-        baseMessage.put("addCount", count(communityResidentWrapper));
-        // baseMessage.put("haveToCount", companyMapper.select(companyWrapper).get("actual"));
+        LambdaQueryWrapper<CommunityResident> communityResidentWrapper = new LambdaQueryWrapper<>();
+        QueryWrapper<CompanyExtra> companyExtraWrapper = new QueryWrapper<>();
+        subCompanyIds.forEach(id -> {
+            communityResidentWrapper.eq(CommunityResident::getCompanyId, id).or();
+            companyExtraWrapper.and(wrapper -> wrapper.and(w -> w.eq("company_id", id)).eq("name", "haveToCount")).or();
+        });
+        companyExtraWrapper.select("IFNULL(SUM(name), 0) AS 'needTo'");
+        baseMessage.put("inputCount", baseMapper.selectCount(communityResidentWrapper));
+        List<Map<String, Object>> companyExtraMaps = companyExtraMapper.selectMaps(companyExtraWrapper);
+        double haveToCount = 0;
+        if (!companyExtraMaps.isEmpty()) {
+            haveToCount = (double)companyExtraMaps.get(0).get("needTo");
+        }
+        baseMessage.put("haveToCount", haveToCount);
         return baseMessage;
     }
 

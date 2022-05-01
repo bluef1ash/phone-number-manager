@@ -1,22 +1,24 @@
 package com.github.phonenumbermanager.controller;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.github.phonenumbermanager.constant.ComputedDataTypes;
 import com.github.phonenumbermanager.constant.enums.MenuTypeEnum;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemPermission;
+import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.vo.ComputedVo;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -67,48 +69,49 @@ public class IndexController extends BaseController {
      * 获取图表数据
      *
      *
-     * @param getType
-     *            需要获取的类型，null全部，1基本信息，2柱状图
-     * @param companyId
-     *            需要获取的单位编号
-     * @param barChartTypeParam
-     *            柱状图表类型参数
+     * @param computedVo
+     *            计算视图对象
      * @return Ajax返回JSON对象
      */
-    @GetMapping({"/computed", "/computed/{getType}/{companyId}/{barChartTypeParam}"})
+    @PostMapping("/computed")
     @ApiOperation("获取图表数据")
-    public R getComputedCount(@ApiParam(name = "需要获取的类型") @PathVariable(required = false) Integer getType,
-        @ApiParam(name = "需要获取的单位编号") @PathVariable(required = false) Long companyId,
-        @ApiParam(name = "柱状图表类型参数") @PathVariable(required = false) Boolean barChartTypeParam) {
+    public R getComputedCount(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
         getEnvironmentVariable();
+        Map<String, Object> data = new HashMap<>(3);
         Map<String, Object> resident = new HashMap<>(3);
         Map<String, Object> user = new HashMap<>(3);
         Map<String, Object> dormitory = new HashMap<>(3);
-        if (getType == ComputedDataTypes.RESIDENT_BASE_MESSAGE.getCode()) {
+        if (computedVo == null) {
             resident.put("baseMessage",
-                communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
-        } else if (getType == ComputedDataTypes.RESIDENT_BAR_CHART.getCode()) {
-            resident.put("barChart", communityResidentService.getBarChart(currentSystemUser.getCompanies(), companyId));
-        } else if (getType == ComputedDataTypes.RESIDENT_SUBCONTRACTOR_BAR_CHART.getCode()) {
-            user.put("barChart", systemUserService.getBarChart(currentSystemUser.getCompanies(), companyId));
-        } else if (getType == ComputedDataTypes.DORMITORY_BASE_MESSAGE.getCode()) {
+                communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), null));
+            resident.put("barChart", communityResidentService.getBarChart(currentSystemUser.getCompanies(), null));
+            // user.put("barChart", systemUserService.getBarChart(currentSystemUser.getCompanies(),
+            // null));
             dormitory.put("baseMessage",
-                dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
-        } else if (getType == ComputedDataTypes.DORMITORY_BAR_CHART.getCode()) {
-            dormitory.put("barChart",
-                dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(), companyId, barChartTypeParam));
+                dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), null));
+            // dormitory.put("barChart", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(),
+            // null, barChartTypeParam));
+        } else if (computedVo.getComputedType() == ComputedDataTypes.RESIDENT_BASE_MESSAGE.getCode()) {
+            resident.put("baseMessage",
+                communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), computedVo.getCompanyIds()));
+        } else if (computedVo.getComputedType() == ComputedDataTypes.RESIDENT_BAR_CHART.getCode()) {
+            resident.put("barChart",
+                communityResidentService.getBarChart(currentSystemUser.getCompanies(), computedVo.getCompanyIds()));
+        } else if (computedVo.getComputedType() == ComputedDataTypes.RESIDENT_SUBCONTRACTOR_BAR_CHART.getCode()) {
+            user.put("barChart",
+                systemUserService.getBarChart(currentSystemUser.getCompanies(), computedVo.getCompanyIds()));
+        } else if (computedVo.getComputedType() == ComputedDataTypes.DORMITORY_BASE_MESSAGE.getCode()) {
+            dormitory.put("baseMessage",
+                dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), computedVo.getCompanyIds()));
+        } else if (computedVo.getComputedType() == ComputedDataTypes.DORMITORY_BAR_CHART.getCode()) {
+            dormitory.put("barChart", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(),
+                computedVo.getCompanyIds(), computedVo.getBarChartTypeParam()));
         } else {
-            resident.put("baseMessage",
-                communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
-            resident.put("barChart", communityResidentService.getBarChart(currentSystemUser.getCompanies(), companyId));
-            user.put("barChart", systemUserService.getBarChart(currentSystemUser.getCompanies(), companyId));
-            dormitory.put("baseMessage",
-                dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), companyId));
-            dormitory.put("barChart",
-                dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(), companyId, barChartTypeParam));
+            throw new JsonException("计算错误！");
         }
-        return Objects
-            .requireNonNull(Objects.requireNonNull(R.ok().put("resident", resident)).put("currentSystemUser", user))
-            .put("dormitory", dormitory);
+        data.put("resident", resident);
+        data.put("currentSystemUser", user);
+        data.put("dormitory", dormitory);
+        return R.ok().put("data", data);
     }
 }

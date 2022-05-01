@@ -64,3 +64,26 @@ export enum MenuTypeEnum {
   FRONTEND = 'FRONTEND',
   BACKEND = 'BACKEND',
 }
+
+export enum ComputedDataTypes {
+  /**
+   * 社区居民基本信息
+   */
+  RESIDENT_BASE_MESSAGE = 1,
+  /**
+   * 社区居民柱状图表
+   */
+  RESIDENT_BAR_CHART,
+  /**
+   * 社区楼长基本信息
+   */
+  DORMITORY_BASE_MESSAGE,
+  /**
+   * 社区楼长柱状图表
+   */
+  DORMITORY_BAR_CHART,
+  /**
+   * 社区居民分包人柱状图表
+   */
+  RESIDENT_SUBCONTRACTOR_BAR_CHART,
+}

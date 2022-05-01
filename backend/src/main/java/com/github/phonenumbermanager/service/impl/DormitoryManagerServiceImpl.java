@@ -21,7 +21,6 @@ import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
-import com.github.phonenumbermanager.util.CommonUtil;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.IdcardUtil;
@@ -212,11 +211,10 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
+    public Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds) {
         List<Company> companyAll = companyMapper.selectList(null);
-        List<Long> companyIds = new ArrayList<>();
-        if (companyId != null) {
-            CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
+        if (companyIds != null) {
+            // CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
         }
         Map<String, Map<String, Integer>> computedBaseMessage = computedBaseMessage(companies, companyAll, companyIds);
         Map<String, Object> baseMessage = new HashMap<>();
@@ -243,13 +241,12 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public Map<String, Object> getBarChart(List<Company> companies, Long companyId, Boolean typeParam) {
+    public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, Boolean typeParam) {
         String label = "社区楼长分包总户数";
         List<Company> companyAll = companyMapper.selectList(null);
         LinkedList<Map<String, Object>> dormitoryManager = new LinkedList<>();
-        List<Long> companyIds = new ArrayList<>();
-        if (companyId == null) {
-            CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
+        if (companyIds == null) {
+            // CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
         }
         return barChartDataHandler(label, null, "户", dormitoryManager);
     }
@@ -336,7 +333,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
      * @return 录入统计信息
      */
     private Map<String, Map<String, Integer>> computedBaseMessage(List<Company> companies, List<Company> companyAll,
-        List<Long> companyIds) {
+        Long[] companyIds) {
         Map<String, Map<String, Integer>> baseMessage = new HashMap<>(5);
         /*Map<String, Integer> genderCount = new HashMap<>(2);
         genderCount.put("男性", 0);

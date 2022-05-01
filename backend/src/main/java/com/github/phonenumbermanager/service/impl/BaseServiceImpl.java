@@ -72,7 +72,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public Map<String, Object> getBaseMessage(List<Company> companies, Long companyId) {
+    public Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds) {
         return null;
     }
 
@@ -93,7 +93,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public Map<String, Object> getBarChart(List<Company> companies, Long companyId) {
+    public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds) {
         return null;
     }
 

@@ -4,6 +4,7 @@ export const account = {
 };
 export const index = {
   menu: REACT_APP_API_BASE_URL + '/index/menu',
+  dashboardComputed: REACT_APP_API_BASE_URL + '/index/computed',
 };
 export const communityResident = REACT_APP_API_BASE_URL + '/resident';
 export const communityResidentBatch = REACT_APP_API_BASE_URL + '/resident/batch';

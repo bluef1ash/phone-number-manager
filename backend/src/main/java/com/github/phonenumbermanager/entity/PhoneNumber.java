@@ -4,6 +4,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
@@ -29,6 +31,7 @@ import lombok.experimental.Accessors;
 public class PhoneNumber extends BaseEntity<PhoneNumber> {
     @ApiModelProperty("联系方式编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时联系方式编号不能为空！")
+    @JsonSerialize(using = ToStringSerializer.class)
     @TableId
     private Long id;
     @ApiModelProperty("联系方式")

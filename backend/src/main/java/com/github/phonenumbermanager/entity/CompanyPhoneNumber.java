@@ -3,6 +3,8 @@ package com.github.phonenumbermanager.entity;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -29,9 +31,11 @@ public class CompanyPhoneNumber extends BaseEntity<CompanyPhoneNumber> {
     @ApiModelProperty("所属单位编号")
     @NotNull(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "所属单位编号不能为空！")
     @Min(value = 0, message = "所属单位编号不正确！")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long companyId;
     @ApiModelProperty("所属联系方式编号")
     @NotNull(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "所属联系方式编号不能为空！")
     @Min(value = 0, message = "所属联系方式编号不正确！")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long phoneNumberId;
 }

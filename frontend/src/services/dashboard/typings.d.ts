@@ -1,5 +1,7 @@
 declare module '*.less';
 declare namespace API {
+  import type { ColumnConfig } from '@ant-design/charts';
+
   type DashboardComputedPostData = {
     computedType?: number;
     companyIds?: number[];
@@ -8,22 +10,19 @@ declare namespace API {
   type DashboardComputed = {
     currentSystemUser?: SystemUser;
     dormitory?: {
-      barChart: ComputedBarChart;
-      baseMessage: ComputedBaseMessage;
+      baseMessage?: ResidentComputedBaseMessage;
+      barChart?: ComputedBarChart;
     };
     resident?: {
-      barChart: ComputedBarChart;
-      baseMessage: ComputedBaseMessage;
+      baseMessage?: ResidentComputedBaseMessage;
+      barChart?: ColumnConfig;
     };
   };
-  type ComputedBaseMessage = {
-    resident: {
-      inputCount?: number;
-      haveToCount?: number;
-      needToCount?: number;
-      inputHaveToRatio?: number;
-      loading?: boolean;
-    };
+  type ResidentComputedBaseMessage = {
+    inputCount?: number;
+    haveToCount?: number;
+    needToCount?: number;
+    inputHaveToRatio?: number;
+    loading?: boolean;
   };
-  type ComputedBarChart = {};
 }

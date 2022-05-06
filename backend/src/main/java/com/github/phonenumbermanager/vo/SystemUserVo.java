@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,6 +27,7 @@ import lombok.experimental.Accessors;
 @ApiModel("系统用户传给前台对象")
 public class SystemUserVo implements Serializable {
     @ApiModelProperty("系统用户编号")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     @ApiModelProperty("系统用户名称")
     private String username;
@@ -49,6 +52,7 @@ public class SystemUserVo implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime credentialExpireTime;
     @ApiModelProperty("联系方式编号")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long phoneNumberId;
     @ApiModelProperty("系统用户所属单位")
     private List<CompanyVo> companies;

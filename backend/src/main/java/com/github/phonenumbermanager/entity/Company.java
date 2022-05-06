@@ -11,6 +11,8 @@ import org.springframework.security.core.GrantedAuthority;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -34,6 +36,7 @@ import lombok.experimental.Accessors;
 public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @ApiModelProperty("单位编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
+    @JsonSerialize(using = ToStringSerializer.class)
     @TableId
     private Long id;
     @ApiModelProperty("单位名称")
@@ -43,6 +46,7 @@ public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @ApiModelProperty("上级单位编号")
     @NotNull(groups = CreateInputGroup.class, message = "上级单位不能为空！")
     @Min(value = 0, message = "上级单位编号不正确！")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long parentId;
     @ApiModelProperty("单位联系方式")
     @NotNull(message = "单位的联系方式不能为空！")

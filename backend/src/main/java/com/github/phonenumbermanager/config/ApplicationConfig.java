@@ -177,8 +177,6 @@ public class ApplicationConfig {
         objectMapper.registerModule(javaTimeModule);
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(BigInteger.class, ToStringSerializer.instance);
-        simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
-        simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
         objectMapper.registerModule(simpleModule);
         jackson2HttpMessageConverter.setObjectMapper(objectMapper);
         return jackson2HttpMessageConverter;
@@ -194,7 +192,7 @@ public class ApplicationConfig {
      * @param corsProperties
      * @param webEndpointProperties
      * @param environment
-     * @return
+     * @return 服务监控
      */
     @Bean
     @ConditionalOnMissingBean

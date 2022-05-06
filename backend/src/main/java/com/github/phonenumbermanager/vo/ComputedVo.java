@@ -2,6 +2,9 @@ package com.github.phonenumbermanager.vo;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -23,6 +26,7 @@ public class ComputedVo implements Serializable {
     @ApiModelProperty("需要获取的类型")
     private Integer computedType;
     @ApiModelProperty("需要获取的单位编号集合")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long[] companyIds;
     @ApiModelProperty("柱状图表类型参数")
     private Boolean barChartTypeParam;

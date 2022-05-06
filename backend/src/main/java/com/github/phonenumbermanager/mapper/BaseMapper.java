@@ -95,8 +95,8 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      * @throws DataAccessException
      *             数据库操作异常
      */
-    @MapKey("name")
-    List<Map<String, Object>> countForGroupCompany(List<Serializable> companyIds) throws DataAccessException;
+    @MapKey("companyName")
+    List<Map<String, Integer>> countForGroupCompany(List<Serializable> companyIds) throws DataAccessException;
 
     /**
      * 查询所有对象（分页）

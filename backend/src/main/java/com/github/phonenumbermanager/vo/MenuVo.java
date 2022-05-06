@@ -3,6 +3,9 @@ package com.github.phonenumbermanager.vo;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +23,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode
 public class MenuVo implements Serializable {
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     private String name;
     private String path;

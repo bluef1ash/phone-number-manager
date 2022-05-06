@@ -158,10 +158,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         SystemUser principal = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (systemAdministratorId.equals(principal.getId()) && companies == null) {
-            companies = companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
+            companies = companyAll;
         }
-        List<Long> companyIds = getSubordinateCompanyIds(companies, companyAll);
-        List<DormitoryManager> dormitoryManagers = baseMapper.selectListByCompanyIds(companyIds);
+        List<Long> subordinateCompanyIds =
+            getSubordinateCompanyIds(companies, companies.stream().map(Company::getId).toArray(Long[]::new));
+        List<DormitoryManager> dormitoryManagers = baseMapper.selectListByCompanyIds(subordinateCompanyIds);
         if (dormitoryManagers.isEmpty()) {
             return null;
         }
@@ -248,7 +249,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         if (companyIds == null) {
             // CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
         }
-        return barChartDataHandler(label, null, "户", dormitoryManager);
+        return null;// barChartDataHandler(label, null, "户", dormitoryManager);
     }
 
     @Transactional(rollbackFor = Exception.class)

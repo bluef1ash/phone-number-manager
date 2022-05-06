@@ -25,7 +25,6 @@ import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.CommonUtil;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
@@ -210,10 +209,11 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         SystemUser principal = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (systemAdministratorId.equals(principal.getId()) && companies == null) {
-            companies = companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
+            companies = companyAll;
         }
-        List<Long> companyIds = getSubordinateCompanyIds(companies, companyAll);
-        List<CommunityResident> communityResidents = baseMapper.selectListByCompanyIds(companyIds);
+        List<Long> subordinateCompanyIds =
+            getSubordinateCompanyIds(companies, companies.stream().map(Company::getId).toArray(Long[]::new));
+        List<CommunityResident> communityResidents = baseMapper.selectListByCompanyIds(subordinateCompanyIds);
         if (communityResidents.isEmpty()) {
             return null;
         }
@@ -289,21 +289,25 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds) {
-        List<Map<String, Object>> communityResidents = new ArrayList<>();
         List<Company> companyAll = companyMapper.selectList(null);
-        if (companyIds == null) {
-            // companyService.listSubmissionCompanyIds(companyIds, companies, companyAll, 0, null);
-            // communityResidents = baseMapper.countForGroupCompany(companyIds);
-        } else {
-            // companyService.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
-            // if (companyIds.contains(companyI)) {
-            // List<Company> companyList = companyMapper.selectList(new QueryWrapper<Company>().eq("id", companyId));
-            // companyIds.clear();
-            // companyService.listSubmissionCompanyIds(companyIds, companyList, companyAll, 0, null);
-            // communityResidents = baseMapper.countForGroupCompany(companyIds);
-            // }
+        if (companies == null) {
+            companies = companyAll;
         }
-        return barChartDataHandler("社区居民总户数", null, "户", communityResidents);
+        if (companyIds == null) {
+            companyIds = companies.stream().map(Company::getId).toArray(Long[]::new);
+        }
+        Map<String, Object> barChart = new HashMap<>(3);
+        Map<String, Object> meta = new HashMap<>(2);
+        Map<String, Object> companyNameAlias = new HashMap<>(1);
+        Map<String, Object> personNumberAlias = new HashMap<>(1);
+        companyNameAlias.put("alias", "单位");
+        personNumberAlias.put("alias", "辖区居民数");
+        meta.put("companyName", companyNameAlias);
+        meta.put("personNumber", personNumberAlias);
+        barChart.put("xFields", "companyName");
+        barChart.put("yFields", "personNumber");
+        barChart.put("meta", meta);
+        return barChartDataHandler(companyAll, companyIds, barChart);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -329,19 +333,10 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      */
     private Map<String, Object> computedBaseMessage(List<Company> companies, Long[] companyIds) {
         Map<String, Object> baseMessage = new HashMap<>(2);
-        List<Long> subCompanyIds = new ArrayList<>();
-        Map<Long, List<Company>> groupByParentIdMap =
-            companies.stream().collect(Collectors.groupingBy(Company::getParentId));
-        Arrays.stream(companyIds).forEach(companyId -> {
-            if (CollUtil.isEmpty(groupByParentIdMap.get(companyId))) {
-                subCompanyIds.add(companyId);
-            } else {
-                CommonUtil.listSubmissionCompanyIds(subCompanyIds, companyId, groupByParentIdMap);
-            }
-        });
+        List<Long> subordinateCompanyIds = getSubordinateCompanyIds(companies, companyIds);
         LambdaQueryWrapper<CommunityResident> communityResidentWrapper = new LambdaQueryWrapper<>();
         QueryWrapper<CompanyExtra> companyExtraWrapper = new QueryWrapper<>();
-        subCompanyIds.forEach(id -> {
+        subordinateCompanyIds.forEach(id -> {
             communityResidentWrapper.eq(CommunityResident::getCompanyId, id).or();
             companyExtraWrapper.and(wrapper -> wrapper.and(w -> w.eq("company_id", id)).eq("name", "haveToCount")).or();
         });

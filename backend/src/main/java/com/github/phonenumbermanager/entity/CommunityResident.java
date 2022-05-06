@@ -10,6 +10,8 @@ import org.hibernate.validator.constraints.Length;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -33,6 +35,7 @@ import lombok.experimental.Accessors;
 public class CommunityResident extends BaseEntity<CommunityResident> {
     @ApiModelProperty("社区居民编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
+    @JsonSerialize(using = ToStringSerializer.class)
     @TableId
     private Long id;
     @ApiModelProperty("社区居民姓名")
@@ -45,9 +48,11 @@ public class CommunityResident extends BaseEntity<CommunityResident> {
     private String address;
     @ApiModelProperty("所属社区分包人编号")
     @Min(value = 1, message = "所属社区分包人编号不正确！")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long systemUserId;
     @ApiModelProperty("所属社区编号")
     @Min(value = 1, message = "所属社区编号不正确！")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long companyId;
     @NotNull(groups = CreateInputGroup.class, message = "社区居民分包人不能为空！")
     @TableField(exist = false)

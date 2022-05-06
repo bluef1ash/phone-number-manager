@@ -18,6 +18,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -42,6 +44,7 @@ import lombok.experimental.Accessors;
 public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @ApiModelProperty("系统用户编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
+    @JsonSerialize(using = ToStringSerializer.class)
     @TableId
     private Long id;
     @ApiModelProperty("系统用户名称")

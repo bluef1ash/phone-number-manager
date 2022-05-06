@@ -13,6 +13,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.constant.enums.MenuTypeEnum;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
@@ -38,6 +40,7 @@ import lombok.experimental.Accessors;
 public class SystemPermission extends BaseEntity<SystemPermission> {
     @ApiModelProperty("系统权限编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
+    @JsonSerialize(using = ToStringSerializer.class)
     @TableId
     private Long id;
     @ApiModelProperty("系统权限名称")
@@ -61,6 +64,7 @@ public class SystemPermission extends BaseEntity<SystemPermission> {
     @ApiModelProperty("系统权限上级编号")
     @NotNull(groups = CreateInputGroup.class, message = "系统权限上级编号不能为空！")
     @Min(value = 0, message = "系统权限上级编号不正确！")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long parentId;
     @ApiModelProperty("排序")
     private Integer orderBy;

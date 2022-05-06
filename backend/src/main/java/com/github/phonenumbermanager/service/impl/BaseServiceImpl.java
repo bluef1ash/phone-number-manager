@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.poi.excel.ExcelWriter;
 import cn.hutool.poi.excel.style.StyleUtil;
@@ -108,43 +110,6 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     /**
-     * 柱状图数据处理
-     *
-     * @param label
-     *            饼图图例
-     * @param companyLabel
-     *            柱状图横坐标文字
-     * @param formatter
-     *            格式文字
-     * @param object
-     *            饼图数据内容
-     * @return 处理后的对象
-     */
-    protected Map<String, Object> barChartDataHandler(String label, String companyLabel, String formatter,
-        List<Map<String, Object>> object) {
-        Map<String, Object> barChartMap = new HashMap<>(3);
-        List<String> columns = new ArrayList<>();
-        List<Map<String, Object>> rows = new ArrayList<>();
-        Map<String, Object> data = new HashMap<>(3);
-        List<String> titleLabel = new ArrayList<>();
-        for (Map<String, Object> residentCount : object) {
-            Map<String, Object> row = new HashMap<>(3);
-            row.put(companyLabel, residentCount.get("name"));
-            titleLabel.add((String)residentCount.get("name"));
-            row.put(label, residentCount.get("value"));
-            rows.add(row);
-        }
-        columns.add(companyLabel);
-        columns.add(label);
-        barChartMap.put("columns", columns);
-        barChartMap.put("rows", rows);
-        data.put("data", barChartMap);
-        data.put("titleLabel", titleLabel);
-        data.put("formatter", formatter);
-        return data;
-    }
-
-    /**
      * 设置单元格样式
      *
      * @param cellStyle
@@ -182,13 +147,39 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      *
      * @param companies
      *            登录的系统用户单位集合
-     * @param companyAll
-     *            所有单位集合
+     * @param companyIds
+     *            单位编号数组
      * @return 最下级单位编号集合
      */
-    protected List<Long> getSubordinateCompanyIds(List<Company> companies, List<Company> companyAll) {
-        List<Long> companyIds = new ArrayList<>();
-        companies.forEach(company -> CommonUtil.listRecursionCompanyIds(companyIds, companyAll, company.getId()));
-        return companyIds;
+    protected List<Long> getSubordinateCompanyIds(List<Company> companies, Long[] companyIds) {
+        List<Long> subCompanyIds = new ArrayList<>();
+        Map<Long, List<Company>> groupByParentIdMap =
+            companies.stream().collect(Collectors.groupingBy(Company::getParentId));
+        Arrays.stream(companyIds).forEach(companyId -> {
+            if (CollUtil.isEmpty(groupByParentIdMap.get(companyId))) {
+                subCompanyIds.add(companyId);
+            } else {
+                CommonUtil.listSubmissionCompanyIds(subCompanyIds, companyId, groupByParentIdMap);
+            }
+        });
+        return subCompanyIds;
+    }
+
+    /**
+     * 柱状图数据处理
+     *
+     * @param companies
+     *            登录的用户所属单位
+     * @param companyIds
+     *            查询单位编号数组
+     * @param barChart
+     *            数据
+     * @return 处理后的对象
+     */
+    protected Map<String, Object> barChartDataHandler(List<Company> companies, Long[] companyIds,
+        Map<String, Object> barChart) {
+        List<Long> subordinateCompanyIds = getSubordinateCompanyIds(companies, companyIds);
+        barChart.put("data", baseMapper.countForGroupCompany(new ArrayList<>(subordinateCompanyIds)));
+        return barChart;
     }
 }

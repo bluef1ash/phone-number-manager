@@ -6,6 +6,8 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.constant.enums.FieldTypeEnum;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
@@ -30,6 +32,7 @@ import lombok.experimental.Accessors;
 public class Configuration extends BaseEntity<Configuration> {
     @ApiModelProperty("系统配置编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
+    @JsonSerialize(using = ToStringSerializer.class)
     @TableId
     private Long id;
     @ApiModelProperty("系统配置标题")

@@ -12,6 +12,8 @@ import org.hibernate.validator.constraints.Length;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.constant.enums.EducationStatusEnum;
 import com.github.phonenumbermanager.constant.enums.EmploymentStatusEnum;
 import com.github.phonenumbermanager.constant.enums.GenderEnum;
@@ -39,6 +41,7 @@ import lombok.experimental.Accessors;
 public class DormitoryManager extends BaseEntity<DormitoryManager> {
     @ApiModelProperty("社区居民楼片长编号")
     @NotNull(groups = ModifyInputGroup.class, message = "修改时编号不能为空！")
+    @JsonSerialize(using = ToStringSerializer.class)
     @TableId
     private Long id;
     @ApiModelProperty("社区居民楼片长名称")
@@ -84,6 +87,7 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     private Long systemUserId;
     @ApiModelProperty("所属社区编号")
     @Min(value = 0, message = "所属社区编号不正确！")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long companyId;
     @TableField(exist = false)
     @ApiModelProperty("社区居民楼片长联系方式")

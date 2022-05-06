@@ -42,7 +42,7 @@ export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
   };
 } & Omit<ProTableProps<T, U>, 'children'>;
 
-function DataList<T, U extends ParamsType>({
+function DataList<T extends API.BaseEntity, U extends ParamsType>({
   customActionRef,
   customColumns,
   customRequest,
@@ -52,15 +52,13 @@ function DataList<T, U extends ParamsType>({
   createEditModalForm,
   modifyEditModalForm,
   ...restProps
-}: //@ts-ignore
-DataListProps<T, U>): JSX.Element {
+}: DataListProps<T, U>) {
   const [selectedRowKeysState, setSelectedRowKeys] = useState<Key[]>([]);
   const customFormColumns: ProColumns<T>[] = [
     ...(customColumns || []),
     {
       title: '操作',
       valueType: 'option',
-      //@ts-ignore
       render: (node, { id }: T) => [
         <EditModalForm<T>
           key={'edit_modal' + id.toString()}
@@ -76,10 +74,14 @@ DataListProps<T, U>): JSX.Element {
             },
           }}
           onFinish={async (formData) => {
-            //@ts-ignore
             formData.id = id;
-            //@ts-ignore
-            const { code, message } = await modifyEditModalForm?.onFinish?.(formData);
+            if (
+              typeof modifyEditModalForm === 'undefined' ||
+              typeof modifyEditModalForm.onFinish === 'undefined'
+            ) {
+              return;
+            }
+            const { code, message } = await modifyEditModalForm.onFinish(formData);
             if (code === 200) {
               msg.success(message === 'success' ? '修改成功！' : message);
               customActionRef?.current?.reload();
@@ -90,9 +92,15 @@ DataListProps<T, U>): JSX.Element {
           }}
           onVisibleChange={async (visible) => {
             if (visible) {
-              //@ts-ignore
-              const { code, data } = await modifyEditModalForm?.queryData?.(id);
-              if (code === 200) {
+              if (
+                typeof modifyEditModalForm === 'undefined' ||
+                typeof modifyEditModalForm.queryData === 'undefined'
+              ) {
+                return;
+              }
+              const { code, data } = await modifyEditModalForm.queryData(id);
+              if (code === 200 && typeof data !== 'undefined') {
+                //@ts-ignore
                 modifyEditModalForm?.formRef?.current?.setFieldsValue(data);
               }
             }
@@ -105,8 +113,13 @@ DataListProps<T, U>): JSX.Element {
         <Popconfirm
           title="是否真的要删除此条目？"
           onConfirm={async () => {
-            //@ts-ignore
-            const { code, message } = await modifyEditModalForm?.onConfirmRemove?.(id);
+            if (
+              typeof modifyEditModalForm === 'undefined' ||
+              typeof modifyEditModalForm.onConfirmRemove === 'undefined'
+            ) {
+              return;
+            }
+            const { code, message } = await modifyEditModalForm.onConfirmRemove(id);
             if (code === 200) {
               msg.success(message === 'success' ? '删除成功！' : message);
               customActionRef?.current?.reload();
@@ -218,7 +231,12 @@ DataListProps<T, U>): JSX.Element {
           }}
           width={600}
           onFinish={async (formData) => {
-            //@ts-ignore
+            if (
+              typeof createEditModalForm === 'undefined' ||
+              typeof createEditModalForm.onFinish === 'undefined'
+            ) {
+              return;
+            }
             const { code, message } = await createEditModalForm?.onFinish?.(formData);
             if (code === 200) {
               msg.success(message === 'success' ? '添加成功！' : message);
@@ -226,7 +244,7 @@ DataListProps<T, U>): JSX.Element {
               return true;
             }
             msg.error(message);
-            return undefined;
+            return false;
           }}
           formRef={createEditModalForm?.formRef}
           {...createEditModalForm?.props}

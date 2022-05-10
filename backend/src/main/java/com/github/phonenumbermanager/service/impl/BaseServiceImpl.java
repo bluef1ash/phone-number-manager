@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONObject;
 import cn.hutool.poi.excel.ExcelWriter;
 import cn.hutool.poi.excel.style.StyleUtil;
@@ -100,7 +102,8 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap) {
+    public ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser,
+        Map<String, JSONObject> configurationMap) {
         return null;
     }
 
@@ -147,19 +150,22 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      *
      * @param companies
      *            登录的系统用户单位集合
-     * @param companyIds
-     *            单位编号数组
      * @return 最下级单位编号集合
      */
-    protected List<Long> getSubordinateCompanyIds(List<Company> companies, Long[] companyIds) {
+    protected List<Long> getSubordinateCompanyIds(List<Company> companies, List<Company> companyAll) {
         List<Long> subCompanyIds = new ArrayList<>();
+        List<Company> companyList = new ArrayList<>();
+        companies.forEach(company -> {
+            companyList.add(company);
+            companyList.addAll(CommonUtil.listRecursionCompanies(companyAll, company.getId()));
+        });
         Map<Long, List<Company>> groupByParentIdMap =
-            companies.stream().collect(Collectors.groupingBy(Company::getParentId));
-        Arrays.stream(companyIds).forEach(companyId -> {
-            if (CollUtil.isEmpty(groupByParentIdMap.get(companyId))) {
-                subCompanyIds.add(companyId);
+            companyList.stream().collect(Collectors.groupingBy(Company::getParentId));
+        companyAll.forEach(company -> {
+            if (CollUtil.isEmpty(groupByParentIdMap.get(company.getId()))) {
+                subCompanyIds.add(company.getId());
             } else {
-                CommonUtil.listSubmissionCompanyIds(subCompanyIds, companyId, groupByParentIdMap);
+                CommonUtil.listSubmissionCompanyIds(subCompanyIds, company.getId(), groupByParentIdMap);
             }
         });
         return subCompanyIds;
@@ -168,18 +174,87 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     /**
      * 柱状图数据处理
      *
-     * @param companies
-     *            登录的用户所属单位
+     * @param companyAll
+     *            所有单位集合
      * @param companyIds
      *            查询单位编号数组
      * @param barChart
      *            数据
      * @return 处理后的对象
      */
-    protected Map<String, Object> barChartDataHandler(List<Company> companies, Long[] companyIds,
+    protected Map<String, Object> barChartDataHandler(List<Company> companyAll, Long[] companyIds,
         Map<String, Object> barChart) {
-        List<Long> subordinateCompanyIds = getSubordinateCompanyIds(companies, companyIds);
-        barChart.put("data", baseMapper.countForGroupCompany(new ArrayList<>(subordinateCompanyIds)));
+        List<Company> companies = new ArrayList<>();
+        List<Long> subordinateCompanyIds = new ArrayList<>();
+        for (Long companyId : companyIds) {
+            subordinateCompanyIds.addAll(CommonUtil.listRecursionCompanies(companyAll, companyId).stream()
+                .map(Company::getId).collect(Collectors.toList()));
+            companies.addAll(companyAll.stream().filter(company -> companyId.equals(company.getParentId()))
+                .collect(Collectors.toList()));
+        }
+        Map<BigInteger, Map<String, Long>> dataMap = baseMapper.countForGroupCompany(subordinateCompanyIds);
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (Company company : companies) {
+            Map<String, Object> counter = new HashMap<>(2);
+            long count = 0L;
+            List<Long> subCompanyIds = CommonUtil.listRecursionCompanyIds(companyAll, company.getId());
+            if (subCompanyIds.size() > 0) {
+                for (Long subCompanyId : subCompanyIds) {
+                    BigInteger id = BigInteger.valueOf(subCompanyId);
+                    if (dataMap.get(id) != null) {
+                        count += dataMap.get(id).get("personCount");
+                    }
+                }
+            } else {
+                BigInteger id = BigInteger.valueOf(company.getId());
+                count = dataMap.get(id).get("personCount");
+            }
+            counter.put("companyName", company.getName());
+            counter.put("personCount", count);
+            data.add(counter);
+        }
+        barChart.put("data", data);
         return barChart;
+    }
+
+    /**
+     * 导出Excel文件获取下级单位编号
+     *
+     * @param currentSystemUser
+     *            当前已登录的系统用户
+     * @param configurationMap
+     *            系统配置项
+     * @param companyAll
+     *            所有单位集合
+     * @return 下级单位编号
+     */
+    protected List<Long> exportExcelGetSubordinateCompanyIds(SystemUser currentSystemUser,
+        Map<String, JSONObject> configurationMap, List<Company> companyAll) {
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
+        List<Company> companies;
+        if (systemAdministratorId.equals(currentSystemUser.getId()) && currentSystemUser.getCompanies() == null) {
+            companies = companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
+        } else {
+            companies = currentSystemUser.getCompanies();
+        }
+        return getSubordinateCompanyIds(companies, companyAll);
+    }
+
+    /**
+     * 导出Excel文件标题处理
+     *
+     * @param excelWriter
+     *            Excel写入对象
+     * @param title
+     *            标题
+     * @param mergeSize
+     *            合并单元格大小
+     */
+    protected void exportExcelTitleHandle(ExcelWriter excelWriter, String title, Integer mergeSize) {
+        excelWriter.passCurrentRow();
+        CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
+        setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
+        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, mergeSize, title, titleStyle);
+        excelWriter.passCurrentRow();
     }
 }

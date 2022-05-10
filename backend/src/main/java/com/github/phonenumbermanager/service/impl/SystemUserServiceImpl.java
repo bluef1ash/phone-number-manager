@@ -156,7 +156,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         List<Long> companyIds = new ArrayList<>();
         List<Company> companyAll = companyMapper.selectList(null);
         if (companies != null) {
-            CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, 0L);
+            companyIds = CommonUtil.listRecursionCompanyIds(companies, companyAll, 0L);
         }
         IPage<SystemUser> systemUsers =
             baseMapper.selectCorrelationByCompanyIds(companyIds, new Page<>(pageNumber, pageDataSize), search, sort);

@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -151,17 +150,13 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     @Override
-    public ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap) {
+    public ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser,
+        Map<String, JSONObject> configurationMap) {
         String excelDormitoryTitleUp = Convert.toStr(configurationMap.get("excel_dormitory_title_up").get("content"));
         String excelDormitoryTitle = Convert.toStr(configurationMap.get("excel_dormitory_title").get("content"));
         List<Company> companyAll = companyMapper.selectList(null);
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
-        SystemUser principal = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (systemAdministratorId.equals(principal.getId()) && companies == null) {
-            companies = companyAll;
-        }
         List<Long> subordinateCompanyIds =
-            getSubordinateCompanyIds(companies, companies.stream().map(Company::getId).toArray(Long[]::new));
+            exportExcelGetSubordinateCompanyIds(currentSystemUser, configurationMap, companyAll);
         List<DormitoryManager> dormitoryManagers = baseMapper.selectListByCompanyIds(subordinateCompanyIds);
         if (dormitoryManagers.isEmpty()) {
             return null;
@@ -172,12 +167,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
         excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, 1, excelDormitoryTitleUp,
             firstRowStyle);
-        excelWriter.passCurrentRow();
-        CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
-        setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
-        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, list.get(0).keySet().size(),
-            excelDormitoryTitle, titleStyle);
-        excelWriter.passCurrentRow();
+        exportExcelTitleHandle(excelWriter, excelDormitoryTitle, list.get(0).keySet().size());
         StyleSet styleSet = excelWriter.getStyleSet();
         setCellStyle(styleSet.getHeadCellStyle(), excelWriter, "宋体", (short)11, false, true, true);
         setCellStyle(styleSet.getCellStyle(), excelWriter, "宋体", (short)9, false, true, true);

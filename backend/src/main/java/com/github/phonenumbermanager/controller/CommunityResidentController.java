@@ -173,7 +173,7 @@ public class CommunityResidentController extends BaseController {
     public void communityResidentSaveAsExcel(HttpServletResponse response) {
         getEnvironmentVariable();
         ExcelWriter excelWriter =
-            communityResidentService.listCorrelationExportExcel(currentSystemUser.getCompanies(), configurationMap);
+            communityResidentService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");
     }
 

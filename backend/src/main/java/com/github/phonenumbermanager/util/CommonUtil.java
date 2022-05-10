@@ -25,6 +25,7 @@ import cn.hutool.core.util.StrUtil;
  *
  * @author 廿二月的天
  */
+@SuppressWarnings("unused")
 public class CommonUtil {
     private static final Pattern SPECIAL_PATTERN = Pattern.compile("[\\s\\t\\r\\n]");
 
@@ -157,44 +158,65 @@ public class CommonUtil {
     /**
      * 递归获取链条单位编号
      *
-     * @param companyIds
-     *            递归单位编号集合
      * @param companies
      *            单位对象集合
      * @param companyAll
      *            所有单位对象集合
      * @param parentId
      *            上级单位编号
+     * @return 递归单位编号集合
      */
-    public static void listRecursionCompanyIds(List<Long> companyIds, List<Company> companies, List<Company> companyAll,
-        Long parentId) {
+    public static List<Long> listRecursionCompanyIds(List<Company> companies, List<Company> companyAll, Long parentId) {
+        List<Long> companyIds = new ArrayList<>();
         companies.forEach(company -> {
             if (parentId.equals(company.getParentId())) {
                 companyIds.add(company.getId());
             } else {
-                List<Company> companies1 = companyAll.stream()
-                    .filter(company1 -> company1.getParentId().equals(company.getId())).collect(Collectors.toList());
-                listRecursionCompanyIds(companyIds, companies1, companyAll, company.getId());
+                List<Company> companyList = companyAll.stream().filter(c -> c.getParentId().equals(company.getId()))
+                    .collect(Collectors.toList());
+                companyIds.addAll(listRecursionCompanyIds(companyList, companyAll, company.getId()));
             }
         });
+        return companyIds;
     }
 
     /**
-     * 递归获取链条单位编号
+     * 递归获取单位树编号集合
      *
-     * @param companyIds
-     *            递归单位编号集合
      * @param companies
-     *            单位对象集合
+     *            所有单位集合
      * @param parentId
-     *            上级单位编号
+     *            父级编号
+     * @return 单位树编号集合
      */
-    public static void listRecursionCompanyIds(List<Long> companyIds, List<Company> companies, Long parentId) {
-        companies.forEach(company -> {
+    public static List<Long> listRecursionCompanyIds(List<Company> companies, Long parentId) {
+        List<Long> companyIds = new ArrayList<>();
+        for (Company company : companies) {
             if (parentId.equals(company.getParentId())) {
-                listRecursionCompanyIds(companyIds, companies, company.getId());
                 companyIds.add(company.getId());
+                companyIds.addAll(listRecursionCompanyIds(companies, company.getId()));
             }
-        });
+        }
+        return companyIds;
+    }
+
+    /**
+     * 递归获取单位树集合
+     *
+     * @param companyAll
+     *            所有单位集合
+     * @param parentId
+     *            父级编号
+     * @return 单位树集合
+     */
+    public static List<Company> listRecursionCompanies(List<Company> companyAll, Long parentId) {
+        List<Company> companies = new ArrayList<>();
+        for (Company company : companyAll) {
+            if (parentId.equals(company.getParentId())) {
+                companies.add(company);
+                companies.addAll(listRecursionCompanies(companyAll, company.getId()));
+            }
+        }
+        return companies;
     }
 }

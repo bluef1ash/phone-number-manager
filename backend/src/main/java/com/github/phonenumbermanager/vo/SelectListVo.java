@@ -32,5 +32,6 @@ public class SelectListVo implements Serializable {
     private Long value;
     private Boolean isLeaf;
     private Boolean loading;
+    private Boolean isSubordinate;
     private List<SelectListVo> children;
 }

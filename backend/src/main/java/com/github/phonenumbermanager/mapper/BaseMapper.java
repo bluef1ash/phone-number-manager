@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.mapper;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
+    @SuppressWarnings("all")
     int insertBatchSomeColumn(Collection<T> list);
 
     /**
@@ -40,6 +42,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
+    @SuppressWarnings("all")
     int insertIgnore(T entity);
 
     /**
@@ -49,6 +52,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
+    @SuppressWarnings("all")
     int insertIgnoreBatchSomeColumn(Collection<T> list);
 
     /**
@@ -95,8 +99,8 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      * @throws DataAccessException
      *             数据库操作异常
      */
-    @MapKey("companyName")
-    List<Map<String, Integer>> countForGroupCompany(List<Serializable> companyIds) throws DataAccessException;
+    @MapKey("companyId")
+    Map<BigInteger, Map<String, Long>> countForGroupCompany(List<Long> companyIds) throws DataAccessException;
 
     /**
      * 查询所有对象（分页）

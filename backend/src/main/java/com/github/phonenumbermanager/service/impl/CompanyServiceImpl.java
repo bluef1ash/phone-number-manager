@@ -2,7 +2,6 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,6 +19,7 @@ import com.github.phonenumbermanager.service.CompanyExtraService;
 import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
 
@@ -161,14 +161,13 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
 
     @Override
     public List<SelectListVo> treeSelectList(Long[] parentIds) {
-        LambdaQueryWrapper<Company> wrapper = new LambdaQueryWrapper<>();
-        Arrays.stream(parentIds).forEach(parentId -> wrapper.eq(Company::getParentId, parentId));
-        return baseMapper.selectList(wrapper).stream()
-            .map(company -> new SelectListVo().setId(company.getId()).setValue(company.getId())
-                .setName(company.getName()).setLabel(company.getName()).setTitle(company.getName())
-                .setIsLeaf(baseMapper
-                    .selectCount(new LambdaQueryWrapper<Company>().eq(Company::getParentId, company.getId())) == 0))
-            .collect(Collectors.toList());
+        List<Company> companies = baseMapper.selectList(null);
+        return companies.stream().filter(company -> ArrayUtil.contains(parentIds, company.getParentId()))
+            .map(company -> {
+                boolean isLeaf = companies.stream().noneMatch(c -> c.getParentId().equals(company.getId()));
+                return new SelectListVo().setId(company.getId()).setValue(company.getId()).setName(company.getName())
+                    .setLabel(company.getName()).setTitle(company.getName()).setIsSubordinate(isLeaf).setIsLeaf(isLeaf);
+            }).collect(Collectors.toList());
     }
 
     /**
@@ -190,30 +189,6 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             }
         }
         return company;
-    }
-
-    /**
-     * 树形递归选择框
-     *
-     * @param baseSelect
-     *            根节点
-     * @param companies
-     *            需要整理的单位集合
-     * @return 树形完成
-     */
-    private SelectListVo treeRecursiveSelect(SelectListVo baseSelect, List<Company> companies) {
-        for (Company company : companies) {
-            SelectListVo selectListVo = new SelectListVo();
-            selectListVo.setValue(company.getId()).setId(company.getId()).setTitle(company.getName())
-                .setLabel(company.getName()).setName(company.getName());
-            if (baseSelect.getValue().equals(company.getParentId())) {
-                if (baseSelect.getChildren() == null) {
-                    baseSelect.setChildren(new ArrayList<>());
-                }
-                baseSelect.getChildren().add(treeRecursiveSelect(selectListVo, companies));
-            }
-        }
-        return baseSelect;
     }
 
     /**

@@ -20,6 +20,7 @@ import cn.hutool.poi.excel.ExcelWriter;
  *            SERVICE接口泛型
  * @author 廿二月的天
  */
+@SuppressWarnings("unused")
 public interface BaseService<T> extends IService<T> {
     /**
      * 保存忽略重复数据
@@ -122,13 +123,13 @@ public interface BaseService<T> extends IService<T> {
     /**
      * 通过单位编号导出Excel
      *
-     * @param companies
-     *            系统用户单位对象集合
+     * @param currentSystemUser
+     *            当前已登录的系统用户
      * @param configurationMap
      *            系统配置项
      * @return 社区居民与所属社区集合转换的JSON对象
      */
-    ExcelWriter listCorrelationExportExcel(List<Company> companies, Map<String, JSONObject> configurationMap);
+    ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser, Map<String, JSONObject> configurationMap);
 
     /**
      * 获取树形表单列表

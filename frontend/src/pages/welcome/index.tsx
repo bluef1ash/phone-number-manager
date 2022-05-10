@@ -7,44 +7,52 @@ import { queryDashboardComputed } from '@/services/dashboard/api';
 import { ComputedDataTypes } from '@/services/enums';
 import ComputedStatisticCard from '@/components/ComputedStatisticCard';
 import styles from './index.less';
-import { Column } from '@ant-design/charts';
+import type { ColumnConfig } from '@ant-design/charts';
+import ComputedChartColumn from '@/components/ComputedChartColumn';
 
 const Welcome: React.FC = () => {
   const { initialState } = useModel('@@initialState');
   const [companySelectListState, setCompanySelectListState] = useState<API.SelectList[]>([]);
+  const [notSubordinateCompanySelectListState, setNotSubordinateCompanySelectListState] = useState<
+    API.SelectList[]
+  >([]);
   const [residentBaseMessageCompanyIdsState, setResidentBaseMessageCompanyIdsState] = useState<
     number[]
   >([]);
   const [residentBarChartCompanyIdsState, setResidentBarChartCompanyIdsState] = useState<number[]>(
     [],
   );
-  const [dashboardComputedState, setDashboardComputedState] = useState<API.DashboardComputed>({
-    resident: {
-      baseMessage: {
-        inputCount: 0,
-        haveToCount: 0,
-        needToCount: 0,
-        inputHaveToRatio: 0,
-        loading: false,
-      },
-      barChart: {
-        xField: 'companyName',
-        yField: 'personNumber',
-        data: {},
-      },
-    },
+  const [residentBaseMessageState, setResidentBaseMessageState] =
+    useState<API.ResidentComputedBaseMessage>({
+      inputCount: 0,
+      haveToCount: 0,
+      needToCount: 0,
+      inputHaveToRatio: '0%',
+      loading: false,
+    });
+  const [residentBarChartState, setResidentBarChartState] = useState<ColumnConfig>({
+    xField: 'companyName',
+    yField: 'personCount',
+    data: [],
+    loading: false,
   });
 
   const residentBaseMessageHandle = (baseMessage: API.ResidentComputedBaseMessage) => {
-    baseMessage.needToCount =
-      (baseMessage.haveToCount as number) - (baseMessage.inputCount as number);
-    baseMessage.inputHaveToRatio =
-      (baseMessage.inputCount as number) / (baseMessage.haveToCount as number);
+    if (
+      typeof baseMessage.inputCount !== 'undefined' &&
+      typeof baseMessage.haveToCount !== 'undefined'
+    ) {
+      baseMessage.needToCount = baseMessage.haveToCount - baseMessage.inputCount;
+      baseMessage.inputHaveToRatio =
+        baseMessage.haveToCount !== 0
+          ? `${baseMessage.inputCount / baseMessage.haveToCount}%`
+          : '无法计算';
+    }
     return baseMessage;
   };
 
   useEffect(() => {
-    const querySelectListData = async () => {
+    const queryData = async () => {
       if (initialState) {
         const currentUser = initialState.currentUser as API.SystemUser;
         let parentIds = [0];
@@ -55,35 +63,38 @@ const Welcome: React.FC = () => {
         ) {
           parentIds = currentUser.companies.map((company) => company.parentId as number);
         }
-        setDashboardComputedState({
-          resident: {
-            baseMessage: {
-              ...(typeof dashboardComputedState.resident === 'undefined'
-                ? {}
-                : dashboardComputedState.resident.baseMessage),
-              loading: true,
-            },
-          },
+        const companySelects = (await queryCompanySelectList(parentIds)).data;
+        setCompanySelectListState(companySelects);
+        setNotSubordinateCompanySelectListState(
+          companySelects.map((companySelect) => {
+            const companySelected = { ...companySelect };
+            companySelected.isLeaf = !companySelected.isSubordinate;
+            return companySelected;
+          }),
+        );
+        setResidentBaseMessageState({
+          ...(typeof residentBaseMessageState === 'undefined' ? {} : residentBaseMessageState),
+          loading: true,
         });
-        setCompanySelectListState((await queryCompanySelectList(parentIds)).data);
+        setResidentBarChartState({
+          ...(typeof residentBarChartState === 'undefined'
+            ? {
+                xField: 'companyName',
+                yField: 'personCount',
+                data: [],
+              }
+            : residentBarChartState),
+          loading: true,
+        });
         const { resident } = (await queryDashboardComputed()).data;
-        setDashboardComputedState({
-          resident: {
-            baseMessage: {
-              ...residentBaseMessageHandle(
-                resident?.baseMessage as API.ResidentComputedBaseMessage,
-              ),
-              loading: false,
-            },
-            barChart: {
-              ...resident?.barChart,
-              loading: false,
-            },
-          },
+        setResidentBaseMessageState({
+          ...residentBaseMessageHandle(resident?.baseMessage as API.ResidentComputedBaseMessage),
+          loading: false,
         });
+        setResidentBarChartState({ ...resident?.barChart, loading: false });
       }
     };
-    querySelectListData().then();
+    queryData().then();
   }, []);
   return (
     <MainPageContainer
@@ -93,124 +104,79 @@ const Welcome: React.FC = () => {
       }}
     >
       {' '}
-      <ComputedStatisticCard
+      <ComputedStatisticCard<API.ResidentComputedBaseMessage>
         title="社区居民录入基本信息"
         companySelectListState={companySelectListState}
         setCompanySelectListState={setCompanySelectListState}
         companyIdsState={residentBaseMessageCompanyIdsState}
         setCompanyIdsState={setResidentBaseMessageCompanyIdsState}
-        setDataState={setDashboardComputedState}
+        setDataState={setResidentBaseMessageState}
         loading={{
-          resident: {
-            ...dashboardComputedState,
-            baseMessage: {
-              ...dashboardComputedState.resident,
-              ...(typeof dashboardComputedState.resident === 'undefined'
-                ? {}
-                : dashboardComputedState.resident.baseMessage),
-              loading: true,
-            },
-          },
+          ...residentBaseMessageState,
+          loading: true,
         }}
         computedType={ComputedDataTypes.RESIDENT_BASE_MESSAGE}
-        dataResults={(data) => ({
-          ...dashboardComputedState,
-          resident: {
-            ...dashboardComputedState.resident,
-            baseMessage: {
-              ...residentBaseMessageHandle(
-                data.resident?.baseMessage as API.ResidentComputedBaseMessage,
-              ),
-              loading: false,
-            },
-          },
+        dataResults={({ resident }) => ({
+          ...residentBaseMessageHandle(resident?.baseMessage as API.ResidentComputedBaseMessage),
+          loading: false,
         })}
       >
         {' '}
         <StatisticCard
           statistic={{
             title: '已录入人数',
-            value: dashboardComputedState?.resident?.baseMessage?.inputCount,
+            value: residentBaseMessageState.inputCount,
           }}
-          loading={dashboardComputedState?.resident?.baseMessage?.loading}
+          loading={residentBaseMessageState.loading}
         />{' '}
         <StatisticCard.Divider />{' '}
         <StatisticCard
           statistic={{
             title: '核定人数',
-            value: dashboardComputedState?.resident?.baseMessage?.haveToCount,
+            value: residentBaseMessageState.haveToCount,
             status: 'default',
           }}
-          loading={dashboardComputedState?.resident?.baseMessage?.loading}
+          loading={residentBaseMessageState.loading}
         />{' '}
         <StatisticCard.Divider />{' '}
         <StatisticCard
           statistic={{
             title: '需要录入数',
-            value: dashboardComputedState?.resident?.baseMessage?.needToCount,
+            value: residentBaseMessageState.needToCount,
             status: 'success',
           }}
-          loading={dashboardComputedState?.resident?.baseMessage?.loading}
+          loading={residentBaseMessageState.loading}
         />{' '}
         <StatisticCard.Divider />{' '}
         <StatisticCard
           statistic={{
             title: '录入与核定比例',
-            value: dashboardComputedState?.resident?.baseMessage?.inputHaveToRatio + '%',
+            value: residentBaseMessageState.inputHaveToRatio,
             status: 'processing',
           }}
-          loading={dashboardComputedState?.resident?.baseMessage?.loading}
+          loading={residentBaseMessageState.loading}
         />{' '}
       </ComputedStatisticCard>{' '}
-      <ComputedStatisticCard
-        title="社区居民统计图表"
+      <ComputedStatisticCard<ColumnConfig>
+        title="社区居民人数统计图表"
         className={styles['statistic-card']}
-        companySelectListState={companySelectListState}
+        companySelectListState={notSubordinateCompanySelectListState}
         setCompanySelectListState={setCompanySelectListState}
         companyIdsState={residentBarChartCompanyIdsState}
         setCompanyIdsState={setResidentBarChartCompanyIdsState}
-        setDataState={setDashboardComputedState}
+        setDataState={setResidentBarChartState}
         loading={{
-          ...dashboardComputedState,
-          resident: {
-            ...dashboardComputedState.resident,
-            barChart: {
-              ...(typeof dashboardComputedState.resident === 'undefined'
-                ? {}
-                : dashboardComputedState.resident.barChart),
-              loading: true,
-            },
-          },
+          ...residentBarChartState,
+          loading: true,
         }}
         computedType={ComputedDataTypes.RESIDENT_BAR_CHART}
-        dataResults={(data) => ({
-          ...dashboardComputedState,
-          resident: {
-            ...dashboardComputedState.resident,
-            barChart: {
-              ...(typeof data.resident === 'undefined' ? {} : data.resident.barChart),
-              loading: false,
-            },
-          },
+        dataResults={({ resident }) => ({
+          ...resident?.barChart,
+          loading: false,
         })}
       >
         {' '}
-        <Column
-          {...dashboardComputedState?.resident?.barChart}
-          label={{
-            position: 'middle',
-            style: {
-              fill: '#FFFFFF',
-              opacity: 0.6,
-            },
-          }}
-          xAxis={{
-            label: {
-              autoHide: false,
-              autoRotate: true,
-            },
-          }}
-        />{' '}
+        <ComputedChartColumn {...residentBarChartState} />{' '}
       </ComputedStatisticCard>{' '}
     </MainPageContainer>
   );

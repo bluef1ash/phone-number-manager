@@ -22,7 +22,7 @@ declare namespace API {
     inputCount?: number;
     haveToCount?: number;
     needToCount?: number;
-    inputHaveToRatio?: number;
+    inputHaveToRatio?: string;
     loading?: boolean;
   };
 }

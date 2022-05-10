@@ -51,7 +51,7 @@
         WHERE pm_community_resident.id = #{id}
     </select>
     <select id="countForGroupCompany" resultType="java.util.Map">
-        SELECT pm_company.name AS 'companyName', COUNT(pm_community_resident.id) AS 'personNumber'
+        SELECT pm_company.id AS 'companyId', COUNT(pm_community_resident.id) AS 'personCount'
         FROM pm_community_resident
         LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
         <where>

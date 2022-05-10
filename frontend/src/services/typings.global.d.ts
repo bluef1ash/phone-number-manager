@@ -3,6 +3,7 @@ declare module '*.less';
 declare const REACT_APP_API_BASE_URL: string;
 
 declare namespace API {
+  import type { DefaultOptionType } from 'antd/lib/cascader';
   import type { PhoneNumberType } from '@/services/enums';
 
   type ResponseSuccess = {
@@ -72,6 +73,7 @@ declare namespace API {
     level?: number;
     isLeaf?: boolean;
     loading?: boolean;
+    isSubordinate?: boolean;
     children?: SelectList[] | null;
   } & DefaultOptionType;
 }

@@ -164,7 +164,7 @@ public class DormitoryManagerController extends BaseController {
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response) {
         getEnvironmentVariable();
         ExcelWriter excelWriter =
-            dormitoryManagerService.listCorrelationExportExcel(currentSystemUser.getCompanies(), configurationMap);
+            dormitoryManagerService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "社区楼片长花名册");
     }
 

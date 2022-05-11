@@ -243,16 +243,16 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      */
     private Map<String, Object> computedBaseMessage(Long[] companyIds, List<Company> companyAll) {
         Map<String, Object> baseMessage = new HashMap<>(2);
-        List<Company> companies = Arrays
-            .stream(companyIds).map(companyId -> companyAll.stream()
-                .filter(company -> companyId.equals(company.getId())).findFirst().orElse(null))
-            .collect(Collectors.toList());
-        List<Long> subordinateCompanyIds = getSubordinateCompanyIds(companies, companyAll);
         LambdaQueryWrapper<CommunityResident> communityResidentWrapper = new LambdaQueryWrapper<>();
         QueryWrapper<CompanyExtra> companyExtraWrapper = new QueryWrapper<>();
-        subordinateCompanyIds.forEach(id -> {
-            communityResidentWrapper.eq(CommunityResident::getCompanyId, id).or();
-            companyExtraWrapper.and(wrapper -> wrapper.and(w -> w.eq("company_id", id)).eq("name", "haveToCount")).or();
+        Arrays.stream(companyIds).forEach(companyId -> {
+            List<Company> companyList = CommonUtil.listRecursionCompanies(companyAll, companyId);
+            if (companyList.isEmpty()) {
+                baseMessageQueryWrapperHandle(communityResidentWrapper, companyExtraWrapper, companyId);
+            } else {
+                companyList.forEach(company -> baseMessageQueryWrapperHandle(communityResidentWrapper,
+                    companyExtraWrapper, company.getId()));
+            }
         });
         companyExtraWrapper.select("IFNULL(SUM(name), 0) AS 'needTo'");
         baseMessage.put("inputCount", baseMapper.selectCount(communityResidentWrapper));
@@ -263,6 +263,23 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         }
         baseMessage.put("haveToCount", haveToCount);
         return baseMessage;
+    }
+
+    /**
+     * 计算录入统计信息查询对象处理
+     *
+     * @param communityResidentWrapper
+     *            社区居民查询对象
+     * @param companyExtraWrapper
+     *            单位额外查询对象
+     * @param companyId
+     *            单位编号
+     */
+    private void baseMessageQueryWrapperHandle(LambdaQueryWrapper<CommunityResident> communityResidentWrapper,
+        QueryWrapper<CompanyExtra> companyExtraWrapper, Long companyId) {
+        communityResidentWrapper.eq(CommunityResident::getCompanyId, companyId).or();
+        companyExtraWrapper.and(wrapper -> wrapper.and(w -> w.eq("company_id", companyId)).eq("name", "haveToCount"))
+            .or();
     }
 
     /**

@@ -52,8 +52,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     private int excelPhone2CellNumber;
     private int excelPhone3CellNumber;
     private int excelSubcontractorCellNumber;
-    private List<Company> systemUserCompanies;
-    private Long[] systemUserCompanyParentIds;
 
     @Autowired
     public CommunityResidentServiceImpl(CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper,
@@ -199,13 +197,15 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Override
     public Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds) {
-        frontendUserRequestCompanyHandle(companies, companyIds);
-        return computedBaseMessage(systemUserCompanyParentIds, systemUserCompanies);
+        List<Company> companyAll = companyMapper.selectList(null);
+        Long[] systemUserCompanyParentIds = frontendUserRequestCompanyHandle(companies, companyAll, companyIds);
+        return computedBaseMessage(systemUserCompanyParentIds, companyAll);
     }
 
     @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds) {
-        List<Company> companyAll = frontendUserRequestCompanyHandle(companies, companyIds);
+        List<Company> companyAll = companyMapper.selectList(null);
+        Long[] systemUserCompanyParentIds = frontendUserRequestCompanyHandle(companies, companyAll, companyIds);
         Map<String, Object> barChart = new HashMap<>(3);
         Map<String, Object> meta = new HashMap<>(2);
         Map<String, Object> companyNameAlias = new HashMap<>(1);
@@ -414,15 +414,16 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      *            传入单位编号数组
      * @return 所有单位
      */
-    private List<Company> frontendUserRequestCompanyHandle(List<Company> companies, Long[] companyIds) {
-        List<Company> companyAll = companyMapper.selectList(null);
-        systemUserCompanies = Objects.requireNonNullElseGet(companies,
-            () -> companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList()));
+    private Long[] frontendUserRequestCompanyHandle(List<Company> companies, List<Company> companyAll,
+        Long[] companyIds) {
+        Long[] systemUserCompanyParentIds;
         if (companyIds == null || companyIds.length == 0) {
+            List<Company> systemUserCompanies = Objects.requireNonNullElseGet(companies,
+                () -> companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList()));
             systemUserCompanyParentIds = systemUserCompanies.stream().map(Company::getId).toArray(Long[]::new);
         } else {
             systemUserCompanyParentIds = companyIds;
         }
-        return companyAll;
+        return systemUserCompanyParentIds;
     }
 }

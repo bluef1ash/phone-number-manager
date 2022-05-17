@@ -89,8 +89,8 @@ public class IndexController extends BaseController {
             // null));
             dormitory.put("baseMessage",
                 dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), null));
-            // dormitory.put("barChart", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(),
-            // null, barChartTypeParam));
+            dormitory.put("barChart", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(), null,
+                computedVo.getBarChartTypeParam()));
         } else if (computedVo.getComputedType() == ComputedDataTypes.RESIDENT_BASE_MESSAGE.getCode()) {
             resident.put("baseMessage",
                 communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), computedVo.getCompanyIds()));

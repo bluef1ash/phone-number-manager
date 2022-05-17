@@ -102,6 +102,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
+    public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, Boolean typeParam) {
+        return null;
+    }
+
+    @Override
     public ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser,
         Map<String, JSONObject> configurationMap) {
         return null;

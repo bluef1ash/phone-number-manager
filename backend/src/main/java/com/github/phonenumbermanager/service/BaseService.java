@@ -101,6 +101,19 @@ public interface BaseService<T> extends IService<T> {
     Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds);
 
     /**
+     * 获取社区楼长柱状图数据
+     *
+     * @param companies
+     *            正在登录中的系统用户单位集合
+     * @param companyIds
+     *            单位编号集合
+     * @param typeParam
+     *            类型参数
+     * @return 柱状图数据
+     */
+    Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, Boolean typeParam);
+
+    /**
      * 从Excel导入数据
      *
      * @param data

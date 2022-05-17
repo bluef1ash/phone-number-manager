@@ -8,7 +8,9 @@ import { ComputedDataTypes } from '@/services/enums';
 import ComputedStatisticCard from '@/components/ComputedStatisticCard';
 import styles from './index.less';
 import type { ColumnConfig } from '@ant-design/charts';
+import { Bar, Pie } from '@ant-design/charts';
 import ComputedChartColumn from '@/components/ComputedChartColumn';
+import { Col, Row } from 'antd';
 
 const Welcome: React.FC = () => {
   const { initialState } = useModel('@@initialState');
@@ -36,6 +38,40 @@ const Welcome: React.FC = () => {
     data: [],
     loading: false,
   });
+  const [dormitoryBaseMessageCompanyIdsState, setDormitoryBaseMessageCompanyIdsState] = useState<
+    number[]
+  >([]);
+  const [dormitoryBaseMessageState, setDormitoryBaseMessageState] =
+    useState<API.DormitoryComputedBaseMessage>({
+      inputCount: 0,
+      genderCount: {
+        xField: 'genderType',
+        yField: 'value',
+        data: [],
+        loading: false,
+      },
+      ageCount: {
+        data: [],
+        angleField: 'value',
+        colorField: 'ageType',
+      },
+      educationCount: {
+        data: [],
+        angleField: 'value',
+        colorField: 'educationType',
+      },
+      politicalStatusCount: {
+        data: [],
+        angleField: 'value',
+        colorField: 'politicalStatusType',
+      },
+      employmentStatusCount: {
+        data: [],
+        angleField: 'value',
+        colorField: 'employmentStatusType',
+      },
+      loading: false,
+    });
 
   const residentBaseMessageHandle = (baseMessage: API.ResidentComputedBaseMessage) => {
     if (
@@ -86,12 +122,13 @@ const Welcome: React.FC = () => {
             : residentBarChartState),
           loading: true,
         });
-        const { resident } = (await queryDashboardComputed()).data;
+        const { dormitory, resident } = (await queryDashboardComputed()).data;
         setResidentBaseMessageState({
           ...residentBaseMessageHandle(resident?.baseMessage as API.ResidentComputedBaseMessage),
           loading: false,
         });
         setResidentBarChartState({ ...resident?.barChart, loading: false });
+        setDormitoryBaseMessageState({ ...dormitory?.baseMessage, loading: false });
       }
     };
     queryData().then();
@@ -177,6 +214,71 @@ const Welcome: React.FC = () => {
       >
         {' '}
         <ComputedChartColumn {...residentBarChartState} />{' '}
+      </ComputedStatisticCard>{' '}
+      <ComputedStatisticCard<API.DormitoryComputedBaseMessage>
+        title="社区居民楼片长录入基本信息"
+        className={styles['statistic-card']}
+        companySelectListState={companySelectListState}
+        setCompanySelectListState={setCompanySelectListState}
+        companyIdsState={dormitoryBaseMessageCompanyIdsState}
+        setCompanyIdsState={setDormitoryBaseMessageCompanyIdsState}
+        setDataState={setDormitoryBaseMessageState}
+        loading={{
+          ...dormitoryBaseMessageState,
+          loading: true,
+        }}
+        computedType={ComputedDataTypes.DORMITORY_BASE_MESSAGE}
+        dataResults={({ dormitory }) => ({
+          ...dormitory?.baseMessage,
+          loading: false,
+        })}
+      >
+        {' '}
+        <Row justify="space-around" className={styles['dormitory-message']}>
+          {' '}
+          <Col span={11}>
+            {' '}
+            <StatisticCard
+              statistic={{
+                title: '已录入人数',
+                value: dormitoryBaseMessageState.inputCount,
+              }}
+              loading={dormitoryBaseMessageState.loading}
+            />{' '}
+          </Col>{' '}
+          <Col span={11}>
+            {' '}
+            <Bar
+              {...dormitoryBaseMessageState.genderCount}
+              seriesField={dormitoryBaseMessageState.genderCount.yField}
+              legend={{
+                position: 'top-left',
+              }}
+            />{' '}
+          </Col>{' '}
+        </Row>{' '}
+        <Row justify="space-around" className={styles['dormitory-message']}>
+          {' '}
+          <Col span={11}>
+            {' '}
+            <Pie {...dormitoryBaseMessageState.ageCount} />{' '}
+          </Col>{' '}
+          <Col span={11}>
+            {' '}
+            <Pie {...dormitoryBaseMessageState.educationCount} />{' '}
+          </Col>{' '}
+        </Row>{' '}
+        <Row justify="space-around" className={styles['dormitory-message']}>
+          {' '}
+          <Col span={11}>
+            {' '}
+            <Pie {...dormitoryBaseMessageState.politicalStatusCount} />{' '}
+          </Col>{' '}
+          <Col span={11}>
+            {' '}
+            <Pie {...dormitoryBaseMessageState.employmentStatusCount} />{' '}
+          </Col>{' '}
+        </Row>{' '}
       </ComputedStatisticCard>{' '}
     </MainPageContainer>
   );

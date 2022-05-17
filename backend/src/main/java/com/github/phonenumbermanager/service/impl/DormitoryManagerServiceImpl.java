@@ -2,6 +2,7 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -20,6 +22,7 @@ import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
+import com.github.phonenumbermanager.util.CommonUtil;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.IdcardUtil;
@@ -204,31 +207,13 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Override
     public Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds) {
         List<Company> companyAll = companyMapper.selectList(null);
-        if (companyIds != null) {
-            // CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
+        if (companies == null) {
+            companies = companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
         }
-        Map<String, Map<String, Integer>> computedBaseMessage = computedBaseMessage(companies, companyAll, companyIds);
-        Map<String, Object> baseMessage = new HashMap<>();
-        baseMessage.put("gender", computedBaseMessage.get("genderCount"));
-        if (computedBaseMessage.get("ageCount") != null) {
-            Map<String, Object> agePieData = getPieData(computedBaseMessage.get("ageCount"), "年龄范围");
-            baseMessage.put("age", agePieData);
+        if (companyIds == null) {
+            companyIds = companies.stream().map(Company::getId).toArray(Long[]::new);
         }
-        if (computedBaseMessage.get("educationCount") != null) {
-            Map<String, Object> educationPieData = getPieData(computedBaseMessage.get("educationCount"), "教育程度");
-            baseMessage.put("education", educationPieData);
-        }
-        if (computedBaseMessage.get("politicalStatusCount") != null) {
-            Map<String, Object> politicalStatusPieData =
-                getPieData(computedBaseMessage.get("politicalStatusCount"), "政治面貌");
-            baseMessage.put("politicalStatus", politicalStatusPieData);
-        }
-        if (computedBaseMessage.get("employmentStatusCount") != null) {
-            Map<String, Object> employmentStatusPieData =
-                getPieData(computedBaseMessage.get("employmentStatusCount"), "工作状况");
-            baseMessage.put("employmentStatusCount", employmentStatusPieData);
-        }
-        return baseMessage;
+        return computedBaseMessage(companyAll, companyIds);
     }
 
     @Override
@@ -315,86 +300,171 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     /**
      * 计算录入统计信息
      *
-     * @param companies
-     *            单位集合
      * @param companyAll
      *            所有单位集合
      * @param companyIds
      *            单位编号集合
      * @return 录入统计信息
      */
-    private Map<String, Map<String, Integer>> computedBaseMessage(List<Company> companies, List<Company> companyAll,
-        Long[] companyIds) {
-        Map<String, Map<String, Integer>> baseMessage = new HashMap<>(5);
-        /*Map<String, Integer> genderCount = new HashMap<>(2);
-        genderCount.put("男性", 0);
-        genderCount.put("女性", 0);
-        Map<String, Integer> ageCount = new HashMap<>(8);
-        ageCount.put("20岁以下", 0);
-        ageCount.put("20岁~29岁", 0);
-        ageCount.put("30岁~39岁", 0);
-        ageCount.put("40岁~49岁", 0);
-        ageCount.put("50岁~59岁", 0);
-        ageCount.put("60岁~69岁", 0);
-        ageCount.put("70岁~79岁", 0);
-        ageCount.put("80岁以上", 0);
-        Map<String, Integer> educationCount = new HashMap<>();
-        Arrays.stream(EducationStatusEnum.values())
-            .forEach(educationStatusEnum -> educationCount.put(educationStatusEnum.getDescription(), 0));
-        Map<String, Integer> politicalStatusCount = new HashMap<>();
-        Arrays.stream(PoliticalStatusEnum.values())
-            .forEach(politicalStatusEnum -> politicalStatusCount.put(politicalStatusEnum.getDescription(), 0));
-        Map<String, Integer> employmentStatusCount = new HashMap<>();
-        Arrays.stream(EmploymentStatusEnum.values())
-            .forEach(employmentStatusEnum -> employmentStatusCount.put(employmentStatusEnum.getDescription(), 0));
-        CommonUtil.listSubmissionCompanyIds(companyIds, companies, companyAll, null);
-        QueryWrapper<DormitoryManager> wrapper = new QueryWrapper<>();
-        companyIds.forEach(id -> wrapper.eq("company_id", id));
+    private Map<String, Object> computedBaseMessage(List<Company> companyAll, Long[] companyIds) {
+        Map<String, Object> baseMessage = new HashMap<>(5);
+        int maleCount = 0;
+        int femaleCount = 0;
+        int unknownCount = 0;
+        int[] ageCounts = {0, 0, 0, 0, 0, 0, 0, 0};
+        Map<String, Integer> educationMap = Arrays.stream(EducationStatusEnum.values())
+            .collect(Collectors.toMap(EducationStatusEnum::getDescription, value -> 0));
+        Map<String, Integer> politicalStatusMap = Arrays.stream(PoliticalStatusEnum.values())
+            .collect(Collectors.toMap(PoliticalStatusEnum::getDescription, value -> 0));
+        Map<String, Integer> employmentStatusMap = Arrays.stream(EmploymentStatusEnum.values())
+            .collect(Collectors.toMap(EmploymentStatusEnum::getDescription, value -> 0));
+        LambdaQueryWrapper<DormitoryManager> wrapper = new LambdaQueryWrapper<>();
+        Arrays.stream(companyIds).forEach(companyId -> {
+            List<Long> recursionCompanyIds = CommonUtil.listRecursionCompanyIds(companyAll, companyId);
+            if (!recursionCompanyIds.isEmpty()) {
+                recursionCompanyIds.forEach(id -> wrapper.eq(DormitoryManager::getCompanyId, id).or());
+            } else {
+                wrapper.eq(DormitoryManager::getCompanyId, companyId).or();
+            }
+        });
         List<DormitoryManager> dormitoryManagers = baseMapper.selectList(wrapper);
-        YearMonth now = YearMonth.now();
+        LocalDate now = LocalDate.now();
         for (DormitoryManager dormitoryManager : dormitoryManagers) {
             switch (dormitoryManager.getGender()) {
                 case MALE:
-                    genderCount.put("男性", genderCount.get("男性") + 1);
+                    maleCount += 1;
                     break;
                 case FEMALE:
-                    genderCount.put("女性", genderCount.get("女性") + 1);
+                    femaleCount += 1;
                     break;
                 default:
-                    genderCount.put("未知", genderCount.get("未知") + 1);
+                    unknownCount += 1;
                     break;
             }
             long age = dormitoryManager.getBirth().until(now, ChronoUnit.YEARS);
-            if (age < 20) {
-                ageCount.put("20岁以下", ageCount.get("20岁以下") + 1);
-            } else if (age < 30) {
-                ageCount.put("20岁~29岁", ageCount.get("20岁~29岁") + 1);
-            } else if (age < 40) {
-                ageCount.put("30岁~39岁", ageCount.get("30岁~39岁") + 1);
-            } else if (age < 50) {
-                ageCount.put("40岁~49岁", ageCount.get("40岁~49岁") + 1);
-            } else if (age < 60) {
-                ageCount.put("50岁~59岁", ageCount.get("50岁~59岁") + 1);
-            } else if (age < 70) {
-                ageCount.put("60岁~69岁", ageCount.get("60岁~69岁") + 1);
-            } else if (age < 80) {
-                ageCount.put("70岁~79岁", ageCount.get("70岁~79岁") + 1);
+            if (age < 20L) {
+                ageCounts[0] += 1;
+            } else if (age < 30L) {
+                ageCounts[1] += 1;
+            } else if (age < 40L) {
+                ageCounts[2] += 1;
+            } else if (age < 50L) {
+                ageCounts[3] += 1;
+            } else if (age < 60L) {
+                ageCounts[4] += 1;
+            } else if (age < 70L) {
+                ageCounts[5] += 1;
+            } else if (age < 80L) {
+                ageCounts[6] += 1;
             } else {
-                ageCount.put("80岁以上", ageCount.get("80岁以上") + 1);
+                ageCounts[7] += 1;
             }
-            educationCount.put(dormitoryManager.getEducation().getDescription(),
-                educationCount.get(dormitoryManager.getEducation().getDescription()) + 1);
-            politicalStatusCount.put(dormitoryManager.getPoliticalStatus().getDescription(),
-                politicalStatusCount.get(dormitoryManager.getPoliticalStatus().getDescription()) + 1);
-            employmentStatusCount.put(dormitoryManager.getEmploymentStatus().getDescription(),
-                employmentStatusCount.get(dormitoryManager.getEmploymentStatus().getDescription()) + 1);
+            educationMap.put(dormitoryManager.getEducation().getDescription(),
+                educationMap.get(dormitoryManager.getEducation().getDescription()) + 1);
+            politicalStatusMap.put(dormitoryManager.getPoliticalStatus().getDescription(),
+                politicalStatusMap.get(dormitoryManager.getPoliticalStatus().getDescription()) + 1);
+            employmentStatusMap.put(dormitoryManager.getEmploymentStatus().getDescription(),
+                employmentStatusMap.get(dormitoryManager.getEmploymentStatus().getDescription()) + 1);
         }
-        baseMessage.put("genderCount", genderCount);
-        baseMessage.put("ageCount", ageCount);
-        baseMessage.put("educationCount", educationCount);
-        baseMessage.put("politicalStatusCount", politicalStatusCount);
-        baseMessage.put("employmentStatusCount", employmentStatusCount);*/
+        baseMessage.put("inputCount", dormitoryManagers.size());
+        baseMessage.put("genderCount", genderCount(maleCount, femaleCount, unknownCount));
+        baseMessage.put("ageCount", ageCount(ageCounts));
+        baseMessage.put("educationCount", mapCount("educationType", educationMap));
+        baseMessage.put("politicalStatusCount", mapCount("politicalStatusType", politicalStatusMap));
+        baseMessage.put("employmentStatusCount", mapCount("employmentStatusType", employmentStatusMap));
         return baseMessage;
+    }
+
+    /**
+     * 生成map统计
+     *
+     * @param mapType
+     *            Map类型
+     * @param map
+     *            定义Map
+     * @return 统计对象
+     */
+    private Map<String, Object> mapCount(String mapType, Map<String, Integer> map) {
+        Map<String, Object> count = new HashMap<>(3);
+        String value = "value";
+        List<Map<String, Object>> countData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            Map<String, Object> temp = new HashMap<>(2);
+            temp.put(mapType, entry.getKey());
+            temp.put(value, entry.getValue());
+            countData.add(temp);
+        }
+        count.put("data", countData);
+        count.put("xField", value);
+        count.put("yField", mapType);
+        return count;
+    }
+
+    /**
+     * 生成年龄统计
+     *
+     * @param ageCounts
+     *            年龄统计数组
+     * @return 统计对象
+     */
+    private Map<String, Object> ageCount(int[] ageCounts) {
+        Map<String, Object> ageCount = new HashMap<>(3);
+        String value = "value";
+        String ageType = "ageType";
+        List<Map<String, Object>> ageCountData = new ArrayList<>();
+        Map<String, Object> ageCountDataTemp = new HashMap<>(8);
+        ageCountDataTemp.put("20岁以下", ageCounts[0]);
+        ageCountDataTemp.put("20岁~29岁", ageCounts[1]);
+        ageCountDataTemp.put("30岁~39岁", ageCounts[2]);
+        ageCountDataTemp.put("40岁~49岁", ageCounts[3]);
+        ageCountDataTemp.put("50岁~59岁", ageCounts[4]);
+        ageCountDataTemp.put("60岁~69岁", ageCounts[5]);
+        ageCountDataTemp.put("70岁~79岁", ageCounts[6]);
+        ageCountDataTemp.put("80岁以上", ageCounts[7]);
+        for (Map.Entry<String, Object> entry : ageCountDataTemp.entrySet()) {
+            Map<String, Object> tempMap = new HashMap<>(2);
+            tempMap.put(ageType, entry.getKey());
+            tempMap.put(value, entry.getValue());
+            ageCountData.add(tempMap);
+        }
+        ageCount.put("data", ageCountData);
+        ageCount.put("xField", value);
+        ageCount.put("yField", ageType);
+        return ageCount;
+    }
+
+    /**
+     * 生成性别统计
+     *
+     * @param maleCount
+     *            男性数量
+     * @param femaleCount
+     *            女性数量
+     * @param unknownCount
+     *            未知数量
+     * @return 统计对象
+     */
+    private Map<String, Object> genderCount(int maleCount, int femaleCount, int unknownCount) {
+        Map<String, Object> genderCount = new HashMap<>(5);
+        List<Map<String, Object>> genderCountData = new ArrayList<>();
+        String value = "value";
+        String genderType = "genderType";
+        Map<String, Object> genderCountDataMaleMap = new HashMap<>(2);
+        genderCountDataMaleMap.put(genderType, GenderEnum.MALE.getDescription());
+        genderCountDataMaleMap.put(value, maleCount);
+        Map<String, Object> genderCountDataFemaleMap = new HashMap<>(2);
+        genderCountDataFemaleMap.put(genderType, GenderEnum.FEMALE.getDescription());
+        genderCountDataFemaleMap.put(value, femaleCount);
+        Map<String, Object> genderCountDataUnknownMap = new HashMap<>(2);
+        genderCountDataUnknownMap.put(genderType, GenderEnum.UNKNOWN.getDescription());
+        genderCountDataUnknownMap.put(value, unknownCount);
+        genderCountData.add(genderCountDataMaleMap);
+        genderCountData.add(genderCountDataFemaleMap);
+        genderCountData.add(genderCountDataUnknownMap);
+        genderCount.put("data", genderCountData);
+        genderCount.put("xField", value);
+        genderCount.put("yField", genderType);
+        return genderCount;
     }
 
     /**

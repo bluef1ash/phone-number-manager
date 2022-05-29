@@ -24,16 +24,14 @@ import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
+import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.BatchRestfulVo;
-import com.github.phonenumbermanager.vo.CompanyVo;
-import com.github.phonenumbermanager.vo.SystemUserLoginVo;
-import com.github.phonenumbermanager.vo.SystemUserVo;
+import com.github.phonenumbermanager.vo.*;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
@@ -54,6 +52,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @Api(tags = "系统用户与系统权限控制器")
 public class UserAndPermissionController extends BaseController {
+    private final CompanyService companyService;
     private final SystemUserService systemUserService;
     private final SystemPermissionService systemPermissionService;
 
@@ -311,6 +310,22 @@ public class UserAndPermissionController extends BaseController {
             }
         }
         throw new JsonException("批量操作失败！");
+    }
+
+    /**
+     * 社区居民分包人图表
+     *
+     * @param computedVo
+     *            计算视图对象
+     * @return Ajax返回JSON对象
+     */
+    @PostMapping("/system/subcontractor/computed/chart")
+    @ResponseBody
+    @ApiOperation("社区居民分包人图表")
+    public R subcontractorChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+        getEnvironmentVariable();
+        return R.ok().put("data", systemUserService.getBarChart(currentSystemUser.getCompanies(),
+            getCompanyIds(computedVo), companyService.list(), null));
     }
 
     /**

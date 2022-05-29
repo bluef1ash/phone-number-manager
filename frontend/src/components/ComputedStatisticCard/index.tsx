@@ -1,31 +1,34 @@
 import React from 'react';
 import SelectCascder from '@/components/SelectCascder';
-import { queryDashboardComputed } from '@/services/dashboard/api';
 import { queryCompanySelectList } from '@/services/company/api';
 import type { StatisticCardProps } from '@ant-design/pro-card/lib/components/StatisticCard';
 import StatisticCard from '@ant-design/pro-card/lib/components/StatisticCard';
-import type { ComputedDataTypes } from '@/services/enums';
 
 export type ComputedStatisticCardProps<T> = {
   companySelectListState: API.SelectList[];
   setCompanySelectListState: React.Dispatch<React.SetStateAction<API.SelectList[]>>;
-  companyIdsState: number[];
-  setCompanyIdsState: React.Dispatch<React.SetStateAction<number[]>>;
-  setDataState: React.Dispatch<React.SetStateAction<T>>;
-  loading: T;
-  computedType: ComputedDataTypes;
-  dataResults: (data: API.DashboardComputed) => T;
+  companySelectState?: API.SelectList[];
+  setCompanySelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>;
+  setDataState?: React.Dispatch<React.SetStateAction<T>>;
+  loading?: T;
+  dataResults?: (data: T) => T;
+  queryDashboardComputed?: (
+    data?: API.DashboardComputedPostData,
+    options?: Record<string, any>,
+  ) => Promise<API.Data<T>>;
+  companySelectOnDropdownVisibleChange?: (open: boolean) => void;
 } & StatisticCardProps;
 
 function ComputedStatisticCard<T>({
   companySelectListState,
   setCompanySelectListState,
-  companyIdsState,
-  setCompanyIdsState,
+  companySelectState,
+  setCompanySelectState,
   setDataState,
   loading,
-  computedType,
   dataResults,
+  queryDashboardComputed,
+  companySelectOnDropdownVisibleChange,
   ...restProps
 }: ComputedStatisticCardProps<T>) {
   return (
@@ -38,21 +41,33 @@ function ComputedStatisticCard<T>({
           cascaderFieldProps={{
             multiple: true,
             placeholder: '请选择单位',
-            onChange(value) {
-              setCompanyIdsState(value?.map((v) => v[v.length - 1] as number));
+            onChange(value, selectedOptions) {
+              setCompanySelectState(
+                selectedOptions?.map(
+                  (selectedOption) => selectedOption[selectedOption.length - 1] as API.SelectList,
+                ),
+              );
             },
-            async onDropdownVisibleChange(value) {
-              if (value === false) {
-                setDataState(loading);
-                const result = (
-                  await queryDashboardComputed({
-                    computedType: computedType.valueOf(),
-                    companyIds: companyIdsState,
-                  })
-                ).data;
-                setDataState(dataResults(result));
-              }
-            },
+            onDropdownVisibleChange:
+              typeof companySelectOnDropdownVisibleChange !== 'undefined'
+                ? companySelectOnDropdownVisibleChange
+                : async (open) => {
+                    if (
+                      open === false &&
+                      typeof setDataState !== 'undefined' &&
+                      typeof loading !== 'undefined' &&
+                      typeof queryDashboardComputed !== 'undefined' &&
+                      typeof dataResults !== 'undefined'
+                    ) {
+                      setDataState(loading);
+                      const result = (
+                        await queryDashboardComputed({
+                          companyIds: companySelectState?.map((v) => v.id),
+                        })
+                      ).data;
+                      setDataState(dataResults(result));
+                    }
+                  },
           }}
           querySelectList={async (value) => (await queryCompanySelectList([value])).data}
         />

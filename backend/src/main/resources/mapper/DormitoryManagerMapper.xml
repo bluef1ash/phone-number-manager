@@ -188,4 +188,14 @@
         </where>
         ORDER BY pm_dormitory_manager.company_id, CONVERT(pm_dormitory_manager.name USING GBK)
     </select>
+    <select id="selectCountForGroupCompany" resultType="java.util.Map">
+        SELECT pm_company.id AS 'company_id', COUNT(pm_dormitory_manager.id) AS 'person_count'
+        FROM pm_dormitory_manager
+        LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
+        <where>
+            pm_dormitory_manager.company_id IN
+            <foreach collection="companyIds" item="companyId" open="(" separator="," close=")">#{companyId}</foreach>
+        </where>
+        GROUP BY pm_company.id
+    </select>
 </mapper>

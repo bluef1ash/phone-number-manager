@@ -216,17 +216,6 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         return computedBaseMessage(companyAll, companyIds);
     }
 
-    @Override
-    public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, Boolean typeParam) {
-        String label = "社区楼长分包总户数";
-        List<Company> companyAll = companyMapper.selectList(null);
-        LinkedList<Map<String, Object>> dormitoryManager = new LinkedList<>();
-        if (companyIds == null) {
-            // CommonUtil.listRecursionCompanyIds(companyIds, companies, companyAll, companyId);
-        }
-        return null;// barChartDataHandler(label, null, "户", dormitoryManager);
-    }
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
@@ -372,6 +361,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         baseMessage.put("educationCount", mapCount("educationType", educationMap));
         baseMessage.put("politicalStatusCount", mapCount("politicalStatusType", politicalStatusMap));
         baseMessage.put("employmentStatusCount", mapCount("employmentStatusType", employmentStatusMap));
+        baseMessage.put("loading", false);
         return baseMessage;
     }
 

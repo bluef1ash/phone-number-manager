@@ -191,4 +191,30 @@
             </foreach>
         </where>
     </select>
+    <select id="selectCountForGroupCompany" resultType="java.util.Map">
+        SELECT pm_company.id AS 'company_id', COUNT(pm_system_user.id) AS 'person_count'
+        FROM pm_system_user
+        LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+        <where>
+            pm_system_user.is_subcontract = 1 AND pm_company.id IN
+            <foreach collection="companyIds" item="companyId" open="(" separator="," close=")">#{companyId}</foreach>
+        </where>
+        GROUP BY pm_company.id
+    </select>
+    <select id="selectCorrelationCountByCompanyIds" resultType="java.util.Map">
+        SELECT
+        pm_system_user.username AS 'subcontractor_name',
+        COUNT(DISTINCT pm_community_resident.id) AS 'community_resident_count',
+        COUNT(DISTINCT pm_dormitory_manager.id) AS 'dormitory_manager_count'
+        FROM pm_system_user
+        LEFT JOIN pm_dormitory_manager ON pm_system_user.id = pm_dormitory_manager.system_user_id
+        LEFT JOIN pm_community_resident ON pm_community_resident.system_user_id = pm_system_user.id
+        LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        <where>
+            pm_system_user_company.company_id IN
+            <foreach collection="companyIds" item="companyId" open="(" separator="," close=")">#{companyId}</foreach>
+        </where>
+        GROUP BY pm_system_user.username
+    </select>
 </mapper>

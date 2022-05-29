@@ -99,8 +99,8 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      * @throws DataAccessException
      *             数据库操作异常
      */
-    @MapKey("companyId")
-    Map<BigInteger, Map<String, Long>> countForGroupCompany(List<Long> companyIds) throws DataAccessException;
+    @MapKey("company_id")
+    Map<BigInteger, Map<String, Long>> selectCountForGroupCompany(List<Long> companyIds) throws DataAccessException;
 
     /**
      * 查询所有对象（分页）

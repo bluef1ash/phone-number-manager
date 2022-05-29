@@ -202,24 +202,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return computedBaseMessage(systemUserCompanyParentIds, companyAll);
     }
 
-    @Override
-    public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds) {
-        List<Company> companyAll = companyMapper.selectList(null);
-        Long[] systemUserCompanyParentIds = frontendUserRequestCompanyHandle(companies, companyAll, companyIds);
-        Map<String, Object> barChart = new HashMap<>(3);
-        Map<String, Object> meta = new HashMap<>(2);
-        Map<String, Object> companyNameAlias = new HashMap<>(1);
-        Map<String, Object> personCountAlias = new HashMap<>(1);
-        companyNameAlias.put("alias", "单位");
-        personCountAlias.put("alias", "辖区居民数");
-        meta.put("companyName", companyNameAlias);
-        meta.put("personCount", personCountAlias);
-        barChart.put("xFields", "companyName");
-        barChart.put("yFields", "personCount");
-        barChart.put("meta", meta);
-        return barChartDataHandler(companyAll, systemUserCompanyParentIds, barChart);
-    }
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
@@ -262,6 +244,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             haveToCount = (double)companyExtraMaps.get(0).get("needTo");
         }
         baseMessage.put("haveToCount", haveToCount);
+        baseMessage.put("loading", false);
         return baseMessage;
     }
 
@@ -403,27 +386,5 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
         return phoneNumbers.stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
             .setCommunityResidentId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());
-    }
-
-    /**
-     * 前端传入数据处理
-     *
-     * @param companies
-     *            当前系统用户单位集合
-     * @param companyIds
-     *            传入单位编号数组
-     * @return 所有单位
-     */
-    private Long[] frontendUserRequestCompanyHandle(List<Company> companies, List<Company> companyAll,
-        Long[] companyIds) {
-        Long[] systemUserCompanyParentIds;
-        if (companyIds == null || companyIds.length == 0) {
-            List<Company> systemUserCompanies = Objects.requireNonNullElseGet(companies,
-                () -> companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList()));
-            systemUserCompanyParentIds = systemUserCompanies.stream().map(Company::getId).toArray(Long[]::new);
-        } else {
-            systemUserCompanyParentIds = companyIds;
-        }
-        return systemUserCompanyParentIds;
     }
 }

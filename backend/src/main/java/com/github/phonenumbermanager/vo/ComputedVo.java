@@ -23,8 +23,6 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ApiModel("计算视图对象")
 public class ComputedVo implements Serializable {
-    @ApiModelProperty("需要获取的类型")
-    private Integer computedType;
     @ApiModelProperty("需要获取的单位编号集合")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long[] companyIds;

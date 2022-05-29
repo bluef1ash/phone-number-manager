@@ -16,9 +16,11 @@ import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
+import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
+import com.github.phonenumbermanager.vo.ComputedVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -38,6 +40,7 @@ import lombok.AllArgsConstructor;
 @Api(tags = "社区居民控制器")
 public class CommunityResidentController extends BaseController {
     private final CommunityResidentService communityResidentService;
+    private final CompanyService companyService;
 
     /**
      * 社区居民列表
@@ -143,7 +146,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 导入居民信息进系统
+     * 导入社区居民信息进系统
      *
      * @param request
      *            HTTP请求对象
@@ -151,7 +154,7 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/import")
     @ResponseBody
-    @ApiOperation("导入居民信息进系统")
+    @ApiOperation("导入社区居民信息进系统")
     public R communityResidentImportAsSystem(HttpServletRequest request) {
         getEnvironmentVariable();
         int startRowNumber = Convert.toInt(configurationMap.get("read_resident_excel_start_row_number").get("content"));
@@ -163,18 +166,53 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 导出居民信息到Excel
+     * 导出社区居民信息到Excel
      *
      * @param response
      *            前台响应对象
      */
     @GetMapping("/download")
-    @ApiOperation("导出居民信息到Excel")
+    @ApiOperation("导出社区居民信息到Excel")
     public void communityResidentSaveAsExcel(HttpServletResponse response) {
         getEnvironmentVariable();
         ExcelWriter excelWriter =
             communityResidentService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");
+    }
+
+    /**
+     * 社区居民基础数据
+     *
+     *
+     * @param computedVo
+     *            计算视图对象
+     * @return Ajax返回JSON对象
+     */
+    @PostMapping("/computed/message")
+    @ResponseBody
+    @ApiOperation("社区居民基础数据")
+    public R
+        communityResidentBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+        getEnvironmentVariable();
+        return R.ok().put("data",
+            communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), getCompanyIds(computedVo)));
+    }
+
+    /**
+     * 社区居民图表
+     *
+     *
+     * @param computedVo
+     *            计算视图对象
+     * @return Ajax返回JSON对象
+     */
+    @PostMapping("/computed/chart")
+    @ResponseBody
+    @ApiOperation("社区居民图表")
+    public R communityResidentChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+        getEnvironmentVariable();
+        return R.ok().put("data", communityResidentService.getBarChart(currentSystemUser.getCompanies(),
+            getCompanyIds(computedVo), companyService.list(), "辖区居民数"));
     }
 
     /**

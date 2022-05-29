@@ -1,7 +1,7 @@
 import { parsePhoneNumber } from "libphonenumber-js/max";
 import { PhoneNumberType } from "@/services/enums";
 import { message } from "antd";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import { SESSION_SYSTEM_USER_KEY } from "@config/constant";
 
 /**
@@ -87,4 +87,23 @@ export function getCompanyParentIds(): number[] {
     parentIds = systemUser.companies.map((company) => company.parentId as number);
   }
   return parentIds;
+}
+
+/**
+ * 检测组件是否视口可见
+ */
+export function checkVisibleInDocument(componentRef: RefObject<HTMLElement>): boolean {
+  if (
+    componentRef.current === null ||
+    !(
+      componentRef.current.offsetHeight ||
+      componentRef.current.offsetWidth ||
+      componentRef.current.getClientRects().length
+    )
+  ) {
+    return false;
+  }
+  const { height, top } = componentRef.current.getBoundingClientRect();
+  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+  return top < windowHeight && top + height > 0;
 }

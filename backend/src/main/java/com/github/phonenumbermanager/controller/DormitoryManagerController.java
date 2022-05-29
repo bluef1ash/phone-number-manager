@@ -13,11 +13,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.exception.JsonException;
+import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
+import com.github.phonenumbermanager.vo.ComputedVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
@@ -38,6 +40,7 @@ import lombok.AllArgsConstructor;
 @Api(tags = "社区居民楼片长控制器")
 public class DormitoryManagerController extends BaseController {
     private final DormitoryManagerService dormitoryManagerService;
+    private final CompanyService companyService;
 
     /**
      * 社区居民楼片长列表
@@ -134,7 +137,7 @@ public class DormitoryManagerController extends BaseController {
     }
 
     /**
-     * 导入楼长信息进系统
+     * 导入社区居民楼片长信息进系统
      *
      * @param request
      *            HTTP请求对象
@@ -142,7 +145,7 @@ public class DormitoryManagerController extends BaseController {
      */
     @PostMapping("/import")
     @ResponseBody
-    @ApiOperation("导入楼长信息进系统")
+    @ApiOperation("导入社区居民楼片长信息进系统")
     public R dormitoryManagerImportAsSystem(HttpServletRequest request) {
         getEnvironmentVariable();
         List<List<Object>> data = uploadExcelFileToData(request,
@@ -169,7 +172,7 @@ public class DormitoryManagerController extends BaseController {
     }
 
     /**
-     * 增删改批量操作
+     * 社区居民楼片长增删改批量操作
      *
      * @param batchRestfulVo
      *            批量操作视图对象
@@ -177,7 +180,7 @@ public class DormitoryManagerController extends BaseController {
      */
     @PostMapping("/batch")
     @ResponseBody
-    @ApiOperation("增删改批量操作")
+    @ApiOperation("社区居民楼片长增删改批量操作")
     public R dormitoryManagerBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
@@ -187,5 +190,38 @@ public class DormitoryManagerController extends BaseController {
             }
         }
         throw new JsonException("批量操作失败！");
+    }
+
+    /**
+     * 社区居民楼片长基础数据
+     *
+     * @param computedVo
+     *            计算视图对象
+     * @return Ajax返回JSON对象
+     */
+    @PostMapping("/computed/message")
+    @ResponseBody
+    @ApiOperation("社区居民楼片长基础数据")
+    public R
+        dormitoryManagerBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+        getEnvironmentVariable();
+        return R.ok().put("data",
+            dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), getCompanyIds(computedVo)));
+    }
+
+    /**
+     * 社区居民楼片长图表
+     *
+     * @param computedVo
+     *            计算视图对象
+     * @return Ajax返回JSON对象
+     */
+    @PostMapping("/computed/chart")
+    @ResponseBody
+    @ApiOperation("社区居民楼片长图表")
+    public R dormitoryManagerChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+        getEnvironmentVariable();
+        return R.ok().put("data", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(),
+            getCompanyIds(computedVo), companyService.list(), "辖区居民楼片长数"));
     }
 }

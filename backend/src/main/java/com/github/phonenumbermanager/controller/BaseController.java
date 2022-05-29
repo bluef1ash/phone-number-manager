@@ -20,6 +20,7 @@ import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.util.RedisUtil;
+import com.github.phonenumbermanager.vo.ComputedVo;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
@@ -143,6 +144,21 @@ abstract class BaseController {
                 throw new BusinessException("导出Excel文件失败！", e);
             }
         }
+    }
+
+    /**
+     * 获取单位编号数组
+     *
+     * @param computedVo
+     *            计算视图对象
+     * @return 单位编号数组
+     */
+    protected Long[] getCompanyIds(ComputedVo computedVo) {
+        Long[] companyIds = null;
+        if (computedVo != null && computedVo.getCompanyIds() != null) {
+            companyIds = computedVo.getCompanyIds();
+        }
+        return companyIds;
     }
 
     @Autowired

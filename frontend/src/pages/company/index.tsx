@@ -44,7 +44,7 @@ const InputElement = (
     />{' '}
     <SelectCascder
       width="xl"
-      name="parentId"
+      name="parentIdCascder"
       label="上级单位"
       querySelectList={async (value) => (await queryCompanySelectList([value])).data}
       selectState={selectListState}
@@ -198,6 +198,9 @@ const Company: React.FC = () => {
     formData.systemPermissions = formData.systemPermissionSelectList?.map((value) => ({
       id: value[0],
     }));
+    if (typeof formData.parentIdCascder !== 'undefined') {
+      formData.parentId = formData.parentIdCascder[0];
+    }
     return formData;
   };
 
@@ -287,6 +290,9 @@ const Company: React.FC = () => {
                 label: systemPermission.name,
               }),
             );
+            if (typeof result.data.parentId !== 'undefined') {
+              result.data.parentIdCascder = [result.data.parentId];
+            }
             return result;
           },
         }}

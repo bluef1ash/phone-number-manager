@@ -219,4 +219,28 @@ public class CommonUtil {
         }
         return companies;
     }
+
+    /**
+     * 判断存在孙级单位
+     *
+     * @param index
+     *            计数器
+     * @param company
+     *            判断单位
+     * @param companyAll
+     *            所有单位集合
+     * @return 是否存在孙级单位
+     */
+    public static boolean isGrandsonLevel(Integer index, Company company, List<Company> companyAll) {
+        if (index > 1) {
+            return true;
+        }
+        for (Company c : companyAll) {
+            if (c.getParentId().equals(company.getId())) {
+                index++;
+                return isGrandsonLevel(index, c, companyAll);
+            }
+        }
+        return false;
+    }
 }

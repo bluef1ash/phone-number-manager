@@ -169,7 +169,7 @@ const Welcome: React.FC = () => {
       setNotSubordinateCompanySelectListState(
         companySelects.map((companySelect) => {
           const companySelected = { ...companySelect };
-          companySelected.isLeaf = !companySelected.isSubordinate;
+          companySelected.isLeaf = !companySelected.isGrandsonLevel;
           return companySelected;
         }),
       );
@@ -252,7 +252,7 @@ const Welcome: React.FC = () => {
           title="社区居民人数统计图表"
           className={styles['statistic-card']}
           companySelectListState={notSubordinateCompanySelectListState}
-          setCompanySelectListState={setCompanySelectListState}
+          setCompanySelectListState={setNotSubordinateCompanySelectListState}
           companySelectState={residentBarChartCompaniesState}
           setCompanySelectState={setResidentBarChartCompaniesState}
           setDataState={setResidentBarChartState}
@@ -341,7 +341,7 @@ const Welcome: React.FC = () => {
           title="社区居民楼片长人数统计图表"
           className={styles['statistic-card']}
           companySelectListState={notSubordinateCompanySelectListState}
-          setCompanySelectListState={setCompanySelectListState}
+          setCompanySelectListState={setNotSubordinateCompanySelectListState}
           companySelectState={dormitoryBarChartCompaniesState}
           setCompanySelectState={setDormitoryBarChartCompaniesState}
           setDataState={setDormitoryBarChartState}

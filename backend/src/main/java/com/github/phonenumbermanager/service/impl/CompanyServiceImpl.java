@@ -17,6 +17,7 @@ import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.CompanyExtraService;
 import com.github.phonenumbermanager.service.CompanyService;
+import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.util.ArrayUtil;
@@ -165,8 +166,10 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         return companies.stream().filter(company -> ArrayUtil.contains(parentIds, company.getParentId()))
             .map(company -> {
                 boolean isLeaf = companies.stream().noneMatch(c -> c.getParentId().equals(company.getId()));
+                boolean isCompanyGrandsonLevel = CommonUtil.isGrandsonLevel(0, company, companies);
                 return new SelectListVo().setId(company.getId()).setValue(company.getId()).setName(company.getName())
-                    .setLabel(company.getName()).setTitle(company.getName()).setIsSubordinate(isLeaf).setIsLeaf(isLeaf);
+                    .setLabel(company.getName()).setTitle(company.getName()).setIsSubordinate(isLeaf).setIsLeaf(isLeaf)
+                    .setIsGrandsonLevel(isCompanyGrandsonLevel);
             }).collect(Collectors.toList());
     }
 

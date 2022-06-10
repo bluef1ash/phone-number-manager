@@ -220,7 +220,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             companyList.addAll(companyAll.stream().filter(company -> companyId.equals(company.getParentId()))
                 .collect(Collectors.toList()));
         }
-        Map<String, Object> barChartMap = null;
+        Map<String, Object> barChartMap;
         if (subordinateCompanyIds.isEmpty()) {
             List<Map<String, Object>> systemUserCounts = baseMapper.selectCorrelationCountByCompanyIds(companyIds);
             List<Map<String, Object>> data = new ArrayList<>();

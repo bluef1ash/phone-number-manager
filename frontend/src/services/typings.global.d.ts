@@ -74,6 +74,7 @@ declare namespace API {
     isLeaf?: boolean;
     loading?: boolean;
     isSubordinate?: boolean;
+    isGrandsonLevel?: boolean;
     children?: SelectList[] | null;
   } & DefaultOptionType;
 }

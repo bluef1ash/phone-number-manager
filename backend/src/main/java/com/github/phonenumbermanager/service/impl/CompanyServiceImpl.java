@@ -96,22 +96,13 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         IPage<Company> companyPage =
             baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
         if (companyPage != null && companyPage.getTotal() > 0) {
+            List<Company> companyAll = baseMapper.selectList(null);
             if (companies == null) {
-                companies = baseMapper.selectCorrelation();
+                companies =
+                    companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
             }
-            List<Company> systemUserCompanies = companies;
-            List<Company> companyBases = new ArrayList<>();
-            List<Long> ids = new ArrayList<>();
-            for (Company company : companyPage.getRecords()) {
-                for (Company c : companies) {
-                    if (company.getId().equals(c.getId()) && !ids.contains(company.getParentId())) {
-                        ids.add(company.getId());
-                        companyBases.add(company);
-                    }
-                }
-            }
-            List<Company> companyList = companyBases.stream()
-                .map(company -> treeRecursive(company, systemUserCompanies)).collect(Collectors.toList());
+            List<Company> companyList =
+                companies.stream().map(company -> treeRecursive(company, companyAll)).collect(Collectors.toList());
             companyPage.setRecords(companyList).setTotal(companyList.size());
         }
         return companyPage;

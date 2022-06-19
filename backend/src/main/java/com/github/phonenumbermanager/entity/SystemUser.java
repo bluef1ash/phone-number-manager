@@ -16,7 +16,6 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -54,15 +53,6 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @ApiModelProperty("系统用户密码")
     @Length(min = 6, message = "系统用户密码不允许少于6个字符！")
     private String password;
-    @ApiModelProperty("系统用户职务")
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private String[] positions;
-    @ApiModelProperty("系统用户职称")
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private String[] titles;
-    @ApiModelProperty("是否参加社区分包")
-    @NotNull(groups = CreateInputGroup.class, message = "是否参加分包不能为空！")
-    private Boolean isSubcontract;
     @ApiModelProperty("系统用户登录时间")
     @Past
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -83,8 +73,6 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime credentialExpireTime;
-    @ApiModelProperty("联系方式编号")
-    private Long phoneNumberId;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private List<Company> companies;

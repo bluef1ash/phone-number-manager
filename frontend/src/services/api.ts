@@ -20,6 +20,9 @@ export const dormitoryManagerChart = REACT_APP_API_BASE_URL + '/dormitory/comput
 export const company = REACT_APP_API_BASE_URL + '/company';
 export const companyBatch = REACT_APP_API_BASE_URL + '/company/batch';
 export const companySelect = REACT_APP_API_BASE_URL + '/company/select-list';
+export const subcontractor = REACT_APP_API_BASE_URL + '/company/subcontractor';
+export const subcontractorBatch = REACT_APP_API_BASE_URL + '/company/subcontractor/batch';
+export const subcontractorSelect = REACT_APP_API_BASE_URL + '/company/subcontractor/select-list';
 export const system = {
   configuration: REACT_APP_API_BASE_URL + '/system/configuration',
   configurationBatch: REACT_APP_API_BASE_URL + '/system/configuration/batch',

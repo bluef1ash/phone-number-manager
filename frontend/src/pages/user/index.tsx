@@ -143,6 +143,9 @@ const SystemUser: React.FC = () => {
                   querySelectList={async (value) => (await queryCompanySelectList([value])).data}
                   selectState={companySelectState}
                   setSelectState={setCompanySelectState}
+                  cascaderFieldProps={{
+                    multiple: true,
+                  }}
                 />
               );
             },
@@ -183,18 +186,8 @@ const SystemUser: React.FC = () => {
           onConfirmRemove: async (id) => await removeSystemUser(id),
           queryData: async (id) => {
             const result = await querySystemUser(id);
-            if (result.code === 200 && result.data.companies !== null) {
-              const companies = result.data.companies;
-              result.data.companyIds = companies?.map((company) => company.id);
-              if (typeof result.data.positions !== 'undefined' && result.data.positions !== null) {
-                //@ts-ignore
-                result.data.positions = result.data.positions.map((position) => ({ position }));
-              }
-              if (typeof result.data.titles !== 'undefined' && result.data.titles !== null) {
-                //@ts-ignore
-                result.data.titles = result.data.titles.map((title) => ({ title }));
-              }
-            }
+            const companies = result.data.companies;
+            result.data.companyIds = companies?.map((company) => company.id);
             return result;
           },
         }}

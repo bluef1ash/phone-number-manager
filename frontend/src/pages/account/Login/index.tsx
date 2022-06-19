@@ -78,16 +78,16 @@ const Login: React.FC = () => {
           {' '}
           {code !== 200 && <LoginMessage content={message as string} />}{' '}
           <ProFormText
-            name="phoneNumber"
+            name="username"
             fieldProps={{
               size: 'large',
               prefix: <UserOutlined className={styles.prefixIcon} />,
             }}
-            placeholder={'手机号码'}
+            placeholder={'用户名称'}
             rules={[
               {
                 required: true,
-                message: '手机号码是必填项！',
+                message: '用户名称是必填项！',
               },
             ]}
           />{' '}
@@ -97,11 +97,11 @@ const Login: React.FC = () => {
               size: 'large',
               prefix: <LockOutlined className={styles.prefixIcon} />,
             }}
-            placeholder={'密码'}
+            placeholder={'用户密码'}
             rules={[
               {
                 required: true,
-                message: '密码是必填项！',
+                message: '用户密码是必填项！',
               },
             ]}
           />{' '}

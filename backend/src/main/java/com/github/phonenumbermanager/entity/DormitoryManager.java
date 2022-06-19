@@ -84,7 +84,7 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     private Integer managerCount;
     @ApiModelProperty("所属分包人编号")
     @Min(value = 1, message = "所属分包人编号不正确！")
-    private Long systemUserId;
+    private Long subcontractorId;
     @ApiModelProperty("所属社区编号")
     @Min(value = 0, message = "所属社区编号不正确！")
     @JsonSerialize(using = ToStringSerializer.class)
@@ -98,7 +98,7 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
     private List<String> subcontractorInfo;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private SystemUser systemUser;
+    private Subcontractor subcontractor;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private Company company;

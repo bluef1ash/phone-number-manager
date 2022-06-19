@@ -2,9 +2,9 @@
   "name": "社区居民联系方式管理系统",
   "describe": "此系统使用Spring Boot + Mybatis + Spring Security + Node.js + Webpack + Next.js架构编写。数据库采用MySQL，提供强大、安全和完整的管理社区居民的信息的功能。",
   "avatar": "",
-  "version": "3.5.7",
+  "version": "4.1.1",
   "createdTime": "2021-10-10 15:53:11",
-  "updatedTime": "2022-4-5 20:03:29",
+  "updatedTime": "2022-6-11 21:29:46",
   "profile": {
     "default": {
       "db": "AB840774-751C-47F4-AFC9-202B062E21BC",
@@ -118,6 +118,26 @@
       {
         "defKey": "C#",
         "id": "6AF3F8D8-CD22-458F-8D5A-B2356CE99A1D"
+      },
+      {
+        "defKey": "SQLite",
+        "id": "B363BE0B-F852-49B8-9B2E-F6D2174DEAC1"
+      },
+      {
+        "defKey": "JavaMybatis",
+        "id": "895CFD1D-4273-4D32-A2C4-CAC70200AB5B"
+      },
+      {
+        "defKey": "JavaMybatisPlus",
+        "id": "A2EE7B4A-CE62-4290-B00C-B26C1BF18073"
+      },
+      {
+        "defKey": "Hive",
+        "id": "81CCA482-3F4D-4EAC-8CF9-F5E7BC098AD2"
+      },
+      {
+        "defKey": "Golang",
+        "id": "B91D99E0-9B7C-416C-8737-B760957DAF09"
       }
     ],
     "codeTemplates": [
@@ -127,7 +147,9 @@
         "isDefault": true,
         "createTable": "DROP TABLE IF EXISTS {{=it.entity.defKey}};\nCREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}} {{= field.notNull ? 'NOT NULL' : '' }} {{= field.autoIncrement ? 'AUTO_INCREMENT' : '' }} {{= field.defaultValue ? it.func.join('DEFAULT',field.defaultValue,' ') : '' }} COMMENT '{{=it.func.join(field.defName,field.comment,';')}}' {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n)  COMMENT = '{{=it.func.join(it.entity.defName,it.entity.comment,';') }}';\n$blankline\n",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChanged(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push('代码:'+(before.defKey||'NULL')+'->'+(after.defKey||'NULL'));\n        }\n        if(before.defName !== after.defName){\n            ret.push('显示名称:'+(before.defName||'NULL')+'->'+(after.defName||'NULL'));\n        }\n        if(before.comment !== after.comment){\n            ret.push('说明:'+(before.comment||'NULL')+'->'+(after.comment||'NULL'));\n        }\n        if(ret.length>0){\n            return '    基本信息:\\n\\t'+ret.join('\\n\\t');\n        }\n        return '';\n    };\n    \n    function buildAddedDesc(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        \n        for (let field of fieldAdded) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildRemovedDesc(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        \n        for (let field of fieldRemoved) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildModifiedDesc(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        for (let field1 of fieldModified) { \n            let row = [];\n            let field = field1.before;\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n}}\n\n\n{{? createEntities && createEntities.length > 0}}\n/* --------------- 创建表 --------------- */\n{{~ createEntities:entity}}\n{{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* --------------- 删除表 --------------- */\n{{~ dropEntities:entity}}\n{{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n{{? modifyEntities && modifyEntities.length > 0}}\n/* --------------- 修改表 --------------- */\n{{~ modifyEntities:entity}}\n{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]{{let changeText=baseChanged(entity.data.baseChanged);}}\n{{=baseChanged(entity.data.baseChanged)}}\n    {{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n    修改字段：\n    {{='\\t'}}{{=buildModifiedDesc(entity).join('\\n\\t')}}{{?}}{{\n        /*计算是否调整了属性*/\n        let propAdded = entity.data.propAdded || [];\n        let propRemoved = entity.data.propRemoved || [];\n        let propModified = entity.data.propModified || [];\n        let changed = propAdded.length>0 || propRemoved.length>0 || propModified.length>0;\n        /*计算关联是否调整*/\n        let refEntityAdd = entity.data.refEntityAdd || [];\n        let refEntityRemoved = entity.data.refEntityRemoved || [];\n        let relaArray = [];\n        for (let rela of refEntityAdd) {\n            relaArray.push('建立关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        for (let rela of refEntityRemoved) {\n            relaArray.push('解除关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        /*索引是否修改过*/\n        let indexChanged = entity.data.indexChanged;\n    }}{{=indexChanged?'\\n\\t更改了索引':''}}{{=changed?'\\n\\t更改了属性':''}}{{=relaArray.length>0?('\\n\\t'+relaArray.join('\\n\\t')):''}}\n{{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n    添加字段：\n{{='\\t'}}{{=buildAddedDesc(entity).join('\\n\\t')}}\n{{?}}{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n    删除字段：\n{{='\\t'}}{{=buildRemovedDesc(entity).join('\\n\\t')}}\n{{?}}\n{{~}}\n{{?}}\n",
+        "update": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChangedDDL(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push('ALTER TABLE '+before.defKey+' RENAME TO '+after.defKey);\n        }\n        let commentText = '';\n        let commentChanged = false;\n        if(before.defName !== after.defName){\n            commentText = after.defName;\n            commentChanged = true;\n        }\n        if(before.comment !== after.comment){\n            commentChanged = true;\n            if(commentText){\n                commentText = (commentText+ ';'+after.comment)\n            }else{\n                commentText = after.comment\n            }\n        }\n        if(commentChanged){\n            ret.push('ALTER TABLE '+after.defKey+' COMMENT \\''+commentText+'\\'');\n        }\n        let baseText = '-- 基本信息:\\n';\n        return baseText+ret.join(';\\n')+';';\n    };\n    \n    function buildAddedDDL(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        if(fieldAdded.length == 0){\n            return '';\n        }\n        \n        let firstDDL = 'ALTER TABLE '+entity.data.baseInfo.defKey;\n        for (let field of fieldAdded) { \n            let ddlItem = 'ADD COLUMN '+field.defKey+' '+field.dbType;\n            /*处理数据类型长度*/\n            if(field.len>0){\n                ddlItem += ('('+field.len);\n                if(parseInt(field.scale)>0){\n                    ddlItem += (','+field.scale);\n                }\n                ddlItem += ')';\n            }\n            if(field.notNull){\n                ddlItem += ' NOT NULL';\n            }\n            if(field.autoIncrement){\n                ddlItem += ' AUTO_INCREMENT';\n            }\n            if(field.defaultValue){\n                ddlItem += (' DEFAULT' + field.defaultValue);\n            }\n            ddlItem += (' COMMENT \\''+field.defName+';'+field.comment+'\\'');\n            \n            if(field.index>0 && field.afterFieldKey){\n                ddlItem += (' AFTER '+field.afterFieldKey);\n            }\n            ret.push(ddlItem);\n        }\n        return firstDDL+'\\n'+ret.join(',\\n');\n    };\n    \n    function buildRemovedDDL(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        if(fieldRemoved.length == 0){\n            return '';\n        }\n        \n        let firstDDL = 'ALTER TABLE '+entity.data.baseInfo.defKey;\n        for (let field of fieldRemoved) { \n            ret.push('DROP '+field.defKey);\n        }\n        return firstDDL+'\\n'+ret.join(',\\n');\n    };\n    \n    function buildModifiedDDL(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        let firstDDL = 'ALTER TABLE '+entity.data.baseInfo.defKey;\n        for (let field of fieldModified) { \n            let changeDDL = '';\n            let before = field.before || {};\n            let after = field.after || {};\n            if(before.defKey === after.defKey){\n                changeDDL += (' MODIFY COLUMN '+after.defKey);\n            }else{\n                changeDDL += (' CHANGE COLUMN '+before.defKey+' '+after.defKey);\n            }\n            changeDDL += (' '+after.dbType);\n            if(after.len>0){\n                changeDDL += ('('+after.len);\n                if(parseInt(field.scale)>0){\n                    changeDDL += (','+field.scale);\n                }\n                changeDDL += ')';\n            }\n            if(after.notNull){\n                changeDDL += ' NOT NULL';\n            }\n            let defaultValue = '';\n            if(after.defaultValue != null && after.defaultValue.length>0){\n                defaultValue = (after.defaultValue);\n            }else{\n                defaultValue = 'NULL';\n            }\n            changeDDL += (' DEFAULT ' + defaultValue);\n            let comment = after.comment||'';\n            changeDDL += (' COMMENT \\''+comment+'\\';');\n            ret.push(firstDDL+' '+changeDDL);\n        }\n        return ret;\n    };\n}}\n{{? createEntities && createEntities.length > 0}}\n/* --------------- 创建表 --------------- */\n{{~ createEntities:entity}}\n{{=it.func.createDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* --------------- 删除表 --------------- */\n{{~ dropEntities:entity}}\n{{=it.func.dropDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? modifyEntities && modifyEntities.length > 0}}\n{{~ modifyEntities:entity}}\n/* --------------- 修改表 --------------- */\n-- 修改表：{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]\n{{=baseChangedDDL(entity.data.baseChanged)}}\n{{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n-- 修改字段：\n{{=buildModifiedDDL(entity).join('\\n')}}\n{{?}}{{\n/*索引是否修改过*/\nlet indexChanged = entity.data.indexChanged;\n}}\n{{? indexChanged }}\n{{=it.func.indexRebuildDDL(entity.data.baseInfo,entity.data.newIndexes,entity.data.fullFields,entity['type'])}}\n{{?}}\n\n{{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n-- 添加字段：\n{{=buildAddedDDL(entity)}};\n{{?}}\n\n{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n-- 删除字段：\n{{=buildRemovedDDL(entity)}};\n{{?}}\n{{~}}\n{{?}}"
       },
       {
         "type": "dbDDL",
@@ -135,7 +157,9 @@
         "isDefault": true,
         "createTable": "CREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}}{{= field.defaultValue ? it.func.join(' DEFAULT ',field.defaultValue,' ') : '' }}{{= field.notNull ? ' NOT NULL' : '' }}{{= field.autoIncrement ? '' : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n);\n$blankline\n{{? it.entity.defKey || it.entity.defName}}COMMENT ON TABLE {{=it.entity.defKey}} IS '{{=it.func.join(it.entity.defName,it.entity.comment,';')}}';{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.defName || field.comment}}COMMENT ON COLUMN {{=it.entity.defKey}}.{{=field.defKey}} IS '{{=it.func.join(field.defName,field.comment,';')}}';{{?}}\n{{~}}",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChanged(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push('代码:'+(before.defKey||'NULL')+'->'+(after.defKey||'NULL'));\n        }\n        if(before.defName !== after.defName){\n            ret.push('显示名称:'+(before.defName||'NULL')+'->'+(after.defName||'NULL'));\n        }\n        if(before.comment !== after.comment){\n            ret.push('说明:'+(before.comment||'NULL')+'->'+(after.comment||'NULL'));\n        }\n        if(ret.length>0){\n            return '    基本信息:\\n\\t'+ret.join('\\n\\t');\n        }\n        return '';\n    };\n    \n    function buildAddedDesc(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        \n        for (let field of fieldAdded) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildRemovedDesc(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        \n        for (let field of fieldRemoved) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildModifiedDesc(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        for (let field1 of fieldModified) { \n            let row = [];\n            let field = field1.before;\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n}}\n{{? createEntities && createEntities.length > 0}}\n/* -------------------------------------------------- */\n创建表：\n{{~ createEntities:entity}}\n    {{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* -------------------------------------------------- */\n删除表：\n{{~ dropEntities:entity}}\n    {{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n\n{{? modifyEntities && modifyEntities.length > 0}}\n{{~ modifyEntities:entity}}\n/* -------------------------------------------------- */\n修改表：{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]{{let changeText=baseChanged(entity.data.baseChanged);}}\n{{=baseChanged(entity.data.baseChanged)}}\n    {{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n    添加字段：\n    {{='\\t'}}{{=buildAddedDesc(entity).join('\\n\\t')}}\n    {{?}}{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n    删除字段：\n    {{='\\t'}}{{=buildRemovedDesc(entity).join('\\n\\t')}}\n    {{?}}{{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n    修改字段：\n    {{='\\t'}}{{=buildModifiedDesc(entity).join('\\n\\t')}}\n    {{?}}{{\n        /*计算是否调整了属性*/\n        let propAdded = entity.data.propAdded || [];\n        let propRemoved = entity.data.propRemoved || [];\n        let propModified = entity.data.propModified || [];\n        let changed = propAdded.length>0 || propRemoved.length>0 || propModified.length>0;\n        /*计算关联是否调整*/\n        let refEntityAdd = entity.data.refEntityAdd || [];\n        let refEntityRemoved = entity.data.refEntityRemoved || [];\n        let relaArray = [];\n        for (let rela of refEntityAdd) {\n            relaArray.push('\\n\\t建立关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        for (let rela of refEntityRemoved) {\n            relaArray.push('\\n\\t解除关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        /*索引是否修改过*/\n        let indexChanged = entity.data.indexChanged;\n    }}\n{{=indexChanged?'\\n\\t更改了索引':''}}\n{{=changed?'\\n\\t更改了属性':''}}\n{{=relaArray.length>0?relaArray.join(''):''}}\n{{~}}\n{{?}}",
+        "update": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChangedDDL(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push(`ALTER TABLE ${before.defKey} RENAME TO ${after.defKey}`);\n        }\n        let commentText = '';\n        let commentChanged = false;\n        if(before.defName !== after.defName){\n            commentText = after.defName;\n            commentChanged = true;\n        }\n        if(before.comment !== after.comment){\n            commentChanged = true;\n            if(commentText){\n                commentText = (commentText+ ';'+after.comment)\n            }else{\n                commentText = after.comment\n            }\n        }\n        if(commentChanged){\n            let myText = `COMMENT ON TABLE ${after.defKey} IS '${commentText}'`;\n            ret.push(myText);\n        }\n        let baseText = '-- 基本信息:\\n';\n        return baseText+ret.join(';\\n')+';';\n    };\n    \n    function buildAddedDDL(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        if(fieldAdded.length == 0){\n            return '';\n        }\n        \n        let firstDDL = `ALTER TABLE ${entity.data.baseInfo.defKey}`;\n        for (let field of fieldAdded) { \n            let ddlItem = `ADD (${field.defKey} ${field.dbType}`;\n            /*处理数据类型长度*/\n            if(field.len>0){\n                ddlItem += ('('+field.len);\n                if(parseInt(field.scale)>0){\n                    ddlItem += (','+field.scale);\n                }\n                ddlItem += ')';\n            }\n            let defaultValue = field.defaultValue;\n            defaultValue = (defaultValue==null)?\"\":(\"\"+defaultValue);\n            if(defaultValue.length>0){\n                ddlItem += (' DEFAULT ' + defaultValue);\n            }\n            if(field.notNull){\n                ddlItem += ' NOT NULL';\n            }\n            ddlItem += ')';\n            ret.push(`${firstDDL} ${ddlItem}`);\n            \n            /*处理字段注释*/\n            let fieldComments = [];\n            if(field.defName != null &&field.defName.length>0){\n                fieldComments.push(field.defName);\n            }\n            if(field.comment != null &&field.comment.length>0){\n                fieldComments.push(field.comment);\n            }\n            let commentText = fieldComments.join(';');\n            if(commentText != null && commentText.length > 0){\n                let commentDDL = `COMMENT ON COLUMN ${entity.data.baseInfo.defKey}.${field.defKey} IS '${commentText}'`;\n                 ret.push(commentDDL);\n            }\n        }\n        return '\\n'+ret.join(';\\n');\n    };\n    \n    function buildRemovedDDL(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        if(fieldRemoved.length == 0){\n            return '';\n        }\n        \n        let firstDDL = `ALTER TABLE ${entity.data.baseInfo.defKey}`;\n        for (let field of fieldRemoved) { \n            ret.push(`${firstDDL} DROP COLUMN ${field.defKey}`);\n        }\n        return '\\n'+ret.join(';\\n');\n    };\n    \n    function buildModifiedDDL(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        let firstDDL = `ALTER TABLE ${entity.data.baseInfo.defKey}`;\n        for (let field of fieldModified) { \n            let changeDDL = '';\n            let before = field.before || {};\n            let after = field.after || {};\n            if(before.defKey !== after.defKey){\n                let renameText = `ALTER TABLE ${entity.data.baseInfo.defKey} RENAME COLUMN ${before.defKey} TO ${after.defKey};`;\n                ret.push(renameText);\n            }\n            /*如果没有变化，则不生成变更语句*/\n            if(before.dbType === after.dbType \n            && before['len'] === after['len'] \n            && before.scale === after.scale\n            && before.primaryKey === after.primaryKey\n            && before.notNull === after.notNull\n            && before.autoIncrement === after.autoIncrement\n            && before.defaultValue === after.defaultValue){\n                continue;\n            }\n            changeDDL += ('MODIFY ('+after.defKey+'');\n            changeDDL += (' '+after.dbType);\n            if(after.len>0){\n                changeDDL += ('('+after.len);\n                if(parseInt(field.scale)>0){\n                    changeDDL += (','+field.scale);\n                }\n                changeDDL += ')';\n            }\n            let defaultValue = after.defaultValue;\n            defaultValue = (defaultValue==null)?\"\":(\"\"+defaultValue);\n            if(defaultValue.length>0){\n                changeDDL += (' DEFAULT ' + defaultValue);\n            }\n            \n            if(after.notNull){\n                changeDDL += ' NOT NULL';\n            }\n            changeDDL += ')';\n            ret.push(`${firstDDL} ${changeDDL};`);\n        }\n        return ret;\n    };\n}}\n{{? createEntities && createEntities.length > 0}}\n/* --------------- 创建表 --------------- */\n{{~ createEntities:entity}}\n{{=it.func.createDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* --------------- 删除表 --------------- */\n{{~ dropEntities:entity}}\n{{=it.func.dropDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? modifyEntities && modifyEntities.length > 0}}\n{{~ modifyEntities:entity}}\n/* --------------- 修改表 --------------- */\n-- 修改表：{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]\n{{=baseChangedDDL(entity.data.baseChanged)}}\n{{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n-- 修改字段：\n{{=buildModifiedDDL(entity).join('\\n')}}\n{{?}}{{\n/*索引是否修改过*/\nlet indexChanged = entity.data.indexChanged;\n}}\n{{? indexChanged }}\n{{=it.func.indexRebuildDDL(entity.data.baseInfo,entity.data.newIndexes,entity.data.fullFields,entity['type'])}}\n{{?}}\n\n{{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n-- 添加字段：\n{{=buildAddedDDL(entity)}};\n{{?}}\n\n{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n-- 删除字段：\n{{=buildRemovedDDL(entity)}};\n{{?}}\n{{~}}\n{{?}}"
       },
       {
         "type": "dbDDL",
@@ -143,7 +167,9 @@
         "isDefault": true,
         "createTable": "DROP TABLE IF EXISTS {{=it.entity.defKey}};\nCREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= field.autoIncrement ? ' IDENTITY(1,1)' : '' }}{{= field.defaultValue ? it.func.join(' DEFAULT ',field.defaultValue,' ') : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n){{=it.separator}}\n$blankline\n{{? it.entity.defKey || it.entity.defName}}EXEC sp_addextendedproperty 'MS_Description', '{{=it.func.join(it.entity.defName,it.entity.comment,';')}}', 'SCHEMA', dbo, 'table', {{=it.entity.defKey}}, null, null;{{?}}\n{{~it.entity.fields:field:index}}\nEXEC sp_addextendedproperty 'MS_Description', '{{=it.func.join(field.defName,field.comment,';')}}', 'SCHEMA', dbo, 'table', {{=it.entity.defKey}}, 'column', {{=field.defKey}};\n{{~}}",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChanged(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push('代码:'+(before.defKey||'NULL')+'->'+(after.defKey||'NULL'));\n        }\n        if(before.defName !== after.defName){\n            ret.push('显示名称:'+(before.defName||'NULL')+'->'+(after.defName||'NULL'));\n        }\n        if(before.comment !== after.comment){\n            ret.push('说明:'+(before.comment||'NULL')+'->'+(after.comment||'NULL'));\n        }\n        if(ret.length>0){\n            return '    基本信息:\\n\\t'+ret.join('\\n\\t');\n        }\n        return '';\n    };\n    \n    function buildAddedDesc(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        \n        for (let field of fieldAdded) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildRemovedDesc(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        \n        for (let field of fieldRemoved) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildModifiedDesc(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        for (let field1 of fieldModified) { \n            let row = [];\n            let field = field1.before;\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n}}\n\n\n{{? createEntities && createEntities.length > 0}}\n/* --------------- 创建表 --------------- */\n{{~ createEntities:entity}}\n{{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* --------------- 删除表 --------------- */\n{{~ dropEntities:entity}}\n{{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n{{? modifyEntities && modifyEntities.length > 0}}\n/* --------------- 修改表 --------------- */\n{{~ modifyEntities:entity}}\n{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]{{let changeText=baseChanged(entity.data.baseChanged);}}\n{{=baseChanged(entity.data.baseChanged)}}\n    {{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n    修改字段：\n    {{='\\t'}}{{=buildModifiedDesc(entity).join('\\n\\t')}}{{?}}{{\n        /*计算是否调整了属性*/\n        let propAdded = entity.data.propAdded || [];\n        let propRemoved = entity.data.propRemoved || [];\n        let propModified = entity.data.propModified || [];\n        let changed = propAdded.length>0 || propRemoved.length>0 || propModified.length>0;\n        /*计算关联是否调整*/\n        let refEntityAdd = entity.data.refEntityAdd || [];\n        let refEntityRemoved = entity.data.refEntityRemoved || [];\n        let relaArray = [];\n        for (let rela of refEntityAdd) {\n            relaArray.push('建立关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        for (let rela of refEntityRemoved) {\n            relaArray.push('解除关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        /*索引是否修改过*/\n        let indexChanged = entity.data.indexChanged;\n    }}{{=indexChanged?'\\n\\t更改了索引':''}}{{=changed?'\\n\\t更改了属性':''}}{{=relaArray.length>0?('\\n\\t'+relaArray.join('\\n\\t')):''}}\n{{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n    添加字段：\n{{='\\t'}}{{=buildAddedDesc(entity).join('\\n\\t')}}\n{{?}}{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n    删除字段：\n{{='\\t'}}{{=buildRemovedDesc(entity).join('\\n\\t')}}\n{{?}}\n{{~}}\n{{?}}",
+        "update": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChangedDDL(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push(`EXEC sp_rename '${before.defKey}','${after.defKey}'`);\n        }\n        let commentText = '';\n        let commentChanged = false;\n        if(before.defName !== after.defName){\n            commentText = after.defName;\n            commentChanged = true;\n        }\n        if(before.comment !== after.comment){\n            commentChanged = true;\n            if(commentText){\n                commentText = (commentText+ ';'+after.comment)\n            }else{\n                commentText = after.comment\n            }\n        }\n        if(commentChanged){\n            let myText = `IF ((SELECT COUNT(*) FROM ::fn_listextendedproperty('MS_Description','SCHEMA', 'dbo','TABLE', '${after.defKey}', NULL, NULL)) > 0)\n            \\n\\tEXEC sp_updateextendedproperty 'MS_Description', '${commentText}','SCHEMA', 'dbo','TABLE', '${after.defKey}'\n            \\nELSE\n            \\n\\tEXEC sp_addextendedproperty 'MS_Description', '${commentText}', 'SCHEMA', 'dbo','TABLE', '${after.defKey}'\n            `;\n            ret.push(myText);\n            /*ret.push('ALTER TABLE '+after.defKey+' COMMENT \\''+commentText+'\\'');*/\n        }\n        let baseText = '-- 基本信息:\\n';\n        return baseText+ret.join(';\\n')+';';\n    };\n    \n    function buildAddedDDL(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        if(fieldAdded.length == 0){\n            return '';\n        }\n        \n        let firstDDL = `ALTER TABLE [dbo].[${entity.data.baseInfo.defKey}]`;\n        for (let field of fieldAdded) { \n            let ddlItem = `ADD [${field.defKey}] ${field.dbType}`;\n            /*处理数据类型长度*/\n            if(field.len>0){\n                ddlItem += ('('+field.len);\n                if(parseInt(field.scale)>0){\n                    ddlItem += (','+field.scale);\n                }\n                ddlItem += ')';\n            }\n            let defaultValue = field.defaultValue;\n            defaultValue = (defaultValue==null)?\"\":(\"\"+defaultValue);\n            if(defaultValue.length>0){\n                ddlItem += (' DEFAULT ' + defaultValue);\n            }\n            if(field.notNull){\n                ddlItem += ' NOT NULL';\n            }\n            ret.push(`${firstDDL} ${ddlItem}`);\n            \n            /*处理字段注释*/\n            let fieldComments = [];\n            if(field.defName != null &&field.defName.length>0){\n                fieldComments.push(field.defName);\n            }\n            if(field.comment != null &&field.comment.length>0){\n                fieldComments.push(field.comment);\n            }\n            let commentText = fieldComments.join(';');\n            if(commentText != null && commentText.length > 0){\n                let commentDDL = `EXEC sp_addextendedproperty 'MS_Description', N'${commentText}','SCHEMA', N'dbo','TABLE', N'${entity.data.baseInfo.defKey}','COLUMN', N'${field.defKey}'`;\n                ret.push(commentDDL);\n            }\n        }\n        return '\\n'+ret.join(';\\n');\n    };\n    \n    function buildRemovedDDL(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        if(fieldRemoved.length == 0){\n            return '';\n        }\n        \n        let firstDDL = `ALTER TABLE [dbo].[${entity.data.baseInfo.defKey}]`;\n        for (let field of fieldRemoved) { \n            ret.push(`${firstDDL} DROP COLUMN [${field.defKey}]`);\n        }\n        return '\\n'+ret.join(';\\n');\n    };\n    \n    function buildModifiedDDL(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        let firstDDL = `ALTER TABLE [dbo].[${entity.data.baseInfo.defKey}]`;\n        for (let field of fieldModified) { \n            let changeDDL = '';\n            let before = field.before || {};\n            let after = field.after || {};\n            if(before.defKey === after.defKey){\n                changeDDL += (' ALTER COLUMN ['+after.defKey+']');\n            }else{\n                let renameText = `EXEC sp_rename '[dbo].[${entity.data.baseInfo.defKey}].[${before.defKey}]','${after.defKey}','COLUMN';`;\n                ret.push(renameText);\n                continue;\n            }\n            changeDDL += (' '+after.dbType);\n            if(after.len>0){\n                changeDDL += ('('+after.len);\n                if(parseInt(after.scale)>0){\n                    changeDDL += (','+after.scale);\n                }\n                changeDDL += ')';\n            }\n            let defaultValue = after.defaultValue;\n            defaultValue = (defaultValue==null)?\"\":(\"\"+defaultValue);\n            if(defaultValue.length>0){\n                changeDDL += (' DEFAULT ' + defaultValue);\n            }\n            \n            if(after.notNull){\n                changeDDL += ' NOT NULL';\n            }\n            ret.push(`${firstDDL} ${changeDDL};`);\n        }\n        return ret;\n    };\n}}\n{{? createEntities && createEntities.length > 0}}\n/* --------------- 创建表 --------------- */\n{{~ createEntities:entity}}\n{{=it.func.createDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* --------------- 删除表 --------------- */\n{{~ dropEntities:entity}}\n{{=it.func.dropDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? modifyEntities && modifyEntities.length > 0}}\n{{~ modifyEntities:entity}}\n/* --------------- 修改表 --------------- */\n-- 修改表：{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]\n{{=baseChangedDDL(entity.data.baseChanged)}}\n{{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n-- 修改字段：\n{{=buildModifiedDDL(entity).join('\\n')}}\n{{?}}{{\n/*索引是否修改过*/\nlet indexChanged = entity.data.indexChanged;\n}}\n{{? indexChanged }}\n{{=it.func.indexRebuildDDL(entity.data.baseInfo,entity.data.newIndexes,entity.data.fullFields,entity['type'])}}\n{{?}}\n\n{{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n-- 添加字段：\n{{=buildAddedDDL(entity)}};\n{{?}}\n\n{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n-- 删除字段：\n{{=buildRemovedDDL(entity)}};\n{{?}}\n{{~}}\n{{?}}"
       },
       {
         "type": "dbDDL",
@@ -151,13 +177,16 @@
         "isDefault": true,
         "createTable": "DROP TABLE IF EXISTS {{=it.entity.defKey}};\nCREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= field.autoIncrement ? ' AUTO_INCREMENT' : '' }}{{= field.defaultValue ? it.func.join(' DEFAULT ',field.defaultValue,' ') : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n);\n$blankline\n{{? it.entity.defKey || it.entity.defName}}COMMENT ON TABLE {{=it.entity.defKey}} IS '{{=it.func.join(it.entity.defName,it.entity.comment,';')}}';{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.defName || field.comment}}COMMENT ON COLUMN {{=it.entity.defKey}}.{{=field.defKey}} IS '{{=it.func.join(field.defName,field.comment,';')}}';{{?}}\n{{~}}",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChanged(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push('代码:'+(before.defKey||'NULL')+'->'+(after.defKey||'NULL'));\n        }\n        if(before.defName !== after.defName){\n            ret.push('显示名称:'+(before.defName||'NULL')+'->'+(after.defName||'NULL'));\n        }\n        if(before.comment !== after.comment){\n            ret.push('说明:'+(before.comment||'NULL')+'->'+(after.comment||'NULL'));\n        }\n        if(ret.length>0){\n            return '    基本信息:\\n\\t'+ret.join('\\n\\t');\n        }\n        return '';\n    };\n    \n    function buildAddedDesc(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        \n        for (let field of fieldAdded) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildRemovedDesc(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        \n        for (let field of fieldRemoved) { \n            let row = [];\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n    \n    function buildModifiedDesc(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        for (let field1 of fieldModified) { \n            let row = [];\n            let field = field1.before;\n            row.push(field.defKey+'['+field.defName+']');\n            ret.push(row.join(\"\"))\n        }\n        return ret;\n    };\n}}\n\n\n{{? createEntities && createEntities.length > 0}}\n/* --------------- 创建表 --------------- */\n{{~ createEntities:entity}}\n{{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* --------------- 删除表 --------------- */\n{{~ dropEntities:entity}}\n{{=entity.data.defKey}}[{{=entity.data.defName}}]\n{{~}}\n{{?}}\n\n{{? modifyEntities && modifyEntities.length > 0}}\n/* --------------- 修改表 --------------- */\n{{~ modifyEntities:entity}}\n{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]{{let changeText=baseChanged(entity.data.baseChanged);}}\n{{=baseChanged(entity.data.baseChanged)}}\n    {{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n    修改字段：\n    {{='\\t'}}{{=buildModifiedDesc(entity).join('\\n\\t')}}{{?}}{{\n        /*计算是否调整了属性*/\n        let propAdded = entity.data.propAdded || [];\n        let propRemoved = entity.data.propRemoved || [];\n        let propModified = entity.data.propModified || [];\n        let changed = propAdded.length>0 || propRemoved.length>0 || propModified.length>0;\n        /*计算关联是否调整*/\n        let refEntityAdd = entity.data.refEntityAdd || [];\n        let refEntityRemoved = entity.data.refEntityRemoved || [];\n        let relaArray = [];\n        for (let rela of refEntityAdd) {\n            relaArray.push('建立关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        for (let rela of refEntityRemoved) {\n            relaArray.push('解除关联:'+rela.defKey+'['+rela.defName+']');\n        }\n        /*索引是否修改过*/\n        let indexChanged = entity.data.indexChanged;\n    }}{{=indexChanged?'\\n\\t更改了索引':''}}{{=changed?'\\n\\t更改了属性':''}}{{=relaArray.length>0?('\\n\\t'+relaArray.join('\\n\\t')):''}}\n{{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n    添加字段：\n{{='\\t'}}{{=buildAddedDesc(entity).join('\\n\\t')}}\n{{?}}{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n    删除字段：\n{{='\\t'}}{{=buildRemovedDesc(entity).join('\\n\\t')}}\n{{?}}\n{{~}}\n{{?}}",
+        "update": "{{\n    let createEntities = it.changes.filter(function(row){return (row.opt==='add'&&row['type']==='entity');});\n    let dropEntities   = it.changes.filter(function(row){return (row.opt==='delete'&&row['type']==='entity');});\n    let modifyEntities = it.changes.filter(function(row){return (row.opt==='update'&&row['type']==='entity');});\n    \n    function baseChangedDDL(beforeAfter){\n        if(beforeAfter == null){\n            return '';\n        }\n        let ret = [];\n        let before = beforeAfter.before || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        let after = beforeAfter.after || {\"defKey\":\"\",\"defName\":\"\",\"comment\":\"\"};\n        if(before.defKey !== after.defKey){\n            ret.push(`ALTER TABLE ${before.defKey} RENAME TO ${after.defKey}`);\n        }\n        let commentText = '';\n        let commentChanged = false;\n        if(before.defName !== after.defName){\n            commentText = after.defName;\n            commentChanged = true;\n        }\n        if(before.comment !== after.comment){\n            commentChanged = true;\n            if(commentText){\n                commentText = (commentText+ ';'+after.comment)\n            }else{\n                commentText = after.comment\n            }\n        }\n        if(commentChanged){\n            let myText = `COMMENT ON TABLE ${after.defKey} IS '${commentText}'`;\n            ret.push(myText);\n        }\n        let baseText = '-- 基本信息:\\n';\n        return baseText+ret.join(';\\n')+';';\n    };\n    \n    function buildAddedDDL(entity){\n        let ret = [];\n        let fieldAdded = entity.data.fieldAdded||[];\n        if(fieldAdded.length == 0){\n            return '';\n        }\n        \n        let firstDDL = `ALTER TABLE ${entity.data.baseInfo.defKey}`;\n        for (let field of fieldAdded) { \n            let ddlItem = `ADD COLUMN ${field.defKey} ${field.dbType}`;\n            /*处理数据类型长度*/\n            if(field.len>0){\n                ddlItem += ('('+field.len);\n                if(parseInt(field.scale)>0){\n                    ddlItem += (','+field.scale);\n                }\n                ddlItem += ')';\n            }\n            if(field.notNull){\n                ddlItem += ' NOT NULL';\n            }            \n            let defaultValue = field.defaultValue;\n            defaultValue = (defaultValue==null)?\"\":(\"\"+defaultValue);\n            if(defaultValue.length>0){\n                ddlItem += (' DEFAULT ' + defaultValue);\n            }\n\n            ret.push(`${firstDDL} ${ddlItem}`);\n            \n            /*处理字段注释*/\n            let fieldComments = [];\n            if(field.defName != null &&field.defName.length>0){\n                fieldComments.push(field.defName);\n            }\n            if(field.comment != null &&field.comment.length>0){\n                fieldComments.push(field.comment);\n            }\n            let commentText = fieldComments.join(';');\n            if(commentText != null && commentText.length > 0){\n                let commentDDL = `COMMENT ON COLUMN ${entity.data.baseInfo.defKey}.${field.defKey} IS '${commentText}'`;\n                 ret.push(commentDDL);\n            }\n        }\n        return '\\n'+ret.join(';\\n');\n    };\n    \n    function buildRemovedDDL(entity){\n        let ret = [];\n        let fieldRemoved = entity.data.fieldRemoved||[];\n        if(fieldRemoved.length == 0){\n            return '';\n        }\n        \n        let firstDDL = `ALTER TABLE ${entity.data.baseInfo.defKey}`;\n        for (let field of fieldRemoved) { \n            ret.push(`${firstDDL} DROP COLUMN ${field.defKey}`);\n        }\n        return '\\n'+ret.join(';\\n');\n    };\n    \n    function buildModifiedDDL(entity){\n        let ret = [];\n        let fieldModified = entity.data.fieldModified||[];\n        \n        let firstDDL = `ALTER TABLE ${entity.data.baseInfo.defKey}`;\n        for (let field of fieldModified) { \n            let before = field.before || {};\n            let after = field.after || {};\n            if(before.defKey !== after.defKey){\n                let renameText = `ALTER TABLE ${entity.data.baseInfo.defKey} RENAME COLUMN ${before.defKey} TO ${after.defKey};`;\n                ret.push(renameText);\n            }\n            /*如果没有变化，则不生成变更语句*/\n            if(before.dbType === after.dbType \n            && before['len'] === after['len'] \n            && before.scale === after.scale\n            && before.primaryKey === after.primaryKey\n            && before.notNull === after.notNull\n            && before.autoIncrement === after.autoIncrement\n            && before.defaultValue === after.defaultValue){\n                continue;\n            }\n            if(before.dbType !== after.dbType || before.len !== after.len || before.scale !== after.scale){\n                let dbTypeDDL = `ALTER TABLE ${entity.data.baseInfo.defKey} ALTER COLUMN ${after.defKey} TYPE ${before.dbType}`;\n                if(after.len>0){\n                    dbTypeDDL += ('('+after.len);\n                    if(parseInt(after.scale)>0){\n                        dbTypeDDL += (','+after.scale);\n                    }\n                    dbTypeDDL += ')';\n                }\n                ret.push(dbTypeDDL+';');\n            }\n            \n            if(before.defaultValue !== after.defaultValue){\n                let defaultDDL = '';\n                let defaultValue = after.defaultValue;\n                defaultValue = (defaultValue==null)?\"NULL\":(\"\"+defaultValue);\n                if(defaultValue.length>0){\n                    defaultDDL += ('SET DEFAULT ' + defaultValue);\n                }\n                let defaultTpl = `ALTER TABLE ${entity.data.baseInfo.defKey} ALTER COLUMN ${defaultDDL};`;\n                ret.push(defaultTpl);\n            }\n            \n            if(before.notNull !== after.notNull){\n                let notNullDDL= 'SET NULL';\n                if(after.notNull){\n                    let notNullDDL= 'SET NOT NULL';\n                }\n                let notNullTpl = `ALTER TABLE ${entity.data.baseInfo.defKey} ALTER COLUMN ${notNullDDL};`;\n                ret.push(notNullTpl);\n            }\n        }\n        return ret;\n    };\n}}\n{{? createEntities && createEntities.length > 0}}\n/* --------------- 创建表 --------------- */\n{{~ createEntities:entity}}\n{{=it.func.createDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? dropEntities && dropEntities.length > 0}}\n/* --------------- 删除表 --------------- */\n{{~ dropEntities:entity}}\n{{=it.func.dropDDL(entity.data,entity['type'])}}\n{{~}}\n{{?}}\n\n\n{{? modifyEntities && modifyEntities.length > 0}}\n{{~ modifyEntities:entity}}\n/* --------------- 修改表 --------------- */\n-- 修改表：{{=entity.data.baseInfo.defKey}}[{{=entity.data.baseInfo.defName}}]\n{{=baseChangedDDL(entity.data.baseChanged)}}\n{{? entity.data.fieldModified && entity.data.fieldModified.length > 0}}\n-- 修改字段：\n{{=buildModifiedDDL(entity).join('\\n')}}\n{{?}}{{\n/*索引是否修改过*/\nlet indexChanged = entity.data.indexChanged;\n}}\n{{? indexChanged }}\n-- 索引重建\n{{=it.func.indexRebuildDDL(entity.data.baseInfo,entity.data.newIndexes,entity.data.fullFields,entity['type'])}}\n{{?}}\n\n{{? entity.data.fieldAdded && entity.data.fieldAdded.length > 0}}\n-- 添加字段：\n{{=buildAddedDDL(entity)}};\n{{?}}\n\n{{? entity.data.fieldRemoved && entity.data.fieldRemoved.length > 0}}\n-- 删除字段：\n{{=buildRemovedDDL(entity)}};\n{{?}}\n{{~}}\n{{?}}"
       },
       {
         "type": "appCode",
         "applyFor": "D117431F-5621-414B-8E44-D1AB687DB3A4",
         "isDefault": true,
-        "content": "package cn.com.chiner.entity;\n$blankline\nimport javax.persistence.*;\nimport java.io.Serializable;\nimport java.util.Date;\n$blankline\n{{\n    var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n}}\n /**\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n * @desc : {{=it.func.join(it.entity.defName,it.entity.comment,'-')}}\n */\n@Table(name=\"{{=it.entity.defKey}}\")\npublic class {{=it.func.camel(it.entity.defKey,true) }} implements Serializable,Cloneable{\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    {{? field.primaryKey }}\n    @Id\n    @GeneratedValue\n    {{?}}\n    private {{=field.type}} {{=it.func.camel(field.defKey,false)}} ;\n{{~}}\n$blankline\n\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public {{=field.type}} get{{=it.func.camel(field.defKey,true)}}(){\n        return this.{{=it.func.camel(field.defKey,false)}};\n    }\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public void set{{=it.func.camel(field.defKey,true)}}({{=field.type}} {{= it.func.camel(field.defKey,false) }}){\n        this.{{=it.func.camel(field.defKey,false)}}={{=it.func.camel(field.defKey,false)}};\n    }\n{{~}}\n}"
+        "content": "package cn.com.chiner.entity;\n$blankline\nimport javax.persistence.*;\nimport java.io.Serializable;\nimport java.util.Date;\n$blankline\n{{\n    var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n}}\n /**\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n * @desc : {{=it.func.join(it.entity.defName,it.entity.comment,'-')}}\n */\n@Table(name=\"{{=it.entity.defKey}}\")\npublic class {{=it.func.camel(it.entity.defKey,true) }} implements Serializable,Cloneable{\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    {{? field.primaryKey }}\n    @Id\n    @GeneratedValue\n    {{?}}\n    private {{=field.type}} {{=it.func.camel(field.defKey,false)}} ;\n{{~}}\n$blankline\n\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public {{=field.type}} get{{=it.func.camel(field.defKey,true)}}(){\n        return this.{{=it.func.camel(field.defKey,false)}};\n    }\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public void set{{=it.func.camel(field.defKey,true)}}({{=field.type}} {{= it.func.camel(field.defKey,false) }}){\n        this.{{=it.func.camel(field.defKey,false)}}={{=it.func.camel(field.defKey,false)}};\n    }\n{{~}}\n}",
+        " JpaBean": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.entity;\n$blankline\nimport io.swagger.annotations.ApiModel;\nimport io.swagger.annotations.ApiModelProperty;\nimport javax.persistence.*;\nimport java.io.Serializable;\nimport java.util.Date;\n$blankline\n\n /**\n * {{=it.entity.defName}};{{=it.entity.comment}}\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@ApiModel(value = \"{{=it.entity.defName}}\",description = \"{{=it.entity.comment}}\")\n@Table(name=\"{{=it.entity.defKey}}\")\npublic class {{=beanClass}} implements Serializable,Cloneable{\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    {{? field.primaryKey }}\n    @Id\n    @GeneratedValue\n    {{?}}\n    @ApiModelProperty(name = \"{{=field.defName}}\",notes = \"{{=field.comment}}\")\n    private {{=field.type}} {{=it.func.camel(field.defKey,false)}} ;\n{{~}}\n$blankline\n\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public {{=field.type}} get{{=it.func.camel(field.defKey,true)}}(){\n        return this.{{=it.func.camel(field.defKey,false)}};\n    }\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public void set{{=it.func.camel(field.defKey,true)}}({{=field.type}} {{= it.func.camel(field.defKey,false) }}){\n        this.{{=it.func.camel(field.defKey,false)}}={{=it.func.camel(field.defKey,false)}};\n    }\n{{~}}\n}"
       },
       {
         "type": "dbDDL",
@@ -165,7 +194,9 @@
         "isDefault": true,
         "createTable": "CREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= field.autoIncrement ? '' : '' }}{{= field.defaultValue ? it.func.join(' DEFAULT ',field.defaultValue,' ') : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n);\n$blankline\n{{? it.entity.defKey || it.entity.defName}}COMMENT ON TABLE {{=it.entity.defKey}} IS '{{=it.func.join(it.entity.defName,it.entity.comment,';')}}';{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.defName || field.comment}}COMMENT ON COLUMN {{=it.entity.defKey}}.{{=field.defKey}} IS '{{=it.func.join(field.defName,field.comment,';')}}';{{?}}\n{{~}}",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "",
+        "update": ""
       },
       {
         "type": "dbDDL",
@@ -173,13 +204,17 @@
         "isDefault": true,
         "createTable": "CREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= field.autoIncrement ? '' : '' }}{{= field.defaultValue ? it.func.join(' DEFAULT ','('+field.defaultValue+')',' ') : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n);\n$blankline\n{{? it.entity.defKey || it.entity.defName}}COMMENT ON TABLE {{=it.entity.defKey}} IS '{{=it.func.join(it.entity.defName,it.entity.comment,';')}}';{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.defName || field.comment}}COMMENT ON COLUMN {{=it.entity.defKey}}.{{=field.defKey}} IS '{{=it.func.join(field.defName,field.comment,';')}}';{{?}}\n{{~}}",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "",
+        "update": ""
       },
       {
         "type": "appCode",
         "applyFor": "6AF3F8D8-CD22-458F-8D5A-B2356CE99A1D",
         "isDefault": true,
-        "content": "using System;\nusing System.Collections.Generic;\n\n$blankline\n{{\n    var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n}}\n/*\n * @author : http://www.chiner.com.cn\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n * @desc : {{=it.func.join(it.entity.defName,it.entity.comment,'-')}}\n */\nnamespace Chiner.Application\n{\n    public partial class {{=it.func.camel(it.entity.defKey,true) }}\n    {\n    \n        {{~it.entity.fields:field:index}}\n        /// <summary>\n        /// {{=it.func.join(field.defName,field.comment,';')}}\n        /// </summary>\n        public {{=field.type}} {{=it.func.camel(field.defKey,true)}} { get; set; }\n        $blankline\n        {{~}}\n        \n    }\n}"
+        "content": "using System;\nusing System.Collections.Generic;\n\n$blankline\n{{\n    var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n}}\n/*\n * @author : http://www.chiner.com.cn\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n * @desc : {{=it.func.join(it.entity.defName,it.entity.comment,'-')}}\n */\nnamespace Chiner.Application\n{\n    public partial class {{=it.func.camel(it.entity.defKey,true) }}\n    {\n    \n        {{~it.entity.fields:field:index}}\n        /// <summary>\n        /// {{=it.func.join(field.defName,field.comment,';')}}\n        /// </summary>\n        public {{=field.type}} {{=it.func.camel(field.defKey,true)}} { get; set; }\n        $blankline\n        {{~}}\n        \n    }\n}",
+        "Default": "using System;\nusing System.Collections.Generic;\n\n$blankline\n{{\n    var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n}}\n/*\n * @author : http://www.chiner.com.cn\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n * @desc : {{=it.func.join(it.entity.defName,it.entity.comment,'-')}}\n */\nnamespace PDManer.Application\n{\n    public partial class {{=it.func.camel(it.entity.defKey,true) }}\n    {\n    \n        {{~it.entity.fields:field:index}}\n        /// <summary>\n        /// {{=it.func.join(field.defName,field.comment,';')}}\n        /// </summary>\n        public {{=field.type}} {{=it.func.camel(field.defKey,true)}} { get; set; }\n        $blankline\n        {{~}}\n        \n    }\n}",
+        "SqlSugar": "using System;\nusing System.Collections.Generic;\nusing SqlSugar;\n\n$blankline\n{{\n    var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    var sqlSugartable='[SugarTable(\"{{=it.entity.defKey}}\", TableDescription = \"{{=it.func.join(it.entity.defName,it.entity.comment,';')}}\")]';\n}}\n/*\n * @author : xkdong@163.com\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n * @desc : {{=it.func.join(it.entity.defName,it.entity.comment,'-')}}\n */\nnamespace Model.DBModel\n{\n    /// <summary>\n    /// {{=it.func.join(it.entity.defName,it.entity.comment,';')}}\n    /// </summary>\n    {{=sqlSugartable}}\n    public class {{=it.entity.defKey}}\n    {\n        {{~it.entity.fields:field:index}}\n        /// <summary>\n        /// {{=it.func.join(field.defName,field.comment,';')}}\n        /// </summary>\n        {{? field.primaryKey }}\n        [SugarColumn(IsIdentity = true, IsPrimaryKey = true)]\n        {{?}}\n        public {{=field.type}} {{=it.func.camel(field.defKey,true)}}{ get; set; }\n        $blankline\n        {{~}}\n    }\n}"
       },
       {
         "type": "dbDDL",
@@ -187,7 +222,9 @@
         "isDefault": true,
         "createTable": "DROP TABLE IF EXISTS {{=it.entity.defKey}};\nCREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= field.autoIncrement ? ' AUTO_INCREMENT' : '' }}{{= field.defaultValue ? it.func.join(' DEFAULT ',field.defaultValue,' ') : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n);\n$blankline\n{{? it.entity.defKey || it.entity.defName}}COMMENT ON TABLE {{=it.entity.defKey}} IS '{{=it.func.join(it.entity.defName,it.entity.comment,';')}}';{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.defName || field.comment}}COMMENT ON COLUMN {{=it.entity.defKey}}.{{=field.defKey}} IS '{{=it.func.join(field.defName,field.comment,';')}}';{{?}}\n{{~}}",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "",
+        "update": ""
       },
       {
         "type": "dbDDL",
@@ -195,7 +232,9 @@
         "isDefault": true,
         "createTable": "DROP TABLE IF EXISTS {{=it.entity.defKey}};\nCREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{= field.defaultValue ? it.func.join(' DEFAULT ',field.defaultValue,' ') : '' }}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n);\n$blankline\n{{? it.entity.defKey || it.entity.defName}}COMMENT ON TABLE {{=it.entity.defKey}} IS '{{=it.func.join(it.entity.defName,it.entity.comment,';')}}';{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.defName || field.comment}}COMMENT ON COLUMN {{=it.entity.defKey}}.{{=field.defKey}} IS '{{=it.func.join(field.defName,field.comment,';')}}';{{?}}\n{{~}}",
         "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
-        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "",
+        "update": ""
       },
       {
         "type": "dbDDL",
@@ -209,7 +248,52 @@
         "isDefault": true,
         "createTable": "DROP TABLE IF EXISTS {{=it.entity.defKey}};\nCREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}} {{= field.notNull ? 'NOT NULL' : '' }} {{= field.autoIncrement ? 'AUTO_INCREMENT' : '' }} {{= field.defaultValue ? it.func.join('DEFAULT',field.defaultValue,' ') : '' }} COMMENT '{{=it.func.join(field.defName,field.comment,';')}}' {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n)  COMMENT = '{{=it.func.join(it.entity.defName,it.entity.comment,';') }}';\n$blankline\n",
         "createIndex": "",
+        "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n",
+        "message": "",
+        "update": ""
+      },
+      {
+        "applyFor": "B363BE0B-F852-49B8-9B2E-F6D2174DEAC1",
+        "type": "dbDDL",
+        "createTable": "DROP TABLE IF EXISTS {{=it.entity.defKey}};\nCREATE TABLE {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.primaryKey }}{{ pkList.push(field.defKey) }}{{?}}\n    {{=field.defKey}} {{=field.type}}{{?field.len>0}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{?}}{{=')'}}{{?}} {{= field.notNull ? 'NOT NULL' : '' }} {{= field.autoIncrement ? 'AUTOINCREMENT' : '' }} {{= field.defaultValue ? it.func.join('DEFAULT',field.defaultValue,' ') : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }} --{{=it.func.join(field.defName,field.comment,';')}}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n)  ; --{{=it.func.join(it.entity.defName,it.entity.comment,';') }}\n$blankline\n",
+        "createIndex": "{{~ it.entity.indexes:index}}\nCREATE {{? index.unique}}UNIQUE {{?}}INDEX {{=index.defKey}} ON {{=it.entity.defKey}}({{ fieldsKeys = index.fields.map(function(field){return field.fieldDefKey}) ; }}{{=it.func.join(...fieldsKeys,',')}});\n{{~}}",
         "createView": "CREATE VIEW {{=it.view.defKey}} AS\nSELECT \n{{~it.view.fields:field:index}}\n    {{=field.refEntity}}.{{=field.refEntityField}} AS {{=field.defKey}}{{= index < it.view.fields.length-1 ? ',' : ''}}\n{{~}}\nFROM {{~it.view.refEntities:refEntity:index}}{{=refEntity}}{{= index < it.view.refEntities.length-1 ? ',' : ''}}{{~}};\n$blankline\n"
+      },
+      {
+        "applyFor": "895CFD1D-4273-4D32-A2C4-CAC70200AB5B",
+        "type": "appCode",
+        "Controller": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.controller;\n$blankline\nimport io.swagger.annotations.Api;\nimport io.swagger.annotations.ApiOperation;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.data.domain.Page;\nimport org.springframework.data.domain.PageRequest;\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\nimport {{=pkgName}}.entity.{{=beanClass}};\nimport {{=pkgName}}.service.{{=serviceClass}};\n$blankline\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表控制层\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@Api(tags = \"{{=it.entity.defName}}对象功能接口\")\n@RestController\n@RequestMapping(\"/{{=it.func.camel(it.entity.defKey,false)}}\")\npublic class {{=beanClass}}Controller{\n    @Autowired\n    private {{=serviceClass}} {{=serviceVarName}};\n    $blankline\n    /** \n     * 通过ID查询单条数据 \n     *\n     * @param {{=pkVarName}} 主键\n     * @return 实例对象\n     */\n    @ApiOperation(\"通过ID查询单条数据\")\n    @GetMapping(\"{{{=it.func.camel(pkVarName,false)}}}\")\n    public ResponseEntity<{{=beanClass}}> queryById({{=pkDataType}} {{=pkVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.queryById({{=pkVarName}}));\n    }\n    $blankline\n    /** \n     * 分页查询\n     *\n     * @param {{=beanVarName}} 筛选条件\n     * @param pageRequest 分页对象\n     * @return 查询结果\n     */\n    @ApiOperation(\"分页查询\")\n    @GetMapping\n    public ResponseEntity<Page<{{=beanClass}}>> paginQuery({{=beanClass}} {{=beanVarName}}, PageRequest pageRequest){\n        return ResponseEntity.ok({{=serviceVarName}}.paginQuery({{=beanVarName}}, pageRequest));\n    }\n    $blankline\n    /** \n     * 新增数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    @ApiOperation(\"新增数据\")\n    @PostMapping\n    public ResponseEntity<{{=beanClass}}> add({{=beanClass}} {{=beanVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.insert({{=beanVarName}}));\n    }\n    $blankline\n    /** \n     * 更新数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    @ApiOperation(\"更新数据\")\n    @PutMapping\n    public ResponseEntity<{{=beanClass}}> edit({{=beanClass}} {{=beanVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.update({{=beanVarName}}));\n    }\n    $blankline\n    /** \n     * 通过主键删除数据\n     *\n     * @param {{=pkVarName}} 主键\n     * @return 是否成功\n     */\n    @ApiOperation(\"通过主键删除数据\")\n    @DeleteMapping\n    public ResponseEntity<Boolean> deleteById({{=pkDataType}} {{=pkVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.deleteById({{=pkVarName}}));\n    }\n}",
+        "Service": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.service;\n$blankline\nimport org.springframework.data.domain.Page;\nimport org.springframework.data.domain.PageRequest;\nimport {{=pkgName}}.entity.{{=beanClass}};\n$blankline\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表服务接口\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\npublic interface {{=serviceClass}}{\n    /** \n     * 通过ID查询单条数据 \n     *\n     * @param {{=pkVarName}} 主键\n     * @return 实例对象\n     */\n    {{=beanClass}} queryById({{=pkDataType}} {{=pkVarName}});\n    \n    /** \n     * 分页查询\n     *\n     * @param {{=beanVarName}} 筛选条件\n     * @param pageRequest 分页对象\n     * @return 查询结果\n     */\n    Page<{{=beanClass}}> paginQuery({{=beanClass}} {{=beanVarName}}, PageRequest pageRequest);\n\n    /** \n     * 新增数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    {{=beanClass}} insert({{=beanClass}} {{=beanVarName}});\n\n    \n    /** \n     * 更新数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    {{=beanClass}} update({{=beanClass}} {{=beanVarName}});\n\n    /** \n     * 通过主键删除数据\n     *\n     * @param {{=pkVarName}} 主键\n     * @return 是否成功\n     */\n    boolean deleteById({{=pkDataType}} {{=pkVarName}});\n}",
+        "ServiceImpl": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkVarNameU = \"UndefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkVarNameU = it.func.camel(field.defKey,true);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    var mapperName = beanVarName+'Mapper';\n    \n}}package {{=pkgName}}.service.impl;\n$blankline\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.stereotype.Service;\nimport org.springframework.data.domain.Page;\nimport org.springframework.data.domain.PageImpl;\nimport org.springframework.data.domain.PageRequest;\nimport {{=pkgName}}.entity.{{=beanClass}};\nimport {{=pkgName}}.mapper.{{=beanClass}}Mapper;\nimport {{=pkgName}}.service.{{=serviceClass}};\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表服务实现类\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@Service\npublic class {{=serviceClass}}Impl implements {{=serviceClass}}{\n    @Autowired\n    private {{=beanClass}}Mapper {{=mapperName}};\n    $blankline\n    /** \n     * 通过ID查询单条数据 \n     *\n     * @param {{=pkVarName}} 主键\n     * @return 实例对象\n     */\n    public {{=beanClass}} queryById({{=pkDataType}} {{=pkVarName}}){\n        return {{=mapperName}}.queryById({{=pkVarName}});\n    }\n    $blankline\n    /** \n     * 分页查询\n     *\n     * @param {{=beanVarName}} 筛选条件\n     * @param pageRequest 分页对象\n     * @return 查询结果\n     */\n    public Page<{{=beanClass}}> paginQuery({{=beanClass}} {{=beanVarName}}, PageRequest pageRequest){\n        long total = {{=mapperName}}.count({{=beanVarName}});\n        return new PageImpl<>({{=mapperName}}.queryAllByLimit({{=beanVarName}}, pageRequest), pageRequest, total);\n    }\n    $blankline\n    /** \n     * 新增数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    public {{=beanClass}} insert({{=beanClass}} {{=beanVarName}}){\n        {{=mapperName}}.insert({{=beanVarName}});\n        return {{=beanVarName}};\n    }\n    $blankline\n    /** \n     * 更新数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    public {{=beanClass}} update({{=beanClass}} {{=beanVarName}}){\n        {{=mapperName}}.update({{=beanVarName}});\n        return queryById({{=beanVarName}}.get{{=pkVarNameU}}());\n    }\n    $blankline\n    /** \n     * 通过主键删除数据\n     *\n     * @param {{=pkVarName}} 主键\n     * @return 是否成功\n     */\n    public boolean deleteById({{=pkDataType}} {{=pkVarName}}){\n        int total = {{=mapperName}}.deleteById({{=pkVarName}});\n        return total > 0;\n    }\n}",
+        "Mapper": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.mapper;\n$blankline\nimport java.util.List;\nimport org.apache.ibatis.annotations.Mapper;\nimport org.apache.ibatis.annotations.Param;\nimport org.springframework.data.domain.Pageable;\nimport {{=pkgName}}.entity.{{=beanClass}};\n$blankline\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表数据库访问层\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@Mapper\npublic interface {{=beanClass}}Mapper{\n    /** \n     * 通过ID查询单条数据 \n     *\n     * @param {{=pkVarName}} 主键\n     * @return 实例对象\n     */\n    {{=beanClass}} queryById({{=pkDataType}} {{=pkVarName}});\n    \n    /** \n     * 分页查询指定行数据\n     *\n     * @param {{=beanVarName}} 查询条件\n     * @param pageable 分页对象\n     * @return 对象列表\n     */\n    List<{{=beanClass}}> queryAllByLimit({{=beanClass}} {{=beanVarName}}, @Param(\"pageable\") Pageable pageable);\n\n    /** \n     * 统计总行数\n     *\n     * @param {{=beanVarName}} 查询条件\n     * @return 总行数\n     */\n    long count({{=beanClass}} {{=beanVarName}});\n\n    /** \n     * 新增数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 影响行数\n     */\n    int insert({{=beanClass}} {{=beanVarName}});\n\n    /** \n     * 批量新增数据\n     *\n     * @param entities List<{{=beanClass}}> 实例对象列表\n     * @return 影响行数\n     */\n    int insertBatch(@Param(\"entities\") List<{{=beanClass}}> entities);\n    \n    /** \n     * 批量新增或按主键更新数据\n     *\n     * @param entities List<{{=beanClass}}> 实例对象列表\n     * @return 影响行数\n     */\n    int insertOrUpdateBatch(@Param(\"entities\") List<{{=beanClass}}> entities);\n    \n    /** \n     * 更新数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 影响行数\n     */\n    int update({{=beanClass}} {{=beanVarName}});\n\n    /** \n     * 通过主键删除数据\n     *\n     * @param {{=pkVarName}} 主键\n     * @return 影响行数\n     */\n    int deleteById({{=pkDataType}} {{=pkVarName}});\n}",
+        "Mapper.xml": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    var pkField = \"UNDEFINED_ID\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkField = field.defKey;\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">\n<mapper namespace=\"{{=pkgName}}.mapper.{{=beanClass}}Mapper\">\n    <resultMap type=\"{{=pkgName}}.entity.{{=beanClass}}\" id=\"{{=beanClass}}Map\">\n    {{~it.entity.fields:field:index}}\n        <result property=\"{{=it.func.camel(field.defKey,false)}}\" column=\"{{=field.defKey}}\" jdbcType=\"{{=field.dbType}}\"/>\n    {{~}}\n    </resultMap>\n    $blankline\n    <!-- 通过ID查询单条数据 -->\n    <select id=\"queryById\" resultMap=\"{{=beanClass}}Map\">\n        select\n            {{=it.entity.fields.map(function(e,i){return e.defKey}).join(',')}}\n        from {{=it.entity.defKey}}\n        where {{=pkField}} = #{{{=pkVarName}}}\n    </select>\n    $blankline\n    <!--分页查询指定行数据-->\n    <select id=\"queryAllByLimit\" resultMap=\"{{=beanClass}}Map\">\n        select\n            {{=it.entity.fields.map(function(e,i){return e.defKey}).join(',')}}\n        from {{=it.entity.defKey}}\n        <where>\n        {{~it.entity.fields:field:index}}\n            <if test=\"{{=it.func.camel(field.defKey,false)}} != null and {{=it.func.camel(field.defKey,false)}} != ''\">\n                and {{=field.defKey}} = #{{{=it.func.camel(field.defKey,false)}}}\n            </if>\n        {{~}}\n        </where>\n        limit #{pageable.offset}, #{pageable.pageSize}\n    </select>\n    $blankline\n    <!--统计总行数-->\n    <select id=\"count\" resultType=\"java.lang.Long\">\n        select count(1)\n        from {{=it.entity.defKey}}\n        <where>\n        {{~it.entity.fields:field:index}}\n            <if test=\"{{=it.func.camel(field.defKey,false)}} != null and {{=it.func.camel(field.defKey,false)}} != ''\">\n                and {{=field.defKey}} = #{{{=it.func.camel(field.defKey,false)}}}\n            </if>\n        {{~}}\n        </where>\n    </select>\n    $blankline\n    <!--新增数据-->\n    <insert id=\"insert\" keyProperty=\"{{=pkField}}\" useGeneratedKeys=\"true\">\n        insert into {{=it.entity.defKey}}({{=it.entity.fields.map(function(e,i){return e.defKey}).join(',')}})\n        values ({{=it.entity.fields.map(function(e,i){return '#{'+it.func.camel(e.defKey,false)+'}'}).join(',')}})\n    </insert>\n    $blankline\n    <!-- 批量新增数据 -->\n    <insert id=\"insertBatch\" keyProperty=\"{{=pkField}}\" useGeneratedKeys=\"true\">\n        insert into {{=it.entity.defKey}}({{=it.entity.fields.map(function(e,i){return e.defKey}).join(',')}})\n        values\n        <foreach collection=\"entities\" item=\"entity\" separator=\",\">\n            ({{=it.entity.fields.map(function(e,i){return '#{entity.'+it.func.camel(e.defKey,false)+'}'}).join(',')}})\n        </foreach>\n    </insert>\n    $blankline\n    <!-- 批量新增或按主键更新数据 -->\n    <insert id=\"insertOrUpdateBatch\" keyProperty=\"{{=pkField}}\" useGeneratedKeys=\"true\">\n        insert into {{=it.entity.defKey}}({{=it.entity.fields.map(function(e,i){return e.defKey}).join(',')}})\n        values\n        <foreach collection=\"entities\" item=\"entity\" separator=\",\">\n            ({{=it.entity.fields.map(function(e,i){return '#{entity.'+it.func.camel(e.defKey,false)+'}'}).join(',')}})\n        </foreach>\n        on duplicate key update\n        {{=it.entity.fields.map(function(e,i){return e.defKey + '=values('+e.defKey+')'}).join(',\\n\\t\\t')}}\n    </insert>\n    $blankline\n    <!-- 更新数据 -->\n    <update id=\"update\">\n        update {{=it.entity.defKey}}\n        <set>\n        {{~it.entity.fields:field:index}}\n            <if test=\"{{=it.func.camel(field.defKey,false)}} != null and {{=it.func.camel(field.defKey,false)}} != ''\">\n                {{=field.defKey}} = #{{{=it.func.camel(field.defKey,false)}}},\n            </if>\n        {{~}}\n        </set>\n        where {{=pkField}} = #{{{=pkVarName}}}\n    </update>\n    $blankline\n    <!--通过主键删除-->\n    <delete id=\"deleteById\">\n        delete from {{=it.entity.defKey}} where {{=pkField}} = #{{{=pkVarName}}}\n    </delete>\n</mapper>\n\n",
+        "Entity": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.entity;\n$blankline\nimport io.swagger.annotations.ApiModel;\nimport io.swagger.annotations.ApiModelProperty;\nimport java.io.Serializable;\nimport java.util.Date;\n$blankline\n\n /**\n * {{=it.entity.defName}};{{=it.entity.comment}}\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@ApiModel(value = \"{{=it.entity.defName}}\",description = \"{{=it.entity.comment}}\")\npublic class {{=beanClass}} implements Serializable,Cloneable{\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    @ApiModelProperty(name = \"{{=field.defName}}\",notes = \"{{=field.comment}}\")\n    private {{=field.type}} {{=it.func.camel(field.defKey,false)}} ;\n{{~}}\n$blankline\n\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public {{=field.type}} get{{=it.func.camel(field.defKey,true)}}(){\n        return this.{{=it.func.camel(field.defKey,false)}};\n    }\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public void set{{=it.func.camel(field.defKey,true)}}({{=field.type}} {{= it.func.camel(field.defKey,false) }}){\n        this.{{=it.func.camel(field.defKey,false)}}={{=it.func.camel(field.defKey,false)}};\n    }\n{{~}}\n}"
+      },
+      {
+        "applyFor": "A2EE7B4A-CE62-4290-B00C-B26C1BF18073",
+        "type": "appCode",
+        "Controller": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.controller;\n$blankline\nimport java.util.List;\nimport io.swagger.annotations.Api;\nimport io.swagger.annotations.ApiOperation;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.data.domain.PageImpl;\nimport org.springframework.data.domain.PageRequest;\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\nimport {{=pkgName}}.entity.{{=beanClass}};\nimport {{=pkgName}}.service.{{=serviceClass}};\n$blankline\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表控制层\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@Api(tags = \"{{=it.entity.defName}}对象功能接口\")\n@RestController\n@RequestMapping(\"/{{=it.func.camel(it.entity.defKey,false)}}\")\npublic class {{=beanClass}}Controller{\n    @Autowired\n    private {{=serviceClass}} {{=serviceVarName}};\n    $blankline\n    /** \n     * 通过ID查询单条数据 \n     *\n     * @param {{=pkVarName}} 主键\n     * @return 实例对象\n     */\n    @ApiOperation(\"通过ID查询单条数据\")\n    @GetMapping(\"{{{=it.func.camel(pkVarName,false)}}}\")\n    public ResponseEntity<{{=beanClass}}> queryById({{=pkDataType}} {{=pkVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.queryById({{=pkVarName}}));\n    }\n    $blankline\n    /** \n     * 分页查询\n     *\n     * @param {{=beanVarName}} 筛选条件\n     * @param pageRequest 分页对象\n     * @return 查询结果\n     */\n    @ApiOperation(\"分页查询\")\n    @GetMapping\n    public ResponseEntity<PageImpl<{{=beanClass}}>> paginQuery({{=beanClass}} {{=beanVarName}}, PageRequest pageRequest){\n        //1.分页参数\n        long current = pageRequest.getPageNumber();\n        long size = pageRequest.getPageSize();\n\n        //2.分页查询\n        /*把Mybatis的分页对象做封装转换，MP的分页对象上有一些SQL敏感信息，还是通过spring的分页模型来封装数据吧*/\n        com.baomidou.mybatisplus.extension.plugins.pagination.Page<{{=beanClass}}> pageResult = {{=serviceVarName}}.paginQuery({{=beanVarName}}, current,size);\n\n        //3. 分页结果组装\n        List<{{=beanClass}}> dataList = pageResult.getRecords();\n        long total = pageResult.getTotal();\n        PageImpl<{{=beanClass}}> retPage = new PageImpl<{{=beanClass}}>(dataList,pageRequest,total);\n        return ResponseEntity.ok(retPage);\n    }\n    $blankline\n    /** \n     * 新增数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    @ApiOperation(\"新增数据\")\n    @PostMapping\n    public ResponseEntity<{{=beanClass}}> add({{=beanClass}} {{=beanVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.insert({{=beanVarName}}));\n    }\n    $blankline\n    /** \n     * 更新数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    @ApiOperation(\"更新数据\")\n    @PutMapping\n    public ResponseEntity<{{=beanClass}}> edit({{=beanClass}} {{=beanVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.update({{=beanVarName}}));\n    }\n    $blankline\n    /** \n     * 通过主键删除数据\n     *\n     * @param {{=pkVarName}} 主键\n     * @return 是否成功\n     */\n    @ApiOperation(\"通过主键删除数据\")\n    @DeleteMapping\n    public ResponseEntity<Boolean> deleteById({{=pkDataType}} {{=pkVarName}}){\n        return ResponseEntity.ok({{=serviceVarName}}.deleteById({{=pkVarName}}));\n    }\n}",
+        "Service": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.service;\n$blankline\nimport com.baomidou.mybatisplus.extension.plugins.pagination.Page;\nimport {{=pkgName}}.entity.{{=beanClass}};\n$blankline\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表服务接口\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\npublic interface {{=serviceClass}}{\n    $blankline\n    /** \n     * 通过ID查询单条数据 \n     *\n     * @param {{=pkVarName}} 主键\n     * @return 实例对象\n     */\n    {{=beanClass}} queryById({{=pkDataType}} {{=pkVarName}});\n    $blankline\n    /**\n     * 分页查询\n     *\n     * @param {{=beanVarName}} 筛选条件\n     * @param current 当前页码\n     * @param size  每页大小\n     * @return\n     */\n    Page<{{=beanClass}}> paginQuery({{=beanClass}} {{=beanVarName}}, long current, long size);\n\n    /** \n     * 新增数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    {{=beanClass}} insert({{=beanClass}} {{=beanVarName}});\n\n    \n    /** \n     * 更新数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    {{=beanClass}} update({{=beanClass}} {{=beanVarName}});\n\n    /** \n     * 通过主键删除数据\n     *\n     * @param {{=pkVarName}} 主键\n     * @return 是否成功\n     */\n    boolean deleteById({{=pkDataType}} {{=pkVarName}});\n}",
+        "ServiceImpl": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkVarNameU = \"UndefinedId\";\n    var pkFieldKey = \"UNDEFINED\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkFieldKey = field.defKey;\n            pkVarName = it.func.camel(field.defKey,false);\n            pkVarNameU = it.func.camel(field.defKey,true);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    var mapperName = beanVarName+'Mapper';\n    \n}}package {{=pkgName}}.service.impl;\n$blankline\nimport cn.hutool.core.util.StrUtil;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.stereotype.Service;\nimport com.baomidou.mybatisplus.core.metadata.IPage;\nimport com.baomidou.mybatisplus.extension.plugins.pagination.Page;\nimport com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;\nimport com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;\n\nimport {{=pkgName}}.entity.{{=beanClass}};\nimport {{=pkgName}}.mapper.{{=beanClass}}Mapper;\nimport {{=pkgName}}.service.{{=serviceClass}};\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表服务实现类\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@Service\npublic class {{=serviceClass}}Impl implements {{=serviceClass}}{\n    @Autowired\n    private {{=beanClass}}Mapper {{=mapperName}};\n    $blankline\n    /** \n     * 通过ID查询单条数据 \n     *\n     * @param {{=pkVarName}} 主键\n     * @return 实例对象\n     */\n    public {{=beanClass}} queryById({{=pkDataType}} {{=pkVarName}}){\n        return {{=mapperName}}.selectById({{=pkVarName}});\n    }\n    $blankline\n    /**\n     * 分页查询\n     *\n     * @param {{=beanVarName}} 筛选条件\n     * @param current 当前页码\n     * @param size  每页大小\n     * @return\n     */\n    public Page<{{=beanClass}}> paginQuery({{=beanClass}} {{=beanVarName}}, long current, long size){\n        //1. 构建动态查询条件\n        LambdaQueryWrapper<{{=beanClass}}> queryWrapper = new LambdaQueryWrapper<>();\n        {{~it.entity.fields.filter(function(e){return e[\"type\"]===\"String\"&&e.defKey !== pkFieldKey}):field:index}}\n        if(StrUtil.isNotBlank({{=beanVarName}}.get{{=it.func.camel(field.defKey,true)}}())){\n            queryWrapper.eq({{=beanClass}}::get{{=it.func.camel(field.defKey,true)}}, {{=beanVarName}}.get{{=it.func.camel(field.defKey,true)}}());\n        }\n        {{~}}\n\n        //2. 执行分页查询\n        Page<{{=beanClass}}> pagin = new Page<>(current , size , true);\n        IPage<{{=beanClass}}> selectResult = {{=mapperName}}.selectByPage(pagin , queryWrapper);\n        pagin.setPages(selectResult.getPages());\n        pagin.setTotal(selectResult.getTotal());\n        pagin.setRecords(selectResult.getRecords());\n\n        //3. 返回结果\n        return pagin;\n    }\n    $blankline\n    /** \n     * 新增数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    public {{=beanClass}} insert({{=beanClass}} {{=beanVarName}}){\n        {{=mapperName}}.insert({{=beanVarName}});\n        return {{=beanVarName}};\n    }\n    $blankline\n    /** \n     * 更新数据\n     *\n     * @param {{=beanVarName}} 实例对象\n     * @return 实例对象\n     */\n    public {{=beanClass}} update({{=beanClass}} {{=beanVarName}}){\n        //1. 根据条件动态更新\n        LambdaUpdateChainWrapper<{{=beanClass}}> chainWrapper = new LambdaUpdateChainWrapper<{{=beanClass}}>({{=mapperName}});\n        {{~it.entity.fields.filter(function(e){return e[\"type\"]===\"String\"&&e.defKey !== pkFieldKey}):field:index}}\n        if(StrUtil.isNotBlank({{=beanVarName}}.get{{=it.func.camel(field.defKey,true)}}())){\n            chainWrapper.eq({{=beanClass}}::get{{=it.func.camel(field.defKey,true)}}, {{=beanVarName}}.get{{=it.func.camel(field.defKey,true)}}());\n        }\n        {{~}}\n        //2. 设置主键，并更新\n        chainWrapper.set({{=beanClass}}::get{{=pkVarNameU}}, {{=beanVarName}}.get{{=pkVarNameU}}());\n        boolean ret = chainWrapper.update();\n        //3. 更新成功了，查询最最对象返回\n        if(ret){\n            return queryById({{=beanVarName}}.get{{=pkVarNameU}}());\n        }else{\n            return {{=beanVarName}};\n        }\n    }\n    $blankline\n    /** \n     * 通过主键删除数据\n     *\n     * @param {{=pkVarName}} 主键\n     * @return 是否成功\n     */\n    public boolean deleteById({{=pkDataType}} {{=pkVarName}}){\n        int total = {{=mapperName}}.deleteById({{=pkVarName}});\n        return total > 0;\n    }\n}",
+        "Mapper": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.mapper;\n$blankline\n\nimport com.baomidou.mybatisplus.core.conditions.Wrapper;\nimport com.baomidou.mybatisplus.core.mapper.BaseMapper;\nimport com.baomidou.mybatisplus.core.metadata.IPage;\nimport com.baomidou.mybatisplus.core.toolkit.Constants;\nimport org.apache.ibatis.annotations.Mapper;\nimport org.apache.ibatis.annotations.Param;\nimport {{=pkgName}}.entity.{{=beanClass}};\n$blankline\n\n /**\n * {{=it.entity.defName}};({{=it.entity.defKey}})表数据库访问层\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@Mapper\npublic interface {{=beanClass}}Mapper  extends BaseMapper<{{=beanClass}}>{\n    /** \n     * 分页查询指定行数据\n     *\n     * @param page 分页参数\n     * @param wrapper 动态查询条件\n     * @return 分页对象列表\n     */\n    IPage<{{=beanClass}}> selectByPage(IPage<{{=beanClass}}> page , @Param(Constants.WRAPPER) Wrapper<{{=beanClass}}> wrapper);\n}",
+        "Mapper.xml": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    var pkField = \"UNDEFINED_ID\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkField = field.defKey;\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">\n$blankline\n\n<mapper namespace=\"{{=pkgName}}.mapper.{{=beanClass}}Mapper\">\n     <select id=\"selectByPage\" resultType=\"{{=pkgName}}.entity.{{=beanClass}}\">\n        select * from user ${ew.customSqlSegment}\n    </select>\n</mapper>\n\n",
+        "Entity": "{{  var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1;\n    var days=today.getDate();\n    \n    var pkVarName = \"undefinedId\";\n    var pkDataType = \"String\";\n    it.entity.fields.forEach(function(field){\n        if(field.primaryKey){\n            pkVarName = it.func.camel(field.defKey,false);\n            pkDataType = field[\"type\"];\n            return;\n        }\n    });\n    \n    var pkgName = it.entity.env.base.nameSpace;\n    var beanClass = it.entity.env.base.codeRoot;\n    var beanVarName = beanClass.charAt(0).toLowerCase()+beanClass.slice(1);\n    var serviceClass = beanClass+'Service';\n    var serviceVarName= beanVarName+'Service';\n    \n}}package {{=pkgName}}.entity;\n$blankline\nimport io.swagger.annotations.ApiModel;\nimport io.swagger.annotations.ApiModelProperty;\nimport com.baomidou.mybatisplus.annotation.TableName;\nimport com.baomidou.mybatisplus.annotation.TableId;\nimport java.io.Serializable;\nimport java.util.Date;\n$blankline\n\n /**\n * {{=it.entity.defName}};{{=it.entity.comment}}\n * @author : http://www.chiner.pro\n * @date : {{=fullYear}}-{{=month}}-{{=days}}\n */\n@ApiModel(value = \"{{=it.entity.defName}}\",description = \"{{=it.entity.comment}}\")\n@TableName(\"{{=it.entity.defKey}}\")\npublic class {{=beanClass}} implements Serializable,Cloneable{\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    @ApiModelProperty(name = \"{{=field.defName}}\",notes = \"{{=field.comment}}\")\n    {{? field.primaryKey }}\n    @TableId\n    {{?}}\n    private {{=field.type}} {{=it.func.camel(field.defKey,false)}} ;\n{{~}}\n$blankline\n\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public {{=field.type}} get{{=it.func.camel(field.defKey,true)}}(){\n        return this.{{=it.func.camel(field.defKey,false)}};\n    }\n    /** {{=it.func.join(field.defName,field.comment,';')}} */\n    public void set{{=it.func.camel(field.defKey,true)}}({{=field.type}} {{= it.func.camel(field.defKey,false) }}){\n        this.{{=it.func.camel(field.defKey,false)}}={{=it.func.camel(field.defKey,false)}};\n    }\n{{~}}\n}"
+      },
+      {
+        "applyFor": "81CCA482-3F4D-4EAC-8CF9-F5E7BC098AD2",
+        "type": "dbDDL",
+        "createTable": "/**字段名,关键字等全部用的小写*/\ndrop table if exists {{=it.entity.defKey}};\n/**补充上库名,external关键字根据建表规范看是否添加*/\ncreate [external] table if not exists {{=it.entity.defKey}}(\n{{ pkList = [] ; }}\n/**这里把varchar,char,text,date,datetime字段全部映射为string类型.tinyint unsigned,bit,Integer,tinyint,smallint,mediumint映射为int类型,int unsigned映射为bigint.其它自定义映射规则根据自己情况修改*/\n/**当长度>0只有为decimal类型或double类型时才保留长度和小数的位数*/\n{{~it.entity.fields:field:index}}\n    {{=it.func.lowerCase(field.defKey)}} {{=it.func.lowerCase(field.dbType)=='varchar'||it.func.lowerCase(field.dbType)=='char'||it.func.lowerCase(field.dbType)=='text'||it.func.lowerCase(field.dbType)=='date'||it.func.lowerCase(field.dbType)=='datetime' ? 'string':it.func.lowerCase(field.dbType)=='tinyint unsigned'||it.func.lowerCase(field.dbType)=='bit'||it.func.lowerCase(field.dbType)=='integer'||it.func.lowerCase(field.dbType)=='tinyint'||it.func.lowerCase(field.dbType)=='smallint'||it.func.lowerCase(field.dbType)=='mediumint' ? 'int':it.func.lowerCase(field.dbType)=='int unsigned' ? 'bigint':it.func.lowerCase(field.dbType)}}{{?field.len>0&&(it.func.lowerCase(field.dbType)=='decimal'||it.func.lowerCase(field.dbType)=='double')}}{{='('}}{{=field.len}}{{?field.scale>0}}{{=','}}{{=field.scale}}{{=')'}}{{?}}{{?}} comment '{{=it.func.join(field.defName,field.comment,'')}}' {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n{{?}}\n)\n{{\n    let partitionedBy = it.entity.properties['partitioned by'];\n    partitionedBy = partitionedBy?partitionedBy:'请在扩展属性中配置[partitioned by]属性';\n}}\ncomment '{{=it.func.join(it.entity.defName,';') }}'\n/**是否分区表,分区字段名和字段注释自定义*/\n[partitioned by {{=partitionedBy}}]\n/**文件存储格式自定义*/\n[stored as orc]\n/**hdfs上的地址自定义*/\n[location xxx]\n;",
+        "createView": "",
+        "deleteTable": "",
+        "createIndex": "",
+        "deleteIndex": "",
+        "message": "",
+        "update": ""
+      },
+      {
+        "applyFor": "B91D99E0-9B7C-416C-8737-B760957DAF09",
+        "type": "appCode",
+        "content": "{{\n    var today=new Date();\n    var fullYear=today.getFullYear();\n    var month=today.getMonth() + 1<10?\"0\"+today.getMonth():today.getMonth();\n    var days=today.getDate()<10?\"0\"+today.getDate():today.getDate();\n    var hours = today.getHours()<10?\"0\"+today.getHours():today.getHours();         \n\tvar minutes = today.getMinutes()<10?\"0\"+today.getMinutes():today.getMinutes();      \n\tvar seconds = today.getSeconds()<10?\"0\"+today.getSeconds():today.getSeconds();    \n}}\n// Package models  {{=it.func.join(it.entity.defName,it.entity.comment,'，')}}\n// author : http://www.liyang.love\n// date : {{=fullYear}}-{{=month}}-{{=days}} {{=hours}}:{{=minutes}}\n// desc : {{=it.func.join(it.entity.defName,it.entity.comment,'，')}}\npackage models\n\n$blankline\n\n// {{=it.func.camel(it.entity.defKey,true) }}  {{=it.func.join(it.entity.defName,it.entity.comment,'，')}}。\n// 说明:{{=it.entity.comment}}\n// 表名:{{=it.entity.defKey}}\n// group: {{=it.func.camel(it.entity.defKey,true) }}\n// obsolete:\n// appliesto:go 1.8+;\n// namespace:hongmouer.his.models.{{=it.func.camel(it.entity.defKey,true) }}\n// assembly: hongmouer.his.models.go\n// class:HongMouer.HIS.Models.{{=it.func.camel(it.entity.defKey,true) }}\n// version:{{=fullYear}}-{{=month}}-{{=days}} {{=hours}}:{{=minutes}}\ntype {{=it.func.camel(it.entity.defKey,true) }} struct {\n    {{~it.entity.fields:field:index}}\n    {{=formatGoLang(it.func.camel(field.defKey,true),null,field,it.entity.fields,null,1)}} {{=formatGoLang(field.type,\"type\",field,it.entity.fields,10,3)}}  `gorm:\"column:{{=field.primaryKey?\"primaryKey;\":\"\"}}{{=field.defKey}}\" json:\"{{=it.func.camel(field.defKey,true)}}\"` {{=formatGoLang(\"gorm:column:\"+field.defKey+\" json:\"+it.func.camel(field.defKey,true),null,field,it.entity.fields,null,2)}}  //type:{{=formatGoLang(field.type,\"type\",field,it.entity.fields,null,3)}}  comment:{{=formatGoLang(it.func.join(field.defName,field.comment,';'),\"defName\",field,it.entity.fields,null,4)}}  version:{{=fullYear}}-{{=month}}-{{=days}} {{=hours}}:{{=minutes}}\n    {{~}}\n}\n\n\n$blankline\n// TableName 表名:{{=it.entity.defKey}}，{{=it.entity.defName}}。\n// 说明:{{=it.entity.comment}}\nfunc (ZentaoUserInfo) TableName() string {\n\treturn \"{{=it.entity.defKey}}\"\n}\n\n{{\n\nfunction formatGoLang(str, fieldName, field, fileds, emptLength, isFiled) {\n    var maxLength = 0;\n\n    if (isFiled == 1) {\n        for (var i = 0; i < fileds.length; i++) {\n            if (getBlength(it.func.camel(fileds[i].defKey, true)) > maxLength) {\n                maxLength = getBlength(it.func.camel(fileds[i].defKey, true)) + 2;\n            }\n        }\n    } else if (isFiled == 2) {\n        for (var i = 0; i < fileds.length; i++) {\n            var newStr = \"gorm:column:\" + fileds[i].defKey + \" json:\" + it.func.camel(fileds[i].defKey, true);\n            if (getBlength(newStr) > maxLength) {\n                maxLength = getBlength(newStr) + 2;\n            }\n        }\n        var empt = \"\";\n        var strLength = getBlength(str);\n        if (field.primaryKey) {\n            strLength += getBlength(\"primaryKey;\");\n        }\n        for (var j = 0; j < maxLength - strLength; j++) {\n            empt += ' ';\n        }\n        return empt;\n    } else if (isFiled == 3) {\n        /*获取某个字段的最大长度*/\n        for (var i = 0; i < fileds.length; i++) {\n            var newStr = eval(\"fileds[\" + i + \"].\" + fieldName);\n            if (getBlength(newStr) > maxLength) {\n                maxLength = getBlength(newStr) + 1;\n            }\n        }\n    } else if (isFiled == 4) {\n        /*获取某个字段的最大长度*/\n        for (var i = 0; i < fileds.length; i++) {\n            var newStr = fileds[i].comment + \";\" + fileds[i].defName;\n            if (getBlength(newStr) > maxLength) {\n                maxLength = getBlength(newStr) + 1;\n            }\n        }\n    }\n    else {\n        maxLength = emptLength;\n    }\n\n    var strLength = getBlength(str);\n    for (var j = 0; j < maxLength - strLength; j++) {\n        str += ' ';\n    }\n    return str;\n}\n\nfunction getBlength(str) {\n    var n = 0;\n    for (var i = str.length; i--;) {\n        n += str.charCodeAt(i) > 255 ? 2 : 1;\n    }\n    return n;\n} \n\n}}"
       }
     ],
     "generatorDoc": {
@@ -273,7 +357,69 @@
         "id": "F00E9AB2-39D4-449A-94C0-B3C475F911FA"
       }
     ],
-    "menuWidth": "349px"
+    "menuWidth": "349px",
+    "headers": [
+      {
+        "refKey": "defKey",
+        "hideInGraph": false
+      },
+      {
+        "refKey": "defName",
+        "hideInGraph": false
+      },
+      {
+        "refKey": "primaryKey",
+        "hideInGraph": false
+      },
+      {
+        "refKey": "notNull",
+        "hideInGraph": true
+      },
+      {
+        "refKey": "autoIncrement",
+        "hideInGraph": true
+      },
+      {
+        "refKey": "domain",
+        "hideInGraph": true
+      },
+      {
+        "refKey": "type",
+        "hideInGraph": false
+      },
+      {
+        "refKey": "len",
+        "hideInGraph": false
+      },
+      {
+        "refKey": "scale",
+        "hideInGraph": false
+      },
+      {
+        "refKey": "comment",
+        "hideInGraph": true
+      },
+      {
+        "refKey": "refDict",
+        "hideInGraph": true
+      },
+      {
+        "refKey": "defaultValue",
+        "hideInGraph": true
+      },
+      {
+        "refKey": "isStandard",
+        "hideInGraph": false
+      },
+      {
+        "refKey": "uiHint",
+        "hideInGraph": true
+      },
+      {
+        "refKey": "extProps",
+        "hideInGraph": true
+      }
+    ]
   },
   "entities": [
     {
@@ -286,63 +432,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -492,63 +658,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -621,7 +807,7 @@
           "uiHint": "65B3A8DC-7BD6-4849-B839-0B3655A55A44"
         },
         {
-          "defKey": "system_user_id",
+          "defKey": "subcontractor_id",
           "defName": "所属社区分包人编号",
           "comment": "",
           "type": "BIGINT UNSIGNED",
@@ -728,63 +914,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -992,7 +1198,7 @@
           "uiHint": "65B3A8DC-7BD6-4849-B839-0B3655A55A44"
         },
         {
-          "defKey": "system_user_id",
+          "defKey": "subcontractor_id",
           "defName": "所属分包人编号",
           "comment": "",
           "type": "BIGINT UNSIGNED",
@@ -1093,7 +1299,7 @@
           "id": "5EE432D0-CBEA-4387-BEE3-A8F600872179"
         },
         {
-          "defKey": "idx_system_user_id",
+          "defKey": "idx_subcontractor_id",
           "defName": null,
           "unique": false,
           "comment": "",
@@ -1118,63 +1324,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -1211,23 +1437,6 @@
           "domain": "",
           "id": "EBA8B8FD-3115-48BD-9478-022E24DDFCCA",
           "uiHint": "E1DA823C-08CE-407F-BE95-EFC8C845A94D"
-        },
-        {
-          "defKey": "level",
-          "defName": "单位层级",
-          "comment": "0：最底层，依次递增",
-          "type": "TINYINT(2) UNSIGNED",
-          "len": "",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "0",
-          "hideInGraph": false,
-          "refDict": "",
-          "domain": "",
-          "id": "DA7AD76E-C906-4C48-8FE5-4AB89B099958",
-          "uiHint": "65B3A8DC-7BD6-4849-B839-0B3655A55A44"
         },
         {
           "defKey": "parent_id",
@@ -1330,13 +1539,7 @@
           "defName": null,
           "unique": false,
           "comment": "",
-          "fields": [
-            {
-              "fieldDefKey": "DA7AD76E-C906-4C48-8FE5-4AB89B099958",
-              "ascOrDesc": "A",
-              "id": "D960CF39-276F-469F-9A53-9E9E4395F9F7"
-            }
-          ],
+          "fields": [],
           "id": "3F20FDB4-6E6A-4192-8F07-03B0498465D8"
         }
       ]
@@ -1351,63 +1554,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -1497,63 +1720,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -1606,40 +1849,6 @@
           "refDict": "",
           "domain": "",
           "id": "1FCBF1CD-85DC-480D-A2D9-ED2FB1CBE2C5",
-          "uiHint": "E1DA823C-08CE-407F-BE95-EFC8C845A94D"
-        },
-        {
-          "defKey": "position",
-          "defName": "系统用户职务",
-          "comment": "允许多个",
-          "type": "VARCHAR",
-          "len": 100,
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "''",
-          "hideInGraph": false,
-          "refDict": "",
-          "domain": "",
-          "id": "B3433205-DBAA-4294-9EA5-479864010060",
-          "uiHint": "E1DA823C-08CE-407F-BE95-EFC8C845A94D"
-        },
-        {
-          "defKey": "title",
-          "defName": "系统用户职称",
-          "comment": "允许多个",
-          "type": "VARCHAR",
-          "len": 100,
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "''",
-          "hideInGraph": false,
-          "refDict": "",
-          "domain": "",
-          "id": "A7B8C57A-0DFB-48D4-96C0-56C88369D370",
           "uiHint": "E1DA823C-08CE-407F-BE95-EFC8C845A94D"
         },
         {
@@ -1740,39 +1949,6 @@
           "id": "CB7FCE0B-AFC5-4027-B9A9-1EA6F7A190FE"
         },
         {
-          "defKey": "is_subcontract",
-          "defName": "是否参与分包",
-          "comment": "0：不参加分包，1：参加分包",
-          "type": "TINYINT",
-          "len": 1,
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "0",
-          "hideInGraph": false,
-          "refDict": "",
-          "domain": "",
-          "id": "DE17CDE5-5F4A-4B88-A081-EE5344E15FDF",
-          "uiHint": "90DCC7D4-0DCD-4F47-9873-659445105561"
-        },
-        {
-          "defKey": "phone_number_id",
-          "defName": "所属联系方式编号",
-          "comment": "",
-          "type": "BIGINT UNSIGNED",
-          "len": "",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "0",
-          "hideInGraph": false,
-          "refDict": "",
-          "domain": "",
-          "id": "5582F6EB-F03F-4541-BE7D-D98E80FB12EA"
-        },
-        {
           "defKey": "create_time",
           "defName": "增加时间",
           "comment": "",
@@ -1828,13 +2004,7 @@
           "defName": null,
           "unique": true,
           "comment": "",
-          "fields": [
-            {
-              "fieldDefKey": "5582F6EB-F03F-4541-BE7D-D98E80FB12EA",
-              "ascOrDesc": "A",
-              "id": "30DDD5AB-AD18-426B-ADE5-F5045CF7B136"
-            }
-          ],
+          "fields": [],
           "id": "3FB1B2A8-CE1A-40D7-B784-CB4D43563A74"
         }
       ]
@@ -1849,63 +2019,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -1997,63 +2187,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -2268,41 +2478,7 @@
         }
       ],
       "correlations": [],
-      "indexes": [
-        {
-          "defKey": "uk_name",
-          "defName": null,
-          "unique": true,
-          "comment": "",
-          "fields": [
-            {
-              "fieldDefKey": "D27BBFEE-AD95-4737-868B-420BDFCF44E6",
-              "ascOrDesc": "A",
-              "id": "23116046-5082-4465-9310-BD1EF2282991"
-            }
-          ],
-          "id": "F3838E7D-319E-4032-A3B7-8A8BBB23D46C"
-        },
-        {
-          "defKey": "uk_uri_http_method",
-          "defName": null,
-          "unique": true,
-          "comment": "",
-          "fields": [
-            {
-              "fieldDefKey": "DAFE7761-5BEE-48A7-9B7C-4F717C74B68C",
-              "ascOrDesc": "A",
-              "id": "C673E591-00EA-4405-9FBF-56E170E35EBE"
-            },
-            {
-              "fieldDefKey": "6C2B89AC-D132-4728-B0FF-D9688BECF0F5",
-              "ascOrDesc": "A",
-              "id": "F4C8EA4E-0385-4CE5-B0B4-840034FD44AC"
-            }
-          ],
-          "id": "60323520-5C2C-469B-86D1-968D3956AEAC"
-        }
-      ]
+      "indexes": []
     },
     {
       "id": "E01BF466-11FA-4C40-B7CD-C4A2BB156DDD",
@@ -2314,63 +2490,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -2460,63 +2656,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -2606,63 +2822,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -2752,63 +2988,83 @@
       "headers": [
         {
           "refKey": "hideInGraph",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": true
         },
         {
           "refKey": "defKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "defName",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "primaryKey",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "notNull",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "autoIncrement",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "domain",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "type",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "len",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "scale",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "comment",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "refDict",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "defaultValue",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
         },
         {
           "refKey": "isStandard",
-          "hideInGraph": false
+          "hideInGraph": false,
+          "freeze": false
         },
         {
           "refKey": "uiHint",
-          "hideInGraph": true
+          "hideInGraph": true,
+          "freeze": false
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -3001,17 +3257,17 @@
       "nameTemplate": "{defKey}[{defName}]",
       "headers": [
         {
-          "freeze": false,
+          "freeze": true,
           "refKey": "hideInGraph",
           "hideInGraph": true
         },
         {
-          "freeze": true,
+          "freeze": false,
           "refKey": "defKey",
           "hideInGraph": false
         },
         {
-          "freeze": true,
+          "freeze": false,
           "refKey": "defName",
           "hideInGraph": false
         },
@@ -3074,6 +3330,11 @@
           "freeze": false,
           "refKey": "uiHint",
           "hideInGraph": true
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true,
+          "freeze": false
         }
       ],
       "fields": [
@@ -3202,7 +3463,7 @@
           "notNull": true,
           "autoIncrement": false,
           "defaultValue": "",
-          "hideInGraph": false,
+          "hideInGraph": true,
           "domain": "EBC1F57E-58E5-4653-8EC5-621C5880EC6E",
           "id": "C0213D86-456B-407F-A4C1-CF4C27378A18"
         },
@@ -3217,7 +3478,7 @@
           "notNull": true,
           "autoIncrement": false,
           "defaultValue": "",
-          "hideInGraph": false,
+          "hideInGraph": true,
           "domain": "EBC1F57E-58E5-4653-8EC5-621C5880EC6E",
           "id": "93DA265E-95A9-4122-9E6C-485C91E3A555"
         },
@@ -3232,7 +3493,7 @@
           "notNull": true,
           "autoIncrement": false,
           "defaultValue": "0",
-          "hideInGraph": false,
+          "hideInGraph": true,
           "id": "C7DE9520-F433-429E-8D34-18754E742905"
         }
       ],
@@ -3253,6 +3514,428 @@
           "id": "93D8B824-7A41-4884-BE01-1CBEF870AD00"
         }
       ]
+    },
+    {
+      "id": "C0405955-C12E-455E-BCA1-2A8859770281",
+      "defKey": "pm_subcontractor",
+      "defName": "社区分包人员表",
+      "comment": "",
+      "properties": {},
+      "nameTemplate": "{defKey}[{defName}]",
+      "headers": [
+        {
+          "freeze": false,
+          "refKey": "hideInGraph",
+          "hideInGraph": true
+        },
+        {
+          "freeze": true,
+          "refKey": "defKey",
+          "hideInGraph": false
+        },
+        {
+          "freeze": true,
+          "refKey": "defName",
+          "hideInGraph": false
+        },
+        {
+          "freeze": false,
+          "refKey": "primaryKey",
+          "hideInGraph": false
+        },
+        {
+          "freeze": false,
+          "refKey": "notNull",
+          "hideInGraph": true
+        },
+        {
+          "freeze": false,
+          "refKey": "autoIncrement",
+          "hideInGraph": true
+        },
+        {
+          "freeze": false,
+          "refKey": "domain",
+          "hideInGraph": true
+        },
+        {
+          "freeze": false,
+          "refKey": "type",
+          "hideInGraph": false
+        },
+        {
+          "freeze": false,
+          "refKey": "len",
+          "hideInGraph": false
+        },
+        {
+          "freeze": false,
+          "refKey": "scale",
+          "hideInGraph": false
+        },
+        {
+          "freeze": false,
+          "refKey": "comment",
+          "hideInGraph": true
+        },
+        {
+          "freeze": false,
+          "refKey": "refDict",
+          "hideInGraph": true
+        },
+        {
+          "freeze": false,
+          "refKey": "defaultValue",
+          "hideInGraph": true
+        },
+        {
+          "freeze": false,
+          "refKey": "isStandard",
+          "hideInGraph": false
+        },
+        {
+          "freeze": false,
+          "refKey": "uiHint",
+          "hideInGraph": true
+        },
+        {
+          "freeze": false,
+          "refKey": "extProps",
+          "hideInGraph": true
+        }
+      ],
+      "fields": [
+        {
+          "defKey": "id",
+          "defName": "社区分包人员编号",
+          "comment": "",
+          "type": "BIGINT UNSIGNED",
+          "len": "",
+          "scale": "",
+          "primaryKey": true,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "domain": "",
+          "id": "4F6702C0-93D1-49AF-90B9-E79B8B9216AD",
+          "dbType": "BIGINT UNSIGNED",
+          "extProps": 0
+        },
+        {
+          "defKey": "name",
+          "defName": "社区分包人员姓名",
+          "comment": "",
+          "type": "VARCHAR",
+          "len": 30,
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "''",
+          "hideInGraph": false,
+          "refDict": "",
+          "domain": "",
+          "id": "D27BBFEE-AD95-4737-868B-420BDFCF44E6",
+          "uiHint": "普通输入框",
+          "dbType": "VARCHAR",
+          "extProps": 0
+        },
+        {
+          "defKey": "id_card_number",
+          "defName": "社区分包人员身份证号码",
+          "comment": "",
+          "type": "CHAR",
+          "len": 18,
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "''",
+          "hideInGraph": false,
+          "refDict": "",
+          "extProps": {},
+          "domain": "",
+          "id": "85B0E579-33E0-44BA-8A0A-70D0245543C9"
+        },
+        {
+          "defKey": "positions",
+          "defName": "社区分包人员职务",
+          "comment": "允许多个",
+          "type": "VARCHAR",
+          "len": 100,
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "''",
+          "hideInGraph": false,
+          "refDict": "",
+          "extProps": {},
+          "domain": "",
+          "id": "2EB166B3-08F5-45CF-AE38-60CD88F0035F"
+        },
+        {
+          "defKey": "titles",
+          "defName": "社区分包人员职称",
+          "comment": "允许多个",
+          "type": "VARCHAR",
+          "len": 100,
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "''",
+          "hideInGraph": false,
+          "refDict": "",
+          "extProps": {},
+          "domain": "",
+          "id": "2D662502-3737-4136-BED5-CA97374B0B84"
+        },
+        {
+          "defKey": "company_id",
+          "defName": "所属单位编号",
+          "comment": "",
+          "type": "BIGINT UNSIGNED",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "0",
+          "hideInGraph": false,
+          "refDict": "",
+          "extProps": {},
+          "domain": "",
+          "id": "A7155CE0-A6AB-4E44-AFA6-7E1F03A16550"
+        },
+        {
+          "defKey": "create_time",
+          "defName": "增加时间",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": true,
+          "domain": "EBC1F57E-58E5-4653-8EC5-621C5880EC6E",
+          "refDict": "",
+          "extProps": {},
+          "id": "2352C06D-F081-4B79-B353-D29E1FCE381D"
+        },
+        {
+          "defKey": "update_time",
+          "defName": "更新时间",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": true,
+          "domain": "EBC1F57E-58E5-4653-8EC5-621C5880EC6E",
+          "refDict": "",
+          "extProps": {},
+          "id": "18330015-06C6-4072-9F0D-9F308FC7ED17"
+        },
+        {
+          "defKey": "version",
+          "defName": "乐观锁",
+          "comment": "",
+          "type": "SMALLINT(5) UNSIGNED",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "0",
+          "hideInGraph": true,
+          "refDict": "",
+          "extProps": {},
+          "id": "89E213BA-3880-4E85-9FF8-160112C7DB61"
+        }
+      ],
+      "correlations": [],
+      "indexes": [
+        {
+          "defKey": "uk_id_card_number",
+          "defName": null,
+          "unique": true,
+          "comment": "",
+          "fields": [
+            {
+              "fieldDefKey": "85B0E579-33E0-44BA-8A0A-70D0245543C9",
+              "ascOrDesc": "A",
+              "id": "B72CFCC1-4246-4670-81CD-DEE69BEF2521"
+            }
+          ],
+          "id": "72160A02-63EC-408D-A488-14D84E3B0FFC"
+        }
+      ]
+    },
+    {
+      "id": "63D8ADD9-2051-45FD-8FAC-0D3B0BC5ED2B",
+      "env": {
+        "base": {
+          "nameSpace": "",
+          "codeRoot": ""
+        }
+      },
+      "defKey": "pm_subcontractor_phone_number",
+      "defName": "社区分包人员与联系方式关系表",
+      "comment": "",
+      "properties": {},
+      "nameTemplate": "{defKey}[{defName}]",
+      "headers": [
+        {
+          "refKey": "hideInGraph",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "defKey",
+          "hideInGraph": false
+        },
+        {
+          "refKey": "defName",
+          "hideInGraph": false
+        },
+        {
+          "refKey": "primaryKey",
+          "hideInGraph": false
+        },
+        {
+          "refKey": "notNull",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "autoIncrement",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "domain",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "type",
+          "hideInGraph": false
+        },
+        {
+          "refKey": "len",
+          "hideInGraph": false
+        },
+        {
+          "refKey": "scale",
+          "hideInGraph": false
+        },
+        {
+          "refKey": "comment",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "refDict",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "defaultValue",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "isStandard",
+          "hideInGraph": false
+        },
+        {
+          "refKey": "uiHint",
+          "hideInGraph": true
+        },
+        {
+          "refKey": "extProps",
+          "hideInGraph": true
+        }
+      ],
+      "fields": [
+        {
+          "defKey": "subcontractor_id",
+          "defName": "所属社区分包人编号",
+          "comment": "",
+          "type": "BIGINT UNSIGNED",
+          "len": "",
+          "scale": "",
+          "primaryKey": true,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "id": "7A84B043-6C33-47D4-A3F2-07F9C489DCE8"
+        },
+        {
+          "defKey": "phone_number_id",
+          "defName": "所属联系方式编号",
+          "comment": "",
+          "type": "BIGINT UNSIGNED",
+          "len": "",
+          "scale": "",
+          "primaryKey": true,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "extProps": {},
+          "id": "B79308F6-E470-49DC-A46F-8ABD16A523D5"
+        },
+        {
+          "defKey": "create_time",
+          "defName": "增加时间",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": true,
+          "domain": "EBC1F57E-58E5-4653-8EC5-621C5880EC6E",
+          "id": "BEAEED64-194F-4C02-9749-AC7893D71832"
+        },
+        {
+          "defKey": "update_time",
+          "defName": "更新时间",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": true,
+          "domain": "EBC1F57E-58E5-4653-8EC5-621C5880EC6E",
+          "id": "C4068016-ADF8-4F41-B1A4-943A9B8E1CBB"
+        },
+        {
+          "defKey": "version",
+          "defName": "乐观锁",
+          "comment": "",
+          "type": "SMALLINT(5) UNSIGNED",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "0",
+          "hideInGraph": true,
+          "id": "885F5449-AEDC-48FB-93BD-EC65F1B66113"
+        }
+      ],
+      "correlations": [],
+      "indexes": []
     }
   ],
   "views": [],
@@ -3455,514 +4138,440 @@
     {
       "defKey": "TableRelations",
       "defName": "数据表关系图",
+      "relationType": "field",
       "canvasData": {
         "cells": [
           {
-            "id": "7f258456-a567-464b-bc25-308f9b82c56d",
-            "shape": "group",
-            "position": {
-              "x": -70.00000000000045,
-              "y": -1280
-            },
-            "label": "",
-            "size": {
-              "width": 1880,
-              "height": 1140
-            },
-            "children": [
-              "45e4c980-fe96-4fb5-989f-3cbfd91780f5",
-              "f4966416-b8b7-4c46-9f6e-81005241f02a",
-              "8325cdb5-21c7-4468-a8aa-986f1a71fea8",
-              "daa96b38-6f44-4d54-8c72-6dbc54d3b94f",
-              "31c67c0b-e263-442d-a7ba-780b4740b5fb",
-              "de1a73aa-d383-4be8-abd4-32af63292336",
-              "8a12d303-f7d7-4156-a328-849e47ee1f44",
-              "68bc7f84-31ac-4d56-afd5-b5a2e4c09f3c",
-              "0a877cd7-c5b7-4aec-9011-6508ae4e61d9",
-              "d5c7d94c-65f5-4529-8c45-bfc5a7fa3c4b",
-              "ec20fd4e-750f-40e9-9e06-21de3e86bc19",
-              "972218a5-4586-4694-a120-b5e8a7de4c06",
-              "1cbb5bd9-9398-4821-bc2f-c71c03a93d8a",
-              "44f2e194-8400-4c31-9a15-0781afe7622e",
-              "e06e8ec8-c4fe-46ad-bc1f-c623672c822e",
-              "ea455f79-a88e-4358-b940-9afef19a9a12",
-              "c7665677-3d8b-4908-8a5c-71527c4a9ef4",
-              "dd0632fe-7740-4d09-8941-c4860ccdcd50",
-              "cdba3fc7-ea47-40c1-aa1f-8b4506b429dd",
-              "85a097a0-3cb0-4e29-9c50-ed126e43c1cc",
-              "86e073e9-ac7c-46f1-98ff-8d67402d3fe5",
-              "6f5f9dda-bad2-42ff-836d-a94496feb8ac",
-              "3c4c6f98-0975-4f88-962b-0da578d69530"
-            ]
-          },
-          {
-            "id": "f4966416-b8b7-4c46-9f6e-81005241f02a",
-            "shape": "table",
-            "position": {
-              "x": 1170.0000000000032,
-              "y": -1040.5000000000052
-            },
-            "count": 0,
-            "originKey": "E01BF466-11FA-4C40-B7CD-C4A2BB156DDD",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "1cbb5bd9-9398-4821-bc2f-c71c03a93d8a",
+            "id": "14ea01af-498d-48bb-aae3-66ff327cf606",
             "shape": "erdRelation",
             "source": {
-              "cell": "45e4c980-fe96-4fb5-989f-3cbfd91780f5",
-              "port": "95987E7C-4042-4FF9-A87D-5B2DA249E185%in"
-            },
-            "target": {
-              "cell": "d1690672-7e23-41a8-b4a9-5ab5aa567de5",
-              "port": "4F6702C0-93D1-49AF-90B9-E79B8B9216AD%out"
-            },
-            "relation": "1:1",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d",
-            "router": {
-              "name": "normal",
-              "args": {
-                "excludeShapes": [
-                  "group"
-                ]
-              }
-            }
-          },
-          {
-            "id": "44f2e194-8400-4c31-9a15-0781afe7622e",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "600903d7-c022-4c03-a4e1-cfc86eb0e08e",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
-            },
-            "target": {
-              "cell": "45e4c980-fe96-4fb5-989f-3cbfd91780f5",
-              "port": "8633168C-9858-4FDE-BF08-54993528B453%out"
-            },
-            "relation": "1:1",
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "0a877cd7-c5b7-4aec-9011-6508ae4e61d9",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "0e238c87-2050-448d-bd96-e2c8a0220b55",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
-            },
-            "target": {
-              "cell": "99c5c5ab-5afb-424e-a8d0-8cce1189e34a",
-              "port": "F68BDD4D-DC8C-4880-9075-E90D504DFDED%in"
-            },
-            "relation": "1:n",
-            "vertices": [
-              {
-                "x": 520.0000000000036,
-                "y": -1240.0000000000055
-              }
-            ],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "c7665677-3d8b-4908-8a5c-71527c4a9ef4",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "8325cdb5-21c7-4468-a8aa-986f1a71fea8",
-              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%in"
-            },
-            "target": {
-              "cell": "600903d7-c022-4c03-a4e1-cfc86eb0e08e",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
-            },
-            "relation": "1:1",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d",
-            "router": {
-              "name": "normal",
-              "args": {
-                "excludeShapes": [
-                  "group"
-                ]
-              }
-            }
-          },
-          {
-            "id": "dd0632fe-7740-4d09-8941-c4860ccdcd50",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "c762b714-94b7-4b14-a4a0-08e8d5870da8",
-              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%in"
-            },
-            "target": {
-              "cell": "8325cdb5-21c7-4468-a8aa-986f1a71fea8",
-              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%in"
-            },
-            "relation": "1:1",
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "cdba3fc7-ea47-40c1-aa1f-8b4506b429dd",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "daa96b38-6f44-4d54-8c72-6dbc54d3b94f",
-              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%out"
-            },
-            "target": {
-              "cell": "c762b714-94b7-4b14-a4a0-08e8d5870da8",
-              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%in"
-            },
-            "relation": "1:n",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d",
-            "router": {
-              "name": "normal",
-              "args": {
-                "excludeShapes": [
-                  "group"
-                ]
-              }
-            }
-          },
-          {
-            "id": "e06e8ec8-c4fe-46ad-bc1f-c623672c822e",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "f4966416-b8b7-4c46-9f6e-81005241f02a",
-              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%out"
-            },
-            "target": {
-              "cell": "c762b714-94b7-4b14-a4a0-08e8d5870da8",
-              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%out"
-            },
-            "relation": "1:n",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "ea455f79-a88e-4358-b940-9afef19a9a12",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "f4966416-b8b7-4c46-9f6e-81005241f02a",
-              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%out"
-            },
-            "target": {
-              "cell": "99c5c5ab-5afb-424e-a8d0-8cce1189e34a",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
-            },
-            "relation": "1:n",
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "8a12d303-f7d7-4156-a328-849e47ee1f44",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "0e238c87-2050-448d-bd96-e2c8a0220b55",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
-            },
-            "target": {
-              "cell": "72d4e2fe-d223-4439-b39f-42f07b9a3656",
-              "port": "7CE6AE34-005F-450A-BDB6-BDF5F0355CD1%in"
-            },
-            "relation": "1:n",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d",
-            "router": {
-              "name": "normal",
-              "args": {
-                "excludeShapes": [
-                  "group"
-                ]
-              }
-            }
-          },
-          {
-            "id": "85a097a0-3cb0-4e29-9c50-ed126e43c1cc",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "72d4e2fe-d223-4439-b39f-42f07b9a3656",
+              "cell": "a2db1b45-84bd-4349-8840-22edf1f678ce",
               "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
             },
             "target": {
-              "cell": "daa96b38-6f44-4d54-8c72-6dbc54d3b94f",
-              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%in"
+              "cell": "d0f8bc1e-4a4c-42e9-9bb9-0b272cb1bc17",
+              "port": "8633168C-9858-4FDE-BF08-54993528B453%in"
             },
-            "relation": "1:n",
-            "vertices": [],
+            "relation": "1:1",
             "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "68bc7f84-31ac-4d56-afd5-b5a2e4c09f3c",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "600903d7-c022-4c03-a4e1-cfc86eb0e08e",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
-            },
-            "target": {
-              "cell": "72d4e2fe-d223-4439-b39f-42f07b9a3656",
-              "port": "A8FD5B33-F0B6-4AF9-B22D-90EDD3995F08%out"
-            },
-            "relation": "1:n",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "86e073e9-ac7c-46f1-98ff-8d67402d3fe5",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "31c67c0b-e263-442d-a7ba-780b4740b5fb",
-              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%in"
-            },
-            "target": {
-              "cell": "0e238c87-2050-448d-bd96-e2c8a0220b55",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
-            },
-            "relation": "1:n",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "6f5f9dda-bad2-42ff-836d-a94496feb8ac",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "31c67c0b-e263-442d-a7ba-780b4740b5fb",
-              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%out"
-            },
-            "target": {
-              "cell": "600903d7-c022-4c03-a4e1-cfc86eb0e08e",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
-            },
-            "relation": "1:n",
-            "vertices": [],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d",
-            "router": {
-              "name": "normal",
-              "args": {
-                "excludeShapes": [
-                  "group"
-                ]
-              }
-            }
-          },
-          {
-            "id": "d5c7d94c-65f5-4529-8c45-bfc5a7fa3c4b",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "600903d7-c022-4c03-a4e1-cfc86eb0e08e",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
-            },
-            "target": {
-              "cell": "99c5c5ab-5afb-424e-a8d0-8cce1189e34a",
-              "port": "A8FD5B33-F0B6-4AF9-B22D-90EDD3995F08%out"
-            },
-            "relation": "1:n",
-            "vertices": [
-              {
-                "x": 1060.0000000000032,
-                "y": -360.000000000005
-              },
-              {
-                "x": 1720.000000000004,
-                "y": -456.50000000000614
-              }
-            ],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "ec20fd4e-750f-40e9-9e06-21de3e86bc19",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "0e238c87-2050-448d-bd96-e2c8a0220b55",
-              "port": "5582F6EB-F03F-4541-BE7D-D98E80FB12EA%out"
-            },
-            "target": {
-              "cell": "c762b714-94b7-4b14-a4a0-08e8d5870da8",
-              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%in"
-            },
-            "relation": "1:n",
-            "vertices": [
-              {
-                "x": 540.0000000000033,
-                "y": -912
-              },
-              {
-                "x": 540.0000000000033,
-                "y": -770
-              },
-              {
-                "x": 1120,
-                "y": -770
-              }
-            ],
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "99c5c5ab-5afb-424e-a8d0-8cce1189e34a",
-            "shape": "table",
-            "position": {
-              "x": 1170,
-              "y": -1228.000000000004
-            },
-            "count": 0,
-            "originKey": "C1AF9819-2775-4D9B-9160-CE506522D74F",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "daa96b38-6f44-4d54-8c72-6dbc54d3b94f",
-            "shape": "table",
-            "position": {
-              "x": 584.5000000000101,
-              "y": -1228.000000000009
-            },
-            "count": 0,
-            "originKey": "39D2A1CF-3CF3-4E5B-BB5B-F5D64ECA1E65",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "8325cdb5-21c7-4468-a8aa-986f1a71fea8",
-            "shape": "table",
-            "position": {
-              "x": 1179.5000000000032,
-              "y": -790.0000000000014
-            },
-            "count": 0,
-            "originKey": "8798947C-9D27-492A-B7F7-4C8B83DC2EBC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "c762b714-94b7-4b14-a4a0-08e8d5870da8",
-            "shape": "table",
-            "position": {
-              "x": 1170,
-              "y": -928.0000000000041
-            },
-            "count": 0,
-            "originKey": "12651E79-8D36-4A7F-801B-979C34D684C9",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "72d4e2fe-d223-4439-b39f-42f07b9a3656",
-            "shape": "table",
-            "position": {
-              "x": 584.5000000000068,
-              "y": -1096.9999999999964
-            },
-            "count": 0,
-            "originKey": "354BD452-B069-4D4C-BC6E-7AAE65B4DF8F",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "de1a73aa-d383-4be8-abd4-32af63292336",
-            "shape": "table",
-            "position": {
-              "x": 1179.5000000000032,
-              "y": -685.5000000000052
-            },
-            "count": 0,
-            "originKey": "063F6440-7BDC-408A-8FA8-848828742F04",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "45e4c980-fe96-4fb5-989f-3cbfd91780f5",
-            "shape": "table",
-            "position": {
-              "x": 584.5000000000101,
-              "y": -572.5000000000052
-            },
-            "count": 0,
-            "originKey": "78C828B0-E35E-4B7B-9259-0A10E16E6593",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "0e238c87-2050-448d-bd96-e2c8a0220b55",
-            "shape": "table",
-            "position": {
-              "x": -40.49999999999898,
-              "y": -1228.000000000004
-            },
-            "count": 0,
-            "originKey": "A7981A03-AAB4-425D-BDA5-D0CECB4C2C62",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "31c67c0b-e263-442d-a7ba-780b4740b5fb",
-            "shape": "table",
-            "position": {
-              "x": -39.49999999999568,
-              "y": -867.0000000000014
-            },
-            "count": 0,
-            "originKey": "F24E1B1F-208E-418F-B6FB-CB116F534187",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
-          },
-          {
-            "id": "3c4c6f98-0975-4f88-962b-0da578d69530",
-            "shape": "erdRelation",
-            "source": {
-              "cell": "600903d7-c022-4c03-a4e1-cfc86eb0e08e",
-              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
-            },
-            "target": {
-              "cell": "972218a5-4586-4694-a120-b5e8a7de4c06",
-              "port": "FB59D5C7-46C5-4669-8A97-633477233348%in"
-            },
-            "relation": "1:n",
-            "fillColor": "#ACDAFC",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d",
             "router": {
               "name": "manhattan"
             }
           },
           {
-            "id": "600903d7-c022-4c03-a4e1-cfc86eb0e08e",
-            "shape": "table",
-            "position": {
-              "x": 584.5000000000068,
-              "y": -751.5000000000002
+            "id": "1fd76a6f-b1f1-4e6a-97b2-55574c082142",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "b9313918-f5e2-4de6-8c2a-6434e5a99a02",
+              "port": "4F6702C0-93D1-49AF-90B9-E79B8B9216AD%in"
             },
-            "count": 0,
-            "originKey": "4547F569-945E-4CF2-BCAA-2C32AF9F5732",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
+            "target": {
+              "cell": "d0f8bc1e-4a4c-42e9-9bb9-0b272cb1bc17",
+              "port": "95987E7C-4042-4FF9-A87D-5B2DA249E185%in"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
           },
           {
-            "id": "d1690672-7e23-41a8-b4a9-5ab5aa567de5",
-            "shape": "table",
-            "position": {
-              "x": -40.49999999999898,
-              "y": -756.5000000000002
+            "id": "36373485-5b05-42d6-9850-bc210266b35a",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "6d18dd19-6a9e-4f8f-852b-80ecd68e9e05",
+              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
             },
-            "count": 0,
-            "originKey": "2FA7EBAD-0D99-4C37-8FDA-4488FD954814",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
+            "target": {
+              "cell": "261ca392-4be9-4f40-a815-87d9bbe55be1",
+              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%in"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
           },
           {
-            "id": "972218a5-4586-4694-a120-b5e8a7de4c06",
+            "id": "0f41d67d-0e86-415a-bdf6-b79e1e731f2e",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "a2db1b45-84bd-4349-8840-22edf1f678ce",
+              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
+            },
+            "target": {
+              "cell": "261ca392-4be9-4f40-a815-87d9bbe55be1",
+              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%in"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "72c4f43b-cc50-4c87-99e8-727819a749e7",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "a2db1b45-84bd-4349-8840-22edf1f678ce",
+              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
+            },
+            "target": {
+              "cell": "f7c61145-3331-428a-bfbb-3c73204405a8",
+              "port": "FB59D5C7-46C5-4669-8A97-633477233348%in"
+            },
+            "relation": "1:n",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "dd141b61-98ec-490d-9e48-d0077f693e82",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "b81863ab-b226-4b55-a23a-98a889723185",
+              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%in"
+            },
+            "target": {
+              "cell": "a2db1b45-84bd-4349-8840-22edf1f678ce",
+              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "c8407478-8526-4223-a822-90f509205d7b",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "7c54e992-4c88-4725-8f16-7c953aa7a0fe",
+              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%in"
+            },
+            "target": {
+              "cell": "b81863ab-b226-4b55-a23a-98a889723185",
+              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%in"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "18d9b301-8a04-4105-9795-9d828491ed54",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "ba24c339-f014-4c0d-9097-da7858ddb6c9",
+              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%in"
+            },
+            "target": {
+              "cell": "56dfb5a6-b8c8-44e8-ad90-58beb1161084",
+              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%in"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "c793e721-122c-4e7e-964c-8ec2f0c3c0c8",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "7c54e992-4c88-4725-8f16-7c953aa7a0fe",
+              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%in"
+            },
+            "target": {
+              "cell": "56dfb5a6-b8c8-44e8-ad90-58beb1161084",
+              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%in"
+            },
+            "relation": "1:1",
+            "vertices": [],
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan",
+              "args": {
+                "excludeShapes": [
+                  "group"
+                ]
+              }
+            }
+          },
+          {
+            "id": "43601276-f075-433c-b7ff-d81727ea4d72",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "de1bd1d7-bc35-46d8-b849-a44b57bb3291",
+              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
+            },
+            "target": {
+              "cell": "93d622ad-d0ff-4e87-aaa1-9f17b6cfd51e",
+              "port": "AD9FCDA8-5F16-42CD-A3EB-B684D807FE43%out"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "b81863ab-b226-4b55-a23a-98a889723185",
             "shape": "table",
             "position": {
-              "x": 584.5000000000101,
-              "y": -470.50000000000523
+              "x": 498.5,
+              "y": -114.5
             },
             "count": 0,
-            "originKey": "9D188574-A2A3-4624-8655-3EC135E029BE",
-            "parent": "7f258456-a567-464b-bc25-308f9b82c56d"
+            "originKey": "8798947C-9D27-492A-B7F7-4C8B83DC2EBC"
+          },
+          {
+            "id": "5a817224-1d2d-4394-a62e-034938f307fc",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "7c54e992-4c88-4725-8f16-7c953aa7a0fe",
+              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%out"
+            },
+            "target": {
+              "cell": "93d622ad-d0ff-4e87-aaa1-9f17b6cfd51e",
+              "port": "A443215B-44EC-4BA0-914E-918150E3CDB7%out"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "93d622ad-d0ff-4e87-aaa1-9f17b6cfd51e",
+            "shape": "table",
+            "position": {
+              "x": 479,
+              "y": -213.5
+            },
+            "count": 0,
+            "originKey": "39D2A1CF-3CF3-4E5B-BB5B-F5D64ECA1E65"
+          },
+          {
+            "id": "ddbad097-9798-4550-876f-f1ff563ea04e",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "2bed1d21-d770-4cbe-90d0-1f15a836278f",
+              "port": "4F6702C0-93D1-49AF-90B9-E79B8B9216AD%out"
+            },
+            "target": {
+              "cell": "ba24c339-f014-4c0d-9097-da7858ddb6c9",
+              "port": "F68BDD4D-DC8C-4880-9075-E90D504DFDED%out"
+            },
+            "relation": "1:n",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "64ef18aa-d7ea-4555-8235-ed43c815c3f7",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "2bed1d21-d770-4cbe-90d0-1f15a836278f",
+              "port": "4F6702C0-93D1-49AF-90B9-E79B8B9216AD%out"
+            },
+            "target": {
+              "cell": "de1bd1d7-bc35-46d8-b849-a44b57bb3291",
+              "port": "7CE6AE34-005F-450A-BDB6-BDF5F0355CD1%out"
+            },
+            "relation": "1:n",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "6c7bac48-e539-4ea4-be6c-81287b4f6f40",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "a2db1b45-84bd-4349-8840-22edf1f678ce",
+              "port": "318133EF-5A03-4B54-8356-65A2D5FDA1A2%out"
+            },
+            "target": {
+              "cell": "2bed1d21-d770-4cbe-90d0-1f15a836278f",
+              "port": "A7155CE0-A6AB-4E44-AFA6-7E1F03A16550%in"
+            },
+            "relation": "1:n",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "06391f5c-a517-4b84-96e4-76c5a4bcb1fe",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "1e6491c5-2402-43c8-ae8d-a47ebdc3ecb1",
+              "port": "7A84B043-6C33-47D4-A3F2-07F9C489DCE8%out"
+            },
+            "target": {
+              "cell": "2bed1d21-d770-4cbe-90d0-1f15a836278f",
+              "port": "4F6702C0-93D1-49AF-90B9-E79B8B9216AD%out"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "ff70bea6-19b4-40a6-9863-1e76b358907c",
+            "shape": "erdRelation",
+            "source": {
+              "cell": "7c54e992-4c88-4725-8f16-7c953aa7a0fe",
+              "port": "93BED554-03CB-41DE-B336-20EA7FBC5B96%out"
+            },
+            "target": {
+              "cell": "1e6491c5-2402-43c8-ae8d-a47ebdc3ecb1",
+              "port": "B79308F6-E470-49DC-A46F-8ABD16A523D5%out"
+            },
+            "relation": "1:1",
+            "fillColor": "#ACDAFC",
+            "router": {
+              "name": "manhattan"
+            }
+          },
+          {
+            "id": "1e6491c5-2402-43c8-ae8d-a47ebdc3ecb1",
+            "shape": "table",
+            "position": {
+              "x": 478,
+              "y": 640
+            },
+            "count": 0,
+            "originKey": "63D8ADD9-2051-45FD-8FAC-0D3B0BC5ED2B"
+          },
+          {
+            "id": "7c54e992-4c88-4725-8f16-7c953aa7a0fe",
+            "shape": "table",
+            "position": {
+              "x": 505,
+              "y": 8.5
+            },
+            "count": 0,
+            "originKey": "12651E79-8D36-4A7F-801B-979C34D684C9"
+          },
+          {
+            "id": "56dfb5a6-b8c8-44e8-ad90-58beb1161084",
+            "shape": "table",
+            "position": {
+              "x": 483.5,
+              "y": 145.5
+            },
+            "count": 0,
+            "originKey": "E01BF466-11FA-4C40-B7CD-C4A2BB156DDD"
+          },
+          {
+            "id": "261ca392-4be9-4f40-a815-87d9bbe55be1",
+            "shape": "table",
+            "position": {
+              "x": -11,
+              "y": -227.5
+            },
+            "count": 0,
+            "originKey": "F24E1B1F-208E-418F-B6FB-CB116F534187"
+          },
+          {
+            "id": "de1bd1d7-bc35-46d8-b849-a44b57bb3291",
+            "shape": "table",
+            "position": {
+              "x": 482.5,
+              "y": -560.5
+            },
+            "count": 0,
+            "originKey": "354BD452-B069-4D4C-BC6E-7AAE65B4DF8F"
+          },
+          {
+            "id": "6d18dd19-6a9e-4f8f-852b-80ecd68e9e05",
+            "shape": "table",
+            "position": {
+              "x": -50,
+              "y": -514.5
+            },
+            "count": 0,
+            "originKey": "A7981A03-AAB4-425D-BDA5-D0CECB4C2C62"
+          },
+          {
+            "id": "6168705e-b5a9-41f0-8da7-12c08356e3d5",
+            "shape": "table",
+            "position": {
+              "x": -524,
+              "y": -69
+            },
+            "count": 0,
+            "originKey": "063F6440-7BDC-408A-8FA8-848828742F04"
+          },
+          {
+            "id": "a2db1b45-84bd-4349-8840-22edf1f678ce",
+            "shape": "table",
+            "position": {
+              "x": 3,
+              "y": -114.5
+            },
+            "count": 0,
+            "originKey": "4547F569-945E-4CF2-BCAA-2C32AF9F5732"
+          },
+          {
+            "id": "ba24c339-f014-4c0d-9097-da7858ddb6c9",
+            "shape": "table",
+            "position": {
+              "x": 490,
+              "y": 255.5
+            },
+            "count": 0,
+            "originKey": "C1AF9819-2775-4D9B-9160-CE506522D74F"
+          },
+          {
+            "id": "2bed1d21-d770-4cbe-90d0-1f15a836278f",
+            "shape": "table",
+            "position": {
+              "x": 468.5,
+              "y": 431.5
+            },
+            "count": 0,
+            "originKey": "C0405955-C12E-455E-BCA1-2A8859770281"
+          },
+          {
+            "id": "d0f8bc1e-4a4c-42e9-9bb9-0b272cb1bc17",
+            "shape": "table",
+            "position": {
+              "x": -32,
+              "y": 281.5
+            },
+            "count": 0,
+            "originKey": "78C828B0-E35E-4B7B-9259-0A10E16E6593"
+          },
+          {
+            "id": "f7c61145-3331-428a-bfbb-3c73204405a8",
+            "shape": "table",
+            "position": {
+              "x": -20,
+              "y": 26.5
+            },
+            "count": 0,
+            "originKey": "9D188574-A2A3-4624-8655-3EC135E029BE"
+          },
+          {
+            "id": "b9313918-f5e2-4de6-8c2a-6434e5a99a02",
+            "shape": "table",
+            "position": {
+              "x": -62,
+              "y": 401.5
+            },
+            "count": 0,
+            "originKey": "2FA7EBAD-0D99-4C37-8FDA-4488FD954814"
           }
         ]
       },
-      "id": "F0504945-5159-4FB4-AACC-36161C62C57E"
+      "id": "F71D021B-A542-496E-B85E-40CFD075C918"
     }
   ],
   "standardFields": [],

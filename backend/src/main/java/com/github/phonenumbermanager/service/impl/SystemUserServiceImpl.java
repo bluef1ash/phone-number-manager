@@ -27,10 +27,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.*;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.SystemPermission;
+import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
-import com.github.phonenumbermanager.mapper.PhoneNumberMapper;
 import com.github.phonenumbermanager.mapper.SystemUserCompanyMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.SystemUserService;
@@ -58,13 +60,12 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     private final RedisUtil redisUtil;
     private final SystemUserCompanyMapper systemUserCompanyMapper;
     private final CompanyMapper companyMapper;
-    private final PhoneNumberMapper phoneNumberMapper;
 
     @Override
-    public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException, SystemClosedException {
-        SystemUser systemUser = baseMapper.selectAndCompaniesByPhoneNumber(phoneNumber);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
+        SystemUser systemUser = baseMapper.selectAndCompaniesByUsername(username);
         if (systemUser == null) {
-            throw new UsernameNotFoundException("找不到该手机号！");
+            throw new UsernameNotFoundException("找不到该系统用户！");
         }
         @SuppressWarnings("all")
         Map<String, JSONObject> configurationMap =
@@ -74,7 +75,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
             throw new SystemClosedException("该系统已经禁止登录，请联系管理员！");
         }
-        if (!systemUser.getCompanies().isEmpty() && systemUser.getCompanies().get(0).getId() == null) {
+        if (systemUser.getCompanies().isEmpty()) {
             systemUser.setCompanies(null);
         }
         systemUser.setCredentialExpireTime(LocalDateTime.now().plusDays(7));
@@ -256,14 +257,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
      */
     @SuppressWarnings("all")
     private int saveOrUpdateHandle(SystemUser systemUser) {
-        PhoneNumber phoneNumber = phoneNumberMapper.selectOne(new LambdaQueryWrapper<PhoneNumber>()
-            .eq(PhoneNumber::getPhoneNumber, systemUser.getPhoneNumber().getPhoneNumber()));
-        if (phoneNumber == null) {
-            phoneNumberMapper.insert(systemUser.getPhoneNumber());
-            systemUser.setPhoneNumberId(systemUser.getPhoneNumber().getId());
-        } else {
-            systemUser.setPhoneNumberId(phoneNumber.getId());
-        }
         List<SystemUserCompany> systemUserCompanies = systemUser.getCompanies().stream()
             .map(company -> new SystemUserCompany().setCompanyId(company.getId()).setSystemUserId(systemUser.getId()))
             .collect(Collectors.toList());

@@ -130,14 +130,14 @@ public class SystemController extends BaseController {
     }
 
     /**
-     * 增删改批量操作
+     * 系统配置增删改批量操作
      *
      * @param batchRestfulVo
      *            批量操作视图对象
      * @return 是否成功
      */
     @PostMapping("/configuration/batch")
-    @ApiOperation("增删改批量操作")
+    @ApiOperation("系统配置增删改批量操作")
     public R configurationBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
@@ -146,7 +146,7 @@ public class SystemController extends BaseController {
                 return R.ok();
             }
         }
-        throw new JsonException("批量操作失败！");
+        throw new JsonException("系统配置批量操作失败！");
     }
 
     /**

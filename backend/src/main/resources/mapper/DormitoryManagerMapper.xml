@@ -12,7 +12,7 @@
         <result column="address" property="address"/>
         <result column="manager_address" property="managerAddress"/>
         <result column="manager_count" property="managerCount"/>
-        <result column="system_user_id" property="systemUserId"/>
+        <result column="subcontractor_id" property="subcontractorId"/>
         <result column="company_id" property="companyId"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="baseResultMap"
@@ -33,11 +33,11 @@
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="collectionResultMap"
                extends="aliasResultMap">
-        <association property="company" column="company_id"
-                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.collectionResultMap"/>
-        <association property="systemUser" column="system_user_id"
-                     resultMap="com.github.phonenumbermanager.mapper.SystemUserMapper.collectionResultMap"/>
-        <collection property="phoneNumbers" ofType="com.github.phonenumbermanager.entity.PhoneNumber"
+        <association property="company"
+                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.aliasResultMap"/>
+        <association property="subcontractor"
+                     resultMap="com.github.phonenumbermanager.mapper.SubcontractorMapper.aliasResultMap"/>
+        <collection property="phoneNumbers"
                     resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
     </resultMap>
     <select id="selectAndCompanyById" resultMap="collectionResultMap">
@@ -55,13 +55,13 @@
             pm_phone_number.phone_number,
             pm_dormitory_manager.create_time AS 'dormitory_manager_create_time',
             pm_dormitory_manager.update_time AS 'dormitory_manager_update_time',
-            pm_dormitory_manager.system_user_id,
+            pm_dormitory_manager.subcontractor_id,
             pm_dormitory_manager.company_id,
             pm_company.name AS 'company_name',
-            pm_system_user.username
+            pm_subcontractor.name AS 'subcontractor_name'
         FROM pm_dormitory_manager
                  LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
-                 LEFT JOIN pm_system_user ON pm_dormitory_manager.system_user_id = pm_system_user.id
+                 LEFT JOIN pm_subcontractor ON pm_dormitory_manager.subcontractor_id = pm_subcontractor.id
                  LEFT JOIN pm_dormitory_manager_phone_number
         ON pm_dormitory_manager.id = pm_dormitory_manager_phone_number.dormitory_manager_id
                  LEFT JOIN pm_phone_number ON pm_dormitory_manager_phone_number.phone_number_id = pm_phone_number.id
@@ -80,14 +80,14 @@
         pm_dormitory_manager.update_time AS 'dormitory_manager_update_time',
         pm_dormitory_manager.company_id,
         pm_company.name AS 'company_name',
-        pm_system_user.username
+        pm_subcontractor.name AS 'subcontractor_name'
         FROM
         pm_dormitory_manager
         LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
         LEFT JOIN pm_dormitory_manager_phone_number ON pm_dormitory_manager.id =
         pm_dormitory_manager_phone_number.dormitory_manager_id
         LEFT JOIN pm_phone_number ON pm_dormitory_manager_phone_number.phone_number_id = pm_phone_number.id
-        LEFT JOIN pm_system_user ON pm_dormitory_manager.system_user_id = pm_system_user.id
+        LEFT JOIN pm_subcontractor ON pm_dormitory_manager.subcontractor_id = pm_subcontractor.id
         <where>
             <if test="companies != null and companies.size() gt 0">
                 <foreach collection="companies" item="company" separator="OR">
@@ -106,10 +106,10 @@
                             pm_dormitory_manager.birth BETWEEN
                             <foreach collection="value" item="v" separator="AND">#{v}</foreach>
                         </when>
-                        <when test="key eq 'systemUser'">
+                        <when test="key eq 'subcontractor'">
                             <foreach collection="value" item="val">
                                 <foreach collection="val" item="v" open="(" separator="OR" close=")">
-                                    pm_system_user.id = #{v}
+                                    subcontractor.id = #{v}
                                 </foreach>
                             </foreach>
                         </when>
@@ -133,7 +133,7 @@
                         <when test="key eq 'company,name'">
                             CONVERT(pm_company.name USING gbk) COLLATE gbk_chinese_ci
                         </when>
-                        <when test="key eq 'systemUser,username'">
+                        <when test="key eq 'subcontractor,name'">
                             CONVERT(dormitory_manager_name USING gbk) COLLATE gbk_chinese_ci
                         </when>
                         <when test="key eq 'age'">
@@ -170,15 +170,15 @@
         pm_dormitory_manager.company_id,
         pm_company.name AS 'company_name',
         pm_company.parent_id AS 'company_parent_id',
-        pm_system_user.id AS 'system_user_id',
-        pm_system_user.username
+        pm_subcontractor.id AS 'subcontractor_id',
+        pm_subcontractor.name AS 'subcontractor_name'
         FROM
         pm_dormitory_manager
         LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
         LEFT JOIN pm_dormitory_manager_phone_number ON pm_dormitory_manager.id =
         pm_dormitory_manager_phone_number.dormitory_manager_id
         LEFT JOIN pm_phone_number ON pm_dormitory_manager_phone_number.phone_number_id = pm_phone_number.id
-        LEFT JOIN pm_system_user ON pm_dormitory_manager.system_user_id = pm_system_user.id
+        LEFT JOIN pm_subcontractor ON pm_dormitory_manager.subcontractor_id = pm_subcontractor.id
         <where>
             <if test="companyIds != null and companyIds.size() gt 0">
                 <foreach collection="companyIds" item="id" separator="OR">

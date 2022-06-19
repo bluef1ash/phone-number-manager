@@ -58,7 +58,7 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Override
     public List<MenuVo> listMenu(Boolean display, List<Company> companies) {
         List<Long> companyIds = null;
-        if (companies != null && companies.get(0).getId() != null) {
+        if (companies != null) {
             companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
         }
         List<SystemPermission> systemPermissions = baseMapper.selectListByCompanyIds(companyIds);

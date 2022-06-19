@@ -41,10 +41,10 @@ import cn.hutool.poi.excel.StyleSet;
 public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResidentMapper, CommunityResident>
     implements CommunityResidentService {
     private final CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper;
-    private final SystemUserMapper systemUserMapper;
     private final PhoneNumberMapper phoneNumberMapper;
     private final CompanyMapper companyMapper;
     private final CompanyExtraMapper companyExtraMapper;
+    private final SubcontractorMapper subcontractorMapper;
     private int excelCommunityCellNumber;
     private int excelCommunityResidentNameCellNumber;
     private int excelResidentAddressCellNumber;
@@ -55,20 +55,20 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Autowired
     public CommunityResidentServiceImpl(CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper,
-        SystemUserMapper systemUserMapper, PhoneNumberMapper phoneNumberMapper, CompanyMapper companyMapper,
-        CompanyExtraMapper companyExtraMapper) {
+        PhoneNumberMapper phoneNumberMapper, CompanyMapper companyMapper, CompanyExtraMapper companyExtraMapper,
+        SubcontractorMapper subcontractorMapper) {
         this.communityResidentPhoneNumberMapper = communityResidentPhoneNumberMapper;
-        this.systemUserMapper = systemUserMapper;
         this.phoneNumberMapper = phoneNumberMapper;
         this.companyMapper = companyMapper;
         this.companyExtraMapper = companyExtraMapper;
+        this.subcontractorMapper = subcontractorMapper;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(CommunityResident entity) {
         entity.setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
-            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
+            .setSubcontractorId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.insert(entity) > 0;
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         communityResidentPhoneNumberMapper.insertBatchSomeColumn(phoneNumbersHandler(entity));
@@ -79,7 +79,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Override
     public boolean updateById(CommunityResident entity) {
         entity.setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
-            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
+            .setSubcontractorId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.updateById(entity) > 0;
         if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
             communityResidentPhoneNumberMapper.delete(new LambdaQueryWrapper<CommunityResidentPhoneNumber>()
@@ -167,7 +167,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 hashMap.put("电话3", "");
             }
             // 处理分包人
-            hashMap.put("分包人", communityName + communityResident.getSystemUser().getUsername());
+            hashMap.put("分包人", communityName + communityResident.getSubcontractor().getName());
             list.add(hashMap);
         }
         ExcelWriter excelWriter = ExcelUtil.getBigWriter();
@@ -299,7 +299,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     private List<CommunityResident> importExcelDataHandle(List<List<Object>> data, List<PhoneNumber> phoneNumbers,
         List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers) {
         List<CommunityResident> residents = new ArrayList<>();
-        List<SystemUser> systemUsers = systemUserMapper.selectList(null);
+        List<Subcontractor> subcontractors = subcontractorMapper.selectList(null);
         List<PhoneNumber> phoneNumbersAll = phoneNumberMapper.selectList(null);
         List<Long> phoneNumberIds = communityResidentPhoneNumberMapper.selectList(null).stream()
             .map(CommunityResidentPhoneNumber::getPhoneNumberId).collect(Collectors.toList());
@@ -311,17 +311,18 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             if (company.isEmpty()) {
                 throw new BusinessException("未找到对应的" + companyName + "单位读取失败！");
             }
-            String systemUserName =
+            String subcontractorName =
                 StrUtil.cleanBlank(String.valueOf(datum.get(excelSubcontractorCellNumber))).replace(companyName, "");
-            Optional<SystemUser> systemUser =
-                systemUsers.stream().filter(s -> systemUserName.equals(s.getUsername())).findFirst();
-            if (systemUser.isEmpty()) {
-                throw new BusinessException("未找到对应的分包人" + systemUserName + "的信息，请重试！");
+            Optional<Subcontractor> subcontractor = subcontractors.stream()
+                .filter(s -> subcontractorName.equals(s.getName()) && s.getCompanyId().equals(company.get().getId()))
+                .findFirst();
+            if (subcontractor.isEmpty()) {
+                throw new BusinessException("未找到对应的分包人" + subcontractorName + "的信息，请重试！");
             }
             communityResident.setId(IdWorker.getId())
                 .setName(StrUtil.cleanBlank(String.valueOf(datum.get(excelCommunityResidentNameCellNumber))))
                 .setAddress(StrUtil.cleanBlank(String.valueOf(datum.get(excelResidentAddressCellNumber))))
-                .setCompanyId(company.get().getId()).setSystemUserId(systemUser.get().getId());
+                .setCompanyId(company.get().getId()).setSubcontractorId(subcontractor.get().getId());
             // 联系方式
             String phoneNumber1 = StrUtil.cleanBlank(String.valueOf(datum.get(excelPhone1CellNumber)));
             String phoneNumber2 = StrUtil.cleanBlank(String.valueOf(datum.get(excelPhone2CellNumber)));

@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.phonenumbermanager.constant.enums.MenuTypeEnum;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemPermission;
-import com.github.phonenumbermanager.service.CommunityResidentService;
-import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
-import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.R;
 
 import io.swagger.annotations.Api;
@@ -34,9 +31,6 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/index")
 @Api(tags = "首页控制器")
 public class IndexController extends BaseController {
-    private final CommunityResidentService communityResidentService;
-    private final DormitoryManagerService dormitoryManagerService;
-    private final SystemUserService systemUserService;
     private final SystemPermissionService systemPermissionService;
 
     /**

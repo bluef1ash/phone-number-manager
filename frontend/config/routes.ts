@@ -27,6 +27,12 @@ export default [
     access: 'normalRouteFilter',
   },
   {
+    path: '/company/subcontractor',
+    name: './subcontractor',
+    component: './subcontractor',
+    access: 'normalRouteFilter',
+  },
+  {
     path: '/system/user',
     name: './user',
     component: './user',

@@ -1,8 +1,6 @@
 import React from 'react';
 import type { ProFormProps } from '@ant-design/pro-form';
 import { ProFormList, ProFormRadio, ProFormSwitch, ProFormText } from '@ant-design/pro-form';
-import { submitPrePhoneNumberHandle } from '@/services/utils';
-import { isArray } from 'lodash';
 import SelectCascder from '@/components/SelectCascder';
 import { queryCompanySelectList } from '@/services/company/api';
 
@@ -12,19 +10,8 @@ export type UserFormProps = {
 } & ProFormProps;
 
 export const UserFormSubmitPreHandler = (formData: API.SystemUser) => {
-  if (formData.phoneNumber != null && formData.phoneNumber.phoneNumber != null) {
-    formData.phoneNumber = submitPrePhoneNumberHandle(formData.phoneNumber.phoneNumber);
-  }
   if (typeof formData.companyIds !== 'undefined') {
     formData.companies = formData.companyIds.map((id) => ({ id }));
-  }
-  if (isArray(formData.positions) && formData.positions.length > 0) {
-    formData.positions = formData.positions?.map(
-      (position) => (position as { position: string }).position,
-    );
-  }
-  if (isArray(formData.titles) && formData.titles.length > 0) {
-    formData.titles = formData.titles?.map((title) => (title as { title: string }).title);
   }
   return formData;
 };

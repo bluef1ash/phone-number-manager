@@ -12,7 +12,7 @@ CREATE TABLE pm_dormitory_manager (
     manager_address   VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '管理的地址',
     manager_count     INT UNSIGNED         NOT NULL DEFAULT 0 COMMENT '管理的户数',
     company_id        BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '社区所属编号',
-    system_user_id    BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '所属分包人编号',
+    subcontractor_id  BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '所属分包人编号',
     create_time       DATETIME             NOT NULL COMMENT '增加时间',
     update_time       DATETIME             NOT NULL COMMENT '更新时间',
     version           SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
@@ -22,4 +22,4 @@ CREATE TABLE pm_dormitory_manager (
 
 CREATE UNIQUE INDEX uk_id_number ON pm_dormitory_manager(id_number);
 CREATE INDEX idx_company_id ON pm_dormitory_manager(company_id);
-CREATE INDEX idx_system_user_id ON pm_dormitory_manager(system_user_id);
+CREATE INDEX idx_subcontractor_id ON pm_dormitory_manager(subcontractor_id);

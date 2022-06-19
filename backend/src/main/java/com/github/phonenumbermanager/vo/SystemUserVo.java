@@ -31,12 +31,6 @@ public class SystemUserVo implements Serializable {
     private Long id;
     @ApiModelProperty("系统用户名称")
     private String username;
-    @ApiModelProperty("系统用户职务")
-    private String[] positions;
-    @ApiModelProperty("系统用户职称")
-    private String[] titles;
-    @ApiModelProperty("是否参加社区分包")
-    private Boolean isSubcontract;
     @ApiModelProperty("系统用户登录时间")
     private LocalDateTime loginTime;
     @ApiModelProperty("系统用户登录IP地址")
@@ -51,11 +45,6 @@ public class SystemUserVo implements Serializable {
     @ApiModelProperty("系统用户本次登录过期时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime credentialExpireTime;
-    @ApiModelProperty("联系方式编号")
-    @JsonSerialize(using = ToStringSerializer.class)
-    private Long phoneNumberId;
     @ApiModelProperty("系统用户所属单位")
     private List<CompanyVo> companies;
-    @ApiModelProperty("联系方式")
-    private String phoneNumber;
 }

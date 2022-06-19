@@ -21,15 +21,6 @@ import cn.hutool.json.JSONObject;
 @Mapper
 public interface SystemUserMapper extends BaseMapper<SystemUser> {
     /**
-     * 查询所有系统用户与所属联系方式
-     *
-     * @return 所有系统用户与所属联系方式
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    List<SystemUser> selectAndPhoneNumber() throws DataAccessException;
-
-    /**
      * 分页查询所有系统用户与所属单位
      *
      * @param companyIds
@@ -48,15 +39,15 @@ public interface SystemUserMapper extends BaseMapper<SystemUser> {
         JSONObject sort) throws DataAccessException;
 
     /**
-     * 通过联系方式查询系统用户
+     * 通过系统用户名称查询系统用户
      *
-     * @param phoneNumber
-     *            系统用户联系方式
+     * @param username
+     *            系统用户名称
      * @return 查询到的系统用户与所属角色以及权限
      * @throws DataAccessException
      *             数据库操作异常
      */
-    SystemUser selectAndCompaniesByPhoneNumber(String phoneNumber) throws DataAccessException;
+    SystemUser selectAndCompaniesByUsername(String username) throws DataAccessException;
 
     /**
      * 通过单位编号查询

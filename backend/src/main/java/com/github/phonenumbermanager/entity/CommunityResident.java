@@ -49,7 +49,7 @@ public class CommunityResident extends BaseEntity<CommunityResident> {
     @ApiModelProperty("所属社区分包人编号")
     @Min(value = 1, message = "所属社区分包人编号不正确！")
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long systemUserId;
+    private Long subcontractorId;
     @ApiModelProperty("所属社区编号")
     @Min(value = 1, message = "所属社区编号不正确！")
     @JsonSerialize(using = ToStringSerializer.class)
@@ -64,7 +64,7 @@ public class CommunityResident extends BaseEntity<CommunityResident> {
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
-    private SystemUser systemUser;
+    private Subcontractor subcontractor;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)
     private Company company;

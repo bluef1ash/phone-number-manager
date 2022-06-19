@@ -33,22 +33,19 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import cn.hutool.poi.excel.StyleSet;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 社区楼长业务实现
  *
  * @author 廿二月的天
  */
-@Slf4j
 @Service
 public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManagerMapper, DormitoryManager>
     implements DormitoryManagerService {
-    private static final String DATA_COLUMN_NAME = "人数";
     private final CompanyMapper companyMapper;
-    private final SystemUserMapper systemUserMapper;
     private final PhoneNumberMapper phoneNumberMapper;
     private final DormitoryManagerPhoneNumberMapper dormitoryManagerPhoneNumberMapper;
+    private final SubcontractorMapper subcontractorMapper;
     private Integer excelDormitoryCommunityNameCellNumber;
     private Integer excelDormitoryNameCellNumber;
     private Integer excelDormitoryBirthCellNumber;
@@ -60,15 +57,15 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     private Integer excelDormitoryManagerCountCellNumber;
     private Integer excelDormitoryTelephoneCellNumber;
     private Integer excelDormitoryLandlineCellNumber;
-    private Integer excelDormitorySubcontractorTelephoneCellNumber;
+    private Integer excelDormitorySubcontractorNameCellNumber;
 
     @Autowired
-    public DormitoryManagerServiceImpl(CompanyMapper companyMapper, SystemUserMapper systemUserMapper,
-        PhoneNumberMapper phoneNumberMapper, DormitoryManagerPhoneNumberMapper dormitoryManagerPhoneNumberMapper) {
+    public DormitoryManagerServiceImpl(CompanyMapper companyMapper, PhoneNumberMapper phoneNumberMapper,
+        DormitoryManagerPhoneNumberMapper dormitoryManagerPhoneNumberMapper, SubcontractorMapper subcontractorMapper) {
         this.companyMapper = companyMapper;
-        this.systemUserMapper = systemUserMapper;
         this.phoneNumberMapper = phoneNumberMapper;
         this.dormitoryManagerPhoneNumberMapper = dormitoryManagerPhoneNumberMapper;
+        this.subcontractorMapper = subcontractorMapper;
     }
 
     @Override
@@ -76,7 +73,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         List<String> info = new ArrayList<>();
         DormitoryManager dormitoryManager = baseMapper.selectAndCompanyById(id);
         info.add(dormitoryManager.getCompany().getName());
-        info.add(dormitoryManager.getSystemUser().getUsername());
+        info.add(dormitoryManager.getSubcontractor().getName());
         dormitoryManager.setSubcontractorInfo(info);
         return dormitoryManager;
     }
@@ -89,7 +86,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         List<DormitoryManagerPhoneNumber> dormitoryManagerPhoneNumbers = new ArrayList<>();
         getUploadExcelVariable(configurationMap);
         List<Company> companies = companyMapper.selectList(null);
-        List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
+        List<Subcontractor> subcontractors = subcontractorMapper.selectList(null);
         List<Long> phoneNumberIds = dormitoryManagerPhoneNumberMapper.selectList(null).stream()
             .map(DormitoryManagerPhoneNumber::getPhoneNumberId).collect(Collectors.toList());
         List<PhoneNumber> phoneNumberAll = phoneNumberMapper.selectList(null);
@@ -100,11 +97,12 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             if (company.isEmpty()) {
                 throw new BusinessException("单位读取失败！");
             }
-            String systemUserPhoneNumber =
-                StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitorySubcontractorTelephoneCellNumber)));
-            Optional<SystemUser> systemUser = systemUsers.stream()
-                .filter(user -> user.getPhoneNumber().getPhoneNumber().equals(systemUserPhoneNumber)).findFirst();
-            if (systemUser.isEmpty()) {
+            String subcontractorName =
+                StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitorySubcontractorNameCellNumber)));
+            Optional<Subcontractor> subcontractor = subcontractors.stream()
+                .filter(s -> s.getName().equals(subcontractorName) && s.getCompanyId().equals(company.get().getId()))
+                .findFirst();
+            if (subcontractor.isEmpty()) {
                 throw new BusinessException("未找到对应的分包人信息，请重试！");
             }
             String idNumber = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryBirthCellNumber)));
@@ -123,7 +121,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 .setManagerAddress(
                     StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryManagerAddressCellNumber))))
                 .setManagerCount(Convert.toInt(datum.get(excelDormitoryManagerCountCellNumber)))
-                .setSystemUserId(systemUser.get().getId());
+                .setSubcontractorId(subcontractor.get().getId());
             String telephone = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryTelephoneCellNumber)));
             String landline = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryLandlineCellNumber)));
             if (StrUtil.isNotEmpty(telephone)) {
@@ -231,7 +229,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(entity.getIdNumber()),
                 IdcardUtil.getMonthByIdCard(entity.getIdNumber()), IdcardUtil.getDayByIdCard(entity.getIdNumber())))
             .setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
-            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
+            .setSubcontractorId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         baseMapper.insert(entity);
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         return dormitoryManagerPhoneNumberMapper.insertBatchSomeColumn(dormitoryManagerPhoneNumbersHandler(entity)) > 0;
@@ -244,7 +242,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             .setBirth(LocalDate.of(IdcardUtil.getYearByIdCard(entity.getIdNumber()),
                 IdcardUtil.getMonthByIdCard(entity.getIdNumber()), IdcardUtil.getDayByIdCard(entity.getIdNumber())))
             .setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
-            .setSystemUserId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
+            .setSubcontractorId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.updateById(entity) > 0;
         if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
             dormitoryManagerPhoneNumberMapper
@@ -261,29 +259,6 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         list.forEach(l -> wrapper.eq("dormitory_manager_id", l).or());
         baseMapper.deleteBatchIds(list);
         return dormitoryManagerPhoneNumberMapper.delete(wrapper) > 0;
-    }
-
-    /**
-     * 获取饼图数据
-     *
-     * @param data
-     *            需要设置的数据
-     * @param column
-     *            饼图的图例
-     * @return 饼图需要的数据
-     */
-    private Map<String, Object> getPieData(Map<String, Integer> data, String column) {
-        Map<String, Object> pieData = new HashMap<>(3);
-        List<LinkedHashMap<String, Object>> rows = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : data.entrySet()) {
-            LinkedHashMap<String, Object> row = new LinkedHashMap<>(3);
-            row.put(column, entry.getKey());
-            row.put(DATA_COLUMN_NAME, entry.getValue());
-            rows.add(row);
-        }
-        pieData.put("columns", new String[] {column, DATA_COLUMN_NAME});
-        pieData.put("rows", rows);
-        return pieData;
     }
 
     /**
@@ -527,8 +502,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             Convert.toInt(configurationMap.get("excel_dormitory_telephone_cell_number").get("content"));
         excelDormitoryLandlineCellNumber =
             Convert.toInt(configurationMap.get("excel_dormitory_landline_cell_number").get("content"));
-        excelDormitorySubcontractorTelephoneCellNumber =
-            Convert.toInt(configurationMap.get("excel_dormitory_subcontractor_telephone_cell_number").get("content"));
+        excelDormitorySubcontractorNameCellNumber =
+            Convert.toInt(configurationMap.get("excel_dormitory_subcontractor_name_cell_number").get("content"));
     }
 
     /**
@@ -544,8 +519,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         List<DormitoryManager> dormitoryManagers) {
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         long index = 1L;
-        List<SystemUser> systemUsers = systemUserMapper.selectAndPhoneNumber();
-        String streetTitle = "";
+        List<Subcontractor> subcontractors = subcontractorMapper.selectAndPhoneNumber();
+        StringBuilder streetTitle = new StringBuilder();
         for (DormitoryManager dormitoryManager : dormitoryManagers) {
             LinkedHashMap<String, Object> data = new LinkedHashMap<>();
             // 序号
@@ -560,9 +535,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             if (company.isPresent()) {
                 streetName = company.get().getName().replaceAll(SystemConstant.STREET_NAME_PATTERN, "");
                 if (StrUtil.isBlankIfStr(streetTitle)) {
-                    streetTitle = company.get().getName();
-                } else if (!streetTitle.equals(company.get().getName())) {
-                    streetTitle = streetTitle + "，" + company.get().getName();
+                    streetTitle.append(company.get().getName());
+                } else if (!streetTitle.toString().equals(company.get().getName())) {
+                    streetTitle.append(streetTitle).append("，").append(company.get().getName());
                 }
             }
             // 编号
@@ -590,11 +565,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 }
             });
             // 处理分包人
-            data.put("subcontractorName", dormitoryManager.getSystemUser().getUsername());
-            Optional<SystemUser> user = systemUsers.stream()
-                .filter(systemUser -> dormitoryManager.getSystemUser().getId().equals(systemUser.getId())).findFirst();
-            if (user.isPresent()) {
-                data.put("subcontractorTelephone", user.get().getPhoneNumber().getPhoneNumber());
+            data.put("subcontractorName", dormitoryManager.getSubcontractor().getName());
+            Optional<Subcontractor> subcontractor = subcontractors.stream()
+                .filter(s -> dormitoryManager.getSubcontractor().getId().equals(s.getId())).findFirst();
+            if (subcontractor.isPresent()) {
+                data.put("subcontractorTelephone", subcontractor.get().getPhoneNumbers().get(0).getPhoneNumber());
             } else {
                 data.put("subcontractorTelephone", "");
             }

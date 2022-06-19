@@ -3,7 +3,7 @@
 <mapper namespace="com.github.phonenumbermanager.mapper.CommunityResidentMapper">
     <resultMap type="com.github.phonenumbermanager.entity.CommunityResident" id="commonResultMap">
         <result column="address" property="address"/>
-        <result column="system_user_id" property="systemUserId"/>
+        <result column="subcontractor_id" property="subcontractorId"/>
         <result column="company_id" property="companyId"/>
     </resultMap>
     <resultMap type="com.github.phonenumbermanager.entity.CommunityResident" id="baseResultMap"
@@ -25,9 +25,9 @@
     <resultMap type="com.github.phonenumbermanager.entity.CommunityResident" id="collectionResultMap"
                extends="aliasResultMap">
         <association property="company"
-                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.collectionResultMap"/>
-        <association property="systemUser"
-                     resultMap="com.github.phonenumbermanager.mapper.SystemUserMapper.collectionResultMap"/>
+                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.aliasResultMap"/>
+        <association property="subcontractor"
+                     resultMap="com.github.phonenumbermanager.mapper.SubcontractorMapper.aliasResultMap"/>
         <collection property="phoneNumbers" ofType="com.github.phonenumbermanager.entity.PhoneNumber"
                     resultMap="com.github.phonenumbermanager.mapper.PhoneNumberMapper.aliasResultMap"/>
     </resultMap>
@@ -38,13 +38,13 @@
             pm_phone_number.phone_number,
             pm_community_resident.create_time AS 'community_resident_create_time',
             pm_community_resident.update_time AS 'community_resident_update_time',
-            pm_system_user.id AS 'system_user_id',
-            pm_system_user.username,
+            pm_subcontractor.id AS 'subcontractor_id',
+            pm_subcontractor.name AS 'subcontractor_name',
             pm_community_resident.company_id,
             pm_company.name AS 'company_name'
         FROM pm_community_resident
                  LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
-                 LEFT JOIN pm_system_user ON pm_community_resident.system_user_id = pm_system_user.id
+                 LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
                  LEFT JOIN pm_community_resident_phone_number
         ON pm_community_resident.id = pm_community_resident_phone_number.community_resident_id
                  LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
@@ -65,14 +65,14 @@
         SELECT pm_community_resident.id AS 'community_resident_id',
         pm_community_resident.name AS 'community_resident_name',
         pm_community_resident.address,
-        pm_system_user.username,
+        pm_subcontractor.name AS 'subcontractor_name',
         pm_community_resident.company_id,
         pm_company.name AS 'company_name',
         pm_company.parent_id AS 'company_parent_id',
         pm_phone_number.phone_number
         FROM pm_community_resident
         LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
-        LEFT JOIN pm_system_user ON pm_community_resident.system_user_id = pm_system_user.id
+        LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
         LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
         pm_community_resident_phone_number.community_resident_id
         LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
@@ -95,14 +95,14 @@
         pm_community_resident.update_time AS 'community_resident_update_time',
         pm_community_resident.company_id,
         pm_company.name AS 'company_name',
-        pm_system_user.username
+        pm_subcontractor.name AS 'subcontractor_name'
         FROM
         pm_community_resident
         LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
         LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
         pm_community_resident_phone_number.community_resident_id
         LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
-        LEFT JOIN pm_system_user ON pm_community_resident.system_user_id = pm_system_user.id
+        LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
         <where>
             <if test="companies != null and companies.size() gt 0">
                 <foreach collection="companies" item="company" separator="OR">
@@ -115,9 +115,9 @@
                         <when test="key eq 'phoneNumbers'">
                             pm_phone_number.phone_number LIKE CONCAT('%', #{value}, '%')
                         </when>
-                        <when test="key eq 'systemUser'">
+                        <when test="key eq 'subcontractor'">
                             <foreach collection="value" item="v" open="(" separator="OR" close=")">
-                                pm_system_user.id = #{v} OR pm_company.id = #{v}
+                                pm_subcontractor.id = #{v} OR pm_company.id = #{v}
                             </foreach>
                         </when>
                         <otherwise>pm_community_resident.${key} LIKE CONCAT('%', #{value}, '%')</otherwise>
@@ -133,7 +133,7 @@
                         <when test="key eq 'company,name'">
                             CONVERT(pm_company.name USING gbk) COLLATE gbk_chinese_ci
                         </when>
-                        <when test="key eq 'systemUser,username'">
+                        <when test="key eq 'subcontractor,name'">
                             CONVERT(dormitory_manager_name USING gbk) COLLATE gbk_chinese_ci
                         </when>
                         <otherwise>

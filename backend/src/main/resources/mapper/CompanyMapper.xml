@@ -62,8 +62,8 @@
         SELECT pm_company.id AS 'company_id',
         pm_company.name AS 'company_name',
         pm_company.parent_id AS 'company_parent_id',
-        pm_company.create_time,
-        pm_company.update_time,
+        pm_company.create_time AS 'company_create_time',
+        pm_company.update_time AS 'company_update_time',
         pm_phone_number.id AS 'phone_number_id',
         pm_phone_number.phone_number,
         pm_phone_number.phone_type

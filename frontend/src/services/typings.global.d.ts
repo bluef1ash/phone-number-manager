@@ -23,12 +23,16 @@ declare namespace API {
     params?: [];
   };
 
+  type RecursivePartial<S extends object> = {
+    [p in keyof S]+?: S[p] extends object ? RecursivePartial<S[p]> : S[p];
+  };
+
   type BaseEntity = {
     id: number;
     createTime?: Date;
     updateTime?: Date;
     version?: number;
-  };
+  } & RecursivePartial<BaseEntity>;
 
   type PhoneNumber = {
     id?: number;
@@ -57,7 +61,7 @@ declare namespace API {
 
   type Data<T> = {
     code: number;
-    data: T;
+    data: T & BaseEntity;
     message: string;
   };
 

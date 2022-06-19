@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.PhoneNumber;
@@ -20,9 +21,11 @@ import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
+import com.github.phonenumbermanager.vo.BatchRestfulVo;
 import com.github.phonenumbermanager.vo.ComputedVo;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -178,6 +181,27 @@ public class CommunityResidentController extends BaseController {
         ExcelWriter excelWriter =
             communityResidentService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");
+    }
+
+    /**
+     * 社区居民增删改批量操作
+     *
+     * @param batchRestfulVo
+     *            批量操作视图对象
+     * @return 是否成功
+     */
+    @PostMapping("/batch")
+    @ResponseBody
+    @ApiOperation("社区居民增删改批量操作")
+    public R communityResidentBatch(
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
+        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+            if (communityResidentService.removeByIds(ids)) {
+                return R.ok();
+            }
+        }
+        throw new JsonException("批量操作失败！");
     }
 
     /**

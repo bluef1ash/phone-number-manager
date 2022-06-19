@@ -24,14 +24,16 @@ import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
-import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.*;
+import com.github.phonenumbermanager.vo.BatchRestfulVo;
+import com.github.phonenumbermanager.vo.CompanyVo;
+import com.github.phonenumbermanager.vo.SystemUserLoginVo;
+import com.github.phonenumbermanager.vo.SystemUserVo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
@@ -52,7 +54,6 @@ import lombok.AllArgsConstructor;
 @RestController
 @Api(tags = "系统用户与系统权限控制器")
 public class UserAndPermissionController extends BaseController {
-    private final CompanyService companyService;
     private final SystemUserService systemUserService;
     private final SystemPermissionService systemPermissionService;
 
@@ -73,7 +74,7 @@ public class UserAndPermissionController extends BaseController {
         @ApiParam(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVo systemUserLoginVo)
         throws LoginException {
         getEnvironmentVariable();
-        Authentication authentication = systemUserService.authentication(systemUserLoginVo.getPhoneNumber(),
+        Authentication authentication = systemUserService.authentication(systemUserLoginVo.getUsername(),
             systemUserLoginVo.getPassword(), ServletUtil.getClientIP(request));
         SystemUser principal = (SystemUser)authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>(2);
@@ -313,22 +314,6 @@ public class UserAndPermissionController extends BaseController {
     }
 
     /**
-     * 社区居民分包人图表
-     *
-     * @param computedVo
-     *            计算视图对象
-     * @return Ajax返回JSON对象
-     */
-    @PostMapping("/system/subcontractor/computed/chart")
-    @ResponseBody
-    @ApiOperation("社区居民分包人图表")
-    public R subcontractorChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
-        getEnvironmentVariable();
-        return R.ok().put("data", systemUserService.getBarChart(currentSystemUser.getCompanies(),
-            getCompanyIds(computedVo), companyService.list(), null));
-    }
-
-    /**
      * 系统权限列表
      *
      * @param request
@@ -475,7 +460,6 @@ public class UserAndPermissionController extends BaseController {
     private SystemUserVo getSystemUserVo(SystemUser systemUser) {
         SystemUserVo systemUserVo = new SystemUserVo();
         BeanUtil.copyProperties(systemUser, systemUserVo);
-        systemUserVo.setPhoneNumber(systemUser.getPhoneNumber().getPhoneNumber());
         if (systemUser.getCompanies() != null) {
             List<CompanyVo> companyVos = systemUser.getCompanies().parallelStream().map(company -> {
                 CompanyVo companyVo = new CompanyVo();

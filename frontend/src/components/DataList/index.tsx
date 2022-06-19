@@ -11,7 +11,7 @@ import type { ProColumns } from '@ant-design/pro-table/lib/typing';
 import type { SortOrder } from 'antd/es/table/interface';
 import type { Key } from 'antd/lib/table/interface';
 import type { UploadProps } from 'antd/lib/upload/interface';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isArray } from 'lodash';
 
 export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
   customActionRef?: React.MutableRefObject<ActionType | undefined>;
@@ -100,7 +100,6 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
               }
               const { code, data } = await modifyEditModalForm.queryData(id);
               if (code === 200 && typeof data !== 'undefined') {
-                //@ts-ignore
                 modifyEditModalForm?.formRef?.current?.setFieldsValue(data);
               }
             }
@@ -150,9 +149,28 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
         const searchParams = cloneDeep(params);
         delete searchParams.current;
         delete searchParams.pageSize;
-        const otherParams: { search?: U; sort?: Record<string, SortOrder> } = {};
+        const otherParams: { search?: ParamsType; sort?: Record<string, SortOrder> } = {};
         if (Object.keys(searchParams).length > 0) {
-          otherParams.search = searchParams;
+          const search: ParamsType = {};
+          for (const searchParam in searchParams) {
+            if (typeof searchParams[searchParam] !== 'object') {
+              search[searchParam] = searchParams[searchParam];
+            } else {
+              for (const searchParamKey in searchParams[searchParam]) {
+                search[searchParam + '.' + searchParamKey] = [];
+                if (isArray(searchParams[searchParam][searchParamKey])) {
+                  for (const searchParamElementKey in searchParams[searchParam][searchParamKey]) {
+                    search[searchParam + '.' + searchParamKey].push(
+                      searchParams[searchParam][searchParamKey][searchParamElementKey][
+                        searchParams[searchParam][searchParamKey][searchParamElementKey].length - 1
+                      ],
+                    );
+                  }
+                }
+              }
+            }
+          }
+          otherParams.search = search;
         }
         if (Object.keys(sort).length > 0) {
           otherParams.sort = sort;

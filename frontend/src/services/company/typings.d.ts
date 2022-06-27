@@ -7,7 +7,7 @@ declare namespace API {
     actualNumber?: number;
     phoneNumbers?: PhoneNumber[];
     parentId?: number;
-    parentIdCascder?: number[];
+    parentIdCascder?: string[];
     children?: Company[];
     systemPermissions?: SystemPermission[];
     systemPermissionSelectList?: SelectList[];

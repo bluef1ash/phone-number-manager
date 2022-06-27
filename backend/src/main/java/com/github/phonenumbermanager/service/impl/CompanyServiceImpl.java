@@ -47,7 +47,8 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
             companyExtraService.saveBatch(entity.getCompanyExtras());
         }
-        if (entity.getSystemPermissions() != null && !entity.getSystemPermissions().isEmpty()) {
+        if (entity.getSystemPermissions() != null && !entity.getSystemPermissions().isEmpty()
+            && entity.getSystemPermissions().get(0).getId() != 0) {
             companyPermissionMapper.insertBatchSomeColumn(entity
                 .getSystemPermissions().stream().map(systemPermission -> new CompanyPermission()
                     .setCompanyId(entity.getId()).setPermissionId(systemPermission.getId()))
@@ -65,17 +66,24 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
             throw new BusinessException("上级单位不允许选择自己或已经是下级的单位！");
         }
         boolean isSuccess = baseMapper.updateById(entity) > 0;
-        if (entity.getSystemPermissions() != null && !entity.getSystemPermissions().isEmpty()) {
+        if (entity.getSystemPermissions() != null && !entity.getSystemPermissions().isEmpty()
+            && entity.getSystemPermissions().get(0).getId() != 0) {
             companyPermissionMapper.delete(
                 new LambdaQueryWrapper<CompanyPermission>().eq(CompanyPermission::getCompanyId, entity.getId()));
             companyPermissionMapper.insertBatchSomeColumn(entity
                 .getSystemPermissions().stream().map(systemPermission -> new CompanyPermission()
                     .setCompanyId(entity.getId()).setPermissionId(systemPermission.getId()))
                 .collect(Collectors.toList()));
+        } else if (entity.getSystemPermissions().get(0).getId() == 0) {
+            companyPermissionMapper.delete(
+                new LambdaQueryWrapper<CompanyPermission>().eq(CompanyPermission::getCompanyId, entity.getId()));
         }
         if (entity.getCompanyExtras() != null && !entity.getCompanyExtras().isEmpty()) {
             entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
             companyExtraService.updateBatchById(entity.getCompanyExtras());
+        } else {
+            companyExtraService
+                .remove(new LambdaQueryWrapper<CompanyExtra>().eq(CompanyExtra::getCompanyId, entity.getId()));
         }
         if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
             companyPhoneNumberMapper.delete(

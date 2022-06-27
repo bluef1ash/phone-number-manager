@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.phonenumbermanager.mapper.DormitoryManagerMapper">
-    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="commonResultMap">
+    <resultMap type="dormitoryManager" id="commonResultMap">
         <result column="id_number" property="idNumber"/>
         <result column="gender" property="gender"/>
         <result column="birth" property="birth"/>
@@ -15,24 +15,21 @@
         <result column="subcontractor_id" property="subcontractorId"/>
         <result column="company_id" property="companyId"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="baseResultMap"
-               extends="commonResultMap">
+    <resultMap type="dormitoryManager" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="aliasResultMap"
-               extends="commonResultMap">
+    <resultMap type="dormitoryManager" id="aliasResultMap" extends="commonResultMap">
         <id column="dormitory_manager_id" property="id"/>
         <result column="dormitory_manager_name" property="name"/>
         <result column="dormitory_manager_create_time" property="createTime"/>
         <result column="dormitory_manager_update_time" property="updateTime"/>
         <result column="dormitory_manager_version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.DormitoryManager" id="collectionResultMap"
-               extends="aliasResultMap">
+    <resultMap type="dormitoryManager" id="collectionResultMap" extends="aliasResultMap">
         <association property="company"
                      resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.aliasResultMap"/>
         <association property="subcontractor"

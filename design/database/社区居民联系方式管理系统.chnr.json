@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.1.1",
   "createdTime": "2021-10-10 15:53:11",
-  "updatedTime": "2022-6-11 21:29:46",
+  "updatedTime": "2022-6-25 18:05:21",
   "profile": {
     "default": {
       "db": "AB840774-751C-47F4-AFC9-202B062E21BC",
@@ -1822,7 +1822,7 @@
           "defName": "系统用户名称",
           "comment": "",
           "type": "VARCHAR",
-          "len": 10,
+          "len": 30,
           "scale": "",
           "primaryKey": false,
           "notNull": true,

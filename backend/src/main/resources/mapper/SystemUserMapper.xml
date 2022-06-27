@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.phonenumbermanager.mapper.SystemUserMapper">
-    <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="commonResultMap">
+    <resultMap type="systemUser" id="commonResultMap">
         <result column="username" property="username"/>
         <result column="password" property="password"/>
         <result column="login_time" property="loginTime"/>
@@ -11,21 +11,21 @@
         <result column="account_expire_time" property="accountExpireTime"/>
         <result column="credential_expire_time" property="credentialExpireTime"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="baseResultMap" extends="commonResultMap">
+    <resultMap type="systemUser" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="aliasResultMap" extends="commonResultMap">
+    <resultMap type="systemUser" id="aliasResultMap" extends="commonResultMap">
         <id column="system_user_id" property="id"/>
         <result column="system_user_create_time" property="createTime"/>
         <result column="system_user_update_time" property="updateTime"/>
         <result column="system_user_version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.SystemUser" id="collectionResultMap"
+    <resultMap type="systemUser" id="collectionResultMap"
                extends="aliasResultMap">
-        <collection property="companies" ofType="com.github.phonenumbermanager.entity.Company"
+        <collection property="companies"
                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.collectionResultMap"/>
     </resultMap>
     <select id="selectCorrelationByCompanyIds" resultMap="collectionResultMap">
@@ -40,25 +40,23 @@
         pm_system_user.create_time AS 'system_user_create_time',
         pm_system_user.update_time AS 'system_user_update_time',
         pm_company.id AS 'company_id',
-        pm_company.name AS 'company_name',
+        pm_company.name AS 'company_name'
         FROM pm_system_user
         LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
         LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
         <where>
-            <if test="companyIds.size() gt 0">
-                <foreach collection="companyIds" item="companyId" separator="OR">
-                    pm_company.id = #{companyId}
-                </foreach>
-            </if>
+            <foreach collection="companyIds" item="companyId" open=" pm_company.id IN (" separator=", " close=")">
+                #{companyId}
+            </foreach>
             <if test="search != null">
-                <foreach collection="search" index="key" item="value" separator="AND" open="AND">
+                <foreach collection="search" index="key" item="value" separator=" AND " open=" AND ">
                     #{key} LIKE CONCAT('%', #{value}, '%')
                 </foreach>
             </if>
         </where>
         <if test="sort != null">
             ORDER BY
-            <foreach collection="sort" index="key" item="value" separator=",">
+            <foreach collection="sort" index="key" item="value" separator=", ">
                 CONVERT(${key} USING gbk) COLLATE gbk_chinese_ci
                 <if test="value eq 'descend'">
                     DESC
@@ -132,13 +130,13 @@
         pm_system_user.create_time AS 'system_user_create_time',
         pm_system_user.update_time AS 'system_user_update_time',
         pm_company.id AS 'company_id',
-        pm_company.name AS 'company_name',
+        pm_company.name AS 'company_name'
         FROM pm_system_user
         LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
         LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
         <where>
-            <foreach collection="companyIds" item="companyId" separator="OR">
-                pm_company.id = #{companyId}
+            <foreach collection="companyIds" item="companyId" open="pm_company.id IN (" separator=", " close=")">
+                #{companyId}
             </foreach>
         </where>
     </select>

@@ -15,6 +15,7 @@ import {
 } from '@/services/permission/api';
 import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 import SelectCascder from '@/components/SelectCascder';
+import type { HttpMethod } from '@/services/enums';
 
 const InputElement = (
   selectListState: API.SelectList[],
@@ -171,13 +172,7 @@ const SystemPermission: React.FC = () => {
   const submitPreHandler = (formData: API.SystemPermission) => {
     if (Array.isArray(formData.httpMethods) && formData.httpMethods.length > 0) {
       formData.httpMethods = formData.httpMethods.map(
-        (value) =>
-          (
-            value as {
-              //@ts-ignore
-              httpMethod: API.HttpMethod;
-            }
-          ).httpMethod,
+        (value: { httpMethod: HttpMethod }) => value.httpMethod,
       );
     }
     return formData;
@@ -266,12 +261,11 @@ const SystemPermission: React.FC = () => {
           queryData: async (id) => {
             const result = await querySystemPermission(id);
             if (Array.isArray(result.data.httpMethods)) {
-              result.data.httpMethods = result.data.httpMethods.map((httpMethod) => ({
-                httpMethod,
-              })) as {
-                //@ts-ignore
-                httpMethod: API.HttpMethod;
-              }[];
+              result.data.httpMethods = result.data.httpMethods.map(
+                (httpMethod: { httpMethod: HttpMethod }) => ({
+                  httpMethod,
+                }),
+              );
             }
             return result;
           },

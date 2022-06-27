@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.phonenumbermanager.mapper.SystemPermissionMapper">
-    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="commonResultMap">
+    <resultMap type="systemPermission" id="commonResultMap">
         <result column="function_name" property="functionName"/>
         <result column="uri" property="uri"/>
         <result column="http_methods" property="httpMethods"
@@ -11,8 +11,7 @@
         <result column="is_display" property="isDisplay"/>
         <result column="level" property="level"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="baseResultMap"
-               extends="commonResultMap">
+    <resultMap type="systemPermission" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="parent_id" property="parentId"/>
@@ -20,8 +19,7 @@
         <result column="update_time" property="updateTime"/>
         <result column="version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="aliasResultMap"
-               extends="commonResultMap">
+    <resultMap type="systemPermission" id="aliasResultMap" extends="commonResultMap">
         <id column="permission_id" property="id"/>
         <result column="permission_name" property="name"/>
         <result column="permission_parent_id" property="parentId"/>
@@ -29,9 +27,8 @@
         <result column="permission_update_time" property="updateTime"/>
         <result column="permission_version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.SystemPermission" id="correlationResultMap"
-               extends="aliasResultMap">
-        <collection property="companies" ofType="com.github.phonenumbermanager.entity.Company"
+    <resultMap type="systemPermission" id="correlationResultMap" extends="aliasResultMap">
+        <collection property="companies"
                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.aliasResultMap"/>
     </resultMap>
     <select id="selectListByCompanyIds" resultMap="correlationResultMap">

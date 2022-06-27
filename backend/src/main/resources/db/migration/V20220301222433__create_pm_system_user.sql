@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS pm_system_user;
 CREATE TABLE pm_system_user (
     id                     BIGINT UNSIGNED      NOT NULL COMMENT '系统用户编号',
-    username               VARCHAR(10)          NOT NULL DEFAULT '' COMMENT '系统用户名称',
+    username               VARCHAR(30)          NOT NULL DEFAULT '' COMMENT '系统用户名称',
     password               CHAR(88)             NOT NULL DEFAULT '' COMMENT '系统用户密码',
     login_ip               VARCHAR(15)          NOT NULL DEFAULT '' COMMENT '最后一次登录的IP地址',
     login_time             DATETIME             NOT NULL COMMENT '最后一次登录的时间',

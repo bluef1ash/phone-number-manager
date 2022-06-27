@@ -123,7 +123,11 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
           }}
         >
           {' '}
-          <UserForm companySelectList={companySelectState}  setCompanySelectList={setCompanySelectState}/>{' '}
+          <UserForm
+            companySelectList={companySelectState}
+            setCompanySelectList={setCompanySelectState}
+            isCreate={false}
+          />{' '}
         </EditModalForm>{' '}
       </Menu.Item>{' '}
       <Menu.Divider />{' '}
@@ -136,7 +140,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
   return (
     <HeaderDropdown overlay={menuHeaderDropdown}>
       <span className={`${styles.action} ${styles.account}`}>
-        <Avatar size="small" className={styles.avatar}  icon={<UserOutlined />} />
+        <Avatar size="small" className={styles.avatar} icon={<UserOutlined />} />
         <span className={`${styles.name} anticon`}>{initialState.currentUser.username}</span>
       </span>
     </HeaderDropdown>

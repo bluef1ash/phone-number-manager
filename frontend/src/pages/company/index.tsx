@@ -17,6 +17,7 @@ import { getCompanyParentIds, submitPrePhoneNumberHandle } from '@/services/util
 import { querySystemPermissionSelectList } from '@/services/permission/api';
 import PhoneNumberList from '@/components/PhoneNumberList';
 import SelectCascder from '@/components/SelectCascder';
+import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 
 const InputElement = (
   selectListState: API.SelectList[],
@@ -180,6 +181,19 @@ const InputElement = (
       cascaderFieldProps={{
         multiple: true,
       }}
+      rules={[
+        {
+          required: true,
+          message: '请选择单位所属权限！',
+        },
+        {
+          validator(rule: RuleObject, value: StoreValue) {
+            return value.length > 1 && value.some((item: any[]) => item[0] === 0)
+              ? Promise.reject('单位所属权限不能同时选择系统权限和无权限！')
+              : Promise.resolve();
+          },
+        },
+      ]}
     />{' '}
   </>
 );
@@ -192,12 +206,14 @@ const Company: React.FC = () => {
   const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>([]);
 
   const submitPreHandler = (formData: API.Company) => {
-    formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
-      submitPrePhoneNumberHandle(value.phoneNumber as string),
+    formData.phoneNumbers = formData.phoneNumbers?.map((value: { phoneNumber: string }) =>
+      submitPrePhoneNumberHandle(value.phoneNumber),
     );
-    formData.systemPermissions = formData.systemPermissionSelectList?.map((value) => ({
-      id: value[0],
-    }));
+    formData.systemPermissions = formData.systemPermissionSelectList?.map(
+      (value: API.SelectList[]) => ({
+        id: value[0],
+      }),
+    );
     if (typeof formData.parentIdCascder !== 'undefined') {
       formData.parentId = formData.parentIdCascder[0];
     }
@@ -240,7 +256,7 @@ const Company: React.FC = () => {
               return (
                 <>
                   {entity.phoneNumbers?.map(
-                    (phoneNumber, index) =>
+                    (phoneNumber: { phoneNumber: string | number }, index: number) =>
                       phoneNumber.phoneNumber +
                       (index + 1 == entity.phoneNumbers?.length ? '' : '，'),
                   )}
@@ -284,20 +300,24 @@ const Company: React.FC = () => {
           onConfirmRemove: async (id) => await removeCompany(id),
           queryData: async (id) => {
             const result = await queryCompany(id);
-            result.data.systemPermissionSelectList = result.data.systemPermissions?.map(
-              (systemPermission) => ({
-                value: systemPermission.id,
-                label: systemPermission.name,
-              }),
-            );
+            if (
+              result.data.systemPermissions === null ||
+              result.data.systemPermissions.length === 0
+            ) {
+              result.data.systemPermissionSelectList = [[0]];
+            } else {
+              result.data.systemPermissionSelectList = result.data.systemPermissions?.map(
+                (systemPermission: { id: number; name: string }) => [systemPermission.id],
+              );
+            }
             if (typeof result.data.parentId !== 'undefined') {
-              result.data.parentIdCascder = [result.data.parentId];
+              result.data.parentIdCascder = [result.data.parentId.toString()];
             }
             return result;
           },
         }}
         onLoad={async () => {
-          let list: API.SelectList[] = [
+          const list: API.SelectList[] = [
             {
               label: '无',
               title: '无',
@@ -305,13 +325,8 @@ const Company: React.FC = () => {
             },
           ];
           const parentIds = getCompanyParentIds();
-          const companySelect = (await queryCompanySelectList(parentIds)).data;
-          if (companySelect.length > 0) {
-            list = [...list, ...companySelect];
-          }
-          setSelectListState(list);
-          const systemPermissionBases = (await querySystemPermissionSelectList([0])).data;
-          setSystemPermissionState(systemPermissionBases);
+          setSelectListState([...list, ...(await queryCompanySelectList(parentIds)).data]);
+          setSystemPermissionState([...list, ...(await querySystemPermissionSelectList([0])).data]);
         }}
       />{' '}
     </MainPageContainer>

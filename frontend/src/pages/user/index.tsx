@@ -133,7 +133,7 @@ const SystemUser: React.FC = () => {
                 typeof record.companies !== 'undefined' &&
                 record.companies.length > 0
               ) {
-                name = record.companies.map((company) => company.name).join('，');
+                name = record.companies.map((company: { name: string }) => company.name).join('，');
               }
               return name;
             },
@@ -162,6 +162,7 @@ const SystemUser: React.FC = () => {
             <UserForm
               companySelectList={companySelectState}
               setCompanySelectList={setCompanySelectState}
+              isCreate={true}
             />
           ),
           props: {
@@ -175,6 +176,7 @@ const SystemUser: React.FC = () => {
             <UserForm
               companySelectList={companySelectState}
               setCompanySelectList={setCompanySelectState}
+              isCreate={false}
             />
           ),
           props: {
@@ -187,7 +189,7 @@ const SystemUser: React.FC = () => {
           queryData: async (id) => {
             const result = await querySystemUser(id);
             const companies = result.data.companies;
-            result.data.companyIds = companies?.map((company) => company.id);
+            result.data.companyIds = companies?.map((company: { id: number }) => company.id);
             return result;
           },
         }}

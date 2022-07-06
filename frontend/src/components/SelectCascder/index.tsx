@@ -62,7 +62,7 @@ const SelectCascder: React.FC<SelectCascderProps> = ({
         ...cascaderFieldProps,
       }}
       rules={[
-        typeof requiredMessage === 'undefined'
+        typeof requiredMessage !== 'undefined'
           ? {
               required: true,
               message: requiredMessage,

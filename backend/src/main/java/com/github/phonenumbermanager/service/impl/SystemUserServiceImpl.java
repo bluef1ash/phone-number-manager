@@ -215,12 +215,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         String personCountAlias) {
         List<Company> companyList = new ArrayList<>();
         List<Long> subordinateCompanyIds = new ArrayList<>();
-        for (Long companyId : frontendUserRequestCompanyHandle(companies, companyAll, companyIds)) {
-            subordinateCompanyIds.addAll(CommonUtil.listRecursionCompanies(companyAll, companyId).stream()
-                .map(Company::getId).collect(Collectors.toList()));
-            companyList.addAll(companyAll.stream().filter(company -> companyId.equals(company.getParentId()))
-                .collect(Collectors.toList()));
-        }
+        companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
         Map<String, Object> barChartMap;
         if (subordinateCompanyIds.isEmpty()) {
             List<Map<String, Object>> systemUserCounts = baseMapper.selectCorrelationCountByCompanyIds(companyIds);

@@ -101,12 +101,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         String personCountAlias) {
         List<Company> companyList = new ArrayList<>();
         List<Long> subordinateCompanyIds = new ArrayList<>();
-        for (Long companyId : frontendUserRequestCompanyHandle(companies, companyAll, companyIds)) {
-            subordinateCompanyIds.addAll(CommonUtil.listRecursionCompanies(companyAll, companyId).stream()
-                .map(Company::getId).collect(Collectors.toList()));
-            companyList.addAll(companyAll.stream().filter(company -> companyId.equals(company.getParentId()))
-                .collect(Collectors.toList()));
-        }
+        companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
         return barChartHandle(companyAll, personCountAlias, companyList, subordinateCompanyIds);
     }
 
@@ -316,5 +311,29 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         Map<String, Object> barChart = getBarChartMap("companyName", "单位", "personCount", personCountAlias);
         barChart.put("data", data);
         return barChart;
+    }
+
+    /**
+     * 获取单位集合与下级单位编号集合
+     *
+     * @param companies
+     *            用户所属单位
+     * @param companyIds
+     *            要查找的单位编号数组
+     * @param companyAll
+     *            所有单位集合
+     * @param companyList
+     *            需要返回的单位集合
+     * @param subordinateCompanyIds
+     *            需要返回的下级单位编号集合
+     */
+    protected void companiesAndSubordinate(List<Company> companies, Long[] companyIds, List<Company> companyAll,
+        List<Company> companyList, List<Long> subordinateCompanyIds) {
+        for (Long companyId : frontendUserRequestCompanyHandle(companies, companyAll, companyIds)) {
+            subordinateCompanyIds.addAll(CommonUtil.listRecursionCompanies(companyAll, companyId).stream()
+                .map(Company::getId).collect(Collectors.toList()));
+            companyList.addAll(companyAll.stream().filter(company -> companyId.equals(company.getParentId()))
+                .collect(Collectors.toList()));
+        }
     }
 }

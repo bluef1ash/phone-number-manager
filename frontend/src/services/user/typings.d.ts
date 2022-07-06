@@ -9,6 +9,6 @@ declare namespace API {
     accountExpireTime?: Date;
     credentialExpireTime?: Date;
     companies?: Company[];
-    companyIds?: number[];
+    companyIds?: number[][];
   };
 }

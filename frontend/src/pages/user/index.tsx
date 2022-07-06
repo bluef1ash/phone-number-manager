@@ -58,6 +58,12 @@ const SystemUser: React.FC = () => {
             sorter: true,
             ellipsis: true,
             search: false,
+            render(text, record) {
+              if (record.loginTime === '1000-01-01 00:00:00') {
+                return '未登录';
+              }
+              return record.loginTime;
+            },
           },
           {
             title: '系统用户登录IP地址',
@@ -70,27 +76,29 @@ const SystemUser: React.FC = () => {
             dataIndex: 'isLocked',
             sorter: true,
             ellipsis: true,
-            render: (dom, systemUser) => (
-              <Switch
-                checked={systemUser.isLocked}
-                onChange={async (checked) => {
-                  const { code, message } = await patchSystemUser(systemUser.id as number, {
-                    id: systemUser.id,
-                    isLocked: checked,
-                  });
-                  if (code === 200) {
-                    systemUser.isLocked = checked;
-                    let lockedString = '解锁';
-                    if (checked) {
-                      lockedString = '锁定';
+            render(text, record) {
+              return (
+                <Switch
+                  checked={record.isLocked}
+                  onChange={async (checked) => {
+                    const { code, message } = await patchSystemUser(record.id, {
+                      id: record.id,
+                      isLocked: checked,
+                    });
+                    if (code === 200) {
+                      record.isLocked = checked;
+                      let lockedString = '解锁';
+                      if (checked) {
+                        lockedString = '锁定';
+                      }
+                      msg.success(lockedString + '成功！');
+                    } else {
+                      msg.error(message);
                     }
-                    msg.success(lockedString + '成功！');
-                  } else {
-                    msg.error(message);
-                  }
-                }}
-              />
-            ),
+                  }}
+                />
+              );
+            },
             search: false,
           },
           {
@@ -188,13 +196,29 @@ const SystemUser: React.FC = () => {
           onConfirmRemove: async (id) => await removeSystemUser(id),
           queryData: async (id) => {
             const result = await querySystemUser(id);
-            const companies = result.data.companies;
-            result.data.companyIds = companies?.map((company: { id: number }) => company.id);
+            if (
+              typeof result.data.companies !== 'undefined' &&
+              result.data.companies !== null &&
+              result.data.companies.length > 0
+            ) {
+              result.data.companyIds = result.data.companies.map((company: { id: number }) => [
+                company.id,
+              ]);
+            } else {
+              result.data.companyIds = [[0]];
+            }
             return result;
           },
         }}
         onLoad={async () =>
-          setCompanySelectState((await queryCompanySelectList(getCompanyParentIds())).data)
+          setCompanySelectState([
+            {
+              label: '无',
+              title: '无',
+              value: 0,
+            },
+            ...(await queryCompanySelectList(getCompanyParentIds())).data,
+          ])
         }
       />{' '}
     </MainPageContainer>

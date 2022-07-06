@@ -3,6 +3,7 @@ import type { ProFormProps } from '@ant-design/pro-form';
 import { ProFormSwitch, ProFormText } from '@ant-design/pro-form';
 import SelectCascder from '@/components/SelectCascder';
 import { queryCompanySelectList } from '@/services/company/api';
+import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 
 export type UserFormProps = {
   companySelectList: API.SelectList[];
@@ -12,7 +13,7 @@ export type UserFormProps = {
 
 export const UserFormSubmitPreHandler = (formData: API.SystemUser) => {
   if (typeof formData.companyIds !== 'undefined') {
-    formData.companies = formData.companyIds.map((id: number) => ({ id }));
+    formData.companies = formData.companyIds.map((id: number[]) => ({ id: id[id.length - 1] }));
   }
   return formData;
 };
@@ -77,19 +78,21 @@ const UserForm: React.FC<UserFormProps> = ({
           min: 6,
           message: '系统用户密码不能少于6个字符！',
         },
-        ({ getFieldValue }) => ({
-          validator: (rules, value) =>
-            getFieldValue('password') === value
-              ? Promise.resolve()
-              : Promise.reject('两次密码输入不一致'),
-        }),
+        isCreate
+          ? ({ getFieldValue }) => ({
+              validator: (rules, value) =>
+                getFieldValue('password') === value
+                  ? Promise.resolve()
+                  : Promise.reject('两次密码输入不一致'),
+            })
+          : {},
       ]}
     />{' '}
     <ProFormSwitch name="isLocked" label="系统用户是否被锁定" initialValue={false} />{' '}
     <ProFormSwitch name="isEnabled" label="系统用户是否启用" initialValue={true} />{' '}
     <SelectCascder
       width="xl"
-      name="companyId"
+      name="companyIds"
       label="系统用户所属单位"
       querySelectList={async (value) => (await queryCompanySelectList([value])).data}
       selectState={companySelectList}
@@ -99,7 +102,17 @@ const UserForm: React.FC<UserFormProps> = ({
           required: true,
           message: '请选择系统用户所属单位！',
         },
+        {
+          validator(rule: RuleObject, value: StoreValue) {
+            return value.length > 1 && value.some((item: any[]) => item[0] === 0)
+              ? Promise.reject('所属单位不能同时选择单位和无单位！')
+              : Promise.resolve();
+          },
+        },
       ]}
+      cascaderFieldProps={{
+        multiple: true,
+      }}
     />{' '}
   </>
 );

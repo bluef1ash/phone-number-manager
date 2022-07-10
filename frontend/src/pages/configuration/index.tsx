@@ -60,6 +60,10 @@ const InputElement = (
           max: 100,
           message: '系统配置变量名称不能超过100个字符！',
         },
+        {
+          pattern: /^\w+$/g,
+          message: '系统配置变量名称只能输入英文和数字！',
+        },
       ]}
     />{' '}
     <ProFormText

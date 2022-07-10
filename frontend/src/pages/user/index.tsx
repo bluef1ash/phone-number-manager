@@ -205,7 +205,7 @@ const SystemUser: React.FC = () => {
                 company.id,
               ]);
             } else {
-              result.data.companyIds = [[0]];
+              result.data.companyIds = [['0']];
             }
             return result;
           },
@@ -215,7 +215,7 @@ const SystemUser: React.FC = () => {
             {
               label: '无',
               title: '无',
-              value: 0,
+              value: '0',
             },
             ...(await queryCompanySelectList(getCompanyParentIds())).data,
           ])

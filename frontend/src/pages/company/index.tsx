@@ -311,7 +311,7 @@ const Company: React.FC = () => {
               );
             }
             if (typeof result.data.parentId !== 'undefined') {
-              result.data.parentIdCascder = [result.data.parentId.toString()];
+              result.data.parentIdCascder = [[result.data.parentId]];
             }
             return result;
           },
@@ -321,7 +321,7 @@ const Company: React.FC = () => {
             {
               label: '无',
               title: '无',
-              value: 0,
+              value: '0',
             },
           ];
           const parentIds = getCompanyParentIds();

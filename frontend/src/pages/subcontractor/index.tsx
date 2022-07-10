@@ -232,7 +232,7 @@ const Subcontractor: React.FC = () => {
             {
               label: '无',
               title: '无',
-              value: 0,
+              value: '0',
             },
           ];
           const parentIds = getCompanyParentIds();

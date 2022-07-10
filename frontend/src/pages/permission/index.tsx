@@ -274,7 +274,7 @@ const SystemPermission: React.FC = () => {
           let list: API.SelectList[] = [
             {
               title: '顶级权限',
-              value: 0,
+              value: '0',
               level: 0,
             },
           ];

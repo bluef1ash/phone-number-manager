@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.1.1",
   "createdTime": "2021-10-10 15:53:11",
-  "updatedTime": "2022-6-25 18:05:21",
+  "updatedTime": "2022-7-10 18:02:22",
   "profile": {
     "default": {
       "db": "AB840774-751C-47F4-AFC9-202B062E21BC",
@@ -2350,20 +2350,6 @@
           "domain": "",
           "id": "6C2B89AC-D132-4728-B0FF-D9688BECF0F5",
           "uiHint": "65B3A8DC-7BD6-4849-B839-0B3655A55A44"
-        },
-        {
-          "defKey": "level",
-          "defName": "系统用户权限层级",
-          "comment": "0：最顶层，依次递增",
-          "type": "TINYINT(2) UNSIGNED",
-          "len": "",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "0",
-          "hideInGraph": false,
-          "id": "7667E9BC-CD0A-43F0-A148-EA5AF64A31E6"
         },
         {
           "defKey": "parent_id",

@@ -57,10 +57,6 @@ public class SystemPermission extends BaseEntity<SystemPermission> {
     @ApiModelProperty("系统权限方式")
     @TableField(typeHandler = JacksonTypeHandler.class)
     private HttpMethod[] httpMethods;
-    @ApiModelProperty("系统权限层级编号")
-    @NotNull(groups = CreateInputGroup.class, message = "系统权限层级编号不能为空！")
-    @Min(value = 0, message = "系统权限层级编号不正确！")
-    private Integer level;
     @ApiModelProperty("系统权限上级编号")
     @NotNull(groups = CreateInputGroup.class, message = "系统权限上级编号不能为空！")
     @Min(value = 0, message = "系统权限上级编号不正确！")

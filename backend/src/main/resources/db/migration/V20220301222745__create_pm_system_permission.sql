@@ -5,7 +5,6 @@ CREATE TABLE pm_system_permission (
     function_name VARCHAR(255)         NOT NULL DEFAULT '' COMMENT '系统用户权限约束描述',
     uri           VARCHAR(100)         NOT NULL DEFAULT '' COMMENT '访问URI地址',
     http_methods  VARCHAR(50)          NOT NULL DEFAULT '' COMMENT '方法类型;可有多个',
-    level         TINYINT(2) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '系统用户权限层级;0：最顶层，依次递增',
     parent_id     BIGINT UNSIGNED      NOT NULL DEFAULT 0 COMMENT '上级系统用户权限编号',
     order_by      TINYINT(3) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单排序',
     menu_type     TINYINT(1) UNSIGNED  NOT NULL DEFAULT 0 COMMENT '菜单类型;0：全部，1：前端，2：后端',

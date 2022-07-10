@@ -98,9 +98,9 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeById(Serializable id) {
-        return companyPermissionMapper
-            .delete(new LambdaQueryWrapper<CompanyPermission>().eq(CompanyPermission::getPermissionId, id)) > 0
-            && baseMapper.deleteById(id) > 0;
+        companyPermissionMapper
+            .delete(new LambdaQueryWrapper<CompanyPermission>().eq(CompanyPermission::getPermissionId, id));
+        return baseMapper.deleteById(id) > 0;
     }
 
     @Override

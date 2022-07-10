@@ -21,6 +21,7 @@ const InputElement = (
   selectListState: API.SelectList[],
   setSelectListState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
   formRef: React.MutableRefObject<ProFormInstance<API.SystemPermission> | undefined>,
+  modifyId?: number,
 ) => (
   <>
     <ProFormText
@@ -80,7 +81,7 @@ const InputElement = (
           validator(rule: RuleObject, value: StoreValue) {
             const httpMethods = formRef?.current?.getFieldValue('httpMethods');
             return typeof httpMethods !== 'undefined' &&
-              httpMethods.length > 0 &&
+              httpMethods !== null &&
               (typeof value === 'undefined' || value.length == 0)
               ? Promise.reject('系统权限地址不能为空！')
               : Promise.resolve();
@@ -122,36 +123,50 @@ const InputElement = (
         width="xl"
         label="系统权限方式"
         valueEnum={{
-          GET: 'GET',
-          HEAD: 'HEAD',
-          POST: 'POST',
-          PUT: 'PUT',
-          PATCH: 'PATCH',
-          DELETE: 'DELETE',
-          OPTIONS: 'OPTIONS',
-          TRACE: 'TRACE',
+          0: 'GET',
+          1: 'HEAD',
+          2: 'POST',
+          3: 'PUT',
+          4: 'PATCH',
+          5: 'DELETE',
+          6: 'OPTIONS',
+          7: 'TRACE',
         }}
         placeholder="请选择"
       />{' '}
     </ProFormList>{' '}
     <SelectCascder
       width="xl"
-      name="parentId"
-      label="系统权限上级编号"
+      name="parentIdCascder"
+      label="系统权限上级权限"
       querySelectList={async (value) => (await querySystemPermissionSelectList([value])).data}
       selectState={selectListState}
       setSelectState={setSelectListState}
+      rules={[
+        {
+          required: true,
+          message: '请选择系统权限上级权限！',
+        },
+        {
+          validator(rule: RuleObject, value: StoreValue) {
+            return typeof modifyId !== 'undefined' &&
+              modifyId !== 0 &&
+              modifyId.toString() === value[value.length - 1]
+              ? Promise.reject('上级权限不能为自身！')
+              : Promise.resolve();
+          },
+        },
+      ]}
     />{' '}
     <ProFormSelect
       width="xl"
       name="menuType"
       label="系统权限菜单类型"
       valueEnum={{
-        ALL: '全部',
-        FRONTEND: '前端',
-        BACKEND: '后端',
+        0: '全部',
+        1: '前端',
+        2: '后端',
       }}
-      placeholder="请选择"
       rules={[
         {
           required: true,
@@ -168,12 +183,16 @@ const SystemPermission: React.FC = () => {
   const createFormRef = useRef<ProFormInstance<API.SystemPermission>>();
   const modifyFormRef = useRef<ProFormInstance<API.SystemPermission>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
+  const [modifyIdState, setModifyIdState] = useState<number>(0);
 
   const submitPreHandler = (formData: API.SystemPermission) => {
     if (Array.isArray(formData.httpMethods) && formData.httpMethods.length > 0) {
       formData.httpMethods = formData.httpMethods.map(
         (value: { httpMethod: HttpMethod }) => value.httpMethod,
       );
+    }
+    if (typeof formData.parentIdCascder !== 'undefined') {
+      formData.parentId = formData.parentIdCascder[formData.parentIdCascder.length - 1];
     }
     return formData;
   };
@@ -250,7 +269,7 @@ const SystemPermission: React.FC = () => {
           onFinish: async (formData) => await createSystemPermission(submitPreHandler(formData)),
         }}
         modifyEditModalForm={{
-          element: InputElement(selectListState, setSelectListState, modifyFormRef),
+          element: InputElement(selectListState, setSelectListState, modifyFormRef, modifyIdState),
           props: {
             title: '编辑系统权限',
           },
@@ -267,13 +286,18 @@ const SystemPermission: React.FC = () => {
                 }),
               );
             }
+            if (typeof result.data.parentId !== 'undefined') {
+              result.data.parentIdCascder = [[result.data.parentId]];
+            }
+            result.data.menuType = result.data.menuType.toString();
+            setModifyIdState(id);
             return result;
           },
         }}
         onLoad={async () => {
           let list: API.SelectList[] = [
             {
-              title: '顶级权限',
+              label: '顶级权限',
               value: '0',
               level: 0,
             },

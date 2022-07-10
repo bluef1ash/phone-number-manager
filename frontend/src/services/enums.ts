@@ -49,20 +49,20 @@ export enum EducationStatusEnum {
 }
 
 export enum HttpMethod {
-  GET = 'GET',
-  HEAD = 'HEAD',
-  POST = 'POST',
-  PUT = 'PUT',
-  PATCH = 'PATCH',
-  DELETE = 'DELETE',
-  OPTIONS = 'OPTIONS',
-  TRACE = 'TRACE',
+  GET,
+  HEAD,
+  POST,
+  PUT,
+  PATCH,
+  DELETE,
+  OPTIONS,
+  TRACE,
 }
 
 export enum MenuTypeEnum {
-  ALL = 'ALL',
-  FRONTEND = 'FRONTEND',
-  BACKEND = 'BACKEND',
+  ALL,
+  FRONTEND,
+  BACKEND,
 }
 
 export enum FieldTypeEnum {

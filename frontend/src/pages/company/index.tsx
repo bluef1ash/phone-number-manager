@@ -24,6 +24,7 @@ const InputElement = (
   setSelectListState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
   systemPermissionState: API.SelectList[],
   setSystemPermissionState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+  modifyId?: number,
 ) => (
   <>
     <ProFormText
@@ -54,6 +55,15 @@ const InputElement = (
         {
           required: true,
           message: '请选择上级单位！',
+        },
+        {
+          validator(rule: RuleObject, value: StoreValue) {
+            return typeof modifyId !== 'undefined' &&
+              modifyId !== 0 &&
+              modifyId.toString() === value[value.length - 1]
+              ? Promise.reject('上级编号不能为自身！')
+              : Promise.resolve();
+          },
         },
       ]}
     />{' '}
@@ -204,6 +214,7 @@ const Company: React.FC = () => {
   const modifyFormRef = useRef<ProFormInstance<API.Company>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
   const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>([]);
+  const [modifyIdState, setModifyIdState] = useState<number>(0);
 
   const submitPreHandler = (formData: API.Company) => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value: { phoneNumber: string }) =>
@@ -215,7 +226,7 @@ const Company: React.FC = () => {
       }),
     );
     if (typeof formData.parentIdCascder !== 'undefined') {
-      formData.parentId = formData.parentIdCascder[0];
+      formData.parentId = formData.parentIdCascder[formData.parentIdCascder.length - 1];
     }
     return formData;
   };
@@ -290,6 +301,7 @@ const Company: React.FC = () => {
             setSelectListState,
             systemPermissionState,
             setSystemPermissionState,
+            modifyIdState,
           ),
           props: {
             title: '编辑单位',
@@ -304,7 +316,7 @@ const Company: React.FC = () => {
               result.data.systemPermissions === null ||
               result.data.systemPermissions.length === 0
             ) {
-              result.data.systemPermissionSelectList = [[0]];
+              result.data.systemPermissionSelectList = [['0']];
             } else {
               result.data.systemPermissionSelectList = result.data.systemPermissions?.map(
                 (systemPermission: { id: number; name: string }) => [systemPermission.id],
@@ -313,6 +325,7 @@ const Company: React.FC = () => {
             if (typeof result.data.parentId !== 'undefined') {
               result.data.parentIdCascder = [[result.data.parentId]];
             }
+            setModifyIdState(id);
             return result;
           },
         }}

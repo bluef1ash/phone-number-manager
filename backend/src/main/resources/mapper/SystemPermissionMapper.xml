@@ -9,7 +9,6 @@
         <result column="order_by" property="orderBy"/>
         <result column="menu_type" property="menuType"/>
         <result column="is_display" property="isDisplay"/>
-        <result column="level" property="level"/>
     </resultMap>
     <resultMap type="systemPermission" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>
@@ -37,7 +36,6 @@
         pm_system_permission.function_name,
         pm_system_permission.uri,
         pm_system_permission.http_methods,
-        pm_system_permission.level,
         pm_system_permission.parent_id AS 'permission_parent_id',
         pm_system_permission.order_by,
         pm_system_permission.menu_type,
@@ -64,7 +62,6 @@
             pm_system_permission.function_name,
             pm_system_permission.uri,
             pm_system_permission.http_methods,
-            pm_system_permission.level,
             pm_system_permission.parent_id AS 'permission_parent_id',
             pm_system_permission.order_by,
             pm_system_permission.menu_type,
@@ -81,7 +78,6 @@
             pm_system_permission.function_name,
             pm_system_permission.uri,
             pm_system_permission.http_methods,
-            pm_system_permission.level,
             pm_system_permission.parent_id AS 'permission_parent_id',
             pm_system_permission.menu_type,
             pm_company_permission.company_id
@@ -94,7 +90,6 @@
         pm_system_permission.function_name,
         pm_system_permission.uri,
         pm_system_permission.http_methods,
-        pm_system_permission.level,
         pm_system_permission.parent_id AS 'permission_parent_id',
         pm_system_permission.order_by,
         pm_system_permission.menu_type,

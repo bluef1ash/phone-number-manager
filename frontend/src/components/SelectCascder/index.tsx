@@ -46,16 +46,10 @@ const SelectCascder: React.FC<SelectCascderProps> = ({
     setSelectState([...selectState]);
   };
   return typeof isNotProForm !== 'undefined' && isNotProForm ? (
-    <Cascader
-      options={selectState}
-      loadData={loadData}
-      placeholder="请选择"
-      {...cascaderFieldProps}
-    />
+    <Cascader options={selectState} loadData={loadData} {...cascaderFieldProps} />
   ) : (
     <ProFormCascader
       width="xl"
-      placeholder="请选择"
       fieldProps={{
         options: selectState,
         loadData,

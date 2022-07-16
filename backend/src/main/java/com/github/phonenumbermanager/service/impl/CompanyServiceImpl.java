@@ -101,8 +101,10 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Override
     public IPage<Company> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
         JSONObject search, JSONObject sort) {
-        IPage<Company> companyPage =
-            baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
+        Page<Company> page = new Page<>(pageNumber, pageDataSize);
+        page.setSearchCount(false);
+        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companies, search, sort));
+        IPage<Company> companyPage = baseMapper.selectCorrelationByCompanies(page, companies, search, sort);
         if (companyPage != null && companyPage.getTotal() > 0) {
             List<Company> companyAll = baseMapper.selectList(null);
             if (companies == null) {

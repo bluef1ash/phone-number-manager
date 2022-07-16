@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -132,7 +132,6 @@ const InputElement = (
           6: 'OPTIONS',
           7: 'TRACE',
         }}
-        placeholder="请选择"
       />{' '}
     </ProFormList>{' '}
     <SelectCascder
@@ -184,6 +183,23 @@ const SystemPermission: React.FC = () => {
   const modifyFormRef = useRef<ProFormInstance<API.SystemPermission>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
   const [modifyIdState, setModifyIdState] = useState<number>(0);
+
+  useEffect(() => {
+    (async () => {
+      let list: API.SelectList[] = [
+        {
+          label: '顶级权限',
+          value: '0',
+          level: 0,
+        },
+      ];
+      const data = (await querySystemPermissionSelectList([0]))?.data;
+      if (data && data.length > 0) {
+        list = [...list, ...data];
+      }
+      setSelectListState(list);
+    })();
+  }, []);
 
   const submitPreHandler = (formData: API.SystemPermission) => {
     if (Array.isArray(formData.httpMethods) && formData.httpMethods.length > 0) {
@@ -293,20 +309,6 @@ const SystemPermission: React.FC = () => {
             setModifyIdState(id);
             return result;
           },
-        }}
-        onLoad={async () => {
-          let list: API.SelectList[] = [
-            {
-              label: '顶级权限',
-              value: '0',
-              level: 0,
-            },
-          ];
-          const data = (await querySystemPermissionSelectList([0]))?.data;
-          if (data && data.length > 0) {
-            list = [...list, ...data];
-          }
-          setSelectListState(list);
         }}
       />{' '}
     </MainPageContainer>

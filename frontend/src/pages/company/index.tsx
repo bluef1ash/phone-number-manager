@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -216,6 +216,21 @@ const Company: React.FC = () => {
   const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>([]);
   const [modifyIdState, setModifyIdState] = useState<number>(0);
 
+  useEffect(() => {
+    (async () => {
+      const list: API.SelectList[] = [
+        {
+          label: '无',
+          title: '无',
+          value: '0',
+        },
+      ];
+      const parentIds = getCompanyParentIds();
+      setSelectListState([...list, ...(await queryCompanySelectList(parentIds)).data]);
+      setSystemPermissionState([...list, ...(await querySystemPermissionSelectList([0])).data]);
+    })();
+  }, []);
+
   const submitPreHandler = (formData: API.Company) => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value: { phoneNumber: string }) =>
       submitPrePhoneNumberHandle(value.phoneNumber),
@@ -328,18 +343,6 @@ const Company: React.FC = () => {
             setModifyIdState(id);
             return result;
           },
-        }}
-        onLoad={async () => {
-          const list: API.SelectList[] = [
-            {
-              label: '无',
-              title: '无',
-              value: '0',
-            },
-          ];
-          const parentIds = getCompanyParentIds();
-          setSelectListState([...list, ...(await queryCompanySelectList(parentIds)).data]);
-          setSystemPermissionState([...list, ...(await querySystemPermissionSelectList([0])).data]);
         }}
       />{' '}
     </MainPageContainer>

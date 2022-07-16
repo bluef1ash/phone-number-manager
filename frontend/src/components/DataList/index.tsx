@@ -153,7 +153,10 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
         if (Object.keys(searchParams).length > 0) {
           const search: ParamsType = {};
           for (const searchParam in searchParams) {
-            if (typeof searchParams[searchParam] !== 'object') {
+            if (
+              typeof searchParams[searchParam] !== 'object' ||
+              isArray(searchParams[searchParam])
+            ) {
               search[searchParam] = searchParams[searchParam];
             } else {
               for (const searchParamKey in searchParams[searchParam]) {
@@ -192,9 +195,6 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
       rowKey="id"
       search={{
         labelWidth: 'auto',
-      }}
-      pagination={{
-        pageSize: 10,
       }}
       form={{
         syncToUrl: false,

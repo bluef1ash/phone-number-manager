@@ -70,19 +70,39 @@
         FROM pm_company
         LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
         LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <select id="selectCorrelationCountByCompanies" resultType="long">
+        SELECT COUNT(DISTINCT pm_company.id)
+        FROM pm_company
+        LEFT JOIN pm_company_phone_number ON pm_company.id = pm_company_phone_number.company_id
+        LEFT JOIN pm_phone_number ON pm_company_phone_number.phone_number_id = pm_phone_number.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <sql id="selectCorrelationSearch">
         <where>
             <if test="companies != null and companies.size() > 0">
                 <foreach collection="companies" item="company" separator="OR">
-                    pm_company.id = #{company.id} OR pm_company.parent_id = #{company.id}
+                    (pm_company.id = #{company.id} OR pm_company.parent_id = #{company.id})
                 </foreach>
             </if>
             <if test="search != null">
                 <foreach collection="search" index="key" item="value" separator="AND" open="AND">
+                    (
                     <choose>
                         <when test="key eq 'name'">pm_company.name</when>
                         <when test="key eq 'phoneNumbers'">pm_phone_number.phone_number</when>
                     </choose>
                     LIKE CONCAT('%', #{value}, '%')
+                    )
                 </foreach>
             </if>
         </where>
@@ -95,5 +115,5 @@
                 </if>
             </foreach>
         </if>
-    </select>
+    </sql>
 </mapper>

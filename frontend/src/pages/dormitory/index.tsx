@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -8,7 +8,6 @@ import {
   ProFormDigit,
   ProFormSelect,
   ProFormText,
-  ProFormTreeSelect,
 } from '@ant-design/pro-form';
 import {
   batchDormitoryManager,
@@ -19,7 +18,6 @@ import {
   queryDormitoryManagerList,
   removeDormitoryManager,
 } from '@/services/dormitory/api';
-import { queryCompanySelectList } from '@/services/company/api';
 import {
   downloadExcelFile,
   getCompanyParentIds,
@@ -28,13 +26,13 @@ import {
 import { message, Spin, Upload } from 'antd';
 import { dormitoryManagerImportExcel } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
-import { querySystemUserSelectList } from '@/services/user/api';
 import PhoneNumberList from '@/components/PhoneNumberList';
 import SelectCascder from '@/components/SelectCascder';
+import { querySubcontractorSelectList } from '@/services/subcontractor/api';
 
 const InputElement = (
-  systemUsersSelectState: API.SelectList[],
-  setSystemUsersSelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+  subcontractorSelectState: API.SelectList[],
+  setSubcontractorSelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
 ) => (
   <>
     <ProFormText
@@ -65,7 +63,7 @@ const InputElement = (
         },
         {
           pattern:
-            /^([1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx])|([1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3})$/g,
+            /^([1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[\dXx])|([1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3})$/g,
           message: '社区居民楼片长身份证号码不正确！',
         },
       ]}
@@ -74,15 +72,14 @@ const InputElement = (
       name="politicalStatus"
       width="xl"
       label="社区居民楼片长政治状况"
-      placeholder="请选择"
-      options={[
-        { value: 0, label: '群众' },
-        { value: 1, label: '共产党员' },
-        { value: 2, label: '预备共产党员' },
-        { value: 3, label: '共青团员' },
-        { value: 4, label: '预备共青团员' },
-        { value: 5, label: '民主党派' },
-      ]}
+      valueEnum={{
+        0: '群众',
+        1: '共产党员',
+        2: '预备共产党员',
+        3: '共青团员',
+        4: '预备共青团员',
+        5: '民主党派',
+      }}
       rules={[
         {
           required: true,
@@ -94,14 +91,13 @@ const InputElement = (
       name="employmentStatus"
       width="xl"
       label="社区居民楼片长就业情况"
-      placeholder="请选择"
-      options={[
-        { value: 0, label: '在职' },
-        { value: 1, label: '退休' },
-        { value: 2, label: '无业' },
-        { value: 3, label: '失业' },
-        { value: 4, label: '自由职业' },
-      ]}
+      valueEnum={{
+        0: '在职',
+        1: '退休',
+        2: '无业',
+        3: '失业',
+        4: '自由职业',
+      }}
       rules={[
         {
           required: true,
@@ -113,18 +109,17 @@ const InputElement = (
       name="education"
       width="xl"
       label="社区居民楼片长教育情况"
-      placeholder="请选择"
-      options={[
-        { value: 0, label: '文盲' },
-        { value: 1, label: '小学' },
-        { value: 2, label: '初级中学' },
-        { value: 3, label: '中学专科' },
-        { value: 4, label: '高级中学' },
-        { value: 5, label: '大学专科' },
-        { value: 6, label: '大学本科' },
-        { value: 7, label: '硕士研究生' },
-        { value: 8, label: '博士研究生' },
-      ]}
+      valueEnum={{
+        0: '文盲',
+        1: '小学',
+        2: '初级中学',
+        3: '中学专科',
+        4: '高级中学',
+        5: '大学专科',
+        6: '大学本科',
+        7: '硕士研究生',
+        8: '博士研究生',
+      }}
       rules={[
         {
           required: true,
@@ -179,12 +174,13 @@ const InputElement = (
       ]}
     />{' '}
     <SelectCascder
+      width="xl"
       name="subcontractorInfo"
       label="社区居民楼片长所属分包人"
       requiredMessage="社区居民楼片长所属分包人不能为空！"
-      selectState={systemUsersSelectState}
-      setSelectState={setSystemUsersSelectState}
-      querySelectList={async (value) => (await querySystemUserSelectList([value])).data}
+      selectState={subcontractorSelectState}
+      setSelectState={setSubcontractorSelectState}
+      querySelectList={async (value) => (await querySubcontractorSelectList([value])).data}
     />{' '}
     <PhoneNumberList
       name="phoneNumbers"
@@ -204,13 +200,19 @@ const DormitoryManager: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const createFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
   const modifyFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
-  const [companiesState, setCompaniesState] = useState<API.SelectList[]>([]);
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
-  const [systemUsersSelectState, setSystemUsersSelectState] = useState<API.SelectList[]>([]);
+  const [subcontractorSelectState, setSubcontractorSelectState] = useState<API.SelectList[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const parentIds = getCompanyParentIds();
+      setSubcontractorSelectState((await querySubcontractorSelectList(parentIds)).data);
+    })();
+  }, []);
 
   const submitPreHandler = (formData: API.DormitoryManager) => {
-    formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
+    formData.phoneNumbers = formData.phoneNumbers?.map((value: API.PhoneNumber) =>
       submitPrePhoneNumberHandle(value.phoneNumber as string),
     );
     formData.subcontractorInfo = formData.subcontractorInfo?.slice(-2);
@@ -276,8 +278,8 @@ const DormitoryManager: React.FC = () => {
               dataIndex: 'age',
               sorter: true,
               ellipsis: true,
-              renderFormItem() {
-                return <ProFormDateRangePicker />;
+              renderFormItem(item, { onChange }) {
+                return <ProFormDateRangePicker fieldProps={{ onChange }} />;
               },
             },
             {
@@ -287,18 +289,22 @@ const DormitoryManager: React.FC = () => {
               ellipsis: true,
             },
             {
-              title: '所属分包人',
-              dataIndex: ['systemUser', 'username'],
+              title: (schema, type) => (type === 'table' ? '所属分包人' : '所属单位或分包人'),
+              dataIndex: ['subcontractor', 'name'],
               sorter: true,
               ellipsis: true,
-              renderFormItem() {
+              renderFormItem(item, { onChange }) {
                 return (
                   <SelectCascder
-                    selectState={systemUsersSelectState}
-                    setSelectState={setSystemUsersSelectState}
+                    selectState={subcontractorSelectState}
+                    setSelectState={setSubcontractorSelectState}
                     querySelectList={async (value) =>
-                      (await querySystemUserSelectList([value])).data
+                      (await querySubcontractorSelectList([value])).data
                     }
+                    cascaderFieldProps={{
+                      multiple: true,
+                      onChange,
+                    }}
                   />
                 );
               },
@@ -308,14 +314,7 @@ const DormitoryManager: React.FC = () => {
               dataIndex: ['company', 'name'],
               sorter: true,
               ellipsis: true,
-              renderFormItem() {
-                return (
-                  <ProFormTreeSelect
-                    fieldProps={{ treeCheckable: true }}
-                    request={async () => companiesState}
-                  />
-                );
-              },
+              search: false,
             },
             {
               title: '联系方式',
@@ -325,7 +324,7 @@ const DormitoryManager: React.FC = () => {
                 return (
                   <>
                     {entity.phoneNumbers?.map(
-                      (phoneNumber, index) =>
+                      (phoneNumber: API.PhoneNumber, index: number) =>
                         phoneNumber.phoneNumber +
                         (index + 1 == entity.phoneNumbers?.length ? '' : '，'),
                     )}
@@ -341,7 +340,7 @@ const DormitoryManager: React.FC = () => {
             })
           }
           createEditModalForm={{
-            element: InputElement(systemUsersSelectState, setSystemUsersSelectState),
+            element: InputElement(subcontractorSelectState, setSubcontractorSelectState),
             props: {
               title: '添加社区居民楼片长',
             },
@@ -349,15 +348,21 @@ const DormitoryManager: React.FC = () => {
             onFinish: async (formData) => await createDormitoryManager(submitPreHandler(formData)),
           }}
           modifyEditModalForm={{
-            element: InputElement(systemUsersSelectState, setSystemUsersSelectState),
+            element: InputElement(subcontractorSelectState, setSubcontractorSelectState),
             props: {
               title: '编辑社区居民楼片长',
             },
             formRef: modifyFormRef,
             onFinish: async (formData) =>
-              await modifyDormitoryManager(formData.id as number, submitPreHandler(formData)),
+              await modifyDormitoryManager(formData.id, submitPreHandler(formData)),
             onConfirmRemove: async (id) => await removeDormitoryManager(id),
-            queryData: async (id) => await queryDormitoryManager(id),
+            queryData: async (id) => {
+              const result = await queryDormitoryManager(id);
+              result.data.education = result.data.education.toString();
+              result.data.politicalStatus = result.data.politicalStatus.toString();
+              result.data.employmentStatus = result.data.employmentStatus.toString();
+              return result;
+            },
           }}
           importDataUploadProps={{
             action: dormitoryManagerImportExcel,
@@ -391,11 +396,6 @@ const DormitoryManager: React.FC = () => {
               '社区楼片长花名册.xlsx',
             )
           }
-          onLoad={async () => {
-            const parentIds = getCompanyParentIds();
-            setCompaniesState((await queryCompanySelectList(parentIds)).data);
-            setSystemUsersSelectState((await querySystemUserSelectList(parentIds)).data);
-          }}
         />{' '}
       </MainPageContainer>{' '}
     </Spin>

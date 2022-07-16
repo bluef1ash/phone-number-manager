@@ -133,6 +133,7 @@ abstract class BaseController {
      */
     protected void downloadExcelFile(HttpServletResponse response, ExcelWriter excelWriter, String filename) {
         if (excelWriter != null) {
+            response.setCharacterEncoding("utf-8");
             response.setContentType(excelWriter.getContentType());
             response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
             response.setHeader("Content-Disposition",

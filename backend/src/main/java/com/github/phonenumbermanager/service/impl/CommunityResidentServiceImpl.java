@@ -106,7 +106,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 search.set("systemUser", ids);
             }
         }
-        return baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
+        return baseMapper.selectCorrelationByCompanies(new Page<>(pageNumber, pageDataSize), companies, search, sort);
     }
 
     @Transactional(rollbackFor = Exception.class)

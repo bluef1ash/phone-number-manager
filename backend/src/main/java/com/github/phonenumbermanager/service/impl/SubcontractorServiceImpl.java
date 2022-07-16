@@ -1,10 +1,10 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +15,7 @@ import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.SubcontractorService;
+import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
@@ -32,11 +33,15 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     private final SubcontractorPhoneNumberMapper subcontractorPhoneNumberMapper;
     private final CommunityResidentMapper communityResidentMapper;
     private final DormitoryManagerMapper dormitoryManagerMapper;
+    private final CompanyMapper companyMapper;
 
     @Override
     public IPage<Subcontractor> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
         JSONObject search, JSONObject sort) {
-        return baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
+        Page<Subcontractor> page = new Page<>(pageNumber, pageDataSize);
+        page.setSearchCount(false);
+        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companies, search, sort));
+        return baseMapper.selectCorrelationByCompanies(page, companies, search, sort);
     }
 
     @Override
@@ -94,6 +99,29 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         return baseMapper.deleteBatchIds(list) > 0;
     }
 
+    @Override
+    public List<SelectListVo> treeSelectList(Long[] parentIds) {
+        SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<SelectListVo> selectListVos = new ArrayList<>();
+        Set<Long> parentIdList =
+            companyMapper.selectList(new LambdaQueryWrapper<Company>().select(Company::getParentId)).stream()
+                .map(Company::getParentId).collect(Collectors.toSet());
+        if (parentIds == null) {
+            if (systemUser.getCompanies() == null) {
+                selectListVos = companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0L))
+                    .stream().map(company -> new SelectListVo().setValue(company.getId()).setLabel(company.getName())
+                        .setIsLeaf(false))
+                    .collect(Collectors.toList());
+            } else {
+                Long[] ids = systemUser.getCompanies().stream().map(Company::getId).toArray(Long[]::new);
+                selectListVos.addAll(getSelectVos(ids, parentIdList));
+            }
+        } else {
+            selectListVos.addAll(getSelectVos(parentIds, parentIdList));
+        }
+        return selectListVos;
+    }
+
     /**
      * 处理社区分包人员联系方式关联对象
      *
@@ -108,5 +136,33 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
         return phoneNumbers.stream().map(phoneNumber -> new SubcontractorPhoneNumber()
             .setSubcontractorId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取表单对象集合
+     *
+     * @param ids
+     *            查询的编号集合
+     * @param parentIds
+     *            所有父级编号
+     * @return 表单对象集合
+     */
+    private List<SelectListVo> getSelectVos(Long[] ids, Set<Long> parentIds) {
+        List<SelectListVo> selectListVos = new ArrayList<>();
+        LambdaQueryWrapper<Company> companyWrapper = new LambdaQueryWrapper<>();
+        Arrays.stream(ids).filter(parentIds::contains).forEach(id -> companyWrapper.eq(Company::getParentId, id));
+        List<Long> subIds = Arrays.stream(ids).filter(id -> !parentIds.contains(id)).collect(Collectors.toList());
+        if (companyWrapper.nonEmptyOfWhere()) {
+            selectListVos.addAll(companyMapper.selectList(companyWrapper).stream().map(
+                company -> new SelectListVo().setLabel(company.getName()).setValue(company.getId()).setIsLeaf(false))
+                .collect(Collectors.toList()));
+        }
+        if (!subIds.isEmpty()) {
+            selectListVos.addAll(baseMapper
+                .selectListByCompanyIds(subIds).stream().map(subcontractor -> new SelectListVo()
+                    .setLabel(subcontractor.getName()).setValue(subcontractor.getId()).setIsLeaf(true))
+                .collect(Collectors.toList()));
+        }
+        return selectListVos;
     }
 }

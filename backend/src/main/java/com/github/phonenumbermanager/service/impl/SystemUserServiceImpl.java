@@ -38,7 +38,6 @@ import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.util.RedisUtil;
-import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ArrayUtil;
@@ -188,29 +187,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     }
 
     @Override
-    public List<SelectListVo> treeSelectList(Long[] parentIds) {
-        SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<SelectListVo> selectListVos = new ArrayList<>();
-        Set<Long> parentIdList =
-            companyMapper.selectList(new LambdaQueryWrapper<Company>().select(Company::getParentId)).stream()
-                .map(Company::getParentId).collect(Collectors.toSet());
-        if (parentIds == null) {
-            if (systemUser.getCompanies() == null) {
-                selectListVos = companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0L))
-                    .stream().map(company -> new SelectListVo().setValue(company.getId()).setLabel(company.getName())
-                        .setIsLeaf(false))
-                    .collect(Collectors.toList());
-            } else {
-                Long[] ids = systemUser.getCompanies().stream().map(Company::getId).toArray(Long[]::new);
-                selectListVos.addAll(getSelectVos(ids, parentIdList));
-            }
-        } else {
-            selectListVos.addAll(getSelectVos(parentIds, parentIdList));
-        }
-        return selectListVos;
-    }
-
-    @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
         String personCountAlias) {
         List<Company> companyList = new ArrayList<>();
@@ -256,33 +232,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             .map(company -> new SystemUserCompany().setCompanyId(company.getId()).setSystemUserId(systemUser.getId()))
             .collect(Collectors.toList());
         return systemUserCompanyMapper.insertBatchSomeColumn(systemUserCompanies);
-    }
-
-    /**
-     * 获取表单对象集合
-     *
-     * @param ids
-     *            查询的编号集合
-     * @param parentIds
-     *            所有父级编号
-     * @return 表单对象集合
-     */
-    private List<SelectListVo> getSelectVos(Long[] ids, Set<Long> parentIds) {
-        List<SelectListVo> selectListVos = new ArrayList<>();
-        LambdaQueryWrapper<Company> companyWrapper = new LambdaQueryWrapper<>();
-        Arrays.stream(ids).filter(parentIds::contains).forEach(id -> companyWrapper.eq(Company::getParentId, id));
-        List<Long> subIds = Arrays.stream(ids).filter(id -> !parentIds.contains(id)).collect(Collectors.toList());
-        if (companyWrapper.nonEmptyOfWhere()) {
-            selectListVos.addAll(companyMapper.selectList(companyWrapper).stream().map(
-                company -> new SelectListVo().setLabel(company.getName()).setValue(company.getId()).setIsLeaf(false))
-                .collect(Collectors.toList()));
-        }
-        if (!subIds.isEmpty()) {
-            selectListVos.addAll(baseMapper.selectListByCompanyIds(subIds).stream()
-                .map(user -> new SelectListVo().setLabel(user.getUsername()).setValue(user.getId()).setIsLeaf(true))
-                .collect(Collectors.toList()));
-        }
-        return selectListVos;
     }
 
     /**

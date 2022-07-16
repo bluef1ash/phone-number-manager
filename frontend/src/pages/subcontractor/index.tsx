@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -115,12 +115,7 @@ const InputElement = (
       querySelectList={async (value) => (await queryCompanySelectList([value])).data}
       selectState={selectListState}
       setSelectState={setSelectListState}
-      rules={[
-        {
-          required: true,
-          message: '请选择所属单位！',
-        },
-      ]}
+      requiredMessage="请选择所属单位！"
     />{' '}
   </>
 );
@@ -130,6 +125,24 @@ const Subcontractor: React.FC = () => {
   const createFormRef = useRef<ProFormInstance<API.Subcontractor>>();
   const modifyFormRef = useRef<ProFormInstance<API.Subcontractor>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      let list: API.SelectList[] = [
+        {
+          label: '无',
+          title: '无',
+          value: '0',
+        },
+      ];
+      const parentIds = getCompanyParentIds();
+      const companySelect = (await queryCompanySelectList(parentIds)).data;
+      if (companySelect.length > 0) {
+        list = [...list, ...companySelect];
+      }
+      setSelectListState(list);
+    })();
+  }, []);
 
   const submitPreHandler = (formData: API.Subcontractor) => {
     formData.phoneNumbers = formData.phoneNumbers?.map((value: { phoneNumber: string }) =>
@@ -226,21 +239,6 @@ const Subcontractor: React.FC = () => {
             result.data.titles = result.data.titles?.map((title: { title: string }) => ({ title }));
             return result;
           },
-        }}
-        onLoad={async () => {
-          let list: API.SelectList[] = [
-            {
-              label: '无',
-              title: '无',
-              value: '0',
-            },
-          ];
-          const parentIds = getCompanyParentIds();
-          const companySelect = (await queryCompanySelectList(parentIds)).data;
-          if (companySelect.length > 0) {
-            list = [...list, ...companySelect];
-          }
-          setSelectListState(list);
         }}
       />{' '}
     </MainPageContainer>

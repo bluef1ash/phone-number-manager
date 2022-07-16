@@ -105,18 +105,34 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
     /**
      * 查询所有对象（分页）
      *
-     * @param companies
-     *            需要查询的单位集合
      * @param page
      *            分页对象
+     * @param companies
+     *            需要查询的单位集合
      * @param search
      *            搜索条件
      * @param sort
      *            排序条件
-     * @return 全部查询的社区和所属街道的信息
+     * @return 全部查询的数据和所属街道的信息
      * @throws DataAccessException
      *             数据库操作异常
      */
-    IPage<T> selectCorrelationByCompanies(List<Company> companies, Page<T> page, JSONObject search, JSONObject sort)
+    IPage<T> selectCorrelationByCompanies(Page<T> page, List<Company> companies, JSONObject search, JSONObject sort)
+        throws DataAccessException;
+
+    /**
+     * 查询计数所有对象（分页）
+     *
+     * @param companies
+     *            需要查询的单位集合
+     * @param search
+     *            搜索条件
+     * @param sort
+     *            排序条件
+     * @return 全部查询的数据和所属街道的信息数量
+     * @throws DataAccessException
+     *             数据库操作异常
+     */
+    long selectCorrelationCountByCompanies(List<Company> companies, JSONObject search, JSONObject sort)
         throws DataAccessException;
 }

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -23,6 +23,18 @@ const SystemUser: React.FC = () => {
   const createFormRef = useRef<ProFormInstance<API.SystemUser>>();
   const ModifyFormRef = useRef<ProFormInstance<API.SystemUser>>();
   const [companySelectState, setCompanySelectState] = useState<API.SelectList[]>([]);
+
+  useEffect(() => {
+    (async () =>
+      setCompanySelectState([
+        {
+          label: '无',
+          title: '无',
+          value: '0',
+        },
+        ...(await queryCompanySelectList(getCompanyParentIds())).data,
+      ]))();
+  }, []);
 
   return (
     <MainPageContainer
@@ -210,16 +222,6 @@ const SystemUser: React.FC = () => {
             return result;
           },
         }}
-        onLoad={async () =>
-          setCompanySelectState([
-            {
-              label: '无',
-              title: '无',
-              value: '0',
-            },
-            ...(await queryCompanySelectList(getCompanyParentIds())).data,
-          ])
-        }
       />{' '}
     </MainPageContainer>
   );

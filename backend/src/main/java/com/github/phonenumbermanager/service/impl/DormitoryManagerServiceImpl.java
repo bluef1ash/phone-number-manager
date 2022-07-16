@@ -199,7 +199,10 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Override
     public IPage<DormitoryManager> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
         JSONObject search, JSONObject sort) {
-        return baseMapper.selectCorrelationByCompanies(companies, new Page<>(pageNumber, pageDataSize), search, sort);
+        Page<DormitoryManager> page = new Page<>(pageNumber, pageDataSize);
+        page.setSearchCount(false);
+        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companies, search, sort));
+        return baseMapper.selectCorrelationByCompanies(page, companies, search, sort);
     }
 
     @Override
@@ -456,6 +459,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         Map<String, String> tableHead = new LinkedHashMap<>();
         tableHead.put("sequenceNumber", "序号");
         tableHead.put("communityName", "社区名称");
+        tableHead.put("streetName", "街道名称");
         tableHead.put("id", "编号");
         tableHead.put("name", "姓名");
         tableHead.put("genderName", "性别");
@@ -520,26 +524,22 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         long index = 1L;
         List<Subcontractor> subcontractors = subcontractorMapper.selectAndPhoneNumber();
-        StringBuilder streetTitle = new StringBuilder();
         for (DormitoryManager dormitoryManager : dormitoryManagers) {
             LinkedHashMap<String, Object> data = new LinkedHashMap<>();
             // 序号
             data.put("sequenceNumber", index);
-            // 处理社区名称
-            String communityName =
-                dormitoryManager.getCompany().getName().replaceAll(SystemConstant.COMMUNITY_NAME_PATTERN, "");
-            data.put("communityName", communityName);
+            // 街道名称
             Optional<Company> company = companyAll.stream()
                 .filter(c -> dormitoryManager.getCompany().getParentId().equals(c.getId())).findFirst();
             String streetName = "";
             if (company.isPresent()) {
                 streetName = company.get().getName().replaceAll(SystemConstant.STREET_NAME_PATTERN, "");
-                if (StrUtil.isBlankIfStr(streetTitle)) {
-                    streetTitle.append(company.get().getName());
-                } else if (!streetTitle.toString().equals(company.get().getName())) {
-                    streetTitle.append(streetTitle).append("，").append(company.get().getName());
-                }
             }
+            data.put("streetName", streetName);
+            // 处理社区名称
+            String communityName =
+                dormitoryManager.getCompany().getName().replaceAll(SystemConstant.COMMUNITY_NAME_PATTERN, "");
+            data.put("communityName", communityName);
             // 编号
             String companyFirstLetter = PinyinUtil.getFirstLetter(streetName, "").toUpperCase()
                 + PinyinUtil.getFirstLetter(communityName, "").toUpperCase();

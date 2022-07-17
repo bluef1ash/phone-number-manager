@@ -17,9 +17,11 @@ public interface CommunityResidentMapper extends BaseMapper<CommunityResident> {
     /**
      * 通过联系方式集合关联查询
      *
+     * @param id
+     *            社区居民编号
      * @param phoneNumbers
      *            联系方式集合
      * @return 查询到的数据集合
      */
-    List<CommunityResident> selectCorrelationByPhoneNumbers(List<PhoneNumber> phoneNumbers);
+    List<CommunityResident> selectCorrelationByPhoneNumbers(Long id, List<PhoneNumber> phoneNumbers);
 }

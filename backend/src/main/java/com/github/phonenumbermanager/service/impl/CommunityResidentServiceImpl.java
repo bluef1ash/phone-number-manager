@@ -33,7 +33,7 @@ import cn.hutool.poi.excel.ExcelWriter;
 import cn.hutool.poi.excel.StyleSet;
 
 /**
- * 社区居民业务实现
+ * 社区居民信息业务实现
  *
  * @author 廿二月的天
  */
@@ -67,8 +67,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean save(CommunityResident entity) {
-        entity.setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
-            .setSubcontractorId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.insert(entity) > 0;
         phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers());
         communityResidentPhoneNumberMapper.insertBatchSomeColumn(phoneNumbersHandler(entity));
@@ -78,8 +76,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(CommunityResident entity) {
-        entity.setCompanyId(Long.valueOf(entity.getSubcontractorInfo().get(0)))
-            .setSubcontractorId(Long.valueOf(entity.getSubcontractorInfo().get(1)));
         boolean isSuccess = baseMapper.updateById(entity) > 0;
         if (phoneNumberMapper.insertIgnoreBatchSomeColumn(entity.getPhoneNumbers()) > 0) {
             communityResidentPhoneNumberMapper.delete(new LambdaQueryWrapper<CommunityResidentPhoneNumber>()
@@ -91,7 +87,12 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Override
     public CommunityResident getCorrelation(Long id) {
-        return baseMapper.selectAndCompanyById(id);
+        CommunityResident communityResident = baseMapper.selectAndCompanyById(id);
+        List<String> info = new ArrayList<>();
+        info.add(communityResident.getCompany().getName());
+        info.add(communityResident.getSubcontractor().getName());
+        communityResident.setSubcontractorInfo(info);
+        return communityResident;
     }
 
     @Override
@@ -106,7 +107,10 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 search.set("systemUser", ids);
             }
         }
-        return baseMapper.selectCorrelationByCompanies(new Page<>(pageNumber, pageDataSize), companies, search, sort);
+        Page<CommunityResident> page = new Page<>(pageNumber, pageDataSize);
+        page.setSearchCount(false);
+        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companies, search, sort));
+        return baseMapper.selectCorrelationByCompanies(page, companies, search, sort);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -210,8 +214,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     @Override
-    public List<CommunityResident> listByPhoneNumbers(List<PhoneNumber> phoneNumbers) {
-        return baseMapper.selectCorrelationByPhoneNumbers(phoneNumbers);
+    public List<CommunityResident> listByPhoneNumbers(Long id, List<PhoneNumber> phoneNumbers) {
+        return baseMapper.selectCorrelationByPhoneNumbers(id, phoneNumbers);
     }
 
     /**
@@ -382,8 +386,8 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      * @return 处理完成的对象集合
      */
     private List<CommunityResidentPhoneNumber> phoneNumbersHandler(CommunityResident entity) {
-        QueryWrapper<PhoneNumber> wrapper = new QueryWrapper<>();
-        entity.getPhoneNumbers().forEach(phoneNumber -> wrapper.eq("phone_number", phoneNumber.getPhoneNumber()).or());
+        LambdaQueryWrapper<PhoneNumber> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(PhoneNumber::getPhoneNumber, entity.getPhoneNumbers());
         List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
         return phoneNumbers.stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
             .setCommunityResidentId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());

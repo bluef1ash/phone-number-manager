@@ -7,3 +7,5 @@ CREATE TABLE pm_community_resident_phone_number (
     version               SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁',
     PRIMARY KEY (community_resident_id, phone_number_id)
 ) COMMENT = '社区居民信息与联系方式中间表';
+
+CREATE UNIQUE INDEX uk_phone_number_id ON pm_community_resident_phone_number(phone_number_id);

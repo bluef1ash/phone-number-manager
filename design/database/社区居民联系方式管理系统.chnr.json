@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.1.1",
   "createdTime": "2021-10-10 15:53:11",
-  "updatedTime": "2022-7-10 18:02:22",
+  "updatedTime": "2022-7-17 14:34:05",
   "profile": {
     "default": {
       "db": "AB840774-751C-47F4-AFC9-202B062E21BC",
@@ -2630,7 +2630,22 @@
         }
       ],
       "correlations": [],
-      "indexes": []
+      "indexes": [
+        {
+          "defKey": "uk_phone_number_id",
+          "defName": null,
+          "unique": true,
+          "comment": "",
+          "fields": [
+            {
+              "fieldDefKey": "A443215B-44EC-4BA0-914E-918150E3CDB7",
+              "ascOrDesc": "A",
+              "id": "BD2C6C13-5BC0-4DCD-B0C6-D9CFAD90A99A"
+            }
+          ],
+          "id": "782DE7E7-F66A-48BF-9613-225DE3703BDA"
+        }
+      ]
     },
     {
       "id": "8798947C-9D27-492A-B7F7-4C8B83DC2EBC",

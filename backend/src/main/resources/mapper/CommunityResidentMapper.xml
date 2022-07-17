@@ -102,6 +102,53 @@
         pm_community_resident_phone_number.community_resident_id
         LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
         LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <select id="selectCorrelationCountByCompanies" resultType="long">
+        SELECT COUNT(DISTINCT pm_community_resident.id)
+        FROM
+        pm_community_resident
+        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+        LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
+        pm_community_resident_phone_number.community_resident_id
+        LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
+        LEFT JOIN pm_subcontractor ON pm_community_resident.subcontractor_id = pm_subcontractor.id
+        <include refid="selectCorrelationSearch">
+            <property name="companies" value="companies"/>
+            <property name="search" value="search"/>
+            <property name="sort" value="sort"/>
+        </include>
+    </select>
+    <select id="selectCorrelationByPhoneNumbers" resultMap="collectionResultMap">
+        SELECT
+        pm_community_resident.id AS 'community_resident_id',
+        pm_community_resident.name AS 'community_resident_name',
+        pm_community_resident.company_id,
+        pm_company.name AS 'company_name'
+        FROM
+        pm_community_resident
+        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
+        LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
+        pm_community_resident_phone_number.community_resident_id
+        <where>
+            pm_community_resident_phone_number.phone_number_id IN (
+            SELECT id FROM pm_phone_number
+            <where>
+                <foreach collection="phoneNumbers" item="phoneNumber" open="phone_number IN (" separator=", " close=")">
+                    #{phoneNumber.phoneNumber}
+                </foreach>
+            </where>
+            )
+            <if test="id != null">
+                AND pm_community_resident.id != #{id}
+            </if>
+        </where>
+    </select>
+    <sql id="selectCorrelationSearch">
         <where>
             <if test="companies != null and companies.size() gt 0">
                 <foreach collection="companies" item="company" separator="OR">
@@ -114,7 +161,7 @@
                         <when test="key eq 'phoneNumbers'">
                             pm_phone_number.phone_number LIKE CONCAT('%', #{value}, '%')
                         </when>
-                        <when test="key eq 'subcontractor'">
+                        <when test="key eq 'subcontractor.name'">
                             <foreach collection="value" item="v" open="(" separator="OR" close=")">
                                 pm_subcontractor.id = #{v} OR pm_company.id = #{v}
                             </foreach>
@@ -148,24 +195,5 @@
                 pm_community_resident.company_id, CONVERT(pm_community_resident.name USING GBK)
             </otherwise>
         </choose>
-    </select>
-    <select id="selectCorrelationByPhoneNumbers" resultMap="collectionResultMap">
-        SELECT
-        pm_community_resident.id AS 'community_resident_id',
-        pm_community_resident.name AS 'community_resident_name',
-        pm_phone_number.phone_number,
-        pm_community_resident.company_id,
-        pm_company.name AS 'company_name'
-        FROM
-        pm_community_resident
-        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
-        LEFT JOIN pm_community_resident_phone_number ON pm_community_resident.id =
-        pm_community_resident_phone_number.community_resident_id
-        LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
-        <where>
-            <foreach collection="phoneNumbers" item="phoneNumber" separator="OR">
-                pm_phone_number.phone_number = #{phoneNumber.phoneNumber}
-            </foreach>
-        </where>
-    </select>
+    </sql>
 </mapper>

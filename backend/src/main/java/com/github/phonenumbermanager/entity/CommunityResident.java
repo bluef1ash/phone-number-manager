@@ -46,15 +46,16 @@ public class CommunityResident extends BaseEntity<CommunityResident> {
     @NotBlank(groups = CreateInputGroup.class, message = "社区居民地址不能为空！")
     @Length(max = 255, message = "社区居民地址不能超过255个字符！")
     private String address;
+    @NotNull(groups = CreateInputGroup.class, message = "所属社区居民分包人不能为空！")
     @ApiModelProperty("所属社区分包人编号")
     @Min(value = 1, message = "所属社区分包人编号不正确！")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long subcontractorId;
+    @NotNull(groups = CreateInputGroup.class, message = "所属社区不能为空！")
     @ApiModelProperty("所属社区编号")
     @Min(value = 1, message = "所属社区编号不正确！")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long companyId;
-    @NotNull(groups = CreateInputGroup.class, message = "社区居民分包人不能为空！")
     @TableField(exist = false)
     @ApiModelProperty("社区居民分包人信息")
     private List<String> subcontractorInfo;

@@ -33,20 +33,20 @@ import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 
 /**
- * 社区居民控制器
+ * 社区居民信息控制器
  *
  * @author 廿二月的天
  */
 @AllArgsConstructor
 @Controller
 @RequestMapping("/resident")
-@Api(tags = "社区居民控制器")
+@Api(tags = "社区居民信息控制器")
 public class CommunityResidentController extends BaseController {
     private final CommunityResidentService communityResidentService;
     private final CompanyService companyService;
 
     /**
-     * 社区居民列表
+     * 社区居民信息列表
      *
      * @param request
      *            HTTP请求对象
@@ -58,7 +58,7 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping
     @ResponseBody
-    @ApiOperation("社区居民列表")
+    @ApiOperation("社区居民信息列表")
     public R communityResidentList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据数量") Integer pageSize) {
         getEnvironmentVariable();
@@ -68,7 +68,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 通过编号查找社区居民
+     * 通过编号查找社区居民信息
      *
      * @param id
      *            需要查找的社区居民的编号
@@ -76,13 +76,13 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping("/{id}")
     @ResponseBody
-    @ApiOperation("通过编号查找社区居民")
+    @ApiOperation("通过编号查找社区居民信息")
     public R getCommunityResidentById(@ApiParam(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", communityResidentService.getCorrelation(id));
     }
 
     /**
-     * 添加社区居民处理
+     * 添加社区居民信息处理
      *
      * @param communityResident
      *            前台传递的社区居民对象
@@ -90,21 +90,21 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping
     @ResponseBody
-    @ApiOperation("添加社区居民处理")
+    @ApiOperation("添加社区居民信息处理")
     public R communityResidentCreateHandle(@ApiParam(name = "前台传递的社区居民对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) CommunityResident communityResident) {
-        String repeatMessage = validatePhoneNumber(communityResident.getPhoneNumbers());
+        String repeatMessage = validatePhoneNumber(null, communityResident.getPhoneNumbers());
         if (repeatMessage != null) {
             return R.error(ExceptionCode.REPEAT_DATA_FAILED.getCode(), repeatMessage);
         }
         if (communityResidentService.save(communityResident)) {
             return R.ok();
         }
-        throw new JsonException("添加社区居民失败！");
+        throw new JsonException("添加社区居民信息失败！");
     }
 
     /**
-     * 修改社区居民处理
+     * 修改社区居民信息处理
      *
      * @param id
      *            要修改的社区居民编号
@@ -114,11 +114,11 @@ public class CommunityResidentController extends BaseController {
      */
     @PutMapping("/{id}")
     @ResponseBody
-    @ApiOperation("修改社区居民处理")
+    @ApiOperation("修改社区居民信息处理")
     public R communityResidentModifyHandle(@ApiParam(name = "要修改的社区居民编号", required = true) @PathVariable Long id,
         @ApiParam(name = "前台传递的社区居民对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) CommunityResident communityResident) {
-        String repeatMessage = validatePhoneNumber(communityResident.getPhoneNumbers());
+        String repeatMessage = validatePhoneNumber(id, communityResident.getPhoneNumbers());
         if (repeatMessage != null) {
             return R.error(ExceptionCode.REPEAT_DATA_FAILED.getCode(), repeatMessage);
         }
@@ -128,11 +128,11 @@ public class CommunityResidentController extends BaseController {
         if (communityResidentService.updateById(communityResident)) {
             return R.ok();
         }
-        throw new JsonException("修改社区居民失败！");
+        throw new JsonException("修改社区居民信息失败！");
     }
 
     /**
-     * 通过社区居民编号删除社区居民
+     * 通过社区居民编号删除社区居民信息
      *
      * @param id
      *            对应编号
@@ -140,12 +140,12 @@ public class CommunityResidentController extends BaseController {
      */
     @DeleteMapping("/{id}")
     @ResponseBody
-    @ApiOperation("通过社区居民编号删除社区居民")
+    @ApiOperation("通过社区居民编号删除社区居民信息")
     public R removeCommunityResident(@ApiParam(name = "社区居民编号", required = true) @PathVariable Long id) {
         if (communityResidentService.removeById(id)) {
             return R.ok();
         }
-        throw new JsonException("删除社区居民失败！");
+        throw new JsonException("删除社区居民信息失败！");
     }
 
     /**
@@ -184,7 +184,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 社区居民增删改批量操作
+     * 社区居民信息增删改批量操作
      *
      * @param batchRestfulVo
      *            批量操作视图对象
@@ -192,7 +192,7 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/batch")
     @ResponseBody
-    @ApiOperation("社区居民增删改批量操作")
+    @ApiOperation("社区居民信息增删改批量操作")
     public R communityResidentBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
@@ -205,7 +205,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 社区居民基础数据
+     * 社区居民信息基础数据
      *
      *
      * @param computedVo
@@ -214,7 +214,7 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/computed/message")
     @ResponseBody
-    @ApiOperation("社区居民基础数据")
+    @ApiOperation("社区居民信息基础数据")
     public R
         communityResidentBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
         getEnvironmentVariable();
@@ -223,7 +223,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 社区居民图表
+     * 社区居民信息图表
      *
      *
      * @param computedVo
@@ -232,7 +232,7 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/computed/chart")
     @ResponseBody
-    @ApiOperation("社区居民图表")
+    @ApiOperation("社区居民信息图表")
     public R communityResidentChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
         getEnvironmentVariable();
         return R.ok().put("data", communityResidentService.getBarChart(currentSystemUser.getCompanies(),
@@ -242,22 +242,18 @@ public class CommunityResidentController extends BaseController {
     /**
      * 验证联系方式
      *
+     * @param id
+     *            社区居民编号
      * @param phoneNumbers
      *            需要验证的数据集合
      */
-    private String validatePhoneNumber(List<PhoneNumber> phoneNumbers) {
+    private String validatePhoneNumber(Long id, List<PhoneNumber> phoneNumbers) {
         if (phoneNumbers != null && !phoneNumbers.isEmpty()) {
-            List<CommunityResident> communityResidents = communityResidentService.listByPhoneNumbers(phoneNumbers);
+            List<CommunityResident> communityResidents = communityResidentService.listByPhoneNumbers(id, phoneNumbers);
             if (!communityResidents.isEmpty()) {
-                StringBuilder output = new StringBuilder();
-                for (CommunityResident communityResident : communityResidents) {
-                    String phone = communityResident.getPhoneNumbers().stream()
-                        .map(phoneNumber -> "输入的联系方式：" + phoneNumber.getPhoneNumber() + "，已经存在于"
-                            + communityResident.getCompany().getName() + "单位的" + communityResident.getName() + "居民")
-                        .collect(Collectors.joining(", "));
-                    output.append(phone);
-                }
-                return output.toString();
+                return communityResidents.stream().map(communityResident -> "输入的联系方式，已经存在于"
+                    + communityResident.getCompany().getName() + "单位的" + communityResident.getName() + "居民")
+                    .collect(Collectors.joining("，"));
             }
         }
         return null;

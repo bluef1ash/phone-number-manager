@@ -3,7 +3,7 @@ declare namespace API {
   type CommunityResident = BaseEntity & {
     name?: string;
     address?: string;
-    systemUserId?: number;
+    subcontractorId?: number;
     companyId?: number;
     phoneNumbers?: PhoneNumber[];
     subcontractorInfo?: string[];

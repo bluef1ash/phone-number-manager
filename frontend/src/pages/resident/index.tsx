@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import type { ActionType } from '@ant-design/pro-table';
@@ -17,14 +17,14 @@ import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils'
 import { Alert, message, Spin, Upload } from 'antd';
 import { communityResidentImportExcel } from '@/services/api';
 import { SESSION_TOKEN_KEY } from '@config/constant';
-import { querySystemUserSelectList } from '@/services/user/api';
 import PhoneNumberList from '@/components/PhoneNumberList';
 import { ExceptionCode } from '@/services/enums';
 import SelectCascder from '@/components/SelectCascder';
+import { querySubcontractorSelectList } from '@/services/subcontractor/api';
 
 const InputElement = (
-  systemUsersSelectState: API.SelectList[],
-  setSystemUsersSelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
+  subcontractorSelectState: API.SelectList[],
+  setSubcontractorSelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>,
   repeatExceptionMessageState: string | null,
 ) => (
   <>
@@ -88,9 +88,9 @@ const InputElement = (
       name="subcontractorInfo"
       label="社区居民所属分包人"
       requiredMessage="社区居民所属分包人不能为空！"
-      selectState={systemUsersSelectState}
-      setSelectState={setSystemUsersSelectState}
-      querySelectList={async (value) => (await querySystemUserSelectList([value])).data}
+      selectState={subcontractorSelectState}
+      setSelectState={setSubcontractorSelectState}
+      querySelectList={async (value) => (await querySubcontractorSelectList([value])).data}
     />{' '}
   </>
 );
@@ -101,16 +101,35 @@ const CommunityResident: React.FC = () => {
   const modifyFormRef = useRef<ProFormInstance<API.CommunityResident>>();
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
-  const [systemUsersSelectState, setSystemUsersSelectState] = useState<API.SelectList[]>([]);
+  const [subcontractorSelectState, setSubcontractorSelectState] = useState<API.SelectList[]>([]);
   const [repeatExceptionMessageState, setRepeatExceptionMessageState] = useState<string | null>(
     null,
   );
+  const [modifyCompanyIdState, setModifyCompanyIdState] = useState<string | null>(null);
+  const [modifySubcontractorIdState, setModifySubcontractorIdState] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      setSubcontractorSelectState((await querySubcontractorSelectList([0])).data);
+    })();
+  }, []);
 
   const submitPreHandler = (formData: API.CommunityResident) => {
-    formData.phoneNumbers = formData.phoneNumbers?.map((value) =>
+    formData.phoneNumbers = formData.phoneNumbers?.map((value: API.PhoneNumber) =>
       submitPrePhoneNumberHandle(value.phoneNumber as string),
     );
-    formData.subcontractorInfo = formData.subcontractorInfo?.slice(-2);
+    if (modifyCompanyIdState === null) {
+      formData.companyId = formData.subcontractorInfo[formData.subcontractorInfo.length - 2];
+    } else {
+      formData.companyId = modifyCompanyIdState;
+      setModifyCompanyIdState(null);
+    }
+    if (modifySubcontractorIdState === null) {
+      formData.subcontractorId = formData.subcontractorInfo[formData.subcontractorInfo.length - 1];
+    } else {
+      formData.subcontractorId = modifySubcontractorIdState;
+      setModifySubcontractorIdState(null);
+    }
     return formData;
   };
 
@@ -151,20 +170,21 @@ const CommunityResident: React.FC = () => {
               ellipsis: true,
             },
             {
-              title: '所属分包人',
-              dataIndex: ['systemUser', 'username'],
+              title: (schema, type) => (type === 'table' ? '所属分包人' : '所属单位或分包人'),
+              dataIndex: ['subcontractor', 'name'],
               sorter: true,
               ellipsis: true,
-              renderFormItem() {
+              renderFormItem(item, { onChange }) {
                 return (
                   <SelectCascder
-                    selectState={systemUsersSelectState}
-                    setSelectState={setSystemUsersSelectState}
+                    selectState={subcontractorSelectState}
+                    setSelectState={setSubcontractorSelectState}
                     querySelectList={async (value) =>
-                      (await querySystemUserSelectList([value])).data
+                      (await querySubcontractorSelectList([value])).data
                     }
                     cascaderFieldProps={{
                       multiple: true,
+                      onChange,
                     }}
                   />
                 );
@@ -185,7 +205,7 @@ const CommunityResident: React.FC = () => {
                 return (
                   <>
                     {entity.phoneNumbers?.map(
-                      (phoneNumber, index) =>
+                      (phoneNumber: API.PhoneNumber, index: number) =>
                         phoneNumber.phoneNumber +
                         (index + 1 == entity.phoneNumbers?.length ? '' : '，'),
                     )}
@@ -202,12 +222,18 @@ const CommunityResident: React.FC = () => {
           }
           createEditModalForm={{
             element: InputElement(
-              systemUsersSelectState,
-              setSystemUsersSelectState,
+              subcontractorSelectState,
+              setSubcontractorSelectState,
               repeatExceptionMessageState,
             ),
             props: {
               title: '添加社区居民',
+              modalProps: {
+                onCancel: () => {
+                  createFormRef.current?.resetFields();
+                  setRepeatExceptionMessageState(null);
+                },
+              },
             },
             formRef: createFormRef,
             onFinish: async (formData) => {
@@ -220,26 +246,36 @@ const CommunityResident: React.FC = () => {
           }}
           modifyEditModalForm={{
             element: InputElement(
-              systemUsersSelectState,
-              setSystemUsersSelectState,
+              subcontractorSelectState,
+              setSubcontractorSelectState,
               repeatExceptionMessageState,
             ),
             props: {
               title: '编辑社区居民',
+              modalProps: {
+                onCancel: () => {
+                  modifyFormRef.current?.resetFields();
+                  setRepeatExceptionMessageState(null);
+                },
+              },
             },
             formRef: modifyFormRef,
             onFinish: async (formData) => {
-              const result = await modifyCommunityResident(
-                formData.id as number,
-                submitPreHandler(formData),
-              );
+              const result = await modifyCommunityResident(formData.id, submitPreHandler(formData));
               if (result.code === ExceptionCode.REPEAT_DATA_FAILED) {
                 setRepeatExceptionMessageState(result.message);
+              } else {
+                setRepeatExceptionMessageState(null);
               }
               return result;
             },
             onConfirmRemove: async (id) => await removeCommunityResident(id),
-            queryData: async (id) => await queryCommunityResident(id),
+            queryData: async (id) => {
+              const result = await queryCommunityResident(id);
+              setModifyCompanyIdState(result.data.companyId);
+              setModifySubcontractorIdState(result.data.subcontractorId);
+              return result;
+            },
           }}
           importDataUploadProps={{
             action: communityResidentImportExcel,
@@ -273,9 +309,6 @@ const CommunityResident: React.FC = () => {
               '“评社区”活动电话库登记表.xlsx',
             )
           }
-          onLoad={async () => {
-            setSystemUsersSelectState((await querySystemUserSelectList([0])).data);
-          }}
         />{' '}
       </MainPageContainer>{' '}
     </Spin>

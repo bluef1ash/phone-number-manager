@@ -45,7 +45,7 @@ export async function downloadExcelFile(
   if (typeof data.code === 'undefined' && data) {
     let customFilename = response.headers.get('Content-Disposition');
     if (customFilename !== null) {
-      customFilename = decodeURI(customFilename.substring('attachment;filename='.length));
+      customFilename = decodeURI(customFilename.split('=')[1]).replaceAll('"', '');
     } else {
       customFilename = filename;
     }
@@ -77,14 +77,14 @@ export async function downloadExcelFile(
 export function getCompanyParentIds(): number[] {
   let parentIds = [0];
   const systemUser: API.SystemUser = JSON.parse(
-    localStorage.getItem(SESSION_SYSTEM_USER_KEY) as string,
+    localStorage.getItem(SESSION_SYSTEM_USER_KEY) || '{}',
   );
   if (
     typeof systemUser.companies !== 'undefined' &&
     systemUser.companies !== null &&
     systemUser.companies.length > 0
   ) {
-    parentIds = systemUser.companies.map((company) => company.parentId as number);
+    parentIds = systemUser.companies.map((company: API.Company) => company.parentId);
   }
   return parentIds;
 }

@@ -32,7 +32,7 @@ public final class SystemConstant {
      * 通过白名单
      */
     public static final String[] PERMIT_WHITELIST = {"/favicon.ico", "/404", "/swagger-resources/**",
-        "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**", "/exception"};
+        "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**"};
     /**
      * 匿名用户白名单
      */

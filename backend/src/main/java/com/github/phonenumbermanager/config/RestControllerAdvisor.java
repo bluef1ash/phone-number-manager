@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.exception.HttpStatusOkException;
-import com.github.phonenumbermanager.exception.NotfoundException;
 import com.github.phonenumbermanager.util.R;
 
 import lombok.extern.slf4j.Slf4j;
@@ -55,20 +54,6 @@ public class RestControllerAdvisor {
         log.error("An exception occurs and the behavior is terminated", throwable);
         return R.error(ExceptionCode.UNKNOWN_EXCEPTION.getCode(), throwable.getMessage()).put("defaultMessage",
             ExceptionCode.UNKNOWN_EXCEPTION.getDescription());
-    }
-
-    /**
-     * 404找不到异常显示
-     *
-     * @param exception
-     *            异常对象
-     * @return json对象
-     */
-    @ExceptionHandler(NotfoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public R notfound(NotfoundException exception) {
-        log.error("An exception occurs and the behavior is terminated", exception);
-        return R.error(HttpStatus.NOT_FOUND.value(), exception.getMessage());
     }
 
     /**

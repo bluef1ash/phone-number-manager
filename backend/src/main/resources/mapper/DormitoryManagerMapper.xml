@@ -152,7 +152,7 @@
         <where>
             <if test="companies != null and companies.size() gt 0">
                 <foreach collection="companies" item="company" open="pm_dormitory_manager.company_id IN ("
-                         separator=", " close=")">
+                         separator="," close=")">
                     #{company.id}
                 </foreach>
             </if>

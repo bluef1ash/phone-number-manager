@@ -138,7 +138,7 @@
             pm_community_resident_phone_number.phone_number_id IN (
             SELECT id FROM pm_phone_number
             <where>
-                <foreach collection="phoneNumbers" item="phoneNumber" open="phone_number IN (" separator=", " close=")">
+                <foreach collection="phoneNumbers" item="phoneNumber" open="phone_number IN (" separator="," close=")">
                     #{phoneNumber.phoneNumber}
                 </foreach>
             </where>

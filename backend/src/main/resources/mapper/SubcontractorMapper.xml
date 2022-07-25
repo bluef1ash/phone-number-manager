@@ -98,7 +98,7 @@
     </select>
     <select id="selectCorrelationCountByCompanyIds" resultType="java.util.Map">
         SELECT
-        pm_subcontractor.name,
+        pm_subcontractor.name AS 'subcontractor_name',
         COUNT(DISTINCT pm_community_resident.id) AS 'community_resident_count',
         COUNT(DISTINCT pm_dormitory_manager.id) AS 'dormitory_manager_count'
         FROM pm_subcontractor
@@ -120,7 +120,7 @@
         FROM pm_subcontractor
         LEFT JOIN pm_company ON pm_subcontractor.company_id = pm_company.id
         <where>
-            <foreach collection="companyIds" item="companyId" open="pm_company.id IN (" separator=", " close=")">
+            <foreach collection="companyIds" item="companyId" open="pm_company.id IN (" separator="," close=")">
                 #{companyId}
             </foreach>
         </where>
@@ -141,7 +141,7 @@
                             '%')
                         </when>
                         <otherwise>
-                            <foreach collection="value" item="id" open="pm_subcontractor.company_id IN (" separator=", "
+                            <foreach collection="value" item="id" open="pm_subcontractor.company_id IN (" separator=","
                                      close=")">
                                 #{id}
                             </foreach>

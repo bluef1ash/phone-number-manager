@@ -111,7 +111,7 @@ const Welcome: React.FC = () => {
       baseMessage.needToCount = baseMessage.haveToCount - baseMessage.inputCount;
       baseMessage.inputHaveToRatio =
         baseMessage.haveToCount !== 0
-          ? `${baseMessage.inputCount / baseMessage.haveToCount}%`
+          ? `${Math.round((baseMessage.inputCount / baseMessage.haveToCount) * 10000) / 100}%`
           : '无法计算';
     }
     return baseMessage;
@@ -153,33 +153,33 @@ const Welcome: React.FC = () => {
     }
   };
 
-  const initialData = async () => {
-    if (initialState) {
-      const currentUser = initialState.currentUser as API.SystemUser;
-      let parentIds = [0];
-      if (
-        typeof currentUser.companies !== 'undefined' &&
-        currentUser.companies !== null &&
-        currentUser.companies.length > 0
-      ) {
-        parentIds = currentUser.companies.map((company) => company.parentId as number);
-      }
-      const companySelects = (await queryCompanySelectList(parentIds)).data;
-      setCompanySelectListState(companySelects);
-      setNotSubordinateCompanySelectListState(
-        companySelects.map((companySelect) => {
-          const companySelected = { ...companySelect };
-          companySelected.isLeaf = !companySelected.isGrandsonLevel;
-          return companySelected;
-        }),
-      );
-      await loadData();
-    }
-  };
-
   useEffect(() => {
     window.addEventListener('scroll', async () => await loadData());
-    initialData().then();
+    (async () => {
+      if (initialState) {
+        const currentUser = initialState.currentUser as API.SystemUser;
+        let parentIds = [0];
+        if (
+          typeof currentUser.companies !== 'undefined' &&
+          currentUser.companies !== null &&
+          currentUser.companies.length > 0
+        ) {
+          parentIds = currentUser.companies.map(
+            (company: API.Company) => company.parentId as number,
+          );
+        }
+        const companySelects = (await queryCompanySelectList(parentIds)).data;
+        setCompanySelectListState(companySelects);
+        setNotSubordinateCompanySelectListState(
+          companySelects.map((companySelect: API.SelectList) => {
+            const companySelected = { ...companySelect };
+            companySelected.isLeaf = !companySelected.isGrandsonLevel;
+            return companySelected;
+          }),
+        );
+        await loadData();
+      }
+    })();
     return () => {
       window.removeEventListener('scroll', async () => await loadData());
     };

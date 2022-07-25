@@ -45,7 +45,7 @@
         LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
         LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
         <where>
-            <foreach collection="companyIds" item="companyId" open=" pm_company.id IN (" separator=", " close=")">
+            <foreach collection="companyIds" item="companyId" open=" pm_company.id IN (" separator="," close=")">
                 #{companyId}
             </foreach>
             <if test="search != null">
@@ -56,7 +56,7 @@
         </where>
         <if test="sort != null">
             ORDER BY
-            <foreach collection="sort" index="key" item="value" separator=", ">
+            <foreach collection="sort" index="key" item="value" separator=",">
                 CONVERT(${key} USING gbk) COLLATE gbk_chinese_ci
                 <if test="value eq 'descend'">
                     DESC
@@ -135,7 +135,7 @@
         LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
         LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
         <where>
-            <foreach collection="companyIds" item="companyId" open="pm_company.id IN (" separator=", " close=")">
+            <foreach collection="companyIds" item="companyId" open="pm_company.id IN (" separator="," close=")">
                 #{companyId}
             </foreach>
         </where>

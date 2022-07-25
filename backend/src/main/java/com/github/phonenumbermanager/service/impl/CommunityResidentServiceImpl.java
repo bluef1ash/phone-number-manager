@@ -43,7 +43,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     private final CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper;
     private final PhoneNumberMapper phoneNumberMapper;
     private final CompanyMapper companyMapper;
-    private final CompanyExtraMapper companyExtraMapper;
     private final SubcontractorMapper subcontractorMapper;
     private int excelCommunityCellNumber;
     private int excelCommunityResidentNameCellNumber;
@@ -55,12 +54,10 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Autowired
     public CommunityResidentServiceImpl(CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper,
-        PhoneNumberMapper phoneNumberMapper, CompanyMapper companyMapper, CompanyExtraMapper companyExtraMapper,
-        SubcontractorMapper subcontractorMapper) {
+        PhoneNumberMapper phoneNumberMapper, CompanyMapper companyMapper, SubcontractorMapper subcontractorMapper) {
         this.communityResidentPhoneNumberMapper = communityResidentPhoneNumberMapper;
         this.phoneNumberMapper = phoneNumberMapper;
         this.companyMapper = companyMapper;
-        this.companyExtraMapper = companyExtraMapper;
         this.subcontractorMapper = subcontractorMapper;
     }
 
@@ -229,44 +226,20 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      */
     private Map<String, Object> computedBaseMessage(Long[] companyIds, List<Company> companyAll) {
         Map<String, Object> baseMessage = new HashMap<>(2);
-        LambdaQueryWrapper<CommunityResident> communityResidentWrapper = new LambdaQueryWrapper<>();
-        QueryWrapper<CompanyExtra> companyExtraWrapper = new QueryWrapper<>();
-        Arrays.stream(companyIds).forEach(companyId -> {
-            List<Company> companyList = CommonUtil.listRecursionCompanies(companyAll, companyId);
-            if (companyList.isEmpty()) {
-                baseMessageQueryWrapperHandle(communityResidentWrapper, companyExtraWrapper, companyId);
-            } else {
-                companyList.forEach(company -> baseMessageQueryWrapperHandle(communityResidentWrapper,
-                    companyExtraWrapper, company.getId()));
-            }
-        });
-        companyExtraWrapper.select("IFNULL(SUM(name), 0) AS 'needTo'");
-        baseMessage.put("inputCount", baseMapper.selectCount(communityResidentWrapper));
-        List<Map<String, Object>> companyExtraMaps = companyExtraMapper.selectMaps(companyExtraWrapper);
-        double haveToCount = 0;
-        if (!companyExtraMaps.isEmpty()) {
-            haveToCount = (double)companyExtraMaps.get(0).get("needTo");
+        QueryWrapper<CommunityResident> wrapper = new QueryWrapper<>();
+        List<Long> companyIdList =
+            Arrays.stream(companyIds).map(companyId -> CommonUtil.listRecursionCompanies(companyAll, companyId))
+                .flatMap(List::stream).map(Company::getId).collect(Collectors.toList());
+        if (companyIdList.isEmpty()) {
+            companyIdList = Arrays.asList(companyIds);
         }
-        baseMessage.put("haveToCount", haveToCount);
+        wrapper.in("company_id", companyIdList);
+        wrapper.select("COUNT(id) AS 'inputCount'", "COUNT(DISTINCT subcontractor_id) AS 'haveToCount'");
+        List<Map<String, Object>> countMaps = baseMapper.selectMaps(wrapper);
+        baseMessage.put("inputCount", countMaps.get(0).get("inputCount"));
+        baseMessage.put("haveToCount", ((long)countMaps.get(0).get("haveToCount")) * 300);
         baseMessage.put("loading", false);
         return baseMessage;
-    }
-
-    /**
-     * 计算录入统计信息查询对象处理
-     *
-     * @param communityResidentWrapper
-     *            社区居民查询对象
-     * @param companyExtraWrapper
-     *            单位额外查询对象
-     * @param companyId
-     *            单位编号
-     */
-    private void baseMessageQueryWrapperHandle(LambdaQueryWrapper<CommunityResident> communityResidentWrapper,
-        QueryWrapper<CompanyExtra> companyExtraWrapper, Long companyId) {
-        communityResidentWrapper.eq(CommunityResident::getCompanyId, companyId).or();
-        companyExtraWrapper.and(wrapper -> wrapper.and(w -> w.eq("company_id", companyId)).eq("name", "haveToCount"))
-            .or();
     }
 
     /**

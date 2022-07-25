@@ -122,6 +122,39 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         return selectListVos;
     }
 
+    @Override
+    public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
+        String personCountAlias) {
+        List<Company> companyList = new ArrayList<>();
+        List<Long> subordinateCompanyIds = new ArrayList<>();
+        companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
+        Map<String, Object> barChartMap;
+        if (subordinateCompanyIds.isEmpty()) {
+            List<Map<String, Object>> systemUserCounts = baseMapper.selectCorrelationCountByCompanyIds(companyIds);
+            List<Map<String, Object>> data = new ArrayList<>();
+            for (Map<String, Object> systemUserCount : systemUserCounts) {
+                Map<String, Object> communityResidentMap = new HashMap<>(3);
+                communityResidentMap.put("countType", "分包社区居民数");
+                communityResidentMap.put("subcontractorName", systemUserCount.get("subcontractor_name"));
+                communityResidentMap.put("personCount", systemUserCount.get("community_resident_count"));
+                Map<String, Object> dormitoryManagerMap = new HashMap<>(3);
+                dormitoryManagerMap.put("countType", "分包社区居民楼片长数");
+                dormitoryManagerMap.put("subcontractorName", systemUserCount.get("subcontractor_name"));
+                dormitoryManagerMap.put("personCount", systemUserCount.get("dormitory_manager_count"));
+                data.add(communityResidentMap);
+                data.add(dormitoryManagerMap);
+            }
+            barChartMap = getBarChartMap("subcontractorName", "分包人", "personCount", "人数");
+            barChartMap.put("seriesField", "countType");
+            barChartMap.put("isGroup", true);
+            barChartMap.put("data", data);
+        } else {
+            // 选择非最下层单位时，列出分包人数
+            barChartMap = barChartHandle(companyAll, "人数", companyList, subordinateCompanyIds);
+        }
+        return barChartMap;
+    }
+
     /**
      * 处理社区分包人员联系方式关联对象
      *

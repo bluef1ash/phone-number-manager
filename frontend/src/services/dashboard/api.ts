@@ -4,7 +4,7 @@ import {
   communityResidentChart,
   dormitoryManagerBaseMessage,
   dormitoryManagerChart,
-  system
+  subcontractorChart
 } from "@/services/api";
 import type { ColumnConfig } from "@ant-design/charts";
 
@@ -63,7 +63,7 @@ export async function querySubcontractorChart(
   data?: API.DashboardComputedPostData,
   options?: Record<string, any>,
 ) {
-  return request.post<API.Data<ColumnConfig> & API.ResponseException>(system.subcontractorChart, {
+  return request.post<API.Data<ColumnConfig> & API.ResponseException>(subcontractorChart, {
     data,
     ...(options || {}),
   });

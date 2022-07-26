@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { message, Tag } from 'antd';
 import { groupBy } from 'lodash';
 import moment from 'moment';
-import { useModel, useRequest } from 'umi';
-import { getNotices } from '@/services/account/api';
+import { useModel } from 'umi';
 
 import NoticeIcon from './NoticeIcon';
 import styles from './index.less';
@@ -74,11 +73,11 @@ const NoticeIconView: React.FC = () => {
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState || {};
   const [notices, setNotices] = useState<API.NoticeIconItem[]>([]);
-  const { data } = useRequest(getNotices);
+  //const { data } = useRequest(getNotices);
 
-  useEffect(() => {
+  /*useEffect(() => {
     setNotices(data || []);
-  }, [data]);
+  }, [data]);*/
 
   const noticeData = getNoticeData(notices);
   const unreadMsg = getUnreadData(noticeData || {});

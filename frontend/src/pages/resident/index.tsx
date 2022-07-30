@@ -97,8 +97,7 @@ const InputElement = (
 
 const CommunityResident: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const createFormRef = useRef<ProFormInstance<API.CommunityResident>>();
-  const modifyFormRef = useRef<ProFormInstance<API.CommunityResident>>();
+  const formRef = useRef<ProFormInstance<API.CommunityResident>>();
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
   const [subcontractorSelectState, setSubcontractorSelectState] = useState<API.SelectList[]>([]);
@@ -220,47 +219,25 @@ const CommunityResident: React.FC = () => {
               data,
             })
           }
-          createEditModalForm={{
+          modalForm={{
+            title: '社区居民',
             element: InputElement(
               subcontractorSelectState,
               setSubcontractorSelectState,
               repeatExceptionMessageState,
             ),
-            props: {
-              title: '添加社区居民',
-              modalProps: {
-                onCancel: () => {
-                  createFormRef.current?.resetFields();
-                  setRepeatExceptionMessageState(null);
-                },
-              },
+            onCancel: () => {
+              setRepeatExceptionMessageState(null);
             },
-            formRef: createFormRef,
-            onFinish: async (formData) => {
+            formRef: formRef,
+            onCreateFinish: async (formData) => {
               const result = await createCommunityResident(submitPreHandler(formData));
               if (result.code === ExceptionCode.REPEAT_DATA_FAILED) {
                 setRepeatExceptionMessageState(result.message);
               }
               return result;
             },
-          }}
-          modifyEditModalForm={{
-            element: InputElement(
-              subcontractorSelectState,
-              setSubcontractorSelectState,
-              repeatExceptionMessageState,
-            ),
-            props: {
-              title: '编辑社区居民',
-              modalProps: {
-                onCancel: () => {
-                  modifyFormRef.current?.resetFields();
-                  setRepeatExceptionMessageState(null);
-                },
-              },
-            },
-            formRef: modifyFormRef,
-            onFinish: async (formData) => {
+            onModifyFinish: async (formData) => {
               const result = await modifyCommunityResident(formData.id, submitPreHandler(formData));
               if (result.code === ExceptionCode.REPEAT_DATA_FAILED) {
                 setRepeatExceptionMessageState(result.message);
@@ -269,7 +246,6 @@ const CommunityResident: React.FC = () => {
               }
               return result;
             },
-            onConfirmRemove: async (id) => await removeCommunityResident(id),
             queryData: async (id) => {
               const result = await queryCommunityResident(id);
               setModifyCompanyIdState(result.data.companyId);
@@ -277,6 +253,7 @@ const CommunityResident: React.FC = () => {
               return result;
             },
           }}
+          removeData={async (id) => await removeCommunityResident(id)}
           importDataUploadProps={{
             action: communityResidentImportExcel,
             name: 'file',

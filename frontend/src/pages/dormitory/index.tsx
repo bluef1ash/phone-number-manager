@@ -198,8 +198,7 @@ const InputElement = (
 
 const DormitoryManager: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const createFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
-  const modifyFormRef = useRef<ProFormInstance<API.DormitoryManager>>();
+  const formRef = useRef<ProFormInstance<API.DormitoryManager>>();
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
   const [subcontractorSelectState, setSubcontractorSelectState] = useState<API.SelectList[]>([]);
@@ -339,23 +338,14 @@ const DormitoryManager: React.FC = () => {
               data,
             })
           }
-          createEditModalForm={{
+          modalForm={{
+            title: '社区居民楼片长',
             element: InputElement(subcontractorSelectState, setSubcontractorSelectState),
-            props: {
-              title: '添加社区居民楼片长',
-            },
-            formRef: createFormRef,
-            onFinish: async (formData) => await createDormitoryManager(submitPreHandler(formData)),
-          }}
-          modifyEditModalForm={{
-            element: InputElement(subcontractorSelectState, setSubcontractorSelectState),
-            props: {
-              title: '编辑社区居民楼片长',
-            },
-            formRef: modifyFormRef,
-            onFinish: async (formData) =>
+            formRef: formRef,
+            onCreateFinish: async (formData) =>
+              await createDormitoryManager(submitPreHandler(formData)),
+            onModifyFinish: async (formData) =>
               await modifyDormitoryManager(formData.id, submitPreHandler(formData)),
-            onConfirmRemove: async (id) => await removeDormitoryManager(id),
             queryData: async (id) => {
               const result = await queryDormitoryManager(id);
               result.data.education = result.data.education.toString();
@@ -364,6 +354,7 @@ const DormitoryManager: React.FC = () => {
               return result;
             },
           }}
+          removeData={async (id) => await removeDormitoryManager(id)}
           importDataUploadProps={{
             action: dormitoryManagerImportExcel,
             name: 'file',

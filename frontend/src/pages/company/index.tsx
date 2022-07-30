@@ -210,11 +210,10 @@ const InputElement = (
 
 const Company: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const createFormRef = useRef<ProFormInstance<API.Company>>();
-  const modifyFormRef = useRef<ProFormInstance<API.Company>>();
+  const formRef = useRef<ProFormInstance<API.Company>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
   const [systemPermissionState, setSystemPermissionState] = useState<API.SelectList[]>([]);
-  const [modifyIdState, setModifyIdState] = useState<number>(0);
+  const [modifyIdState, setModifyIdState] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
@@ -297,20 +296,8 @@ const Company: React.FC = () => {
             data,
           })
         }
-        createEditModalForm={{
-          element: InputElement(
-            selectListState,
-            setSelectListState,
-            systemPermissionState,
-            setSystemPermissionState,
-          ),
-          props: {
-            title: '添加单位',
-          },
-          formRef: createFormRef,
-          onFinish: async (formData) => await createCompany(submitPreHandler(formData)),
-        }}
-        modifyEditModalForm={{
+        modalForm={{
+          title: '单位',
           element: InputElement(
             selectListState,
             setSelectListState,
@@ -318,13 +305,10 @@ const Company: React.FC = () => {
             setSystemPermissionState,
             modifyIdState,
           ),
-          props: {
-            title: '编辑单位',
-          },
-          formRef: modifyFormRef,
-          onFinish: async (formData) =>
+          formRef: formRef,
+          onCreateFinish: async (formData) => await createCompany(submitPreHandler(formData)),
+          onModifyFinish: async (formData) =>
             await modifyCompany(formData.id, submitPreHandler(formData)),
-          onConfirmRemove: async (id) => await removeCompany(id),
           queryData: async (id) => {
             const result = await queryCompany(id);
             if (
@@ -343,7 +327,11 @@ const Company: React.FC = () => {
             setModifyIdState(id);
             return result;
           },
+          modifyButtonPreHandler() {
+            setModifyIdState(undefined);
+          },
         }}
+        removeData={async (id) => await removeCompany(id)}
       />{' '}
     </MainPageContainer>
   );

@@ -133,8 +133,7 @@ const InputElement = (
 
 const Configuration: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const createFormRef = useRef<ProFormInstance<API.Configuration>>();
-  const ModifyFormRef = useRef<ProFormInstance<API.Configuration>>();
+  const formRef = useRef<ProFormInstance<API.Configuration>>();
   return (
     <MainPageContainer
       routes={[
@@ -178,24 +177,15 @@ const Configuration: React.FC = () => {
             data,
           })
         }
-        createEditModalForm={{
+        modalForm={{
+          title: '系统配置项',
           element: InputElement,
-          props: {
-            title: '添加系统配置项',
-          },
-          formRef: createFormRef,
-          onFinish: async (formData) => await createConfiguration(formData),
-        }}
-        modifyEditModalForm={{
-          element: InputElement,
-          props: {
-            title: '编辑系统配置项',
-          },
-          formRef: ModifyFormRef,
-          onFinish: async (formData) => await modifyConfiguration(formData.id, formData),
-          onConfirmRemove: async (id) => await removeConfiguration(id),
+          formRef: formRef,
+          onCreateFinish: async (formData) => await createConfiguration(formData),
+          onModifyFinish: async (formData) => await modifyConfiguration(formData.id, formData),
           queryData: async (id) => await queryConfiguration(id),
         }}
+        removeData={async (id) => await removeConfiguration(id)}
       />{' '}
     </MainPageContainer>
   );

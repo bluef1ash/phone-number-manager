@@ -179,10 +179,9 @@ const InputElement = (
 
 const SystemPermission: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const createFormRef = useRef<ProFormInstance<API.SystemPermission>>();
-  const modifyFormRef = useRef<ProFormInstance<API.SystemPermission>>();
+  const formRef = useRef<ProFormInstance<API.SystemPermission>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
-  const [modifyIdState, setModifyIdState] = useState<number>(0);
+  const [modifyIdState, setModifyIdState] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
@@ -276,23 +275,14 @@ const SystemPermission: React.FC = () => {
             data,
           })
         }
-        createEditModalForm={{
-          element: InputElement(selectListState, setSelectListState, createFormRef),
-          props: {
-            title: '添加系统权限',
-          },
-          formRef: createFormRef,
-          onFinish: async (formData) => await createSystemPermission(submitPreHandler(formData)),
-        }}
-        modifyEditModalForm={{
-          element: InputElement(selectListState, setSelectListState, modifyFormRef, modifyIdState),
-          props: {
-            title: '编辑系统权限',
-          },
-          formRef: modifyFormRef,
-          onFinish: async (formData) =>
+        modalForm={{
+          title: '系统权限',
+          element: InputElement(selectListState, setSelectListState, formRef, modifyIdState),
+          formRef: formRef,
+          onCreateFinish: async (formData) =>
+            await createSystemPermission(submitPreHandler(formData)),
+          onModifyFinish: async (formData) =>
             await modifySystemPermission(formData.id, submitPreHandler(formData)),
-          onConfirmRemove: async (id) => await removeSystemPermission(id),
           queryData: async (id) => {
             const result = await querySystemPermission(id);
             if (Array.isArray(result.data.httpMethods)) {
@@ -309,7 +299,11 @@ const SystemPermission: React.FC = () => {
             setModifyIdState(id);
             return result;
           },
+          modifyButtonPreHandler() {
+            setModifyIdState(undefined);
+          },
         }}
+        removeData={async (id) => await removeSystemPermission(id)}
       />{' '}
     </MainPageContainer>
   );

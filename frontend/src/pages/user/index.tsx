@@ -20,8 +20,7 @@ import SelectCascder from '@/components/SelectCascder';
 
 const SystemUser: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const createFormRef = useRef<ProFormInstance<API.SystemUser>>();
-  const ModifyFormRef = useRef<ProFormInstance<API.SystemUser>>();
+  const formRef = useRef<ProFormInstance<API.SystemUser>>();
   const [companySelectState, setCompanySelectState] = useState<API.SelectList[]>([]);
 
   useEffect(() => {
@@ -177,7 +176,8 @@ const SystemUser: React.FC = () => {
             data,
           })
         }
-        createEditModalForm={{
+        modalForm={{
+          title: '系统用户',
           element: (
             <UserForm
               companySelectList={companySelectState}
@@ -185,27 +185,11 @@ const SystemUser: React.FC = () => {
               isCreate={true}
             />
           ),
-          props: {
-            title: '添加系统用户',
-          },
-          formRef: createFormRef,
-          onFinish: async (formData) => await createSystemUser(UserFormSubmitPreHandler(formData)),
-        }}
-        modifyEditModalForm={{
-          element: (
-            <UserForm
-              companySelectList={companySelectState}
-              setCompanySelectList={setCompanySelectState}
-              isCreate={false}
-            />
-          ),
-          props: {
-            title: '编辑系统用户',
-          },
-          formRef: ModifyFormRef,
-          onFinish: async (formData) =>
+          formRef: formRef,
+          onCreateFinish: async (formData) =>
+            await createSystemUser(UserFormSubmitPreHandler(formData)),
+          onModifyFinish: async (formData) =>
             await modifySystemUser(formData.id, UserFormSubmitPreHandler(formData)),
-          onConfirmRemove: async (id) => await removeSystemUser(id),
           queryData: async (id) => {
             const result = await querySystemUser(id);
             if (
@@ -222,6 +206,7 @@ const SystemUser: React.FC = () => {
             return result;
           },
         }}
+        removeData={async (id) => await removeSystemUser(id)}
       />{' '}
     </MainPageContainer>
   );

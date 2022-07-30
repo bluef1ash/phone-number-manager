@@ -122,8 +122,7 @@ const InputElement = (
 
 const Subcontractor: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const createFormRef = useRef<ProFormInstance<API.Subcontractor>>();
-  const modifyFormRef = useRef<ProFormInstance<API.Subcontractor>>();
+  const formRef = useRef<ProFormInstance<API.Subcontractor>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
 
   useEffect(() => {
@@ -214,23 +213,13 @@ const Subcontractor: React.FC = () => {
             data,
           })
         }
-        createEditModalForm={{
+        modalForm={{
+          title: '社区分包人员',
           element: InputElement(selectListState, setSelectListState),
-          props: {
-            title: '添加社区分包人员',
-          },
-          formRef: createFormRef,
-          onFinish: async (formData) => await createSubcontractor(submitPreHandler(formData)),
-        }}
-        modifyEditModalForm={{
-          element: InputElement(selectListState, setSelectListState),
-          props: {
-            title: '编辑社区分包人员',
-          },
-          formRef: modifyFormRef,
-          onFinish: async (formData) =>
+          formRef: formRef,
+          onCreateFinish: async (formData) => await createSubcontractor(submitPreHandler(formData)),
+          onModifyFinish: async (formData) =>
             await modifySubcontractor(formData.id, submitPreHandler(formData)),
-          onConfirmRemove: async (id) => await removeSubcontractor(id),
           queryData: async (id) => {
             const result = await querySubcontractor(id);
             result.data.positions = result.data.positions?.map(
@@ -240,6 +229,7 @@ const Subcontractor: React.FC = () => {
             return result;
           },
         }}
+        removeData={async (id) => await removeSubcontractor(id)}
       />{' '}
     </MainPageContainer>
   );

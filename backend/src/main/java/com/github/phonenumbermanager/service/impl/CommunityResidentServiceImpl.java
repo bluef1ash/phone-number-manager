@@ -362,7 +362,10 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         LambdaQueryWrapper<PhoneNumber> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(PhoneNumber::getPhoneNumber, entity.getPhoneNumbers());
         List<PhoneNumber> phoneNumbers = phoneNumberMapper.selectList(wrapper);
-        return phoneNumbers.stream().map(phoneNumber -> new CommunityResidentPhoneNumber()
-            .setCommunityResidentId(entity.getId()).setPhoneNumberId(phoneNumber.getId())).collect(Collectors.toList());
+        return entity.getPhoneNumbers().stream().map(
+            phoneNumber -> new CommunityResidentPhoneNumber().setCommunityResidentId(entity.getId()).setPhoneNumberId(
+                phoneNumbers.stream().filter(p -> p.getPhoneNumber().equals(phoneNumber.getPhoneNumber())).findFirst()
+                    .map(PhoneNumber::getId).orElse(phoneNumber.getId())))
+            .collect(Collectors.toList());
     }
 }

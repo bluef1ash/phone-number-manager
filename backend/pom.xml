@@ -13,7 +13,7 @@
     <version>0.0.1</version>
     <name>phone-number-manager</name>
     <description>
-        This system is written using Spring Boot + Mybatis + Spring Security + Node.js + Webpack + Vue.js architecture.
+        This system is written using Spring Boot + Mybatis Plus + Spring Security + React + Ant Design Pro architecture.
         The database uses MySQL to provide powerful, secure and complete management of information about
         community residents.
     </description>

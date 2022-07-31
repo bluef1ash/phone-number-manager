@@ -7,11 +7,12 @@
 此系统在系统层面提供了众多的安全特性，产品安全无忧。这些特性包括：
 
 - Session会话验证
-- 系统用户“单点登录”
+- ~~系统用户“单点登录”~~
 - XSS安全防护
 - 表单自动验证
 - 输入数据过滤
 - 表单令牌验证
+- 前后端分离
 
 ## 技术实现
 
@@ -28,33 +29,33 @@
 
 感谢以上技术的开发者！
 
-## 系统后台链接
+## 系统后台源码链接
 
-- [Github]()
-- [Gitee]()
+- [Github](https://github.com/bluef1ash/phone-number-manager/tree/master/backend)
+- [Gitee](https://gitee.com/bluef1ash/phone-number-manager/tree/master/backend)
 
-## 系统前台链接
+## 系统前台源码链接
 
-- [Github]()
-- [Gitee]()
+- [Github](https://github.com/bluef1ash/phone-number-manager/tree/master/frontend)
+- [Gitee](https://gitee.com/bluef1ash/phone-number-manager/tree/master/frontend)
 
 ## 系统截图
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/login.jpg)
+### 登录页面
 
-<div style="text-align: center">登录页面</div>
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/login.png)
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/index.jpg)
+### 系统首页
 
-<div style="text-align: center">系统首页</div>
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/index.png)
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/list.jpg)
+### 列表页面
 
-<div style="text-align: center">列表页面</div>
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/list.png)
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/create.jpg)
+### 添加、编辑数据页面
 
-<div style="text-align: center">添加、编辑数据页面</div>
+![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/create.png)
 
 ## Author: Bluef1ash（廿二月的天）
 
@@ -98,7 +99,7 @@ services:
 
 此系统遵循MIT开源许可证发布。MIT许可证（The MIT License）是许多软件授权条款中，被广泛使用的其中一种。与其他常见的软件授权条款（如GPL、LGPL、BSD）相比，MIT是相对宽松的软件授权条款。
 
-## 首次运行需要执行`npm install`与`npm run build`命令，切记！（使用docker-compose则无需执行）
+## 首次运行需要执行 `npm install` 与 `npm run build` 命令，切记！（使用docker-compose则无需执行）
 
 ```shell
 npm install
@@ -107,6 +108,6 @@ npm run build
 
 ## 系统默认用户
 
-> 系统默认用户名：**13012345678**
+> 系统默认用户名：**admin**
 
 > 系统默认密码：**admin888**

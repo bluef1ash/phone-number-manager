@@ -30,6 +30,7 @@ const UserForm: React.FC<UserFormProps> = ({
       label="系统用户名称"
       tooltip="不能超过10个字符"
       placeholder="请输入系统用户名称"
+      disabled={!isCreate}
       rules={[
         {
           required: true,

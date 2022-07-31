@@ -18,7 +18,6 @@ import moment from 'moment';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = account.login.substring(REACT_APP_API_BASE_URL.length);
 
-/** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
   loading: <PageLoading />,
 };
@@ -29,10 +28,11 @@ export async function getInitialState(): Promise<{
   menuData?: MenuDataItem[];
   fetchMenuData?: (display: boolean) => Promise<API.ResponseMenu | undefined>;
   components?: string[];
+  loading?: boolean;
 }> {
   const fetchMenuData = async (display: boolean) => {
     const { code, menuData, components } = await queryMenuData(display);
-    if (code === 0) {
+    if (code === 200) {
       localStorage.setItem(SESSION_MENU_KEY, JSON.stringify(menuData));
       localStorage.setItem(SESSION_COMPONENTS_KEY, JSON.stringify(components));
       return { code, menuData, components };
@@ -64,6 +64,7 @@ export async function getInitialState(): Promise<{
       fetchMenuData,
       settings: {},
       components,
+      loading: false,
     };
   }
   return {
@@ -81,7 +82,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     onPageChange: () => {
       const { location } = history;
       const session = localStorage.getItem(SESSION_TOKEN_KEY);
-      // 如果没有登录，重定向到 login
       if (!session && location.pathname !== loginPath) {
         history.push(loginPath);
       }
@@ -104,14 +104,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
           </Link>,
         ]
       : [],
-    menuHeaderRender: undefined,
+    menuHeaderRender: false,
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
-    // childrenRender: (children) => {
-    //   if (initialState.loading) return <PageLoading />;
-    //   return children;
-    // },
+    childrenRender: (children) => {
+      if (initialState?.loading) return <PageLoading />;
+      return children;
+    },
     ...initialState?.settings,
   };
 };

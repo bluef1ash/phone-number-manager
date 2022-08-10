@@ -1,13 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import MainPageContainer from '@/components/MainPageContainer';
-import { StatisticCard } from '@ant-design/pro-card';
-import { queryCompanySelectList } from '@/services/company/api';
-import ComputedStatisticCard from '@/components/ComputedStatisticCard';
-import styles from './index.less';
-import type { ColumnConfig } from '@ant-design/charts';
-import { Bar, Pie } from '@ant-design/charts';
 import ComputedChartColumn from '@/components/ComputedChartColumn';
-import { Col, message, Row } from 'antd';
+import ComputedStatisticCard from '@/components/ComputedStatisticCard';
+import MainPageContainer from '@/components/MainPageContainer';
+import { queryCompanySelectList } from '@/services/company/api';
 import {
   queryCommunityResidentBaseMessage,
   queryCommunityResidentChart,
@@ -17,6 +11,12 @@ import {
 } from '@/services/dashboard/api';
 import { checkVisibleInDocument } from '@/services/utils';
 import { useModel } from '@@/plugin-model/useModel';
+import type { ColumnConfig } from '@ant-design/charts';
+import { Bar, Pie } from '@ant-design/charts';
+import { StatisticCard } from '@ant-design/pro-card';
+import { Col, message, Row } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import styles from './index.less';
 
 const Welcome: React.FC = () => {
   const { initialState } = useModel('@@initialState');
@@ -201,7 +201,7 @@ const Welcome: React.FC = () => {
           companySelectState={residentBaseMessageCompaniesState}
           setCompanySelectState={setResidentBaseMessageCompaniesState}
           setDataState={setResidentBaseMessageState}
-          loading={{
+          loadingObject={{
             ...residentBaseMessageState,
             loading: true,
           }}
@@ -256,7 +256,7 @@ const Welcome: React.FC = () => {
           companySelectState={residentBarChartCompaniesState}
           setCompanySelectState={setResidentBarChartCompaniesState}
           setDataState={setResidentBarChartState}
-          loading={{
+          loadingObject={{
             ...residentBarChartState,
             loading: true,
           }}
@@ -279,7 +279,7 @@ const Welcome: React.FC = () => {
           companySelectState={dormitoryBaseMessageCompaniesState}
           setCompanySelectState={setDormitoryBaseMessageCompaniesState}
           setDataState={setDormitoryBaseMessageState}
-          loading={{
+          loadingObject={{
             ...dormitoryBaseMessageState,
             loading: true,
           }}
@@ -345,7 +345,7 @@ const Welcome: React.FC = () => {
           companySelectState={dormitoryBarChartCompaniesState}
           setCompanySelectState={setDormitoryBarChartCompaniesState}
           setDataState={setDormitoryBarChartState}
-          loading={{
+          loadingObject={{
             ...dormitoryBarChartState,
             loading: true,
           }}

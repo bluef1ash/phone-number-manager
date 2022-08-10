@@ -1,16 +1,16 @@
-import React from 'react';
 import type { LightFilterFooterRender, ProFormItemProps } from '@ant-design/pro-form';
 import { ProFormCascader } from '@ant-design/pro-form';
+import type { FieldProps } from '@ant-design/pro-form/es/interface';
+import type { ExtendsProps, ProFormFieldRemoteProps } from '@ant-design/pro-form/lib/interface';
+import type { ProFieldProps } from '@ant-design/pro-utils/lib';
 import type { CascaderProps } from 'antd';
 import { Cascader } from 'antd';
-import type { ExtendsProps, ProFormFieldRemoteProps } from '@ant-design/pro-form/lib/interface';
-import type { FieldProps } from '@ant-design/pro-form/es/interface';
-import type { ProFieldProps } from '@ant-design/pro-utils/lib';
 import type { DefaultOptionType } from 'antd/lib/cascader';
+import React from 'react';
 
 export type SelectCascderProps = {
   isNotProForm?: boolean;
-  fieldProps?: (FieldProps & CascaderProps<any>) | undefined;
+  fieldProps?: (FieldProps<any> & CascaderProps<any>) | undefined;
   placeholder?: string | string[] | undefined;
   secondary?: boolean | undefined;
   cacheForSwr?: boolean | undefined;

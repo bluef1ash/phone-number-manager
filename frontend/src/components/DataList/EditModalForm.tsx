@@ -1,19 +1,21 @@
 import { ProForm } from '@ant-design/pro-form';
+import type { ProFormProps } from '@ant-design/pro-form/lib/layouts/ProForm';
 import type { ModalProps } from 'antd';
 import { Button, Modal } from 'antd';
 import React from 'react';
-import type { ProFormProps } from '@ant-design/pro-form/lib/layouts/ProForm';
 
 export type EditModalFormProps<T extends API.BaseEntity> = {
   modalProps?: ModalProps;
   modalHandleOk?: (e: React.MouseEvent<HTMLElement>) => void;
   modalHandleCancel?: (e: React.MouseEvent<HTMLElement>) => void;
+  children?: React.ReactNode | React.ReactNode[];
 } & ProFormProps<T>;
 
 function EditModalForm<T extends API.BaseEntity>({
   modalProps,
   modalHandleOk,
   modalHandleCancel,
+  children,
   ...restProps
 }: EditModalFormProps<T>): JSX.Element {
   return (
@@ -29,7 +31,12 @@ function EditModalForm<T extends API.BaseEntity>({
           {' '}
           重置{' '}
         </Button>,
-        <Button key="ok" type="primary" onClick={modalHandleOk} loading={modalProps?.confirmLoading}>
+        <Button
+          key="ok"
+          type="primary"
+          onClick={modalHandleOk}
+          loading={modalProps?.confirmLoading}
+        >
           {' '}
           保存{' '}
         </Button>,
@@ -38,7 +45,7 @@ function EditModalForm<T extends API.BaseEntity>({
     >
       {' '}
       <ProForm<T> autoFocusFirstInput={true} layout="vertical" submitter={false} {...restProps}>
-        {restProps.children}
+        {children}
       </ProForm>{' '}
     </Modal>
   );

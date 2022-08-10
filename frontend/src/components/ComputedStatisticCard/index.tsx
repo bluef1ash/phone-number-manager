@@ -1,8 +1,8 @@
-import React from 'react';
 import SelectCascder from '@/components/SelectCascder';
 import { queryCompanySelectList } from '@/services/company/api';
 import type { StatisticCardProps } from '@ant-design/pro-card/lib/components/StatisticCard';
 import StatisticCard from '@ant-design/pro-card/lib/components/StatisticCard';
+import React from 'react';
 
 export type ComputedStatisticCardProps<T> = {
   companySelectListState: API.SelectList[];
@@ -10,7 +10,7 @@ export type ComputedStatisticCardProps<T> = {
   companySelectState?: API.SelectList[];
   setCompanySelectState: React.Dispatch<React.SetStateAction<API.SelectList[]>>;
   setDataState?: React.Dispatch<React.SetStateAction<T>>;
-  loading?: T;
+  loadingObject?: T;
   dataResults?: (data: T) => T;
   queryDashboardComputed?: (
     data?: API.DashboardComputedPostData,
@@ -25,7 +25,7 @@ function ComputedStatisticCard<T>({
   companySelectState,
   setCompanySelectState,
   setDataState,
-  loading,
+  loadingObject,
   dataResults,
   queryDashboardComputed,
   companySelectOnDropdownVisibleChange,
@@ -55,11 +55,11 @@ function ComputedStatisticCard<T>({
                     if (
                       open === false &&
                       typeof setDataState !== 'undefined' &&
-                      typeof loading !== 'undefined' &&
+                      typeof loadingObject !== 'undefined' &&
                       typeof queryDashboardComputed !== 'undefined' &&
                       typeof dataResults !== 'undefined'
                     ) {
-                      setDataState(loading);
+                      setDataState(loadingObject);
                       const result = (
                         await queryDashboardComputed({
                           companyIds: companySelectState?.map((v) => v.id),

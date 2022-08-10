@@ -1,16 +1,16 @@
-import React from 'react';
-import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
 import { ProFormList, ProFormText } from '@ant-design/pro-form';
-import { parsePhoneNumber } from 'libphonenumber-js/max';
 import type { ProFormListProps } from '@ant-design/pro-form/lib/components/List';
-import { isArray } from 'lodash';
 import type { ProFormFieldItemProps } from '@ant-design/pro-form/lib/interface';
+import { parsePhoneNumber } from 'libphonenumber-js/max';
+import { isArray } from 'lodash';
+import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
+import React from 'react';
 
 export type PhoneNumberListProps = {
   creatorButtonText?: string;
   listValidRejectMessage?: string;
   phoneNumberFormProps?: ProFormFieldItemProps;
-} & Omit<ProFormListProps, 'children'>;
+} & Omit<ProFormListProps<string>, 'children'>;
 
 const PhoneNumberList: React.FC<PhoneNumberListProps> = ({
   creatorButtonText,

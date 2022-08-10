@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import type { ActionType, ProTableProps } from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
-import type { ModalProps } from 'antd';
-import { Button, message as msg, Popconfirm, Space, Upload } from 'antd';
-import type { ParamsType } from '@ant-design/pro-provider';
-import EditModalForm from './EditModalForm';
 import { ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
+import type { ProFormProps } from '@ant-design/pro-form/lib/layouts/ProForm';
+import type { ParamsType } from '@ant-design/pro-provider';
+import type { ActionType, ProTableProps } from '@ant-design/pro-table';
+import ProTable from '@ant-design/pro-table';
 import type { ProColumns } from '@ant-design/pro-table/lib/typing';
+import type { ModalProps } from 'antd';
+import { Button, message as msg, Popconfirm, Space, Upload } from 'antd';
 import type { SortOrder } from 'antd/es/table/interface';
 import type { Key } from 'antd/lib/table/interface';
 import type { UploadProps } from 'antd/lib/upload/interface';
 import { cloneDeep, isArray } from 'lodash';
-import type { ProFormProps } from '@ant-design/pro-form/lib/layouts/ProForm';
+import React, { useState } from 'react';
+import EditModalForm from './EditModalForm';
 import styles from './index.less';
 
 export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
@@ -245,8 +245,7 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
         )}
         tableAlertOptionRender={({ selectedRowKeys }) => (
           <Space size={16}>
-            {' '}
-            {((): JSX.Element | void => {
+            {((): JSX.Element => {
               if (typeof batchRemoveEventHandler !== 'undefined') {
                 return (
                   <Popconfirm
@@ -271,8 +270,10 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
                     <a key="batch_remove_button">批量删除</a>{' '}
                   </Popconfirm>
                 );
+              } else {
+                return <></>;
               }
-            })()}{' '}
+            })()}
           </Space>
         )}
         {...restProps}
@@ -288,23 +289,25 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
             modalForm?.formRef?.current?.resetFields();
             setModalVisibleState(false);
           },
-          footer: [
-            modalCreateState ? (
-              []
-            ) : (
-              <span className={styles['modify-time']}>
-                更新时间：{modalForm?.formRef?.current?.getFieldValue('updateTime')}{' '}
-              </span>
-            ),
-            <Button key="cancel" onClick={modalHandleCancel}>
-              {' '}
-              重置{' '}
-            </Button>,
-            <Button key="ok" type="primary" onClick={modalHandleOk} loading={modalLoadingState}>
-              {' '}
-              保存{' '}
-            </Button>,
-          ],
+          footer: (
+            <>
+              {modalCreateState ? (
+                <></>
+              ) : (
+                <span className={styles['modify-time']}>
+                  更新时间：{modalForm?.formRef?.current?.getFieldValue('updateTime')}{' '}
+                </span>
+              )}{' '}
+              <Button key="cancel" onClick={modalHandleCancel}>
+                {' '}
+                重置{' '}
+              </Button>{' '}
+              <Button key="ok" type="primary" onClick={modalHandleOk} loading={modalLoadingState}>
+                {' '}
+                保存{' '}
+              </Button>
+            </>
+          ),
           ...modalForm?.modalProps,
         }}
         onFinish={async (formData) => {

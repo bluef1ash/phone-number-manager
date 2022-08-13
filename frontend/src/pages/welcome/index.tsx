@@ -118,35 +118,29 @@ const Welcome: React.FC = () => {
   };
 
   const loadData = async () => {
-    if (
-      checkVisibleInDocument(communityResidentComputedBaseMessageRef) &&
-      loadingsState[0] === true
-    ) {
+    if (checkVisibleInDocument(communityResidentComputedBaseMessageRef) && loadingsState[0]) {
       loadingsState[0] = false;
       setLoadingsState([...loadingsState]);
       setResidentBaseMessageState(
         residentBaseMessageHandle((await queryCommunityResidentBaseMessage()).data),
       );
     }
-    if (checkVisibleInDocument(communityResidentComputedChartRef) && loadingsState[1] === true) {
+    if (checkVisibleInDocument(communityResidentComputedChartRef) && loadingsState[1]) {
       loadingsState[1] = false;
       setLoadingsState([...loadingsState]);
       setResidentBarChartState((await queryCommunityResidentChart()).data);
     }
-    if (
-      checkVisibleInDocument(dormitoryManagerComputedBaseMessageRef) &&
-      loadingsState[2] === true
-    ) {
+    if (checkVisibleInDocument(dormitoryManagerComputedBaseMessageRef) && loadingsState[2]) {
       loadingsState[2] = false;
       setLoadingsState([...loadingsState]);
       setDormitoryBaseMessageState((await queryDormitoryManagerBaseMessage()).data);
     }
-    if (checkVisibleInDocument(dormitoryManagerComputedChartRef) && loadingsState[3] === true) {
+    if (checkVisibleInDocument(dormitoryManagerComputedChartRef) && loadingsState[3]) {
       loadingsState[3] = false;
       setLoadingsState([...loadingsState]);
       setDormitoryBarChartState((await queryDormitoryManagerChart()).data);
     }
-    if (checkVisibleInDocument(subcontractorComputedChartRef) && loadingsState[4] === true) {
+    if (checkVisibleInDocument(subcontractorComputedChartRef) && loadingsState[4]) {
       loadingsState[4] = false;
       setLoadingsState([...loadingsState]);
       setSubcontractorBarChartState((await querySubcontractorChart()).data);

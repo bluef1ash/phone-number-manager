@@ -43,7 +43,7 @@ public class WebSecurityConfig {
             .accessDeniedHandler(jwtAccessDeniedHandler).and().headers().frameOptions().sameOrigin().and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-            .authorizeRequests(authorizeRequest -> authorizeRequest.antMatchers(SystemConstant.PERMIT_WHITELIST)
+            .authorizeRequests(authorizeRequest -> authorizeRequest.antMatchers(SystemConstant.PERMISSION_WHITELIST)
                 .permitAll().antMatchers(SystemConstant.ANONYMOUS_WHITELIST).anonymous().anyRequest()
                 .access("@systemUserService.hasPermission(request, authentication)"))
             .build();
@@ -58,7 +58,7 @@ public class WebSecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (webSecurity) -> webSecurity.ignoring().antMatchers(HttpMethod.OPTIONS, "/**")
-            .antMatchers(SystemConstant.PERMIT_WHITELIST);
+            .antMatchers(SystemConstant.PERMISSION_WHITELIST);
     }
 
     @Bean

@@ -25,23 +25,18 @@ public final class SystemConstant {
      */
     public static final String STREET_NAME_PATTERN = "(?iUs)[乡镇街道办事处]";
     /**
-     * 毫秒时间差
-     */
-    public static final int TIMESTAMP_MILLISECONDS_DIFFERENCE = 1000 * 10;
-    /**
-     * 通过白名单
-     */
-    public static final String[] PERMIT_WHITELIST = {"/favicon.ico", "/404", "/swagger-resources/**",
-        "/swagger-ui.html", "/v3/api-docs", "/webjars/**", "/swagger-ui/**", "/druid/**"};
-    /**
      * 匿名用户白名单
      */
-    public static final String[] ANONYMOUS_WHITELIST = {"/account/login", "/account/recaptcha"};
+    public static final String[] ANONYMOUS_WHITELIST =
+        {"/favicon.ico", "/404", "/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**",
+            "/swagger-ui/**", "/druid/**", "/account/login", "/account/recaptcha"};
     /**
-     * 权限通过
+     * 权限通过白名单
      */
-    public static final String[] PERMISSION_PERMITS =
-        {"/account/logout", "/index/menu", "/account/current-user", "/index/computed", "system/user/{id}"};
+    public static final String[] PERMISSION_WHITELIST = {"/account/logout", "/index/menu", "/account/current-user",
+        "/company/select-list", "/system/permission/select-list", "/company/subcontractor/select-list",
+        "/resident/computed/message", "/dormitory/computed/message", "/resident/computed/chart",
+        "/dormitory/computed/chart", "/company/subcontractor/computed/chart"};
     /**
      * Token前缀
      */
@@ -63,14 +58,6 @@ public final class SystemConstant {
      * JWT密钥创建标识
      */
     public static final String CLAIM_KEY_CREATED = "created";
-    /**
-     * 密钥标识
-     */
-    public static final String AUTHORITIES_KEY = "auth";
-    /**
-     * 用户名键名
-     */
-    public static final String USERNAME_KEY = "username";
     /**
      * 系统用户键名
      */

@@ -47,13 +47,18 @@
             LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
         </if>
         <where>
-            (pm_system_permission.menu_type = 0 OR pm_system_permission.menu_type = 1)
-            <if test="companyIds != null">
-                AND
-                <foreach collection="companyIds" separator="OR" item="companyId" open="(" close=")">
-                    pm_company_permission.company_id = #{companyId}
-                </foreach>
-            </if>
+            pm_system_permission.menu_type IN (0, 1) AND pm_system_permission.is_display = #{isDisplay}
+            <choose>
+                <when test="companyIds == null">
+                    AND pm_system_permission.parent_id = 0
+                </when>
+                <otherwise>
+                    <foreach collection="companyIds" item="companyId" open="AND pm_company_permission.company_id IN ("
+                             separator="," close=")">
+                        #{companyId}
+                    </foreach>
+                </otherwise>
+            </choose>
         </where>
     </select>
     <select id="selectByCompanyId" resultMap="correlationResultMap">
@@ -80,6 +85,7 @@
             pm_system_permission.http_methods,
             pm_system_permission.parent_id AS 'permission_parent_id',
             pm_system_permission.menu_type,
+            pm_system_permission.is_display,
             pm_company_permission.company_id
         FROM pm_system_permission
                  LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
@@ -98,10 +104,11 @@
         pm_system_permission.update_time AS 'permission_update_time'
         FROM pm_system_permission
         LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
-        <if test="companyIds == null">
+        <if test="companyIds != null">
             <where>
-                <foreach collection="companyIds" item="companyId" separator="OR">
-                    pm_company_permission.company_id = #{companyId}
+                <foreach collection="companyIds" item="companyId" open="pm_company_permission.company_id IN ("
+                         separator="," close=")">
+                    #{companyId}
                 </foreach>
             </where>
         </if>

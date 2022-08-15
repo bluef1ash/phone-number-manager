@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.PhoneNumber;
+import com.github.phonenumbermanager.entity.SystemPermission;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.PhoneUtil;
@@ -201,7 +202,7 @@ public class CommonUtil {
     }
 
     /**
-     * 递归获取单位树集合
+     * 递归获取单位链条集合
      *
      * @param companyAll
      *            所有单位集合
@@ -218,6 +219,27 @@ public class CommonUtil {
             }
         }
         return companies;
+    }
+
+    /**
+     * 递归获取系统权限链条集合
+     *
+     * @param systemPermissionAll
+     *            所有系统权限集合
+     * @param parentId
+     *            父级编号
+     * @return 系统权限集合
+     */
+    public static List<SystemPermission> listRecursionSystemPermissions(List<SystemPermission> systemPermissionAll,
+        Long parentId) {
+        List<SystemPermission> systemPermissions = new ArrayList<>();
+        for (SystemPermission systemPermission : systemPermissionAll) {
+            if (parentId.equals(systemPermission.getParentId())) {
+                systemPermissions.add(systemPermission);
+                systemPermissions.addAll(listRecursionSystemPermissions(systemPermissionAll, systemPermission.getId()));
+            }
+        }
+        return systemPermissions;
     }
 
     /**

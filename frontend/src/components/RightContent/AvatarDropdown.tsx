@@ -1,6 +1,12 @@
-import { account } from '@/services/api';
+import UserForm, { UserFormSubmitPreHandler } from '@/components/UserForm';
 import { logout } from '@/services/account/api';
-import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { account } from '@/services/api';
+import { queryCompanySelectList } from '@/services/company/api';
+import { modifySystemUser, queryCurrentUser } from '@/services/user/api';
+import { getCompanyParentIds } from '@/services/utils';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import type { ProFormInstance } from '@ant-design/pro-form';
+import { ModalForm } from '@ant-design/pro-form';
 import {
   SESSION_COMPONENTS_KEY,
   SESSION_MENU_KEY,
@@ -13,12 +19,6 @@ import React, { useRef, useState } from 'react';
 import { history, useModel } from 'umi';
 import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import { ModalForm } from '@ant-design/pro-form';
-import UserForm, { UserFormSubmitPreHandler } from '@/components/UserForm';
-import { queryCompanySelectList } from '@/services/company/api';
-import { modifySystemUser, queryCurrentUser } from '@/services/user/api';
-import { getCompanyParentIds } from '@/services/utils';
 
 //eslint-disable-next-line @typescript-eslint/ban-types
 export type GlobalHeaderRightProps = {};
@@ -76,18 +76,22 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
             break;
         }
       }}
-    >
-      {' '}
-      <Menu.Item key="restPassword">
-        {' '}
-        <SettingOutlined /> 修改密码{' '}
-      </Menu.Item>{' '}
-      <Menu.Divider />{' '}
-      <Menu.Item key="logout">
-        {' '}
-        <LogoutOutlined /> 退出登录{' '}
-      </Menu.Item>{' '}
-    </Menu>
+      items={[
+        {
+          key: 'restPassword',
+          icon: <UserOutlined />,
+          label: '修改密码',
+        },
+        {
+          type: 'divider',
+        },
+        {
+          key: 'logout',
+          icon: <LogoutOutlined />,
+          label: '退出登录',
+        },
+      ]}
+    />
   );
   return (
     <>

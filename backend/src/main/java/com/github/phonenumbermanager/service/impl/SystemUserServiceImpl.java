@@ -66,7 +66,19 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (systemUser == null) {
             throw new UsernameNotFoundException("找不到该系统用户！");
         }
-        @SuppressWarnings("all")
+        if (systemUser.getCompanies() != null) {
+            List<SystemPermission> systemPermissionAll = JSONUtil
+                .parseArray(redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY)).toList(SystemPermission.class);
+            systemUser.getCompanies().forEach(company -> {
+                Set<SystemPermission> systemPermissions = company
+                    .getSystemPermissions().stream().map(systemPermission -> CommonUtil
+                        .listRecursionSystemPermissions(systemPermissionAll, systemPermission.getId()))
+                    .flatMap(List::stream).collect(Collectors.toSet());
+                systemPermissions.addAll(company.getSystemPermissions());
+                company.setSystemPermissions(new ArrayList<>(systemPermissions));
+            });
+        }
+        @SuppressWarnings("unchecked")
         Map<String, JSONObject> configurationMap =
             JSONUtil.parseObj(redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY)).toBean(Map.class);
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
@@ -128,23 +140,16 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             Map<String, JSONObject> config =
                 JSONUtil.parseObj(redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY)).toBean(Map.class);
             JSONObject id = config.get("system_administrator_id");
-            if (ArrayUtil.contains(SystemConstant.PERMISSION_PERMITS, uri)
+            if (ArrayUtil.contains(SystemConstant.PERMISSION_WHITELIST, uri)
                 || systemUser.getId().equals(Long.valueOf((String)id.get("content")))) {
                 return true;
             }
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());
             List<Company> companies = (List<Company>)authentication.getAuthorities();
-            if (companies != null && companies.size() > 0) {
-                List<SystemPermission> systemPermissions =
-                    (List<SystemPermission>)redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY);
-                Optional<List<Company>> optionalCompanies = systemPermissions.stream()
-                    .filter(systemPermission -> uri.contains(systemPermission.getUri().replaceAll("//\\{.*}/", ""))
-                        && Arrays.asList(systemPermission.getHttpMethods()).contains(method))
-                    .map(SystemPermission::getCompanies).findFirst();
-                if (optionalCompanies.isPresent()) {
-                    return companies.stream().anyMatch(company -> optionalCompanies.get().stream()
-                        .anyMatch(company1 -> company.getId().equals(company1.getId())));
-                }
+            if (companies != null && !companies.isEmpty()) {
+                return companies.stream().flatMap(company -> company.getSystemPermissions().stream())
+                    .anyMatch(systemPermission -> systemPermission.getUri().equals(uri)
+                        && Arrays.asList(systemPermission.getHttpMethods()).contains(method));
             }
         }
         return false;

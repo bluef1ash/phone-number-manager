@@ -23,8 +23,7 @@
         <result column="system_user_update_time" property="updateTime"/>
         <result column="system_user_version" property="version"/>
     </resultMap>
-    <resultMap type="systemUser" id="collectionResultMap"
-               extends="aliasResultMap">
+    <resultMap type="systemUser" id="collectionResultMap" extends="aliasResultMap">
         <collection property="companies"
                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.collectionResultMap"/>
     </resultMap>
@@ -55,8 +54,7 @@
             </if>
         </where>
         <if test="sort != null">
-            ORDER BY
-            <foreach collection="sort" index="key" item="value" separator=",">
+            <foreach collection="sort" index="key" item="value" open="ORDER BY" separator=",">
                 CONVERT(${key} USING gbk) COLLATE gbk_chinese_ci
                 <if test="value eq 'descend'">
                     DESC
@@ -95,10 +93,18 @@
             pm_system_user.update_time AS 'system_user_update_time',
             pm_company.id AS 'company_id',
             pm_company.name AS 'company_name',
-            pm_company.parent_id AS 'company_parent_id'
+            pm_company.parent_id AS 'company_parent_id',
+            pm_system_permission.id AS 'permission_id',
+            pm_system_permission.name AS 'permission_name',
+            pm_system_permission.function_name,
+            pm_system_permission.http_methods,
+            pm_system_permission.uri,
+            pm_system_permission.parent_id AS 'permission_parent_id'
         FROM pm_system_user
                  LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
                  LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+                 LEFT JOIN pm_company_permission ON pm_company.id = pm_company_permission.company_id
+                 LEFT JOIN pm_system_permission ON pm_company_permission.permission_id = pm_system_permission.id
         WHERE pm_system_user.username = #{username}
     </select>
     <select id="selectByCompanyId" resultMap="collectionResultMap">

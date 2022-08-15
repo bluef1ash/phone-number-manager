@@ -61,8 +61,10 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateById(Company entity) {
-        if (baseMapper.selectCount(new LambdaQueryWrapper<Company>().eq(Company::getParentId, entity.getId())) > 0
-            || entity.getId().equals(entity.getParentId())) {
+        List<Company> companyAll = baseMapper.selectList(null);
+        List<Long> submissionCompanyIds = CommonUtil.listRecursionCompanyIds(companyAll, entity.getId());
+        submissionCompanyIds.add(entity.getId());
+        if (submissionCompanyIds.contains(entity.getParentId())) {
             throw new BusinessException("上级单位不允许选择自己或已经是下级的单位！");
         }
         boolean isSuccess = baseMapper.updateById(entity) > 0;

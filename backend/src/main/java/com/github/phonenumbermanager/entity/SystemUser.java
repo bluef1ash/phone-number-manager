@@ -17,8 +17,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
@@ -34,6 +38,7 @@ import lombok.experimental.Accessors;
  *
  * @author 廿二月的天
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
@@ -56,6 +61,8 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     @ApiModelProperty("系统用户登录时间")
     @Past
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime loginTime;
     @ApiModelProperty("系统用户登录IP地址")
     private String loginIp;
@@ -67,11 +74,17 @@ public class SystemUser extends BaseEntity<SystemUser> implements UserDetails {
     private Boolean isEnabled;
     @ApiModelProperty("系统用户过期时间")
     @TableField(fill = FieldFill.INSERT)
+    @Past
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime accountExpireTime;
     @ApiModelProperty("系统用户本次登录过期时间")
     @TableField(fill = FieldFill.INSERT)
+    @Past
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime credentialExpireTime;
     @TableField(exist = false)
     @ApiModelProperty(hidden = true)

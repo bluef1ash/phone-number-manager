@@ -1,7 +1,8 @@
-import React from 'react';
-import { Link } from '@umijs/preset-dumi/lib/theme';
 import type { PageContainerProps } from '@ant-design/pro-layout';
 import { PageContainer } from '@ant-design/pro-layout';
+import { Link } from '@umijs/preset-dumi/lib/theme';
+import type { PageHeaderProps } from 'antd';
+import React from 'react';
 
 export type BreadcrumbRole = {
   breadcrumbName: string;
@@ -9,10 +10,17 @@ export type BreadcrumbRole = {
 };
 
 export type MainPageContainerProps = {
+  headerProps?: Partial<PageHeaderProps> & {
+    children?: React.ReactNode;
+  };
   routes?: BreadcrumbRole[];
 } & PageContainerProps;
 
-const MainPageContainer: React.FC<MainPageContainerProps> = ({ routes, ...restProps }) => (
+const MainPageContainer: React.FC<MainPageContainerProps> = ({
+  headerProps,
+  routes,
+  ...restProps
+}) => (
   <PageContainer
     header={{
       breadcrumb: {
@@ -26,6 +34,7 @@ const MainPageContainer: React.FC<MainPageContainerProps> = ({ routes, ...restPr
         },
         routes,
       },
+      ...headerProps,
     }}
     {...restProps}
   />

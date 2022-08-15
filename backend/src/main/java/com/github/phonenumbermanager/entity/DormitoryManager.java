@@ -3,17 +3,18 @@ package com.github.phonenumbermanager.entity;
 import java.time.LocalDate;
 import java.util.List;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 
 import org.hibernate.validator.constraints.Length;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.github.phonenumbermanager.constant.enums.EducationStatusEnum;
 import com.github.phonenumbermanager.constant.enums.EmploymentStatusEnum;
 import com.github.phonenumbermanager.constant.enums.GenderEnum;
@@ -57,6 +58,10 @@ public class DormitoryManager extends BaseEntity<DormitoryManager> {
         message = "社区居民楼片长身份证号码不正确！")
     private String idNumber;
     @ApiModelProperty("社区居民楼片长出生年月")
+    @Past
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDate birth;
     @ApiModelProperty(value = "社区居民楼片长年龄", hidden = true)
     @TableField(exist = false)

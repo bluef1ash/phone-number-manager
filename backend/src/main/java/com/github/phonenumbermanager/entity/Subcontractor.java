@@ -47,7 +47,9 @@ public class Subcontractor extends BaseEntity<Subcontractor> {
     private String name;
     @ApiModelProperty("社区分包人员身份证号码")
     @NotBlank(groups = CreateInputGroup.class, message = "社区分包人员身份证号码不能为空！")
-    @Pattern(regexp = "\\d{17}[\\dXx]|\\d{15}", message = "社区分包人员身份证号码不正确！")
+    @Pattern(
+        regexp = "^([1-9]\\d{5}(18|19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx])|([1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3})$",
+        message = "社区分包人员身份证号码不正确！")
     private String idCardNumber;
     @ApiModelProperty("社区分包人员职务")
     @TableField(typeHandler = JacksonTypeHandler.class)

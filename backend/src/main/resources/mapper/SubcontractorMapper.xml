@@ -151,7 +151,7 @@
             </if>
         </where>
         <if test="sort != null">
-            <foreach collection="sort" index="key" item="value" separator="," open=" ORDER BY ">
+            <foreach collection="sort" index="key" item="value" separator="," open="ORDER BY ">
                 <choose>
                     <when test="key eq 'name'">CONVERT(pm_subcontractor.${key} USING gbk) COLLATE gbk_chinese_ci</when>
                     <otherwise>CONVERT(pm_company.name USING gbk) COLLATE gbk_chinese_ci</otherwise>

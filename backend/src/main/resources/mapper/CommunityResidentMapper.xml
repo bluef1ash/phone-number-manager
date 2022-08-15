@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.phonenumbermanager.mapper.CommunityResidentMapper">
-    <resultMap type="com.github.phonenumbermanager.entity.CommunityResident" id="commonResultMap">
+    <resultMap type="communityResident" id="commonResultMap">
         <result column="address" property="address"/>
         <result column="subcontractor_id" property="subcontractorId"/>
         <result column="company_id" property="companyId"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.CommunityResident" id="baseResultMap"
-               extends="commonResultMap">
+    <resultMap type="communityResident" id="baseResultMap" extends="commonResultMap">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="version" property="version"/>
     </resultMap>
-    <resultMap type="com.github.phonenumbermanager.entity.CommunityResident" id="aliasResultMap"
-               extends="commonResultMap">
+    <resultMap type="communityResident" id="aliasResultMap" extends="commonResultMap">
         <id column="community_resident_id" property="id"/>
         <result column="community_resident_name" property="name"/>
         <result column="community_resident_create_time" property="createTime"/>
@@ -54,8 +52,9 @@
         FROM pm_community_resident
         LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
         <where>
-            <foreach collection="companyIds" item="companyId" separator="or">
-                pm_community_resident.company_id = #{companyId}
+            <foreach collection="companyIds" item="companyId" open="pm_community_resident.company_id IN (" separator=","
+                     close=")">
+                #{companyId}
             </foreach>
         </where>
         GROUP BY pm_company.id
@@ -77,8 +76,9 @@
         LEFT JOIN pm_phone_number ON pm_community_resident_phone_number.phone_number_id = pm_phone_number.id
         <where>
             <if test="companyIds != null and companyIds.size() gt 0">
-                <foreach collection="companyIds" item="id" separator="OR">
-                    pm_community_resident.company_id = #{id}
+                <foreach collection="companyIds" item="companyId" open="pm_community_resident.company_id IN ("
+                         separator="," close=")">
+                    #{companyId}
                 </foreach>
             </if>
         </where>
@@ -151,8 +151,9 @@
     <sql id="selectCorrelationSearch">
         <where>
             <if test="companies != null and companies.size() gt 0">
-                <foreach collection="companies" item="company" separator="OR">
-                    pm_community_resident.company_id = #{company.id}
+                <foreach collection="companies" item="company" open="pm_community_resident.company_id IN ("
+                         separator="," close=")">
+                    #{company.id}
                 </foreach>
             </if>
             <if test="search != null">

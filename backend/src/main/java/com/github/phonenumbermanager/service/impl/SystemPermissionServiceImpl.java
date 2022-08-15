@@ -14,19 +14,21 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.CompanyPermission;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.mapper.CompanyPermissionMapper;
 import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
 import com.github.phonenumbermanager.service.SystemPermissionService;
+import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.vo.MenuVo;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 
 /**
@@ -39,6 +41,7 @@ import lombok.AllArgsConstructor;
 public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissionMapper, SystemPermission>
     implements SystemPermissionService {
     private final CompanyPermissionMapper companyPermissionMapper;
+    private final RedisUtil redisUtil;
 
     @Override
     public List<SystemPermission> listCorrelation() {
@@ -61,12 +64,22 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
         if (companies != null) {
             companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
         }
-        List<SystemPermission> systemPermissions = baseMapper.selectListByCompanyIds(companyIds);
-        Map<String, String> fieldMappings = new HashMap<>(3);
+        List<SystemPermission> systemPermissionAll =
+            JSONUtil.parseArray(redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY)).toList(SystemPermission.class);
+        List<SystemPermission> systemPermissions = baseMapper.selectListByCompanyIds(companyIds, display);
+        Map<String, String> fieldMappings = new HashMap<>(4);
         fieldMappings.put("uri", "path");
+        fieldMappings.put("functionName", "component");
         CopyOptions copyOptions = CopyOptions.create();
         copyOptions.setFieldMapping(fieldMappings);
-        return treeMenus(systemPermissions, 0L, display, copyOptions);
+        List<MenuVo> menuVos = systemPermissions.stream().map(systemPermission -> {
+            MenuVo menuVo = new MenuVo();
+            BeanUtil.copyProperties(systemPermission, menuVo, copyOptions);
+            menuVo.setKey(systemPermission.getId().toString()).setHideInMenu(!systemPermission.getIsDisplay());
+            return menuVo;
+        }).collect(Collectors.toList());
+        treeMenus(menuVos, systemPermissionAll, copyOptions);
+        return menuVos;
     }
 
     @Override
@@ -121,27 +134,26 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     /**
      * 递归菜单
      *
-     * @param systemPermissions
-     *            需要排列的系统用户权限对象集合
-     * @param parentId
-     *            上级编号
-     * @param display
-     *            是否在导航栏中显示
+     * @param menuVos
+     *            整理后的菜单
+     * @param systemPermissionAll
+     *            全部系统用户权限对象集合
      * @param copyOptions
      *            复制选项
-     * @return 整理后的菜单
      */
-    private List<MenuVo> treeMenus(List<SystemPermission> systemPermissions, Long parentId, boolean display,
-        CopyOptions copyOptions) {
-        return systemPermissions.parallelStream().map(systemPermission -> {
-            if (systemPermission.getParentId().equals(parentId) && display == systemPermission.getIsDisplay()) {
-                MenuVo menu = new MenuVo();
-                BeanUtil.copyProperties(systemPermission, menu, copyOptions);
-                menu.setRoutes(treeMenus(systemPermissions, menu.getId(), display, copyOptions));
-                return menu;
-            }
-            return null;
-        }).filter(ObjectUtil::isNotNull).collect(Collectors.toList());
+    private void treeMenus(List<MenuVo> menuVos, List<SystemPermission> systemPermissionAll, CopyOptions copyOptions) {
+        menuVos.forEach(menuVo -> {
+            List<MenuVo> menuVoList = systemPermissionAll.stream()
+                .filter(systemPermission -> systemPermission.getParentId().equals(menuVo.getId()))
+                .map(systemPermission -> {
+                    MenuVo menu = new MenuVo();
+                    BeanUtil.copyProperties(systemPermission, menu, copyOptions);
+                    menu.setKey(systemPermission.getId().toString()).setHideInMenu(!systemPermission.getIsDisplay());
+                    return menu;
+                }).collect(Collectors.toList());
+            menuVo.setRoutes(menuVoList);
+            treeMenus(menuVoList, systemPermissionAll, copyOptions);
+        });
     }
 
     /**

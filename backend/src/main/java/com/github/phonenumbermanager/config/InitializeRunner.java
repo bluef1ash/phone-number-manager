@@ -39,10 +39,11 @@ public class InitializeRunner implements CommandLineRunner {
      */
     private void cacheInitialize() {
         List<Configuration> configurationList = configurationService.list();
-        Map<String, Configuration> configurationM =
+        Map<String, Configuration> configurationMap =
             configurationList.stream().collect(Collectors.toMap(Configuration::getName, Function.identity()));
-        String jsonStr = JSONUtil.toJsonStr(configurationM);
-        redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, jsonStr);
-        redisUtil.set(SystemConstant.SYSTEM_PERMISSIONS_KEY, systemPermissionService.listCorrelation());
+        String configurationJsonStr = JSONUtil.toJsonStr(configurationMap);
+        String systemPermissionJsonStr = JSONUtil.toJsonStr(systemPermissionService.listCorrelation());
+        redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, configurationJsonStr);
+        redisUtil.set(SystemConstant.SYSTEM_PERMISSIONS_KEY, systemPermissionJsonStr);
     }
 }

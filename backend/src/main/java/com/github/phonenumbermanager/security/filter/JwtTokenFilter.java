@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -42,10 +43,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final RedisUtil redisUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-        throws ServletException, IOException {
-        String[] whiteList = ArrayUtil.addAll(SystemConstant.PERMIT_WHITELIST, SystemConstant.ANONYMOUS_WHITELIST);
-        if (ArrayUtil.contains(whiteList, request.getRequestURI())) {
+    protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response,
+        @NotNull FilterChain chain) throws ServletException, IOException {
+        if (ArrayUtil.contains(SystemConstant.ANONYMOUS_WHITELIST, request.getRequestURI())) {
             chain.doFilter(request, response);
             return;
         }

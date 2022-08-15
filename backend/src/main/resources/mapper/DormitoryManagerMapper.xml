@@ -131,14 +131,15 @@
         LEFT JOIN pm_subcontractor ON pm_dormitory_manager.subcontractor_id = pm_subcontractor.id
         <where>
             <if test="companyIds != null and companyIds.size() gt 0">
-                <foreach collection="companyIds" item="id" separator="OR">
-                    pm_dormitory_manager.company_id = #{id}
+                <foreach collection="companyIds" item="id" open="pm_dormitory_manager.company_id IN (" separator=","
+                         close=")">
+                    #{id}
                 </foreach>
             </if>
         </where>
         ORDER BY pm_dormitory_manager.company_id, CONVERT(pm_dormitory_manager.name USING GBK)
     </select>
-    <select id="selectCountForGroupCompany" resultType="java.util.Map">
+    <select id="selectCountForGroupCompany" resultType="map">
         SELECT pm_company.id AS 'company_id', COUNT(pm_dormitory_manager.id) AS 'person_count'
         FROM pm_dormitory_manager
         LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id

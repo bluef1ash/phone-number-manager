@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.constant.enums.MenuTypeEnum;
-import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.service.SystemPermissionService;
+import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.util.R;
 
+import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -46,9 +48,11 @@ public class IndexController extends BaseController {
         getEnvironmentVariable();
         List<String> components = new ArrayList<>();
         if (currentSystemUser.getCompanies() != null && !currentSystemUser.getCompanies().isEmpty()) {
-            List<SystemPermission> systemPermissions = systemPermissionService.listByCompanyIds(
-                currentSystemUser.getCompanies().stream().map(Company::getId).collect(Collectors.toList()));
-            components = systemPermissions.stream()
+            List<SystemPermission> systemPermissionAll = JSONUtil
+                .parseArray(redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY)).toList(SystemPermission.class);
+            components = currentSystemUser.getCompanies().stream()
+                .map(company -> CommonUtil.listRecursionSystemPermissions(systemPermissionAll, company.getId()))
+                .flatMap(List::stream)
                 .filter(systemPermission -> MenuTypeEnum.FRONTEND.equals(systemPermission.getMenuType()))
                 .map(SystemPermission::getFunctionName).collect(Collectors.toList());
         }

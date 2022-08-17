@@ -144,7 +144,8 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     private void treeMenus(List<MenuVo> menuVos, List<SystemPermission> systemPermissionAll, CopyOptions copyOptions) {
         menuVos.forEach(menuVo -> {
             List<MenuVo> menuVoList = systemPermissionAll.stream()
-                .filter(systemPermission -> systemPermission.getParentId().equals(menuVo.getId()))
+                .filter(systemPermission -> systemPermission.getParentId().equals(menuVo.getId())
+                    && systemPermission.getIsDisplay())
                 .map(systemPermission -> {
                     MenuVo menu = new MenuVo();
                     BeanUtil.copyProperties(systemPermission, menu, copyOptions);

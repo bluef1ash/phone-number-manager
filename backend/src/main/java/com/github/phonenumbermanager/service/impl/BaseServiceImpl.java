@@ -336,4 +336,25 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
                 .collect(Collectors.toList()));
         }
     }
+
+    /**
+     * 获取单位集合与下级单位编号集合
+     *
+     * @param companies
+     *            用户所属单位
+     * @param companyAll
+     *            所有单位集合
+     * @return 单位集合与下级单位编号集合
+     */
+    protected List<Company> systemUserCompanyHandler(List<Company> companies, List<Company> companyAll) {
+        List<Company> companyList = null;
+        if (companies != null && !companies.isEmpty()) {
+            Set<Company> companySet =
+                companies.stream().map(company -> CommonUtil.listRecursionCompanies(companyAll, company.getId()))
+                    .flatMap(List::stream).collect(Collectors.toSet());
+            companySet.addAll(companies);
+            companyList = new ArrayList<>(companySet);
+        }
+        return companyList;
+    }
 }

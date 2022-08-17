@@ -199,10 +199,11 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     @Override
     public IPage<DormitoryManager> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
         JSONObject search, JSONObject sort) {
+        List<Company> companyList = systemUserCompanyHandler(companies, companyMapper.selectList(null));
         Page<DormitoryManager> page = new Page<>(pageNumber, pageDataSize);
         page.setSearchCount(false);
-        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companies, search, sort));
-        return baseMapper.selectCorrelationByCompanies(page, companies, search, sort);
+        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companyList, search, sort));
+        return baseMapper.selectCorrelationByCompanies(page, companyList, search, sort);
     }
 
     @Override

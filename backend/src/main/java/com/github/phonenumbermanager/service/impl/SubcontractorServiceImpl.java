@@ -38,10 +38,11 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     @Override
     public IPage<Subcontractor> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
         JSONObject search, JSONObject sort) {
+        List<Company> companyList = systemUserCompanyHandler(companies, companyMapper.selectList(null));
         Page<Subcontractor> page = new Page<>(pageNumber, pageDataSize);
         page.setSearchCount(false);
-        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companies, search, sort));
-        return baseMapper.selectCorrelationByCompanies(page, companies, search, sort);
+        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companyList, search, sort));
+        return baseMapper.selectCorrelationByCompanies(page, companyList, search, sort);
     }
 
     @Override

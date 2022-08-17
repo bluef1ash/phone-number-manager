@@ -104,18 +104,11 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 search.set("systemUser", ids);
             }
         }
-        if (companies != null && !companies.isEmpty()) {
-            List<Company> companyAll = companyMapper.selectList(null);
-            Set<Company> companySet =
-                companies.stream().map(company -> CommonUtil.listRecursionCompanies(companyAll, company.getId()))
-                    .flatMap(List::stream).collect(Collectors.toSet());
-            companySet.addAll(companies);
-            companies = new ArrayList<>(companySet);
-        }
+        List<Company> companyList = systemUserCompanyHandler(companies, companyMapper.selectList(null));
         Page<CommunityResident> page = new Page<>(pageNumber, pageDataSize);
         page.setSearchCount(false);
-        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companies, search, sort));
-        return baseMapper.selectCorrelationByCompanies(page, companies, search, sort);
+        page.setTotal(baseMapper.selectCorrelationCountByCompanies(companyList, search, sort));
+        return baseMapper.selectCorrelationByCompanies(page, companyList, search, sort);
     }
 
     @Transactional(rollbackFor = Exception.class)

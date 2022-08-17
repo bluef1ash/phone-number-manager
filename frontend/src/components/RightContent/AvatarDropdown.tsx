@@ -146,6 +146,17 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
             systemUser.phoneNumber = {
               phoneNumber: systemUser.phoneNumber,
             };
+            if (
+              typeof systemUser.companies !== 'undefined' &&
+              systemUser.companies !== null &&
+              systemUser.companies.length > 0
+            ) {
+              systemUser.companyIds = systemUser.companies.map((company: { id: number }) => [
+                company.id,
+              ]);
+            } else {
+              systemUser.companyIds = [['0']];
+            }
             setSystemUserState(systemUser);
             formRef?.current?.setFieldsValue(systemUser);
           }

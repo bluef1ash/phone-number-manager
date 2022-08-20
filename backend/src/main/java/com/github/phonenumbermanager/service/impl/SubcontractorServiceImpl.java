@@ -104,9 +104,9 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     public List<SelectListVo> treeSelectList(Long[] parentIds) {
         SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<SelectListVo> selectListVos = new ArrayList<>();
-        Set<Long> parentIdList =
+        List<Long> parentIdList =
             companyMapper.selectList(new LambdaQueryWrapper<Company>().select(Company::getParentId)).stream()
-                .map(Company::getParentId).collect(Collectors.toSet());
+                .map(Company::getParentId).distinct().collect(Collectors.toList());
         if (parentIds == null) {
             if (systemUser.getCompanies() == null) {
                 selectListVos = companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0L))
@@ -131,7 +131,11 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
         Map<String, Object> barChartMap;
         if (subordinateCompanyIds.isEmpty()) {
-            List<Map<String, Object>> systemUserCounts = baseMapper.selectCorrelationCountByCompanyIds(companyIds);
+            Long[] companyIdArray = companyIds;
+            if (companyIds == null) {
+                companyIdArray = companies.stream().map(Company::getId).toArray(Long[]::new);
+            }
+            List<Map<String, Object>> systemUserCounts = baseMapper.selectCorrelationCountByCompanyIds(companyIdArray);
             List<Map<String, Object>> data = new ArrayList<>();
             for (Map<String, Object> systemUserCount : systemUserCounts) {
                 Map<String, Object> communityResidentMap = new HashMap<>(3);
@@ -181,7 +185,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
      *            所有父级编号
      * @return 表单对象集合
      */
-    private List<SelectListVo> getSelectVos(Long[] ids, Set<Long> parentIds) {
+    private List<SelectListVo> getSelectVos(Long[] ids, List<Long> parentIds) {
         List<SelectListVo> selectListVos = new ArrayList<>();
         LambdaQueryWrapper<Company> companyWrapper = new LambdaQueryWrapper<>();
         Arrays.stream(ids).filter(parentIds::contains).forEach(id -> companyWrapper.eq(Company::getParentId, id));

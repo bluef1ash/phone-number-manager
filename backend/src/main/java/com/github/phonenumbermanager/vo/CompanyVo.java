@@ -30,15 +30,13 @@ public class CompanyVo implements GrantedAuthority {
     private Long id;
     @ApiModelProperty("单位名称")
     private String name;
-    @ApiModelProperty("单位分包数")
-    private Integer actualNumber;
-    @ApiModelProperty("单位层级编号")
-    private Integer level;
     @ApiModelProperty("上级单位编号")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long parentId;
     @ApiModelProperty("下级单位")
     private List<CompanyVo> children;
+    @ApiModelProperty("是否为叶子节点")
+    private Boolean isLeaf;
 
     @Override
     public String getAuthority() {

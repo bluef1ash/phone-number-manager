@@ -3,7 +3,10 @@ package com.github.phonenumbermanager.service.impl;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -66,16 +69,22 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (systemUser == null) {
             throw new UsernameNotFoundException("找不到该系统用户！");
         }
+        if (systemUser.getCompanies().isEmpty()) {
+            systemUser.setCompanies(null);
+        }
         if (systemUser.getCompanies() != null) {
             List<SystemPermission> systemPermissionAll = JSONUtil
                 .parseArray(redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY)).toList(SystemPermission.class);
+            List<Long> companyParentIds = companyMapper.selectList(null).stream().map(Company::getParentId).distinct()
+                .collect(Collectors.toList());
             systemUser.getCompanies().forEach(company -> {
-                Set<SystemPermission> systemPermissions = company
+                List<SystemPermission> systemPermissions = company
                     .getSystemPermissions().stream().map(systemPermission -> CommonUtil
                         .listRecursionSystemPermissions(systemPermissionAll, systemPermission.getId()))
-                    .flatMap(List::stream).collect(Collectors.toSet());
+                    .flatMap(List::stream).distinct().collect(Collectors.toList());
                 systemPermissions.addAll(company.getSystemPermissions());
-                company.setSystemPermissions(new ArrayList<>(systemPermissions));
+                company.setSystemPermissions(systemPermissions);
+                company.setIsLeaf(!companyParentIds.contains(company.getId()));
             });
         }
         @SuppressWarnings("unchecked")
@@ -85,9 +94,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").get("content"));
         if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
             throw new SystemClosedException("该系统已经禁止登录，请联系管理员！");
-        }
-        if (systemUser.getCompanies().isEmpty()) {
-            systemUser.setCompanies(null);
         }
         systemUser.setCredentialExpireTime(LocalDateTime.now().plusDays(7));
         return systemUser;

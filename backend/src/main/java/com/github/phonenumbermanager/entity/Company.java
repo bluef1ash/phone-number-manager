@@ -55,6 +55,9 @@ public class Company extends BaseEntity<Company> implements GrantedAuthority {
     @TableField(exist = false)
     private List<PhoneNumber> phoneNumbers;
     @TableField(exist = false)
+    @ApiModelProperty("是否为叶子节点")
+    private Boolean isLeaf;
+    @TableField(exist = false)
     @ApiModelProperty("下级单位")
     private List<Company> children;
     @TableField(exist = false)

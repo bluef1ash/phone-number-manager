@@ -102,6 +102,7 @@ const Welcome: React.FC = () => {
   const dormitoryManagerComputedBaseMessageRef = useRef<HTMLDivElement>(null);
   const dormitoryManagerComputedChartRef = useRef<HTMLDivElement>(null);
   const subcontractorComputedChartRef = useRef<HTMLDivElement>(null);
+  const [isHideSelectState, setIsHideSelectState] = useState<boolean>(false);
 
   const residentBaseMessageHandle = (baseMessage: API.CommunityResidentComputedBaseMessage) => {
     if (
@@ -151,7 +152,10 @@ const Welcome: React.FC = () => {
     window.addEventListener('scroll', async () => await loadData());
     (async () => {
       if (initialState) {
-        const currentUser = initialState.currentUser as API.SystemUser;
+        const currentUser = initialState.currentUser;
+        setIsHideSelectState(
+          currentUser?.companies?.some((company: API.Company) => company.isLeaf),
+        );
         let parentIds = [0];
         if (
           typeof currentUser.companies !== 'undefined' &&
@@ -203,6 +207,7 @@ const Welcome: React.FC = () => {
           dataResults={(data) => ({
             ...residentBaseMessageHandle(data),
           })}
+          isHideSelect={isHideSelectState}
         >
           {' '}
           <StatisticCard
@@ -259,6 +264,7 @@ const Welcome: React.FC = () => {
             loading: false,
           })}
           queryDashboardComputed={queryCommunityResidentChart}
+          isHideSelect={isHideSelectState}
         >
           {' '}
           <ComputedChartColumn {...residentBarChartState} />{' '}
@@ -281,6 +287,7 @@ const Welcome: React.FC = () => {
             ...data,
           })}
           queryDashboardComputed={queryDormitoryManagerBaseMessage}
+          isHideSelect={isHideSelectState}
         >
           {' '}
           <Row justify="space-around" className={styles['dormitory-message']}>
@@ -347,6 +354,7 @@ const Welcome: React.FC = () => {
             ...data,
           })}
           queryDashboardComputed={queryDormitoryManagerChart}
+          isHideSelect={isHideSelectState}
         >
           {' '}
           <ComputedChartColumn {...dormitoryBarChartState} />{' '}
@@ -384,6 +392,7 @@ const Welcome: React.FC = () => {
               setSubcontractorBarChartState({ ...result });
             }
           }}
+          isHideSelect={isHideSelectState}
         >
           {' '}
           <ComputedChartColumn {...subcontractorBarChartState} />{' '}

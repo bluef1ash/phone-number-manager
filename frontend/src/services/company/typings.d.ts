@@ -4,10 +4,10 @@ declare namespace API {
 
   type Company = BaseEntity & {
     name?: string;
-    actualNumber?: number;
     phoneNumbers?: PhoneNumber[];
     parentId?: number;
     parentIdCascder?: string[];
+    isLeaf?: boolean;
     children?: Company[];
     systemPermissions?: SystemPermission[];
     systemPermissionSelectList?: SelectList[];

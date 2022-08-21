@@ -1,8 +1,13 @@
-import { parsePhoneNumber } from "libphonenumber-js/max";
-import { PhoneNumberType } from "@/services/enums";
-import { message } from "antd";
-import type { Dispatch, RefObject, SetStateAction } from "react";
-import { SESSION_SYSTEM_USER_KEY } from "@config/constant";
+import { PhoneNumberType } from '@/services/enums';
+import { queryMenuData } from '@/services/permission/api';
+import {
+  SESSION_COMPONENTS_KEY,
+  SESSION_MENU_KEY,
+  SESSION_SYSTEM_USER_KEY,
+} from '@config/constant';
+import { message } from 'antd';
+import { parsePhoneNumber } from 'libphonenumber-js/max';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
 
 /**
  * 提交前联系方式处理
@@ -106,4 +111,19 @@ export function checkVisibleInDocument(componentRef: RefObject<HTMLElement>): bo
   const { height, top } = componentRef.current.getBoundingClientRect();
   const windowHeight = window.innerHeight || document.documentElement.clientHeight;
   return top < windowHeight && top + height > 0;
+}
+
+/**
+ * 获取菜单数据
+ * @param display
+ */
+export async function fetchMenuData(
+  display: boolean,
+): Promise<API.ResponseMenu & API.ResponseException> {
+  const result = await queryMenuData(display);
+  if (result.code === 200) {
+    localStorage.setItem(SESSION_MENU_KEY, JSON.stringify(result.menuData));
+    localStorage.setItem(SESSION_COMPONENTS_KEY, JSON.stringify(result.components));
+  }
+  return result;
 }

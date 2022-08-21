@@ -1,15 +1,20 @@
-import { ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  FileExcelOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import type { ProFormProps } from '@ant-design/pro-form/lib/layouts/ProForm';
 import type { ParamsType } from '@ant-design/pro-provider';
 import type { ActionType, ProTableProps } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import type { ProColumns } from '@ant-design/pro-table/lib/typing';
-import type { ModalProps } from 'antd';
-import { Button, message as msg, Popconfirm, Space, Upload } from 'antd';
-import type { SortOrder } from 'antd/es/table/interface';
-import type { Key } from 'antd/lib/table/interface';
-import type { UploadProps } from 'antd/lib/upload/interface';
+import { LinearProgress } from '@mui/material';
+import type { ModalProps, UploadProps } from 'antd';
+import { Button, message as msg, notification, Popconfirm, Progress, Space, Upload } from 'antd';
+import type { Key, SortOrder } from 'antd/lib/table/interface';
+import type { RcFile } from 'antd/lib/upload';
 import { cloneDeep, isArray } from 'lodash';
 import React, { useState } from 'react';
 import EditModalForm from './EditModalForm';
@@ -26,7 +31,11 @@ export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
   batchRemoveEventHandler?: (
     selectedRowKeys: number[],
   ) => Promise<API.ResponseSuccess | API.ResponseException>;
-  importDataUploadProps?: UploadProps;
+  importDataUploadProps?: {
+    customAction?: (
+      params: string | RcFile | Blob,
+    ) => Promise<API.ResponseSuccess | API.ResponseException>;
+  } & UploadProps;
   exportDataEventHandler?: React.MouseEventHandler<HTMLElement>;
   removeData?: (id: number) => Promise<API.ResponseSuccess | API.ResponseException>;
   modalForm?: {
@@ -189,9 +198,97 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
           ((): JSX.Element => {
             if (typeof importDataUploadProps !== 'undefined') {
               return (
-                <Upload {...importDataUploadProps}>
+                <Upload
+                  multiple={false}
+                  maxCount={1}
+                  customRequest={async ({ file, onSuccess, onError }) => {
+                    const result = await importDataUploadProps?.customAction?.(file);
+                    if (result?.code === 200) {
+                      onSuccess?.(result);
+                    } else {
+                      onError?.({
+                        status: result?.code || 400,
+                        method: 'post',
+                        message: result?.message || '上传失败！',
+                        name: '',
+                      });
+                    }
+                  }}
+                  beforeUpload={(file) => {
+                    const isXlsx =
+                      file.type ===
+                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                    if (!isXlsx) {
+                      notification.error({
+                        key: 'import_data_notification',
+                        message: '只能上传Excel文件！',
+                        description: '',
+                        duration: 4.5,
+                      });
+                    }
+                    return isXlsx || Upload.LIST_IGNORE;
+                  }}
+                  onChange={async ({ file }) => {
+                    switch (file.status) {
+                      case 'uploading':
+                        notification.info({
+                          key: 'import_data_notification',
+                          message: '正在上传文件，请稍后...',
+                          description: (
+                            <div>
+                              <h5>
+                                <FileExcelOutlined /> {file.name}
+                              </h5>
+                              <LinearProgress />
+                            </div>
+                          ),
+                          duration: 0,
+                        });
+                        break;
+                      case 'error':
+                        notification.error({
+                          key: 'import_data_notification',
+                          message: '上传文件失败！',
+                          description: (
+                            <div>
+                              <h5>
+                                <FileExcelOutlined /> {file.name}
+                              </h5>
+                              <Progress percent={file.percent || 100} status="exception" />
+                            </div>
+                          ),
+                          duration: 4.5,
+                        });
+                        break;
+                      case 'done':
+                        notification.success({
+                          key: 'import_data_notification',
+                          message: '上传文件成功！',
+                          description: (
+                            <div>
+                              <h5>
+                                <FileExcelOutlined /> {file.name}
+                              </h5>
+                              <Progress percent={file.percent || 100} />
+                            </div>
+                          ),
+                          duration: 4.5,
+                        });
+                        customActionRef?.current?.reload();
+                        break;
+                      case 'success':
+                        break;
+                      case 'removed':
+                        break;
+                      case undefined:
+                        throw new Error('Not implemented yet: undefined case');
+                    }
+                  }}
+                  showUploadList={false}
+                  {...importDataUploadProps}
+                >
                   {' '}
-                  <Button key="importDataButton" icon={<ImportOutlined />}>
+                  <Button key="importDataButton" icon={<UploadOutlined />}>
                     {' '}
                     导入数据{' '}
                   </Button>{' '}
@@ -205,7 +302,7 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
               return (
                 <Button
                   key="exportDataButton"
-                  icon={<ExportOutlined />}
+                  icon={<DownloadOutlined />}
                   onClick={exportDataEventHandler}
                 >
                   {' '}

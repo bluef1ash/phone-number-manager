@@ -18,7 +18,8 @@ public enum ExceptionCode {
      */
     NOT_LOGGED(10000, "您尚未登录，请登录后重试！"), ADD_FAILED(10001, "数据添加失败！"), EDIT_FAILED(10002, "数据编辑失败！"),
     DELETE_FAILED(10003, "数据删除失败！"), NOT_MODIFIED(10004, "数据不允许修改！"), METHOD_ARGUMENT_NOT_VALID(10005, "数据校验失败！"),
-    UNKNOWN_EXCEPTION(10006, "出现未知异常，请稍后重试！"), REPEAT_DATA_FAILED(10007, "数据有重复异常！");
+    UNKNOWN_EXCEPTION(10006, "出现未知异常，请稍后重试！"), REPEAT_DATA_FAILED(10007, "数据有重复异常！"),
+    FORBIDDEN_EXCEPTION(10008, "您没有权限访问该资源！");
 
     private final int code;
     private final String description;

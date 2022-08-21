@@ -47,7 +47,10 @@
             LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
         </if>
         <where>
-            pm_system_permission.menu_type IN (0, 1) AND pm_system_permission.is_display = #{isDisplay}
+            pm_system_permission.menu_type IN (0, 1)
+            <if test="isDisplay != null">
+                AND pm_system_permission.is_display = #{isDisplay}
+            </if>
             <choose>
                 <when test="companyIds == null">
                     AND pm_system_permission.parent_id = 0

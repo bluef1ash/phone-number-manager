@@ -24,8 +24,9 @@ import cn.hutool.json.JSONUtil;
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) {
-        R result = R.error(ExceptionCode.UNKNOWN_EXCEPTION.getCode(), ExceptionCode.UNKNOWN_EXCEPTION.getDescription())
-            .put("exception", e);
+        R result =
+            R.error(ExceptionCode.FORBIDDEN_EXCEPTION.getCode(), ExceptionCode.FORBIDDEN_EXCEPTION.getDescription())
+                .put("exception", e);
         String jsonStr = JSONUtil.toJsonStr(result);
         response.setCharacterEncoding("utf-8");
         response.setContentType("application/json; charset=utf-8");

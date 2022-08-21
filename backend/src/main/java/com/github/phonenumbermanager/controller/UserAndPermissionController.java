@@ -83,7 +83,7 @@ public class UserAndPermissionController extends BaseController {
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
-        jsonMap.put("systemUserInfo", getSystemUserVo(principal));
+        jsonMap.put("currentUser", getSystemUserVo(principal));
         return R.ok(jsonMap);
     }
 

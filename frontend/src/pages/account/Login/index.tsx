@@ -1,19 +1,15 @@
 import Footer from '@/components/Footer';
+
 import { login } from '@/services/account/api';
+import { fetchMenuData } from '@/services/utils';
+import { useModel } from '@@/plugin-model/useModel';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-form';
-import {
-  SESSION_COMPONENTS_KEY,
-  SESSION_MENU_KEY,
-  SESSION_SYSTEM_USER_KEY,
-  SESSION_TOKEN_KEY,
-} from '@config/constant';
+import { SESSION_SYSTEM_USER_KEY, SESSION_TOKEN_KEY } from '@config/constant';
 import { Alert, message as msg } from 'antd';
 import React, { useState } from 'react';
 import { history } from 'umi';
 import styles from './index.less';
-import { useModel } from '@@/plugin-model/useModel';
-import { queryMenuData } from '@/services/permission/api';
 
 const LoginMessage: React.FC<{
   content: string;
@@ -33,35 +29,26 @@ const Login: React.FC = () => {
     message: '',
   });
   const { initialState, setInitialState } = useModel('@@initialState');
-  const fetchMenuData = async (display: boolean, currentUser: API.SystemUser) => {
-    const { code, menuData, components } = await queryMenuData(display);
-    if (code === 200) {
-      localStorage.setItem(SESSION_MENU_KEY, JSON.stringify(menuData));
-      localStorage.setItem(SESSION_COMPONENTS_KEY, JSON.stringify(components));
-      setInitialState({
-        ...initialState,
-        components,
-        menuData,
-        currentUser,
-      });
-    }
-    return { code, menuData, components };
-  };
   const submit = async (values: API.LoginParams) => {
-    const { code, token, systemUserInfo, message } = await login({ ...values });
+    const { code, token, currentUser, message } = await login({ ...values });
     if (code === 200) {
       msg.success('登录成功！');
       localStorage.setItem(SESSION_TOKEN_KEY, token);
-      localStorage.setItem(SESSION_SYSTEM_USER_KEY, JSON.stringify(systemUserInfo));
-      const { code: codeState } = await fetchMenuData(true, systemUserInfo as API.SystemUser);
-      if (codeState !== 200 && !history) {
-        return;
+      localStorage.setItem(SESSION_SYSTEM_USER_KEY, JSON.stringify(currentUser));
+      const { code: codeState, menuData, components } = await fetchMenuData(true);
+      if (codeState === 200 && history) {
+        await setInitialState({
+          ...initialState,
+          currentUser: currentUser,
+          menuData,
+          components,
+        });
+        const { query } = history.location;
+        const { redirect } = query as {
+          redirect: string;
+        };
+        history.push(redirect || '/');
       }
-      const { query } = history.location;
-      const { redirect } = query as {
-        redirect: string;
-      };
-      history.push(redirect || '/');
     } else {
       setUserLoginState({ code, message });
     }

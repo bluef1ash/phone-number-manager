@@ -1,10 +1,7 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -18,6 +15,7 @@ import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.CompanyPermission;
 import com.github.phonenumbermanager.entity.SystemPermission;
+import com.github.phonenumbermanager.mapper.CompanyMapper;
 import com.github.phonenumbermanager.mapper.CompanyPermissionMapper;
 import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
 import com.github.phonenumbermanager.service.SystemPermissionService;
@@ -41,6 +39,7 @@ import lombok.AllArgsConstructor;
 public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissionMapper, SystemPermission>
     implements SystemPermissionService {
     private final CompanyPermissionMapper companyPermissionMapper;
+    private final CompanyMapper companyMapper;
     private final RedisUtil redisUtil;
 
     @Override
@@ -59,27 +58,35 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     }
 
     @Override
-    public List<MenuVo> listMenu(Boolean display, List<Company> companies) {
+    public Map<String, Object> listMenu(Boolean display, List<Company> companies) {
+        Map<String, Object> menuMap = new HashMap<>(2);
         List<Long> companyIds = null;
         if (companies != null) {
             companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
         }
         List<SystemPermission> systemPermissionAll =
             JSONUtil.parseArray(redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY)).toList(SystemPermission.class);
-        List<SystemPermission> systemPermissions = baseMapper.selectListByCompanyIds(companyIds, display);
+        List<Company> companyAll = companyMapper.selectList(null);
+        List<SystemPermission> systemPermissions =
+            getPrevSystemPermissions(baseMapper, display, companyIds, companyAll);
         Map<String, String> fieldMappings = new HashMap<>(4);
         fieldMappings.put("uri", "path");
         fieldMappings.put("functionName", "component");
         CopyOptions copyOptions = CopyOptions.create();
         copyOptions.setFieldMapping(fieldMappings);
-        List<MenuVo> menuVos = systemPermissions.stream().map(systemPermission -> {
+        List<MenuVo> menuVos = new ArrayList<>();
+        Set<String> components = new HashSet<>();
+        for (SystemPermission systemPermission : systemPermissions) {
             MenuVo menuVo = new MenuVo();
             BeanUtil.copyProperties(systemPermission, menuVo, copyOptions);
             menuVo.setKey(systemPermission.getId().toString()).setHideInMenu(!systemPermission.getIsDisplay());
-            return menuVo;
-        }).collect(Collectors.toList());
-        treeMenus(menuVos, systemPermissionAll, copyOptions);
-        return menuVos;
+            menuVos.add(menuVo);
+            components.add(menuVo.getComponent());
+        }
+        treeMenus(menuVos, components, systemPermissionAll, copyOptions);
+        menuMap.put("menuData", menuVos);
+        menuMap.put("components", components);
+        return menuMap;
     }
 
     @Override
@@ -136,12 +143,15 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
      *
      * @param menuVos
      *            整理后的菜单
+     * @param components
+     *            权限名称列表
      * @param systemPermissionAll
      *            全部系统用户权限对象集合
      * @param copyOptions
      *            复制选项
      */
-    private void treeMenus(List<MenuVo> menuVos, List<SystemPermission> systemPermissionAll, CopyOptions copyOptions) {
+    private void treeMenus(List<MenuVo> menuVos, Set<String> components, List<SystemPermission> systemPermissionAll,
+        CopyOptions copyOptions) {
         menuVos.forEach(menuVo -> {
             List<MenuVo> menuVoList = systemPermissionAll.stream()
                 .filter(systemPermission -> systemPermission.getParentId().equals(menuVo.getId())
@@ -150,10 +160,11 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
                     MenuVo menu = new MenuVo();
                     BeanUtil.copyProperties(systemPermission, menu, copyOptions);
                     menu.setKey(systemPermission.getId().toString()).setHideInMenu(!systemPermission.getIsDisplay());
+                    components.add(menu.getComponent());
                     return menu;
                 }).collect(Collectors.toList());
             menuVo.setRoutes(menuVoList);
-            treeMenus(menuVoList, systemPermissionAll, copyOptions);
+            treeMenus(menuVoList, components, systemPermissionAll, copyOptions);
         });
     }
 

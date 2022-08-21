@@ -1,9 +1,9 @@
-import request from "@config/request";
-import { index, system } from "@/services/api";
+import { index, system } from '@/services/api';
+import request from '@config/request';
 
 /** 获取菜单 */
 export async function queryMenuData(display: boolean, options?: Record<string, any>) {
-  return request.get<API.ResponseMenu>(index.menu, {
+  return request.get<API.ResponseMenu & API.ResponseException>(index.menu, {
     params: {
       display,
     },

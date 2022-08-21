@@ -1,12 +1,12 @@
 package com.github.phonenumbermanager.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemPermission;
-import com.github.phonenumbermanager.vo.MenuVo;
 
 /**
  * 系统权限业务接口
@@ -46,9 +46,9 @@ public interface SystemPermissionService extends BaseService<SystemPermission> {
      *            是否在导航栏中显示
      * @param companies
      *            当前登录的用户所属单位集合
-     * @return 查找到的系统用户权限对象的集合
+     * @return 查找到的系统用户权限对象的集合与权限集合
      */
-    List<MenuVo> listMenu(Boolean display, List<Company> companies);
+    Map<String, Object> listMenu(Boolean display, List<Company> companies);
 
     /**
      * 分页树形系统权限

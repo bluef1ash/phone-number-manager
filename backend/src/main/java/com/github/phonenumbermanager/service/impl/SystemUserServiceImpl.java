@@ -3,10 +3,7 @@ package com.github.phonenumbermanager.service.impl;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -36,6 +33,7 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
+import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
 import com.github.phonenumbermanager.mapper.SystemUserCompanyMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.SystemUserService;
@@ -62,6 +60,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     private final RedisUtil redisUtil;
     private final SystemUserCompanyMapper systemUserCompanyMapper;
     private final CompanyMapper companyMapper;
+    private final SystemPermissionMapper systemPermissionMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
@@ -77,15 +76,23 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
                 .parseArray(redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY)).toList(SystemPermission.class);
             List<Long> companyParentIds = companyMapper.selectList(null).stream().map(Company::getParentId).distinct()
                 .collect(Collectors.toList());
-            systemUser.getCompanies().forEach(company -> {
-                List<SystemPermission> systemPermissions = company
-                    .getSystemPermissions().stream().map(systemPermission -> CommonUtil
-                        .listRecursionSystemPermissions(systemPermissionAll, systemPermission.getId()))
-                    .flatMap(List::stream).distinct().collect(Collectors.toList());
+            for (Company company : systemUser.getCompanies()) {
+                List<SystemPermission> tempSystemPermissions = company.getSystemPermissions();
+                if (company.getSystemPermissions() == null || company.getSystemPermissions().isEmpty()) {
+                    List<Company> companyAll = companyMapper.selectList(null);
+                    tempSystemPermissions = getPrevSystemPermissions(systemPermissionMapper, null,
+                        Collections.singletonList(company.getId()), companyAll);
+                }
+                List<
+                    SystemPermission> systemPermissions =
+                        tempSystemPermissions.stream()
+                            .map(systemPermission -> CommonUtil.listRecursionSystemPermissions(systemPermissionAll,
+                                systemPermission.getId()))
+                            .flatMap(List::stream).distinct().collect(Collectors.toList());
                 systemPermissions.addAll(company.getSystemPermissions());
                 company.setSystemPermissions(systemPermissions);
                 company.setIsLeaf(!companyParentIds.contains(company.getId()));
-            });
+            }
         }
         @SuppressWarnings("unchecked")
         Map<String, JSONObject> configurationMap =

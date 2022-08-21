@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
-import type { ActionType } from '@ant-design/pro-table';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import { ProFormList, ProFormSelect, ProFormText } from '@ant-design/pro-form';
+import PhoneNumberList from '@/components/PhoneNumberList';
+import SelectCascder from '@/components/SelectCascder';
 import {
   batchCompany,
   createCompany,
@@ -13,11 +11,13 @@ import {
   queryCompanySelectList,
   removeCompany,
 } from '@/services/company/api';
-import { getCompanyParentIds, submitPrePhoneNumberHandle } from '@/services/utils';
 import { querySystemPermissionSelectList } from '@/services/permission/api';
-import PhoneNumberList from '@/components/PhoneNumberList';
-import SelectCascder from '@/components/SelectCascder';
+import { getCompanyParentIds, submitPrePhoneNumberHandle } from '@/services/utils';
+import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProFormList, ProFormSelect, ProFormText } from '@ant-design/pro-form';
+import type { ActionType } from '@ant-design/pro-table';
 import type { RuleObject, StoreValue } from 'rc-field-form/lib/interface';
+import React, { useEffect, useRef, useState } from 'react';
 
 const InputElement = (
   selectListState: API.SelectList[],
@@ -236,11 +236,11 @@ const Company: React.FC = () => {
     );
     formData.systemPermissions = formData.systemPermissionSelectList?.map(
       (value: API.SelectList[]) => ({
-        id: value[0],
+        id: value[value.length - 1],
       }),
     );
     if (typeof formData.parentIdCascder !== 'undefined') {
-      formData.parentId = formData.parentIdCascder[formData.parentIdCascder.length - 1];
+      formData.parentId = formData.parentIdCascder[formData.parentIdCascder.length - 1][0];
     }
     return formData;
   };

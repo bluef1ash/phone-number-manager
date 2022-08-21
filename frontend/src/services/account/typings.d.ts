@@ -3,7 +3,7 @@ declare namespace API {
   type LoginResult = {
     code: number;
     token: string;
-    systemUserInfo?: SystemUser;
+    currentUser?: SystemUser;
   };
 
   type LoginParams = {

@@ -1,10 +1,10 @@
-import request from "@config/request";
 import {
   communityResident,
   communityResidentBatch,
   communityResidentDownloadExcel,
-  communityResidentImportExcel
-} from "@/services/api";
+  communityResidentImportExcel,
+} from '@/services/api';
+import request from '@config/request';
 
 /** 获取社区居民列表 */
 export async function queryCommunityResidentList(params?: any, options?: Record<string, any>) {
@@ -84,8 +84,13 @@ export async function batchCommunityResident(
 }
 
 /** 上传表格 */
-export async function uploadCommunityResidentExcel(options?: Record<string, any>) {
+export async function uploadCommunityResidentExcel(
+  formData: FormData,
+  options?: Record<string, any>,
+) {
   return request.post<API.ResponseSuccess & API.ResponseException>(communityResidentImportExcel, {
+    requestType: 'form',
+    data: formData,
     ...(options || {}),
   });
 }

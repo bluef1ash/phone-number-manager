@@ -12,8 +12,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.BaseMapper;
+import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
 import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.vo.SelectListVo;
@@ -370,5 +372,23 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
             companyList.addAll(companies);
         }
         return companyList;
+    }
+
+    protected List<SystemPermission> getPrevSystemPermissions(SystemPermissionMapper systemPermissionMapper,
+        Boolean display, List<Long> companyIds, List<Company> companyAll) {
+        List<SystemPermission> systemPermissions;
+        do {
+            systemPermissions = systemPermissionMapper.selectListByCompanyIds(companyIds, display);
+            if (companyIds == null || companyIds.isEmpty()) {
+                break;
+            }
+            companyIds = companyIds.stream()
+                .map(companyId -> companyAll.stream().filter(company -> companyId.equals(company.getId())).findFirst()
+                    .orElse(null))
+                .filter(Objects::nonNull).map(Company::getParentId)
+                .map(parentId -> companyAll.stream().filter(c -> parentId.equals(c.getId())).findFirst().orElse(null))
+                .filter(Objects::nonNull).map(Company::getId).collect(Collectors.toList());
+        } while (systemPermissions.isEmpty());
+        return systemPermissions;
     }
 }

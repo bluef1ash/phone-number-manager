@@ -7,6 +7,7 @@ export enum ExceptionCode {
   METHOD_ARGUMENT_NOT_VALID,
   UNKNOWN_EXCEPTION,
   REPEAT_DATA_FAILED,
+  FORBIDDEN,
 }
 
 export enum PhoneNumberType {

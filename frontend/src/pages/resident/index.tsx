@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
-import type { ActionType } from '@ant-design/pro-table';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import { ProFormText } from '@ant-design/pro-form';
+import PhoneNumberList from '@/components/PhoneNumberList';
+import SelectCascder from '@/components/SelectCascder';
+import { ExceptionCode } from '@/services/enums';
 import {
   batchCommunityResident,
   createCommunityResident,
@@ -12,15 +11,15 @@ import {
   queryCommunityResident,
   queryCommunityResidentList,
   removeCommunityResident,
+  uploadCommunityResidentExcel,
 } from '@/services/resident/api';
-import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils';
-import { Alert, message, Spin, Upload } from 'antd';
-import { communityResidentImportExcel } from '@/services/api';
-import { SESSION_TOKEN_KEY } from '@config/constant';
-import PhoneNumberList from '@/components/PhoneNumberList';
-import { ExceptionCode } from '@/services/enums';
-import SelectCascder from '@/components/SelectCascder';
 import { querySubcontractorSelectList } from '@/services/subcontractor/api';
+import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils';
+import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProFormText } from '@ant-design/pro-form';
+import type { ActionType } from '@ant-design/pro-table';
+import { Alert, Spin } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
 
 const InputElement = (
   subcontractorSelectState: API.SelectList[],
@@ -255,26 +254,10 @@ const CommunityResident: React.FC = () => {
           }}
           removeData={async (id) => await removeCommunityResident(id)}
           importDataUploadProps={{
-            action: communityResidentImportExcel,
-            name: 'file',
-            headers: {
-              Authorization: `Bearer_${localStorage.getItem(SESSION_TOKEN_KEY)}`,
-            },
-            async beforeUpload(file) {
-              const isXlsx =
-                file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-              if (!isXlsx) {
-                message.error('只能上传Excel文件！');
-              }
-              return isXlsx || Upload.LIST_IGNORE;
-            },
-            async onChange({ file }) {
-              if (file.status === 'done') {
-                message.success('上传成功！');
-                actionRef.current?.reload();
-              } else if (file.status === 'error') {
-                message.error('上传失败！');
-              }
+            async customAction(file) {
+              const formData = new FormData();
+              formData.append('file', file);
+              return await uploadCommunityResidentExcel(formData);
             },
           }}
           exportDataEventHandler={async () =>

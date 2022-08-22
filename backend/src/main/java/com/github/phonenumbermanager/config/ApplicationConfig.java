@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.Filter;
+
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.CorsEndpointProperties;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.actuate.autoconfigure.web.server.ManagementPortType;
@@ -19,6 +21,7 @@ import org.springframework.boot.actuate.endpoint.web.annotation.ControllerEndpoi
 import org.springframework.boot.actuate.endpoint.web.annotation.ServletEndpointsSupplier;
 import org.springframework.boot.actuate.endpoint.web.servlet.WebMvcEndpointHandlerMapping;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +36,8 @@ import org.springframework.data.redis.serializer.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.StringUtils;
 
+import com.alibaba.druid.spring.boot.autoconfigure.properties.DruidStatProperties;
+import com.alibaba.druid.util.Utils;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
@@ -213,6 +218,32 @@ public class ApplicationConfig {
         return new WebMvcEndpointHandlerMapping(endpointMapping, webEndpoints, endpointMediaTypes,
             corsProperties.toCorsConfiguration(), new EndpointLinksResolver(allEndpoints, basePath),
             shouldRegisterLinksMapping, null);
+    }
+
+    /**
+     * 去除druid监控页面的底部广告
+     *
+     * @param properties
+     *            druid stat属性
+     * @return 过滤器
+     */
+    @Bean
+    public FilterRegistrationBean<Filter> removeDruidAdFilterRegistrationBean(DruidStatProperties properties) {
+        DruidStatProperties.StatViewServlet config = properties.getStatViewServlet();
+        String pattern = config.getUrlPattern() != null ? config.getUrlPattern() : "/druid/*";
+        String commonJsPattern = pattern.replaceAll("\\*", "js/common.js");
+        final String filePath = "support/http/resources/js/common.js";
+        Filter filter = (request, response, chain) -> {
+            chain.doFilter(request, response);
+            response.resetBuffer();
+            String text = Utils.readFromResource(filePath);
+            text = text.replaceAll("<a.*?banner\"></a><br/>", "");
+            text = text.replaceAll("powered.*?shrek.wang</a>", "");
+            response.getWriter().write(text);
+        };
+        FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>(filter);
+        registrationBean.addUrlPatterns(commonJsPattern);
+        return registrationBean;
     }
 
     /**

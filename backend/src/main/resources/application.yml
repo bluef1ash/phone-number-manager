@@ -34,34 +34,17 @@ spring:
             max-wait: 60000
             time-between-eviction-runs-millis: 60000
             min-evictable-idle-time-millis: 300000
+            max-evictable-idle-time-millis: 900000
             validation-query: SELECT 1 FROM DUAL
             test-while-idle: true
             test-on-borrow: false
             test-on-return: false
             pool-prepared-statements: true
             max-pool-prepared-statement-per-connection-size: 20
+            max-open-prepared-statements: 100
+            keep-alive: true
             #Oracle需要打开注释
             #validation-query: SELECT 1 FROM DUAL
-            filter:
-                stat:
-                    log-slow-sql: true
-                    slow-sql-millis: 1000
-                    merge-sql: false
-                wall:
-                    config:
-                        multi-statement-allow: true
-
-            web-stat-filter:
-                enabled: true
-                url-pattern: /*
-                exclusions: "*.ico,/druid/*"
-                session-stat-enable: true
-                session-stat-max-count: 1000
-
-            stat-view-servlet:
-                enabled: true
-                url-pattern: /druid/*
-                reset-enable: false
 
     mvc:
         throw-exception-if-no-handler-found: true

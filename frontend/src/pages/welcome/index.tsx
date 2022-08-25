@@ -14,7 +14,7 @@ import { useModel } from '@@/plugin-model/useModel';
 import type { ColumnConfig } from '@ant-design/charts';
 import { Bar, Pie } from '@ant-design/charts';
 import { StatisticCard } from '@ant-design/pro-card';
-import { Col, message, Row } from 'antd';
+import { Col, Empty, message, Row } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './index.less';
 
@@ -152,7 +152,7 @@ const Welcome: React.FC = () => {
     window.addEventListener('scroll', async () => await loadData());
     (async () => {
       if (initialState) {
-        const currentUser = initialState.currentUser;
+        const currentUser = await initialState.currentUser;
         setIsHideSelectState(
           currentUser?.companies?.some((company: API.Company) => company.isLeaf),
         );
@@ -266,8 +266,11 @@ const Welcome: React.FC = () => {
           queryDashboardComputed={queryCommunityResidentChart}
           isHideSelect={isHideSelectState}
         >
-          {' '}
-          <ComputedChartColumn {...residentBarChartState} />{' '}
+          {residentBarChartState.data !== null && residentBarChartState.data.length > 0 ? (
+            <ComputedChartColumn {...residentBarChartState} />
+          ) : (
+            <Empty className={styles['empty-message']} />
+          )}
         </ComputedStatisticCard>{' '}
       </div>
       <div ref={dormitoryManagerComputedBaseMessageRef}>
@@ -289,52 +292,59 @@ const Welcome: React.FC = () => {
           queryDashboardComputed={queryDormitoryManagerBaseMessage}
           isHideSelect={isHideSelectState}
         >
-          {' '}
-          <Row justify="space-around" className={styles['dormitory-message']}>
-            {' '}
-            <Col span={11}>
-              {' '}
-              <StatisticCard
-                statistic={{
-                  title: '已录入人数',
-                  value: dormitoryBaseMessageState.inputCount,
-                }}
-                loading={dormitoryBaseMessageState.loading}
-              />{' '}
-            </Col>{' '}
-            <Col span={11}>
-              {' '}
-              <Bar
-                {...dormitoryBaseMessageState.genderCount}
-                seriesField={dormitoryBaseMessageState.genderCount.yField}
-                legend={{
-                  position: 'top-left',
-                }}
-              />{' '}
-            </Col>{' '}
-          </Row>{' '}
-          <Row justify="space-around" className={styles['dormitory-message']}>
-            {' '}
-            <Col span={11}>
-              {' '}
-              <Pie {...dormitoryBaseMessageState.ageCount} />{' '}
-            </Col>{' '}
-            <Col span={11}>
-              {' '}
-              <Pie {...dormitoryBaseMessageState.educationCount} />{' '}
-            </Col>{' '}
-          </Row>{' '}
-          <Row justify="space-around" className={styles['dormitory-message']}>
-            {' '}
-            <Col span={11}>
-              {' '}
-              <Pie {...dormitoryBaseMessageState.politicalStatusCount} />{' '}
-            </Col>{' '}
-            <Col span={11}>
-              {' '}
-              <Pie {...dormitoryBaseMessageState.employmentStatusCount} />{' '}
-            </Col>{' '}
-          </Row>{' '}
+          {dormitoryBaseMessageState.inputCount !== null &&
+          typeof dormitoryBaseMessageState.inputCount !== 'undefined' &&
+          dormitoryBaseMessageState.inputCount > 0 ? (
+            <>
+              <Row justify="space-around" className={styles['dormitory-message']}>
+                {' '}
+                <Col span={11}>
+                  {' '}
+                  <StatisticCard
+                    statistic={{
+                      title: '已录入人数',
+                      value: dormitoryBaseMessageState.inputCount,
+                    }}
+                    loading={dormitoryBaseMessageState.loading}
+                  />{' '}
+                </Col>{' '}
+                <Col span={11}>
+                  {' '}
+                  <Bar
+                    {...dormitoryBaseMessageState.genderCount}
+                    seriesField={dormitoryBaseMessageState.genderCount.yField}
+                    legend={{
+                      position: 'top-left',
+                    }}
+                  />{' '}
+                </Col>{' '}
+              </Row>{' '}
+              <Row justify="space-around" className={styles['dormitory-message']}>
+                {' '}
+                <Col span={11}>
+                  {' '}
+                  <Pie {...dormitoryBaseMessageState.ageCount} />{' '}
+                </Col>{' '}
+                <Col span={11}>
+                  {' '}
+                  <Pie {...dormitoryBaseMessageState.educationCount} />{' '}
+                </Col>{' '}
+              </Row>{' '}
+              <Row justify="space-around" className={styles['dormitory-message']}>
+                {' '}
+                <Col span={11}>
+                  {' '}
+                  <Pie {...dormitoryBaseMessageState.politicalStatusCount} />{' '}
+                </Col>{' '}
+                <Col span={11}>
+                  {' '}
+                  <Pie {...dormitoryBaseMessageState.employmentStatusCount} />{' '}
+                </Col>{' '}
+              </Row>{' '}
+            </>
+          ) : (
+            <Empty className={styles['empty-message']} />
+          )}
         </ComputedStatisticCard>{' '}
       </div>
       <div ref={dormitoryManagerComputedChartRef}>
@@ -356,8 +366,11 @@ const Welcome: React.FC = () => {
           queryDashboardComputed={queryDormitoryManagerChart}
           isHideSelect={isHideSelectState}
         >
-          {' '}
-          <ComputedChartColumn {...dormitoryBarChartState} />{' '}
+          {dormitoryBarChartState.data !== null && dormitoryBarChartState.data.length > 0 ? (
+            <ComputedChartColumn {...dormitoryBarChartState} />
+          ) : (
+            <Empty className={styles['empty-message']} />
+          )}
         </ComputedStatisticCard>{' '}
       </div>
       <div ref={subcontractorComputedChartRef}>
@@ -394,8 +407,12 @@ const Welcome: React.FC = () => {
           }}
           isHideSelect={isHideSelectState}
         >
-          {' '}
-          <ComputedChartColumn {...subcontractorBarChartState} />{' '}
+          {subcontractorBarChartState.data !== null &&
+          subcontractorBarChartState.data.length > 0 ? (
+            <ComputedChartColumn {...subcontractorBarChartState} />
+          ) : (
+            <Empty className={styles['empty-message']} />
+          )}
         </ComputedStatisticCard>{' '}
       </div>
     </MainPageContainer>

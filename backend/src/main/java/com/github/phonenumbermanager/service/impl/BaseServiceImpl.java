@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.BaseMapper;
@@ -83,7 +84,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap) {
+    public boolean save(List<List<Object>> data, Map<String, Configuration> configurationMap) {
         return false;
     }
 
@@ -112,7 +113,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
 
     @Override
     public ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser,
-        Map<String, JSONObject> configurationMap) {
+        Map<String, Configuration> configurationMap) {
         return null;
     }
 
@@ -192,8 +193,8 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      * @return 下级单位编号
      */
     protected List<Long> exportExcelGetSubordinateCompanyIds(SystemUser currentSystemUser,
-        Map<String, JSONObject> configurationMap, List<Company> companyAll) {
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
+        Map<String, Configuration> configurationMap, List<Company> companyAll) {
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         List<Company> companies;
         if (systemAdministratorId.equals(currentSystemUser.getId()) && currentSystemUser.getCompanies() == null) {
             companies = companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());

@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CompanyService;
+import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
@@ -41,6 +44,7 @@ import lombok.AllArgsConstructor;
 public class DormitoryManagerController extends BaseController {
     private final DormitoryManagerService dormitoryManagerService;
     private final CompanyService companyService;
+    private final ConfigurationService configurationService;
 
     /**
      * 社区居民楼片长列表
@@ -147,9 +151,9 @@ public class DormitoryManagerController extends BaseController {
     @ResponseBody
     @ApiOperation("导入社区居民楼片长信息进系统")
     public R dormitoryManagerImportAsSystem(HttpServletRequest request) {
-        getEnvironmentVariable();
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
         List<List<Object>> data = uploadExcelFileToData(request,
-            Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").get("content")));
+            Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").getContent()));
         if (data != null && dormitoryManagerService.save(data, configurationMap)) {
             return R.ok("上传成功！");
         }
@@ -166,6 +170,7 @@ public class DormitoryManagerController extends BaseController {
     @ApiOperation("导出社区居民楼片长信息到Excel")
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response) {
         getEnvironmentVariable();
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
         ExcelWriter excelWriter =
             dormitoryManagerService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "社区楼片长花名册");

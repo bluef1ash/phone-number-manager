@@ -1,10 +1,4 @@
 import { PhoneNumberType } from '@/services/enums';
-import { queryMenuData } from '@/services/permission/api';
-import {
-  SESSION_COMPONENTS_KEY,
-  SESSION_MENU_KEY,
-  SESSION_SYSTEM_USER_KEY,
-} from '@config/constant';
 import { message } from 'antd';
 import { parsePhoneNumber } from 'libphonenumber-js/max';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
@@ -77,19 +71,17 @@ export async function downloadExcelFile(
 
 /**
  * 获取单位父级编号数组
+ * @param currentUser
  * @return
  */
-export function getCompanyParentIds(): number[] {
+export function getCompanyParentIds(currentUser: API.SystemUser): number[] {
   let parentIds = [0];
-  const systemUser: API.SystemUser = JSON.parse(
-    localStorage.getItem(SESSION_SYSTEM_USER_KEY) || '{}',
-  );
   if (
-    typeof systemUser.companies !== 'undefined' &&
-    systemUser.companies !== null &&
-    systemUser.companies.length > 0
+    typeof currentUser.companies !== 'undefined' &&
+    currentUser.companies !== null &&
+    currentUser.companies.length > 0
   ) {
-    parentIds = systemUser.companies.map((company: API.Company) => company.parentId);
+    parentIds = currentUser.companies.map((company: API.Company) => company.parentId);
   }
   return parentIds;
 }
@@ -111,19 +103,4 @@ export function checkVisibleInDocument(componentRef: RefObject<HTMLElement>): bo
   const { height, top } = componentRef.current.getBoundingClientRect();
   const windowHeight = window.innerHeight || document.documentElement.clientHeight;
   return top < windowHeight && top + height > 0;
-}
-
-/**
- * 获取菜单数据
- * @param display
- */
-export async function fetchMenuData(
-  display: boolean,
-): Promise<API.ResponseMenu & API.ResponseException> {
-  const result = await queryMenuData(display);
-  if (result.code === 200) {
-    localStorage.setItem(SESSION_MENU_KEY, JSON.stringify(result.menuData));
-    localStorage.setItem(SESSION_COMPONENTS_KEY, JSON.stringify(result.components));
-  }
-  return result;
 }

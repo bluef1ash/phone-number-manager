@@ -30,7 +30,7 @@ export const system = {
   user: REACT_APP_API_BASE_URL + '/system/user',
   userBatch: REACT_APP_API_BASE_URL + '/system/user/batch',
   userSelectList: REACT_APP_API_BASE_URL + '/system/user/select-list',
-  currentUser: REACT_APP_API_BASE_URL + '/system/user/current-user',
+  currentUser: REACT_APP_API_BASE_URL + '/system/user/current',
   permission: REACT_APP_API_BASE_URL + '/system/permission',
   permissionBatch: REACT_APP_API_BASE_URL + '/system/permission/batch',
   permissionSelectList: REACT_APP_API_BASE_URL + '/system/permission/select-list',

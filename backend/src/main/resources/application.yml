@@ -68,6 +68,7 @@ spring:
     redis:
         host: ${REDIS_HOST}
         port: ${REDIS_PORT}
+        timeout: 300000
 
 # Mybatis基础配置
 mybatis-plus:

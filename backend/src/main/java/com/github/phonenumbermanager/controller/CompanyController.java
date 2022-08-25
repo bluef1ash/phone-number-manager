@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -11,9 +12,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CompanyService;
+import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
@@ -21,6 +24,7 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
 import com.github.phonenumbermanager.vo.ComputedVo;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -38,6 +42,7 @@ import lombok.AllArgsConstructor;
 @Api(tags = "单位控制器")
 public class CompanyController extends BaseController {
     private final CompanyService companyService;
+    private final ConfigurationService configurationService;
     private final SubcontractorService subcontractorService;
 
     /**
@@ -56,9 +61,10 @@ public class CompanyController extends BaseController {
     public R companyList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据条数") Integer pageSize) {
         getEnvironmentVariable();
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
         List<Company> companies = currentSystemUser.getCompanies();
-        if (companies == null
-            && currentSystemUser.getId().equals(configurationMap.get("system_administrator_id").get("content"))) {
+        if (companies == null && currentSystemUser.getId()
+            .equals(Convert.toLong(configurationMap.get("system_administrator_id").getContent()))) {
             companies = companyService.list();
         }
         QueryWrapper<Company> wrapper = new QueryWrapper<>();
@@ -90,7 +96,8 @@ public class CompanyController extends BaseController {
     @ApiOperation("单位添加处理")
     public R companyCreateHandle(@ApiParam(name = "需要添加的单位对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) Company company) {
-        if (companyService.save(company)) {
+        getEnvironmentVariable();
+        if (companyService.save(company, currentSystemUser.getId())) {
             return R.ok();
         }
         throw new JsonException("添加单位失败！");
@@ -110,9 +117,10 @@ public class CompanyController extends BaseController {
     public R companyModifyHandle(@ApiParam(name = "要修改的单位编号", required = true) @PathVariable Long id,
         @ApiParam(name = "需要修改的单位对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) Company company) {
+        getEnvironmentVariable();
         Company one = companyService.getOne(new LambdaQueryWrapper<Company>().eq(Company::getId, id));
         company.setId(id).setVersion(one.getVersion());
-        if (companyService.updateById(company)) {
+        if (companyService.updateById(company, currentSystemUser.getId())) {
             return R.ok();
         }
         throw new JsonException("单位修改失败！");
@@ -128,10 +136,11 @@ public class CompanyController extends BaseController {
     @DeleteMapping("/{id}")
     @ApiOperation("通过单位编号删除")
     public R removeCompany(@ApiParam(name = "需要删除的单位编号", required = true) @PathVariable Long id) {
-        if (!companyService.removeById(id)) {
-            throw new JsonException("删除社区失败！");
+        getEnvironmentVariable();
+        if (companyService.removeById(id, currentSystemUser.getId())) {
+            return R.ok("删除社区成功！");
         }
-        return R.ok("删除社区成功！");
+        throw new JsonException("删除社区失败！");
     }
 
     /**
@@ -183,9 +192,10 @@ public class CompanyController extends BaseController {
     public R subcontractorList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据条数") Integer pageSize) {
         getEnvironmentVariable();
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
         List<Company> companies = currentSystemUser.getCompanies();
-        if (companies == null
-            && currentSystemUser.getId().equals(configurationMap.get("system_administrator_id").get("content"))) {
+        if (companies == null && currentSystemUser.getId()
+            .equals(Convert.toLong(configurationMap.get("system_administrator_id").getContent()))) {
             companies = companyService.list();
         }
         QueryWrapper<Subcontractor> wrapper = new QueryWrapper<>();

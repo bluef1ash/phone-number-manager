@@ -35,6 +35,7 @@ public class IndexController extends BaseController {
     @ApiOperation("获取首页菜单栏内容")
     public R getMenu(@ApiParam(name = "是否显示") Boolean display) {
         getEnvironmentVariable();
-        return R.ok(systemPermissionService.listMenu(display, currentSystemUser.getCompanies()));
+        return R
+            .ok(systemPermissionService.listMenu(display, currentSystemUser.getCompanies(), currentSystemUser.getId()));
     }
 }

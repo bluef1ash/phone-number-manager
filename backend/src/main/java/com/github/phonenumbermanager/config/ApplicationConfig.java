@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.*;
@@ -144,15 +144,15 @@ public class ApplicationConfig {
      *
      * @param connectionFactory
      *            Redis连接工厂
-     * @return CacheManager
+     * @return Redis 管理配置
      */
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        return RedisCacheManager.builder(connectionFactory)
-            .cacheDefaults(
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(8)).serializeValuesWith(
-                    RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())))
-            .transactionAware().build();
+        RedisCacheConfiguration configuration =
+            RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(1)).serializeValuesWith(
+                RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()));
+        RedisCacheWriter writer = RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory);
+        return new RedisCacheManager(writer, configuration);
     }
 
     /**

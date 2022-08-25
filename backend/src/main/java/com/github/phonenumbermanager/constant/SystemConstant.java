@@ -46,9 +46,9 @@ public final class SystemConstant {
      */
     public static final String HEADER_STRING = "Authorization";
     /**
-     * 配置键值
+     * 系统配置缓存键值
      */
-    public static final String CONFIGURATIONS_MAP_KEY = "configurationsMap";
+    public static final String CONFIGURATIONS_MAP_KEY = "configurations_map";
     /**
      * Base64密钥
      */
@@ -59,9 +59,13 @@ public final class SystemConstant {
      */
     public static final String CLAIM_KEY_CREATED = "created";
     /**
-     * 系统用户键名
+     * 系统用户编号缓存键名
      */
     public static final String SYSTEM_USER_ID_KEY = "system_user_id";
+    /**
+     * 系统菜单缓存键名
+     */
+    public static final String SYSTEM_MENU_KEY = "system_menu_id";
     /**
      * 数据库最小时间
      */
@@ -83,5 +87,5 @@ public final class SystemConstant {
     /**
      * 系统权限缓存键值
      */
-    public static final String SYSTEM_PERMISSIONS_KEY = "systemPermissionAll";
+    public static final String SYSTEM_PERMISSIONS_KEY = "system_permission_all";
 }

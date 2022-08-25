@@ -1,12 +1,12 @@
 import Footer from '@/components/Footer';
-
 import { login } from '@/services/account/api';
-import { fetchMenuData } from '@/services/utils';
+import { queryMenuData } from '@/services/permission/api';
 import { useModel } from '@@/plugin-model/useModel';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-form';
-import { SESSION_SYSTEM_USER_KEY, SESSION_TOKEN_KEY } from '@config/constant';
+import { COOKIE_TOKEN_KEY } from '@config/constant';
 import { Alert, message as msg } from 'antd';
+import Cookies from 'js-cookie';
 import React, { useState } from 'react';
 import { history } from 'umi';
 import styles from './index.less';
@@ -33,13 +33,12 @@ const Login: React.FC = () => {
     const { code, token, currentUser, message } = await login({ ...values });
     if (code === 200) {
       msg.success('登录成功！');
-      localStorage.setItem(SESSION_TOKEN_KEY, token);
-      localStorage.setItem(SESSION_SYSTEM_USER_KEY, JSON.stringify(currentUser));
-      const { code: codeState, menuData, components } = await fetchMenuData(true);
+      Cookies.set(COOKIE_TOKEN_KEY, token, { expires: 7 });
+      const { code: codeState, menuData, components } = await queryMenuData(true);
       if (codeState === 200 && history) {
         await setInitialState({
           ...initialState,
-          currentUser: currentUser,
+          currentUser,
           menuData,
           components,
         });

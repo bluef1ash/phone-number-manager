@@ -7,8 +7,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.exception.SystemClosedException;
 
 /**
  * 系统用户业务接口
@@ -27,9 +29,14 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
      *            客户端IP地址
      * @throws LoginException
      *             登录异常
+     * @throws UsernameNotFoundException
+     *             用户名称没有找到异常
+     * @throws SystemClosedException
+     *             系统已经关闭异常
      * @return 认证对象
      */
-    Authentication authentication(String phoneNumber, String password, String clientIp) throws LoginException;
+    Authentication authentication(String phoneNumber, String password, String clientIp)
+        throws LoginException, UsernameNotFoundException, SystemClosedException;
 
     /**
      * 判断权限

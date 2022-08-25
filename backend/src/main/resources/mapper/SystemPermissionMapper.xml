@@ -80,40 +80,4 @@
                  LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
         WHERE pm_company_permission.company_id = #{companyId}
     </select>
-    <select id="selectCorrelationList" resultMap="correlationResultMap">
-        SELECT pm_system_permission.id AS 'permission_id',
-            pm_system_permission.name AS 'permission_name',
-            pm_system_permission.function_name,
-            pm_system_permission.uri,
-            pm_system_permission.http_methods,
-            pm_system_permission.parent_id AS 'permission_parent_id',
-            pm_system_permission.menu_type,
-            pm_system_permission.is_display,
-            pm_company_permission.company_id
-        FROM pm_system_permission
-                 LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
-    </select>
-    <select id="selectByCompanyIds" resultMap="correlationResultMap">
-        SELECT pm_system_permission.id AS 'permission_id',
-        pm_system_permission.name AS 'permission_name',
-        pm_system_permission.function_name,
-        pm_system_permission.uri,
-        pm_system_permission.http_methods,
-        pm_system_permission.parent_id AS 'permission_parent_id',
-        pm_system_permission.order_by,
-        pm_system_permission.menu_type,
-        pm_system_permission.is_display,
-        pm_system_permission.create_time AS 'permission_create_time',
-        pm_system_permission.update_time AS 'permission_update_time'
-        FROM pm_system_permission
-        LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
-        <if test="companyIds != null">
-            <where>
-                <foreach collection="companyIds" item="companyId" open="pm_company_permission.company_id IN ("
-                         separator="," close=")">
-                    #{companyId}
-                </foreach>
-            </where>
-        </if>
-    </select>
 </mapper>

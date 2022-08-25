@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
-import type { ActionType } from '@ant-design/pro-table';
-import type { ProFormInstance } from '@ant-design/pro-form';
+import SelectCascder from '@/components/SelectCascder';
+import UserForm, { UserFormSubmitPreHandler } from '@/components/UserForm';
+import { queryCompanySelectList } from '@/services/company/api';
 import {
   batchSystemUser,
   createSystemUser,
@@ -12,13 +12,15 @@ import {
   querySystemUserList,
   removeSystemUser,
 } from '@/services/user/api';
-import { message as msg, Switch } from 'antd';
-import { queryCompanySelectList } from '@/services/company/api';
-import UserForm, { UserFormSubmitPreHandler } from '@/components/UserForm';
 import { getCompanyParentIds } from '@/services/utils';
-import SelectCascder from '@/components/SelectCascder';
+import { useModel } from '@@/plugin-model/useModel';
+import type { ProFormInstance } from '@ant-design/pro-form';
+import type { ActionType } from '@ant-design/pro-table';
+import { message as msg, Switch } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
 
 const SystemUser: React.FC = () => {
+  const { initialState } = useModel('@@initialState');
   const actionRef = useRef<ActionType>();
   const formRef = useRef<ProFormInstance<API.SystemUser>>();
   const [companySelectState, setCompanySelectState] = useState<API.SelectList[]>([]);
@@ -31,7 +33,7 @@ const SystemUser: React.FC = () => {
           title: '无',
           value: '0',
         },
-        ...(await queryCompanySelectList(getCompanyParentIds())).data,
+        ...(await queryCompanySelectList(getCompanyParentIds(initialState?.currentUser))).data,
       ]))();
   }, []);
 

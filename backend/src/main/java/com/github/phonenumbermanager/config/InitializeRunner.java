@@ -1,20 +1,8 @@
 package com.github.phonenumbermanager.config;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.Configuration;
-import com.github.phonenumbermanager.service.ConfigurationService;
-import com.github.phonenumbermanager.service.SystemPermissionService;
-import com.github.phonenumbermanager.util.RedisUtil;
-
-import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 
 /**
@@ -25,9 +13,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Component
 public class InitializeRunner implements CommandLineRunner {
-    private final ConfigurationService configurationService;
-    private final SystemPermissionService systemPermissionService;
-    private final RedisUtil redisUtil;
 
     @Override
     public void run(String... args) {
@@ -37,13 +22,5 @@ public class InitializeRunner implements CommandLineRunner {
     /**
      * 初始化缓存数据
      */
-    private void cacheInitialize() {
-        List<Configuration> configurationList = configurationService.list();
-        Map<String, Configuration> configurationMap =
-            configurationList.stream().collect(Collectors.toMap(Configuration::getName, Function.identity()));
-        String configurationJsonStr = JSONUtil.toJsonStr(configurationMap);
-        String systemPermissionJsonStr = JSONUtil.toJsonStr(systemPermissionService.listCorrelation());
-        redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, configurationJsonStr);
-        redisUtil.set(SystemConstant.SYSTEM_PERMISSIONS_KEY, systemPermissionJsonStr);
-    }
+    private void cacheInitialize() {}
 }

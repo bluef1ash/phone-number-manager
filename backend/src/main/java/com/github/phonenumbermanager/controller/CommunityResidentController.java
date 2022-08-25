@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,10 +15,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.entity.CommunityResident;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.CompanyService;
+import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
@@ -44,6 +47,7 @@ import lombok.AllArgsConstructor;
 public class CommunityResidentController extends BaseController {
     private final CommunityResidentService communityResidentService;
     private final CompanyService companyService;
+    private final ConfigurationService configurationService;
 
     /**
      * 社区居民信息列表
@@ -159,8 +163,8 @@ public class CommunityResidentController extends BaseController {
     @ResponseBody
     @ApiOperation("导入社区居民信息进系统")
     public R communityResidentImportAsSystem(HttpServletRequest request) {
-        getEnvironmentVariable();
-        int startRowNumber = Convert.toInt(configurationMap.get("read_resident_excel_start_row_number").get("content"));
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        int startRowNumber = Convert.toInt(configurationMap.get("read_resident_excel_start_row_number").getContent());
         List<List<Object>> data = uploadExcelFileToData(request, startRowNumber);
         if (communityResidentService.save(data, configurationMap)) {
             return R.ok();
@@ -177,7 +181,7 @@ public class CommunityResidentController extends BaseController {
     @GetMapping("/download")
     @ApiOperation("导出社区居民信息到Excel")
     public void communityResidentSaveAsExcel(HttpServletResponse response) {
-        getEnvironmentVariable();
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
         ExcelWriter excelWriter =
             communityResidentService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");

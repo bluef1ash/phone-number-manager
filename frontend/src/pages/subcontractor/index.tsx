@@ -1,13 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
-import type { ActionType } from '@ant-design/pro-table';
-import type { ProFormInstance } from '@ant-design/pro-form';
-import { ProFormList, ProFormText } from '@ant-design/pro-form';
-import { queryCompanySelectList } from '@/services/company/api';
-import { getCompanyParentIds, submitPrePhoneNumberHandle } from '@/services/utils';
 import PhoneNumberList from '@/components/PhoneNumberList';
 import SelectCascder from '@/components/SelectCascder';
+import { queryCompanySelectList } from '@/services/company/api';
 import {
   batchSubcontractor,
   createSubcontractor,
@@ -16,6 +11,12 @@ import {
   querySubcontractorList,
   removeSubcontractor,
 } from '@/services/subcontractor/api';
+import { getCompanyParentIds, submitPrePhoneNumberHandle } from '@/services/utils';
+import { useModel } from '@@/plugin-model/useModel';
+import type { ProFormInstance } from '@ant-design/pro-form';
+import { ProFormList, ProFormText } from '@ant-design/pro-form';
+import type { ActionType } from '@ant-design/pro-table';
+import React, { useEffect, useRef, useState } from 'react';
 
 const InputElement = (
   selectListState: API.SelectList[],
@@ -121,6 +122,7 @@ const InputElement = (
 );
 
 const Subcontractor: React.FC = () => {
+  const { initialState } = useModel('@@initialState');
   const actionRef = useRef<ActionType>();
   const formRef = useRef<ProFormInstance<API.Subcontractor>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
@@ -134,7 +136,7 @@ const Subcontractor: React.FC = () => {
           value: '0',
         },
       ];
-      const parentIds = getCompanyParentIds();
+      const parentIds = getCompanyParentIds(initialState?.currentUser);
       const companySelect = (await queryCompanySelectList(parentIds)).data;
       if (companySelect.length > 0) {
         list = [...list, ...companySelect];

@@ -16,15 +16,6 @@ import com.github.phonenumbermanager.entity.SystemPermission;
 @Mapper
 public interface SystemPermissionMapper extends BaseMapper<SystemPermission> {
     /**
-     * 关联查询所有系统权限
-     *
-     * @return 系统用户权限列表
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    List<SystemPermission> selectCorrelationList() throws DataAccessException;
-
-    /**
      * 通过单位编号查询
      *
      * @param companyId
@@ -34,17 +25,6 @@ public interface SystemPermissionMapper extends BaseMapper<SystemPermission> {
      *             数据库操作异常
      */
     List<SystemPermission> selectByCompanyId(Serializable companyId) throws DataAccessException;
-
-    /**
-     * 通过单位编号集合查询
-     *
-     * @param companyIds
-     *            单位编号集合
-     * @return 系统用户权限列表
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    List<SystemPermission> selectByCompanyIds(List<Long> companyIds) throws DataAccessException;
 
     /**
      * 通过单位查询

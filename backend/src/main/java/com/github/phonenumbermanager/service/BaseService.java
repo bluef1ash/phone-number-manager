@@ -7,6 +7,7 @@ import java.util.Map;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
@@ -114,7 +115,7 @@ public interface BaseService<T> extends IService<T> {
      *            系统配置
      * @return 导入的行数
      */
-    boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap);
+    boolean save(List<List<Object>> data, Map<String, Configuration> configurationMap);
 
     /**
      * 通过编号关联查找
@@ -134,7 +135,7 @@ public interface BaseService<T> extends IService<T> {
      *            系统配置项
      * @return 社区居民与所属社区集合转换的JSON对象
      */
-    ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser, Map<String, JSONObject> configurationMap);
+    ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser, Map<String, Configuration> configurationMap);
 
     /**
      * 获取树形表单列表

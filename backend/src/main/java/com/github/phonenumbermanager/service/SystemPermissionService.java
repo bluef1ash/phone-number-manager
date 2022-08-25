@@ -15,11 +15,11 @@ import com.github.phonenumbermanager.entity.SystemPermission;
  */
 public interface SystemPermissionService extends BaseService<SystemPermission> {
     /**
-     * 关联查找
+     * 查找全部系统权限
      *
      * @return 系统用户权限对象的集合
      */
-    List<SystemPermission> listCorrelation();
+    List<SystemPermission> listAll();
 
     /**
      * 通过单位编号查找
@@ -31,24 +31,17 @@ public interface SystemPermissionService extends BaseService<SystemPermission> {
     List<SystemPermission> listByCompanyId(Long companyId);
 
     /**
-     * 通过单位编号集合查找
-     *
-     * @param companyIds
-     *            单位编号集合
-     * @return 系统用户权限对象的集合
-     */
-    List<SystemPermission> listByCompanyIds(List<Long> companyIds);
-
-    /**
      * 通过权限是否在导航栏显示查找
      *
      * @param display
      *            是否在导航栏中显示
      * @param companies
      *            当前登录的用户所属单位集合
+     * @param currentSystemUserId
+     *            当前登录的用户编号
      * @return 查找到的系统用户权限对象的集合与权限集合
      */
-    Map<String, Object> listMenu(Boolean display, List<Company> companies);
+    Map<String, Object> listMenu(Boolean display, List<Company> companies, Long currentSystemUserId);
 
     /**
      * 分页树形系统权限

@@ -1,12 +1,8 @@
 import { account } from '@/services/api';
 import { ExceptionCode } from '@/services/enums';
-import {
-  SESSION_COMPONENTS_KEY,
-  SESSION_MENU_KEY,
-  SESSION_SYSTEM_USER_KEY,
-  SESSION_TOKEN_KEY,
-} from '@config/constant';
+import { COOKIE_TOKEN_KEY } from '@config/constant';
 import { message, notification } from 'antd';
+import Cookies from 'js-cookie';
 import { history } from 'umi';
 import { extend, RequestOptionsInit } from 'umi-request';
 
@@ -17,10 +13,7 @@ const request = extend({
       switch (data.code) {
         case ExceptionCode.NOT_LOGGED:
           message.error('登录已过期，请重新登录！');
-          localStorage.removeItem(SESSION_TOKEN_KEY);
-          localStorage.removeItem(SESSION_SYSTEM_USER_KEY);
-          localStorage.removeItem(SESSION_MENU_KEY);
-          localStorage.removeItem(SESSION_COMPONENTS_KEY);
+          Cookies.remove(COOKIE_TOKEN_KEY);
           history.push(account.login.substring(REACT_APP_API_BASE_URL.length));
           break;
         case ExceptionCode.METHOD_ARGUMENT_NOT_VALID:
@@ -54,7 +47,7 @@ request.interceptors.request.use(
     url?: string;
     options?: RequestOptionsInit;
   } => {
-    const token = localStorage.getItem(SESSION_TOKEN_KEY);
+    const token = Cookies.get(COOKIE_TOKEN_KEY);
     if (token) {
       options.headers = {
         ...options.headers,

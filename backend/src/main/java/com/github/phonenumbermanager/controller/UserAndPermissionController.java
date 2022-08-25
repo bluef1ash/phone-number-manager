@@ -21,9 +21,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
+import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
@@ -54,6 +56,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @Api(tags = "系统用户与系统权限控制器")
 public class UserAndPermissionController extends BaseController {
+    private final ConfigurationService configurationService;
     private final SystemUserService systemUserService;
     private final SystemPermissionService systemPermissionService;
 
@@ -118,7 +121,7 @@ public class UserAndPermissionController extends BaseController {
     public R logout() {
         getEnvironmentVariable();
         SecurityContextHolder.clearContext();
-        redisUtil.delete(SystemConstant.SYSTEM_USER_ID_KEY + currentSystemUser.getId());
+        redisUtil.delete(SystemConstant.SYSTEM_USER_ID_KEY + "::" + currentSystemUser.getId());
         return R.ok();
     }
 
@@ -127,12 +130,11 @@ public class UserAndPermissionController extends BaseController {
      *
      * @return 当前登录用户信息
      */
-    @GetMapping("/system/current-user")
+    @GetMapping("/system/user/current")
     @ApiOperation("获取当前登录用户信息")
     public R currentSystemUser() {
         getEnvironmentVariable();
-        SystemUserVo systemUserVo = getSystemUserVo(currentSystemUser);
-        return R.ok().put("data", systemUserVo);
+        return R.ok().put("data", getSystemUserVo(currentSystemUser));
     }
 
     /**
@@ -181,8 +183,8 @@ public class UserAndPermissionController extends BaseController {
     public R systemUserModifyHandlePatch(HttpServletResponse response,
         @ApiParam(name = "系统用户编号", required = true) @PathVariable Long id,
         @ApiParam(name = "系统用户对象", required = true) @RequestBody SystemUser systemUser) {
-        getEnvironmentVariable();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         if (id.equals(systemAdministratorId)) {
             if (systemUser.getIsEnabled() != null && !systemUser.isEnabled()) {
                 return R.error(response, ExceptionCode.NOT_MODIFIED.getCode(), "不能禁用系统管理员！");
@@ -244,7 +246,8 @@ public class UserAndPermissionController extends BaseController {
         @ApiParam(name = "系统用户对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemUser systemUser) {
         getEnvironmentVariable();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         if (!id.equals(systemAdministratorId)) {
             systemUser.setIsLocked(false).setIsEnabled(true);
         }
@@ -267,8 +270,8 @@ public class UserAndPermissionController extends BaseController {
     @DeleteMapping("/system/user/{id}")
     @ApiOperation("通过系统用户编号删除系统用户")
     public R removeSystemUser(@ApiParam(name = "要删除的用户名编号", required = true) @PathVariable Long id) {
-        getEnvironmentVariable();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         if (id.equals(systemAdministratorId)) {
             throw new JsonException("不允许删除超级管理员！");
         }
@@ -482,7 +485,7 @@ public class UserAndPermissionController extends BaseController {
     private void flushCurrentUser(Long id, Long currentSystemUserId) {
         if (id.equals(currentSystemUserId)) {
             SystemUser user = systemUserService.getCorrelation(id);
-            redisUtil.set(SystemConstant.SYSTEM_USER_ID_KEY + id, JSONUtil.toJsonStr(user));
+            redisUtil.set(SystemConstant.SYSTEM_USER_ID_KEY + "::" + id, JSONUtil.toJsonStr(user));
         }
     }
 }

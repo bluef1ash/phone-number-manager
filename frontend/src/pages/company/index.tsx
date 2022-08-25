@@ -13,6 +13,7 @@ import {
 } from '@/services/company/api';
 import { querySystemPermissionSelectList } from '@/services/permission/api';
 import { getCompanyParentIds, submitPrePhoneNumberHandle } from '@/services/utils';
+import { useModel } from '@@/plugin-model/useModel';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ProFormList, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
@@ -209,6 +210,7 @@ const InputElement = (
 );
 
 const Company: React.FC = () => {
+  const { initialState } = useModel('@@initialState');
   const actionRef = useRef<ActionType>();
   const formRef = useRef<ProFormInstance<API.Company>>();
   const [selectListState, setSelectListState] = useState<API.SelectList[]>([]);
@@ -224,7 +226,7 @@ const Company: React.FC = () => {
           value: '0',
         },
       ];
-      const parentIds = getCompanyParentIds();
+      const parentIds = getCompanyParentIds(initialState?.currentUser);
       setSelectListState([...list, ...(await queryCompanySelectList(parentIds)).data]);
       setSystemPermissionState([...list, ...(await querySystemPermissionSelectList([0])).data]);
     })();

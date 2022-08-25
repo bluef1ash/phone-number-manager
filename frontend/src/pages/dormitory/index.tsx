@@ -18,6 +18,7 @@ import {
   getCompanyParentIds,
   submitPrePhoneNumberHandle,
 } from '@/services/utils';
+import { useModel } from '@@/plugin-model/useModel';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import {
   ProFormDateRangePicker,
@@ -196,6 +197,7 @@ const InputElement = (
 );
 
 const DormitoryManager: React.FC = () => {
+  const { initialState } = useModel('@@initialState');
   const actionRef = useRef<ActionType>();
   const formRef = useRef<ProFormInstance<API.DormitoryManager>>();
   const [spinState, setSpinState] = useState<boolean>(false);
@@ -204,7 +206,7 @@ const DormitoryManager: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const parentIds = getCompanyParentIds();
+      const parentIds = getCompanyParentIds(initialState?.currentUser);
       setSubcontractorSelectState((await querySubcontractorSelectList(parentIds)).data);
     })();
   }, []);

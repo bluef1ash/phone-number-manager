@@ -7,13 +7,9 @@ import { getCompanyParentIds } from '@/services/utils';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm } from '@ant-design/pro-form';
-import {
-  SESSION_COMPONENTS_KEY,
-  SESSION_MENU_KEY,
-  SESSION_SYSTEM_USER_KEY,
-  SESSION_TOKEN_KEY,
-} from '@config/constant';
+import { COOKIE_TOKEN_KEY } from '@config/constant';
 import { Avatar, Menu, message as msg, Spin } from 'antd';
+import Cookies from 'js-cookie';
 import { stringify } from 'querystring';
 import React, { useRef, useState } from 'react';
 import { history, useModel } from 'umi';
@@ -24,7 +20,7 @@ import styles from './index.less';
 export type GlobalHeaderRightProps = {};
 
 const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
-  const { initialState } = useModel('@@initialState');
+  const { initialState, setInitialState } = useModel('@@initialState');
   const formRef = useRef<ProFormInstance<API.SystemUser>>();
   const [companySelectState, setCompanySelectState] = useState<API.SelectList[]>([]);
   const [systemUserState, setSystemUserState] = useState<API.SystemUser>();
@@ -53,10 +49,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
         switch (key) {
           case 'logout':
             await logout();
-            localStorage.removeItem(SESSION_TOKEN_KEY);
-            localStorage.removeItem(SESSION_SYSTEM_USER_KEY);
-            localStorage.removeItem(SESSION_MENU_KEY);
-            localStorage.removeItem(SESSION_COMPONENTS_KEY);
+            Cookies.remove(COOKIE_TOKEN_KEY);
             const { query = {}, search, pathname } = history.location;
             const { redirect } = query;
             if (window.location.pathname !== loginUri && !redirect) {
@@ -127,8 +120,10 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
             UserFormSubmitPreHandler(formData),
           );
           if (code === 200) {
-            const { data } = await queryCurrentUser();
-            localStorage.setItem(SESSION_SYSTEM_USER_KEY, JSON.stringify(data));
+            const {
+              data: currentUser,
+            } = await queryCurrentUser();
+            await setInitialState({ ...initialState, currentUser });
             msg.success(message === 'success' ? '修改成功！' : message);
             setModalVisibleState(false);
             return true;
@@ -138,27 +133,25 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
         }}
         onVisibleChange={async (visible) => {
           if (visible) {
-            const parentIds = getCompanyParentIds();
+            const parentIds = getCompanyParentIds(await initialState.currentUser);
             setCompanySelectState((await queryCompanySelectList(parentIds)).data);
-            const systemUser: API.SystemUser = JSON.parse(
-              localStorage.getItem(SESSION_SYSTEM_USER_KEY) || '{}',
-            );
-            systemUser.phoneNumber = {
-              phoneNumber: systemUser.phoneNumber,
+            const currentUser = initialState.currentUser;
+            currentUser.phoneNumber = {
+              phoneNumber: currentUser.phoneNumber,
             };
             if (
-              typeof systemUser.companies !== 'undefined' &&
-              systemUser.companies !== null &&
-              systemUser.companies.length > 0
+              typeof currentUser.companies !== 'undefined' &&
+              currentUser.companies !== null &&
+              currentUser.companies.length > 0
             ) {
-              systemUser.companyIds = systemUser.companies.map((company: { id: number }) => [
+              currentUser.companyIds = currentUser.companies.map((company: { id: number }) => [
                 company.id,
               ]);
             } else {
-              systemUser.companyIds = [['0']];
+              currentUser.companyIds = [['0']];
             }
-            setSystemUserState(systemUser);
-            formRef?.current?.setFieldsValue(systemUser);
+            setSystemUserState(currentUser);
+            formRef?.current?.setFieldsValue(currentUser);
           }
         }}
       >

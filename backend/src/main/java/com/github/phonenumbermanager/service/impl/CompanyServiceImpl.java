@@ -6,12 +6,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
@@ -39,9 +41,10 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     private final CompanyExtraService companyExtraService;
     private final CompanyPermissionMapper companyPermissionMapper;
 
+    @CacheEvict(value = SystemConstant.SYSTEM_MENU_KEY, key = "#currentSystemUserId")
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(Company entity) {
+    public boolean save(Company entity, Long currentSystemUserId) {
         baseMapper.insert(entity);
         if (entity.getCompanyExtras() != null && !entity.getCompanyExtras().isEmpty()) {
             entity.getCompanyExtras().forEach(companyExtra -> companyExtra.setCompanyId(entity.getId()));
@@ -58,9 +61,10 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         return companyPhoneNumberMapper.insertBatchSomeColumn(companyPhoneNumbersHandler(entity)) > 0;
     }
 
+    @CacheEvict(value = SystemConstant.SYSTEM_MENU_KEY, key = "#currentSystemUserId")
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean updateById(Company entity) {
+    public boolean updateById(Company entity, Long currentSystemUserId) {
         List<Company> companyAll = baseMapper.selectList(null);
         List<Long> submissionCompanyIds = CommonUtil.listRecursionCompanyIds(companyAll, entity.getId());
         submissionCompanyIds.add(entity.getId());
@@ -120,9 +124,10 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
         return companyPage;
     }
 
+    @CacheEvict(cacheNames = SystemConstant.SYSTEM_MENU_KEY, key = "#currentSystemUserId")
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeById(Serializable id) {
+    public boolean removeById(Serializable id, Long currentSystemUserId) {
         if (baseMapper.selectCount(new LambdaQueryWrapper<Company>().eq(Company::getParentId, id)) > 0) {
             throw new BusinessException("不允许删除存在下级单位的单位！");
         }

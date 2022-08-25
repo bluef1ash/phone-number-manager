@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +20,12 @@ import com.github.phonenumbermanager.mapper.CompanyMapper;
 import com.github.phonenumbermanager.mapper.CompanyPermissionMapper;
 import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
 import com.github.phonenumbermanager.service.SystemPermissionService;
-import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.vo.MenuVo;
 import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 
 /**
@@ -40,11 +39,11 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     implements SystemPermissionService {
     private final CompanyPermissionMapper companyPermissionMapper;
     private final CompanyMapper companyMapper;
-    private final RedisUtil redisUtil;
 
+    @Cacheable(cacheNames = SystemConstant.SYSTEM_PERMISSIONS_KEY + "${{'ttl': -1}}")
     @Override
-    public List<SystemPermission> listCorrelation() {
-        return baseMapper.selectCorrelationList();
+    public List<SystemPermission> listAll() {
+        return baseMapper.selectList(null);
     }
 
     @Override
@@ -52,20 +51,16 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
         return baseMapper.selectByCompanyId(companyId);
     }
 
+    @Cacheable(cacheNames = SystemConstant.SYSTEM_MENU_KEY + "${{'ttl': 60 * 60 * 24 * 7}}",
+        key = "#currentSystemUserId")
     @Override
-    public List<SystemPermission> listByCompanyIds(List<Long> companyIds) {
-        return baseMapper.selectByCompanyIds(companyIds);
-    }
-
-    @Override
-    public Map<String, Object> listMenu(Boolean display, List<Company> companies) {
+    public Map<String, Object> listMenu(Boolean display, List<Company> companies, Long currentSystemUserId) {
         Map<String, Object> menuMap = new HashMap<>(2);
         List<Long> companyIds = null;
         if (companies != null) {
             companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
         }
-        List<SystemPermission> systemPermissionAll =
-            JSONUtil.parseArray(redisUtil.get(SystemConstant.SYSTEM_PERMISSIONS_KEY)).toList(SystemPermission.class);
+        List<SystemPermission> systemPermissionAll = listAll();
         List<Company> companyAll = companyMapper.selectList(null);
         List<SystemPermission> systemPermissions =
             getPrevSystemPermissions(baseMapper, display, companyIds, companyAll);

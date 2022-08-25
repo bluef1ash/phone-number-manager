@@ -38,7 +38,6 @@ import cn.hutool.poi.excel.ExcelWriter;
 abstract class BaseController {
     protected RedisUtil redisUtil;
     protected SystemUser currentSystemUser;
-    protected Map<String, JSONObject> configurationMap;
     protected JSONObject search;
     protected JSONObject sort;
 
@@ -50,10 +49,6 @@ abstract class BaseController {
         if (!SystemConstant.ANONYMOUS_USER
             .equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
             currentSystemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        }
-        if (configurationMap == null || configurationMap.isEmpty()) {
-            configurationMap =
-                JSONUtil.parseObj(redisUtil.get(SystemConstant.CONFIGURATIONS_MAP_KEY)).toBean(Map.class);
         }
     }
 

@@ -2,7 +2,7 @@ export default [
   {
     name: '登录',
     path: '/account/login',
-    component: './account/Login',
+    component: './login',
     layout: false,
     menuRender: false,
     headerRender: false,

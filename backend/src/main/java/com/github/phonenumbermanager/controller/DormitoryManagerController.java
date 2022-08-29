@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.DormitoryManager;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.ConfigurationService;
@@ -62,7 +64,8 @@ public class DormitoryManagerController extends BaseController {
     @ApiOperation("社区居民楼片长列表")
     public R dormitoryManagerList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据") Integer pageSize) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         getSearchParameter(request);
         return R.ok().put("data",
             dormitoryManagerService.pageCorrelation(currentSystemUser.getCompanies(), current, pageSize, search, sort));
@@ -169,7 +172,8 @@ public class DormitoryManagerController extends BaseController {
     @GetMapping("/download")
     @ApiOperation("导出社区居民楼片长信息到Excel")
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Map<String, Configuration> configurationMap = configurationService.mapAll();
         ExcelWriter excelWriter =
             dormitoryManagerService.listCorrelationExportExcel(currentSystemUser, configurationMap);
@@ -209,7 +213,8 @@ public class DormitoryManagerController extends BaseController {
     @ApiOperation("社区居民楼片长基础数据")
     public R
         dormitoryManagerBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data",
             dormitoryManagerService.getBaseMessage(currentSystemUser.getCompanies(), getCompanyIds(computedVo)));
     }
@@ -225,7 +230,8 @@ public class DormitoryManagerController extends BaseController {
     @ResponseBody
     @ApiOperation("社区居民楼片长图表")
     public R dormitoryManagerChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(),
             getCompanyIds(computedVo), companyService.list(), "辖区居民楼片长数"));
     }

@@ -1,9 +1,6 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -14,7 +11,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
-import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.ConfigurationService;
@@ -85,7 +81,6 @@ public class SystemController extends BaseController {
     public R configurationCreateHandle(@ApiParam(name = "系统配置对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) Configuration configuration) {
         if (configurationService.save(configuration)) {
-            refreshConfiguration();
             return R.ok();
         }
         throw new JsonException("添加系统配置失败！");
@@ -106,7 +101,6 @@ public class SystemController extends BaseController {
         configuration.setId(id).setVersion(configurationService
             .getOne(new LambdaQueryWrapper<Configuration>().eq(Configuration::getId, id)).getVersion());
         if (configurationService.updateById(configuration)) {
-            refreshConfiguration();
             return R.ok();
         }
         throw new JsonException("修改系统配置失败！");
@@ -123,7 +117,6 @@ public class SystemController extends BaseController {
     @ApiOperation("通过系统配置编号删除")
     public R removeConfigurationById(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
         if (configurationService.removeById(id)) {
-            refreshConfiguration();
             return R.ok("删除系统配置成功！");
         }
         throw new JsonException("删除系统配置失败！");
@@ -147,15 +140,5 @@ public class SystemController extends BaseController {
             }
         }
         throw new JsonException("系统配置批量操作失败！");
-    }
-
-    /**
-     * 刷新redis缓存
-     */
-    private void refreshConfiguration() {
-        List<Configuration> configurations = configurationService.list();
-        Map<String, Configuration> configurationMap =
-            configurations.stream().collect(Collectors.toMap(Configuration::getName, Function.identity()));
-        redisUtil.set(SystemConstant.CONFIGURATIONS_MAP_KEY, JSONUtil.toJsonStr(configurationMap));
     }
 }

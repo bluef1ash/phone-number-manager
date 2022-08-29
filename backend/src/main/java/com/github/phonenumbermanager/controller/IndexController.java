@@ -1,9 +1,11 @@
 package com.github.phonenumbermanager.controller;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.util.R;
 
@@ -34,7 +36,8 @@ public class IndexController extends BaseController {
     @GetMapping("/menu")
     @ApiOperation("获取首页菜单栏内容")
     public R getMenu(@ApiParam(name = "是否显示") Boolean display) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R
             .ok(systemPermissionService.listMenu(display, currentSystemUser.getCompanies(), currentSystemUser.getId()));
     }

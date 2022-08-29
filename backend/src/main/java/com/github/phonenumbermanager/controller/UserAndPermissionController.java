@@ -11,6 +11,7 @@ import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +31,7 @@ import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.GeetestLibUtil;
 import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
@@ -59,6 +61,7 @@ public class UserAndPermissionController extends BaseController {
     private final ConfigurationService configurationService;
     private final SystemUserService systemUserService;
     private final SystemPermissionService systemPermissionService;
+    private final RedisUtil redisUtil;
 
     /**
      * 用户登录
@@ -76,7 +79,6 @@ public class UserAndPermissionController extends BaseController {
     public R login(HttpServletRequest request,
         @ApiParam(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVo systemUserLoginVo)
         throws LoginException {
-        getEnvironmentVariable();
         Authentication authentication = systemUserService.authentication(systemUserLoginVo.getUsername(),
             systemUserLoginVo.getPassword(), ServletUtil.getClientIP(request));
         SystemUser principal = (SystemUser)authentication.getPrincipal();
@@ -116,12 +118,15 @@ public class UserAndPermissionController extends BaseController {
      *
      * @return 是否成功
      */
+    @SuppressWarnings("all")
+    @CacheEvict(cacheNames = SystemConstant.SYSTEM_USER_ID_KEY, key = "#id")
     @PostMapping("/account/logout")
     @ApiOperation("退出登录")
-    public R logout() {
-        getEnvironmentVariable();
+    public R logout(@ApiParam("系统用户编号") Long id) {
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        id = currentSystemUser.getId();
         SecurityContextHolder.clearContext();
-        redisUtil.delete(SystemConstant.SYSTEM_USER_ID_KEY + "::" + currentSystemUser.getId());
         return R.ok();
     }
 
@@ -133,7 +138,8 @@ public class UserAndPermissionController extends BaseController {
     @GetMapping("/system/user/current")
     @ApiOperation("获取当前登录用户信息")
     public R currentSystemUser() {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", getSystemUserVo(currentSystemUser));
     }
 
@@ -150,7 +156,8 @@ public class UserAndPermissionController extends BaseController {
     @ApiOperation("系统用户列表")
     public R systemUserList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据") Integer pageSize) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         getSearchParameter(request);
         return R.ok().put("data",
             systemUserService.pageCorrelation(currentSystemUser.getCompanies(), current, pageSize, search, sort));
@@ -196,7 +203,7 @@ public class UserAndPermissionController extends BaseController {
         systemUser.setId(id).setVersion(
             systemUserService.getOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getId, id)).getVersion());
         if (systemUserService.updateById(systemUser)) {
-            flushCurrentUser(id, currentSystemUser.getId());
+            flushCurrentUser(id);
             return R.ok();
         }
         throw new JsonException();
@@ -212,7 +219,6 @@ public class UserAndPermissionController extends BaseController {
     @GetMapping("/system/user/{id}")
     @ApiOperation("通过系统用户编号查找")
     public R getSystemUserById(@ApiParam(name = "要查找的对应编号", required = true) @PathVariable Long id) {
-        getEnvironmentVariable();
         return R.ok().put("data", systemUserService.getCorrelation(id));
     }
 
@@ -245,7 +251,6 @@ public class UserAndPermissionController extends BaseController {
     public R systemUserModifyHandle(@ApiParam(name = "要修改的用户名编号", required = true) @PathVariable Long id,
         @ApiParam(name = "系统用户对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemUser systemUser) {
-        getEnvironmentVariable();
         Map<String, Configuration> configurationMap = configurationService.mapAll();
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         if (!id.equals(systemAdministratorId)) {
@@ -254,7 +259,7 @@ public class UserAndPermissionController extends BaseController {
         systemUser.setId(id).setVersion(
             systemUserService.getOne(new LambdaQueryWrapper<SystemUser>().eq(SystemUser::getId, id)).getVersion());
         if (systemUserService.updateById(systemUser)) {
-            flushCurrentUser(id, currentSystemUser.getId());
+            flushCurrentUser(id);
             return R.ok();
         }
         throw new JsonException("修改用户失败！");
@@ -305,9 +310,10 @@ public class UserAndPermissionController extends BaseController {
     @ApiOperation("增删改批量操作系统用户")
     public R systemUserBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        getEnvironmentVariable();
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+            SystemUser currentSystemUser =
+                (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             ids = ids.stream().filter(id -> !id.equals(currentSystemUser.getId())).collect(Collectors.toList());
             if (systemUserService.removeByIds(ids)) {
                 return R.ok();
@@ -432,7 +438,6 @@ public class UserAndPermissionController extends BaseController {
     @ApiOperation("增删改批量操作系统权限")
     public R systemPermissionBatch(
         @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        getEnvironmentVariable();
         if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
             if (systemPermissionService.removeByIds(ids)) {
@@ -479,11 +484,11 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param id
      *            更改系统用户的编号
-     * @param currentSystemUserId
-     *            当前登录系统用户编号
      */
-    private void flushCurrentUser(Long id, Long currentSystemUserId) {
-        if (id.equals(currentSystemUserId)) {
+    private void flushCurrentUser(Long id) {
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (id.equals(currentSystemUser.getId())) {
             SystemUser user = systemUserService.getCorrelation(id);
             redisUtil.set(SystemConstant.SYSTEM_USER_ID_KEY + "::" + id, JSONUtil.toJsonStr(user));
         }

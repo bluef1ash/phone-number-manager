@@ -112,7 +112,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         SystemUser systemUser = (SystemUser)authenticate.getPrincipal();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime plusDays = now.plusDays(7);
-        systemUser.setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp);
+        systemUser.setPassword(null).setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp);
         baseMapper.update(new SystemUser().setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp),
             new UpdateWrapper<SystemUser>().eq("id", systemUser.getId()));
         redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),

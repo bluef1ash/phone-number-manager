@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.PhoneNumber;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.CompanyService;
@@ -65,7 +67,8 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("社区居民信息列表")
     public R communityResidentList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据数量") Integer pageSize) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         getSearchParameter(request);
         return R.ok().put("data", communityResidentService.pageCorrelation(currentSystemUser.getCompanies(), current,
             pageSize, search, sort));
@@ -182,6 +185,8 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("导出社区居民信息到Excel")
     public void communityResidentSaveAsExcel(HttpServletResponse response) {
         Map<String, Configuration> configurationMap = configurationService.mapAll();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         ExcelWriter excelWriter =
             communityResidentService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");
@@ -211,7 +216,6 @@ public class CommunityResidentController extends BaseController {
     /**
      * 社区居民信息基础数据
      *
-     *
      * @param computedVo
      *            计算视图对象
      * @return Ajax返回JSON对象
@@ -221,14 +225,14 @@ public class CommunityResidentController extends BaseController {
     @ApiOperation("社区居民信息基础数据")
     public R
         communityResidentBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data",
             communityResidentService.getBaseMessage(currentSystemUser.getCompanies(), getCompanyIds(computedVo)));
     }
 
     /**
      * 社区居民信息图表
-     *
      *
      * @param computedVo
      *            计算视图对象
@@ -238,7 +242,8 @@ public class CommunityResidentController extends BaseController {
     @ResponseBody
     @ApiOperation("社区居民信息图表")
     public R communityResidentChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", communityResidentService.getBarChart(currentSystemUser.getCompanies(),
             getCompanyIds(computedVo), companyService.list(), "辖区居民数"));
     }

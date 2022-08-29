@@ -63,48 +63,15 @@
         </if>
     </select>
     <select id="selectAndCompanyById" resultMap="collectionResultMap">
-        SELECT pm_system_user.id AS 'system_user_id',
-            pm_system_user.username,
-            pm_system_user.is_locked,
-            pm_system_user.is_enabled,
-            pm_system_user.account_expire_time,
-            pm_system_user.credential_expire_time,
-            pm_system_user.create_time AS 'system_user_create_time',
-            pm_system_user.update_time AS 'system_user_update_time',
-            pm_company.id AS 'company_id',
-            pm_company.name AS 'company_name',
-            pm_company.parent_id AS 'company_parent_id'
-        FROM pm_system_user
-                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
-                 LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+        <include refid="correlationQuery">
+            <property name="isDisplayPassword" value="false"/>
+        </include>
         WHERE pm_system_user.id = #{id}
     </select>
     <select id="selectAndCompaniesByUsername" resultMap="collectionResultMap">
-        SELECT pm_system_user.id AS 'system_user_id',
-            pm_system_user.username,
-            pm_system_user.password,
-            pm_system_user.login_time,
-            pm_system_user.login_ip,
-            pm_system_user.is_locked,
-            pm_system_user.is_enabled,
-            pm_system_user.account_expire_time,
-            pm_system_user.credential_expire_time,
-            pm_system_user.create_time AS 'system_user_create_time',
-            pm_system_user.update_time AS 'system_user_update_time',
-            pm_company.id AS 'company_id',
-            pm_company.name AS 'company_name',
-            pm_company.parent_id AS 'company_parent_id',
-            pm_system_permission.id AS 'permission_id',
-            pm_system_permission.name AS 'permission_name',
-            pm_system_permission.function_name,
-            pm_system_permission.http_methods,
-            pm_system_permission.uri,
-            pm_system_permission.parent_id AS 'permission_parent_id'
-        FROM pm_system_user
-                 LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
-                 LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
-                 LEFT JOIN pm_company_permission ON pm_company.id = pm_company_permission.company_id
-                 LEFT JOIN pm_system_permission ON pm_company_permission.permission_id = pm_system_permission.id
+        <include refid="correlationQuery">
+            <property name="isDisplayPassword" value="true"/>
+        </include>
         WHERE pm_system_user.username = #{username}
     </select>
     <select id="selectByCompanyId" resultMap="collectionResultMap">
@@ -146,4 +113,31 @@
             </foreach>
         </where>
     </select>
+    <sql id="correlationQuery">
+        SELECT pm_system_user.id AS 'system_user_id',
+        pm_system_user.username,
+        <if test="isDisplayPassword">pm_system_user.password,</if>
+        pm_system_user.login_time,
+        pm_system_user.login_ip,
+        pm_system_user.is_locked,
+        pm_system_user.is_enabled,
+        pm_system_user.account_expire_time,
+        pm_system_user.credential_expire_time,
+        pm_system_user.create_time AS 'system_user_create_time',
+        pm_system_user.update_time AS 'system_user_update_time',
+        pm_company.id AS 'company_id',
+        pm_company.name AS 'company_name',
+        pm_company.parent_id AS 'company_parent_id',
+        pm_system_permission.id AS 'permission_id',
+        pm_system_permission.name AS 'permission_name',
+        pm_system_permission.function_name,
+        pm_system_permission.http_methods,
+        pm_system_permission.uri,
+        pm_system_permission.parent_id AS 'permission_parent_id'
+        FROM pm_system_user
+        LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id
+        LEFT JOIN pm_company ON pm_system_user_company.company_id = pm_company.id
+        LEFT JOIN pm_company_permission ON pm_company.id = pm_company_permission.company_id
+        LEFT JOIN pm_system_permission ON pm_company_permission.permission_id = pm_system_permission.id
+    </sql>
 </mapper>

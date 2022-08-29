@@ -9,19 +9,20 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
-import com.github.phonenumbermanager.util.RedisUtil;
+import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.vo.ComputedVo;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -36,21 +37,8 @@ import cn.hutool.poi.excel.ExcelWriter;
  */
 @CrossOrigin
 abstract class BaseController {
-    protected RedisUtil redisUtil;
-    protected SystemUser currentSystemUser;
     protected JSONObject search;
     protected JSONObject sort;
-
-    /**
-     * 获取环境变量
-     */
-    @SuppressWarnings("all")
-    protected void getEnvironmentVariable() {
-        if (!SystemConstant.ANONYMOUS_USER
-            .equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
-            currentSystemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        }
-    }
 
     /**
      * 上传Excel
@@ -157,8 +145,22 @@ abstract class BaseController {
         return companyIds;
     }
 
-    @Autowired
-    public void setRedisUtil(RedisUtil redisUtil) {
-        this.redisUtil = redisUtil;
+    /**
+     * 获取系统用户所属单位
+     *
+     * @param configurationMap
+     *            系统配置集合
+     * @param companyService
+     *            单位业务层模块
+     * @return 系统用户所属单位
+     */
+    protected List<Company> getUserCompanies(Map<String, Configuration> configurationMap, SystemUser systemUser,
+        CompanyService companyService) {
+        List<Company> companies = systemUser.getCompanies();
+        if (companies == null && systemUser.getId()
+            .equals(Convert.toLong(configurationMap.get("system_administrator_id").getContent()))) {
+            companies = companyService.list(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0));
+        }
+        return companies;
     }
 }

@@ -1,10 +1,10 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +12,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.Subcontractor;
+import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.ConfigurationService;
@@ -24,7 +24,6 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
 import com.github.phonenumbermanager.vo.ComputedVo;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -60,13 +59,9 @@ public class CompanyController extends BaseController {
     @ApiOperation("单位列表")
     public R companyList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据条数") Integer pageSize) {
-        getEnvironmentVariable();
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        List<Company> companies = currentSystemUser.getCompanies();
-        if (companies == null && currentSystemUser.getId()
-            .equals(Convert.toLong(configurationMap.get("system_administrator_id").getContent()))) {
-            companies = companyService.list();
-        }
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Company> companies = getUserCompanies(configurationService.mapAll(), currentSystemUser, companyService);
         QueryWrapper<Company> wrapper = new QueryWrapper<>();
         getSearchWrapper(request, wrapper);
         return R.ok().put("data", companyService.pageCorrelation(companies, current, pageSize, search, sort));
@@ -96,7 +91,8 @@ public class CompanyController extends BaseController {
     @ApiOperation("单位添加处理")
     public R companyCreateHandle(@ApiParam(name = "需要添加的单位对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) Company company) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (companyService.save(company, currentSystemUser.getId())) {
             return R.ok();
         }
@@ -117,7 +113,8 @@ public class CompanyController extends BaseController {
     public R companyModifyHandle(@ApiParam(name = "要修改的单位编号", required = true) @PathVariable Long id,
         @ApiParam(name = "需要修改的单位对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) Company company) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Company one = companyService.getOne(new LambdaQueryWrapper<Company>().eq(Company::getId, id));
         company.setId(id).setVersion(one.getVersion());
         if (companyService.updateById(company, currentSystemUser.getId())) {
@@ -136,7 +133,8 @@ public class CompanyController extends BaseController {
     @DeleteMapping("/{id}")
     @ApiOperation("通过单位编号删除")
     public R removeCompany(@ApiParam(name = "需要删除的单位编号", required = true) @PathVariable Long id) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (companyService.removeById(id, currentSystemUser.getId())) {
             return R.ok("删除社区成功！");
         }
@@ -191,13 +189,9 @@ public class CompanyController extends BaseController {
     @ApiOperation("社区分包人员列表")
     public R subcontractorList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
         @ApiParam(name = "每页数据条数") Integer pageSize) {
-        getEnvironmentVariable();
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        List<Company> companies = currentSystemUser.getCompanies();
-        if (companies == null && currentSystemUser.getId()
-            .equals(Convert.toLong(configurationMap.get("system_administrator_id").getContent()))) {
-            companies = companyService.list();
-        }
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Company> companies = getUserCompanies(configurationService.mapAll(), currentSystemUser, companyService);
         QueryWrapper<Subcontractor> wrapper = new QueryWrapper<>();
         getSearchWrapper(request, wrapper);
         return R.ok().put("data", subcontractorService.pageCorrelation(companies, current, pageSize, search, sort));
@@ -315,7 +309,8 @@ public class CompanyController extends BaseController {
     @PostMapping("/subcontractor/computed/chart")
     @ApiOperation("社区分包人员图表")
     public R subcontractorChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
-        getEnvironmentVariable();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", subcontractorService.getBarChart(currentSystemUser.getCompanies(),
             getCompanyIds(computedVo), companyService.list(), null));
     }

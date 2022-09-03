@@ -104,6 +104,23 @@ const Welcome: React.FC = () => {
   const subcontractorComputedChartRef = useRef<HTMLDivElement>(null);
   const [isHideSelectState, setIsHideSelectState] = useState<boolean>(false);
 
+  const pieConfig = {
+    label: {
+      type: 'inner',
+      offset: '-30%',
+      content: ({ percent }: { percent: number }) => `${(percent * 100).toFixed(0)}%`,
+      style: {
+        fontSize: 14,
+        textAlign: 'center',
+      },
+    },
+    interactions: [
+      {
+        type: 'element-active',
+      },
+    ],
+  };
+
   const residentBaseMessageHandle = (baseMessage: API.CommunityResidentComputedBaseMessage) => {
     if (
       typeof baseMessage.inputCount !== 'undefined' &&
@@ -323,22 +340,22 @@ const Welcome: React.FC = () => {
                 {' '}
                 <Col span={11}>
                   {' '}
-                  <Pie {...dormitoryBaseMessageState.ageCount} />{' '}
+                  <Pie {...pieConfig} {...dormitoryBaseMessageState.ageCount} />{' '}
                 </Col>{' '}
                 <Col span={11}>
                   {' '}
-                  <Pie {...dormitoryBaseMessageState.educationCount} />{' '}
+                  <Pie {...pieConfig} {...dormitoryBaseMessageState.educationCount} />{' '}
                 </Col>{' '}
               </Row>{' '}
               <Row justify="space-around" className={styles['dormitory-message']}>
                 {' '}
                 <Col span={11}>
                   {' '}
-                  <Pie {...dormitoryBaseMessageState.politicalStatusCount} />{' '}
+                  <Pie {...pieConfig} {...dormitoryBaseMessageState.politicalStatusCount} />{' '}
                 </Col>{' '}
                 <Col span={11}>
                   {' '}
-                  <Pie {...dormitoryBaseMessageState.employmentStatusCount} />{' '}
+                  <Pie {...pieConfig} {...dormitoryBaseMessageState.employmentStatusCount} />{' '}
                 </Col>{' '}
               </Row>{' '}
             </>

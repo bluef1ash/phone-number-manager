@@ -1,7 +1,7 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
-!**/src/test/**
+src/test
 .mvn/
 error/
 info/
@@ -11,3 +11,8 @@ mvnw
 mvnw.cmd
 .env
 **/rebel.xml
+.settings
+*.iml
+*.md
+.project
+.factorypath

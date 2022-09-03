@@ -364,8 +364,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             countData.add(temp);
         }
         count.put("data", countData);
-        count.put("xField", value);
-        count.put("yField", mapType);
+        count.put("angleField", value);
+        count.put("colorField", mapType);
         return count;
     }
 
@@ -397,8 +397,8 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
             ageCountData.add(tempMap);
         }
         ageCount.put("data", ageCountData);
-        ageCount.put("xField", value);
-        ageCount.put("yField", ageType);
+        ageCount.put("angleField", value);
+        ageCount.put("colorField", ageType);
         return ageCount;
     }
 

@@ -130,7 +130,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         List<Long> subordinateCompanyIds = new ArrayList<>();
         companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
         Map<String, Object> barChartMap;
-        if (subordinateCompanyIds.isEmpty()) {
+        if (subordinateCompanyIds.isEmpty() && !companyAll.isEmpty()) {
             Long[] companyIdArray = companyIds;
             if (companyIds == null) {
                 companyIdArray = companies.stream().map(Company::getId).toArray(Long[]::new);

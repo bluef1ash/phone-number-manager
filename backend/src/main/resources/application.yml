@@ -11,6 +11,9 @@ server:
             io: 8
             worker: 64
 
+    servlet:
+        context-path: ${CONTEXT_PATH}
+
 spring:
     application:
         name: phone-number-manager

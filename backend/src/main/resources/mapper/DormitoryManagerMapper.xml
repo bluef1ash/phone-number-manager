@@ -144,8 +144,10 @@
         FROM pm_dormitory_manager
         LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
         <where>
-            pm_dormitory_manager.company_id IN
-            <foreach collection="companyIds" item="companyId" open="(" separator="," close=")">#{companyId}</foreach>
+            <foreach collection="companyIds" item="companyId" open="pm_dormitory_manager.company_id IN (" separator=","
+                     close=")">
+                #{companyId}
+            </foreach>
         </where>
         GROUP BY pm_company.id
     </select>

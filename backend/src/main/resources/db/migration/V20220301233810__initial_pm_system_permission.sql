@@ -1,5 +1,5 @@
-INSERT INTO `pm_system_permission` (`id`, `name`, `function_name`, `uri`, `http_methods`, `parent_id`,
-                                    `menu_type`, `is_display`, `create_time`, `update_time`)
+INSERT INTO pm_system_permission (id, name, function_name, uri, http_methods, parent_id,
+                                  menu_type, is_display, create_time, update_time)
 VALUES (1, '首页相关', 'indexController', '', '', 0, 0, 1, '1000-01-01 00:00:00', '1000-01-01 00:00:00'),
     (2, '社区居民管理', 'communityResidentController', '', '', 0, 0, 1, '1000-01-01 00:00:00', '1000-01-01 00:00:00'),
     (3, '社区居民楼片长管理', 'dormitoryManagerController', '', '', 0, 0, 1, '1000-01-01 00:00:00',

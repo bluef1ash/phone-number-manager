@@ -92,6 +92,7 @@ services:
     container_name: "phone-number-manager-backend"
     environment:
       - SERVER_PORT=80
+      - CONTEXT_PATH=/
       - DATABASE_HOST=127.0.0.1
       - DATABASE_PORT=3306
       - DATABASE_NAME=phone_number_manager

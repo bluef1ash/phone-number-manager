@@ -104,9 +104,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         String personCountAlias) {
         List<Company> companyList = new ArrayList<>();
         List<Long> subordinateCompanyIds = new ArrayList<>();
-        companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
-        if (subordinateCompanyIds.isEmpty()) {
-            subordinateCompanyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
+        if (companies != null && !companies.isEmpty()) {
+            companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
+            if (subordinateCompanyIds.isEmpty()) {
+                subordinateCompanyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
+            }
         }
         return barChartHandle(companyAll, personCountAlias, companyList, subordinateCompanyIds);
     }

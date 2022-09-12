@@ -31,6 +31,7 @@ export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
   batchRemoveEventHandler?: (
     selectedRowKeys: number[],
   ) => Promise<API.ResponseSuccess | API.ResponseException>;
+  batchElement?: (selectedRowKeys: number[]) => JSX.Element;
   importDataUploadProps?: {
     customAction?: (
       params: string | RcFile | Blob,
@@ -58,6 +59,7 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
   customColumns,
   customRequest,
   batchRemoveEventHandler,
+  batchElement,
   importDataUploadProps,
   exportDataEventHandler,
   removeData,
@@ -370,7 +372,8 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
               } else {
                 return <></>;
               }
-            })()}
+            })()}{' '}
+            {batchElement?.(selectedRowKeys as number[])}
           </Space>
         )}
         {...restProps}

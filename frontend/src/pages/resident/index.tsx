@@ -18,7 +18,8 @@ import { downloadExcelFile, submitPrePhoneNumberHandle } from '@/services/utils'
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ProFormText } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
-import { Alert, Spin } from 'antd';
+import { Alert, Button, message, Popover, Spin } from 'antd';
+
 import React, { useEffect, useRef, useState } from 'react';
 
 const InputElement = (
@@ -105,6 +106,7 @@ const CommunityResident: React.FC = () => {
   );
   const [modifyCompanyIdState, setModifyCompanyIdState] = useState<string | null>(null);
   const [modifySubcontractorIdState, setModifySubcontractorIdState] = useState<string | null>(null);
+  const [batchSetSubcontractorIdState, setBatchSetSubcontractorIdState] = useState<number>(0);
 
   useEffect(() => {
     (async () => {
@@ -168,7 +170,7 @@ const CommunityResident: React.FC = () => {
               ellipsis: true,
             },
             {
-              title: (schema, type) => (type === 'table' ? '所属分包人' : '所属单位或分包人'),
+              title: (config, type) => (type === 'table' ? '所属分包人' : '所属单位或分包人'),
               dataIndex: ['subcontractor', 'name'],
               sorter: true,
               ellipsis: true,
@@ -213,11 +215,55 @@ const CommunityResident: React.FC = () => {
             },
           ]}
           batchRemoveEventHandler={async (data) =>
-            await batchCommunityResident({
+            await batchCommunityResident<number>({
               method: 'DELETE',
               data,
             })
           }
+          batchElement={(selectedRowKeys) => (
+            <Popover
+              trigger="click"
+              content={
+                <>
+                  <SelectCascder
+                    querySelectList={async (value) =>
+                      (await querySubcontractorSelectList([value])).data
+                    }
+                    selectState={batchSetSubcontractorIdState}
+                    setSelectState={setSubcontractorSelectState}
+                  />
+                  <Button
+                    key="batch_set_subcontractor_id"
+                    onClick={async () => {
+                      if (batchSetSubcontractorIdState === 0) {
+                        message.error('未选择修改的社区分包人员！');
+                        return;
+                      }
+                      const { code } = await batchCommunityResident<API.CommunityResident>({
+                        data: selectedRowKeys.map((id) => ({
+                          id,
+                          subcontractorId: batchSetSubcontractorIdState,
+                        })),
+                        method: 'MODIFY',
+                      });
+                      if (code === 200) {
+                        message.success('批量修改成功！');
+                        actionRef?.current?.reload();
+                        return;
+                      }
+                      message.error('批量修改失败！');
+                    }}
+                  >
+                    {' '}
+                    确定{' '}
+                  </Button>
+                </>
+              }
+            >
+              {' '}
+              <a key="batch_change_subcontractor">批量修改社区分包人员</a>{' '}
+            </Popover>
+          )}
           modalForm={{
             title: '社区居民',
             element: InputElement(

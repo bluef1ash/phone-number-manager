@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 
 import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -31,4 +32,6 @@ public class BatchRestfulVo implements Serializable {
     @ApiModelProperty("批量操作数据")
     @NotNull(message = "批量操作数据不能为空！")
     private JSONArray data;
+    @ApiModelProperty("批量操作额外数据")
+    private JSONObject extra;
 }

@@ -73,8 +73,8 @@ export async function removeCommunityResident(id: number, options?: Record<strin
 }
 
 /** 批量操作社区居民 */
-export async function batchCommunityResident(
-  data: API.BatchRUD<number[]>,
+export async function batchCommunityResident<T>(
+  data: API.BatchRUD<T[]>,
   options?: Record<string, any>,
 ) {
   return request.post<API.ResponseSuccess & API.ResponseException>(communityResidentBatch, {

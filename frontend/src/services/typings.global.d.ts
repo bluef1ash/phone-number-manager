@@ -17,12 +17,6 @@ declare namespace API {
     message?: string;
   };
 
-  type PageParams = {
-    current?: number;
-    pageSize?: number;
-    params?: [];
-  };
-
   type RecursivePartial<S extends object> = {
     [p in keyof S]+?: S[p] extends object ? RecursivePartial<S[p]> : S[p];
   };
@@ -66,8 +60,9 @@ declare namespace API {
   };
 
   type BatchRUD<T> = {
-    method: 'CREATE' | 'UPDATE' | 'DELETE';
+    method: 'CREATE' | 'MODIFY' | 'DELETE';
     data: T;
+    extra?: any;
   };
 
   type SelectList = {
@@ -81,13 +76,6 @@ declare namespace API {
     isGrandsonLevel?: boolean;
     children?: SelectList[] | null;
   } & DefaultOptionType;
-
-  type NoticeIconList = {
-    data?: NoticeIconItem[];
-    /** 列表的内容总数 */
-    total?: number;
-    success?: boolean;
-  };
 
   type NoticeIconItemType = 'notification' | 'message' | 'event';
 

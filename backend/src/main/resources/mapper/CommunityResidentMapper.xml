@@ -181,7 +181,7 @@
                             CONVERT(pm_company.name USING gbk) COLLATE gbk_chinese_ci
                         </when>
                         <when test="key eq 'subcontractor,name'">
-                            CONVERT(dormitory_manager_name USING gbk) COLLATE gbk_chinese_ci
+                            CONVERT(pm_subcontractor.name USING gbk) COLLATE gbk_chinese_ci
                         </when>
                         <otherwise>
                             CONVERT(pm_community_resident.${key} USING gbk) COLLATE gbk_chinese_ci

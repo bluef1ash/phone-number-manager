@@ -1,3 +1,4 @@
+import BatchUpdateSubcontractorPopover from '@/components/BatchUpdateSubcontractorPopover';
 import DataList from '@/components/DataList';
 import MainPageContainer from '@/components/MainPageContainer';
 import PhoneNumberList from '@/components/PhoneNumberList';
@@ -203,6 +204,7 @@ const DormitoryManager: React.FC = () => {
   const [spinState, setSpinState] = useState<boolean>(false);
   const [spinTipState, setSpinTipState] = useState<string>('');
   const [subcontractorSelectState, setSubcontractorSelectState] = useState<API.SelectList[]>([]);
+  const [batchSetSubcontractorIdState, setBatchSetSubcontractorIdState] = useState<number>(0);
 
   useEffect(() => {
     (async () => {
@@ -339,6 +341,17 @@ const DormitoryManager: React.FC = () => {
               data,
             })
           }
+          batchElement={(selectedRowKeys) => (
+            <BatchUpdateSubcontractorPopover
+              actionRef={actionRef}
+              batchSetSubcontractorIdState={batchSetSubcontractorIdState}
+              selectedRowKeys={selectedRowKeys}
+              setBatchSetSubcontractorIdState={setBatchSetSubcontractorIdState}
+              setSubcontractorSelectState={setSubcontractorSelectState}
+              subcontractorSelectState={subcontractorSelectState}
+              handler={async (data) => await batchDormitoryManager<API.DormitoryManager>(data)}
+            />
+          )}
           modalForm={{
             title: '社区居民楼片长',
             element: InputElement(subcontractorSelectState, setSubcontractorSelectState),

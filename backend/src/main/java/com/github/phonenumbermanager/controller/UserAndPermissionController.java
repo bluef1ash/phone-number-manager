@@ -119,13 +119,12 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功
      */
     @SuppressWarnings("all")
-    @CacheEvict(cacheNames = SystemConstant.SYSTEM_USER_ID_KEY, key = "#id")
+    @CacheEvict(cacheNames = {SystemConstant.SYSTEM_USER_ID_KEY, SystemConstant.SYSTEM_MENU_KEY}, key = "#id")
     @PostMapping("/account/logout")
     @ApiOperation("退出登录")
     public R logout(@ApiParam("系统用户编号") Long id) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        id = currentSystemUser.getId();
         SecurityContextHolder.clearContext();
         return R.ok();
     }

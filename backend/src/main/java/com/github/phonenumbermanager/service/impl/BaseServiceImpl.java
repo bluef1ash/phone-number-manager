@@ -294,37 +294,39 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      */
     protected Map<String, Object> barChartHandle(List<Company> companyAll, String personCountAlias,
         List<Company> companyList, List<Long> subordinateCompanyIds) {
-        Map<BigInteger, Map<String, Long>> dataMap = baseMapper.selectCountForGroupCompany(subordinateCompanyIds);
         List<Map<String, Object>> data = new ArrayList<>();
-        if (!dataMap.isEmpty()) {
-            if (companyList.isEmpty()) {
-                Map<String, Object> counter = new HashMap<>(2);
-                Long id = subordinateCompanyIds.get(0);
-                counter.put("companyName", companyAll.stream().filter(company -> company.getId().equals(id))
-                    .map(Company::getName).findFirst().orElse(""));
-                counter.put("personCount", dataMap.get(Convert.toBigInteger(id)).get("person_count"));
-                data.add(counter);
-            } else {
-                for (Company company : companyList) {
+        if (!subordinateCompanyIds.isEmpty()) {
+            Map<BigInteger, Map<String, Long>> dataMap = baseMapper.selectCountForGroupCompany(subordinateCompanyIds);
+            if (!dataMap.isEmpty()) {
+                if (companyList.isEmpty()) {
                     Map<String, Object> counter = new HashMap<>(2);
-                    long count = 0L;
-                    List<Long> subCompanyIds = CommonUtil.listRecursionCompanyIds(companyAll, company.getId());
-                    if (subCompanyIds.size() > 0) {
-                        for (Long subCompanyId : subCompanyIds) {
-                            BigInteger id = BigInteger.valueOf(subCompanyId);
+                    Long id = subordinateCompanyIds.get(0);
+                    counter.put("companyName", companyAll.stream().filter(company -> company.getId().equals(id))
+                        .map(Company::getName).findFirst().orElse(""));
+                    counter.put("personCount", dataMap.get(Convert.toBigInteger(id)).get("person_count"));
+                    data.add(counter);
+                } else {
+                    for (Company company : companyList) {
+                        Map<String, Object> counter = new HashMap<>(2);
+                        long count = 0L;
+                        List<Long> subCompanyIds = CommonUtil.listRecursionCompanyIds(companyAll, company.getId());
+                        if (subCompanyIds.size() > 0) {
+                            for (Long subCompanyId : subCompanyIds) {
+                                BigInteger id = BigInteger.valueOf(subCompanyId);
+                                if (dataMap.get(id) != null) {
+                                    count += dataMap.get(id).get("person_count");
+                                }
+                            }
+                        } else {
+                            BigInteger id = BigInteger.valueOf(company.getId());
                             if (dataMap.get(id) != null) {
-                                count += dataMap.get(id).get("person_count");
+                                count = dataMap.get(id).get("person_count");
                             }
                         }
-                    } else {
-                        BigInteger id = BigInteger.valueOf(company.getId());
-                        if (dataMap.get(id) != null) {
-                            count = dataMap.get(id).get("person_count");
-                        }
+                        counter.put("companyName", company.getName());
+                        counter.put("personCount", count);
+                        data.add(counter);
                     }
-                    counter.put("companyName", company.getName());
-                    counter.put("personCount", count);
-                    data.add(counter);
                 }
             }
         }

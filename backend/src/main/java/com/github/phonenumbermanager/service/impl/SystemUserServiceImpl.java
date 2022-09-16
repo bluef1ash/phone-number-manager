@@ -75,12 +75,12 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         }
         if (systemUser.getCompanies() != null) {
             List<SystemPermission> systemPermissionAll = systemPermissionService.listAll();
+            List<Company> companyAll = companyMapper.selectList(null);
             List<Long> companyParentIds = companyMapper.selectList(null).stream().map(Company::getParentId).distinct()
                 .collect(Collectors.toList());
             for (Company company : systemUser.getCompanies()) {
                 List<SystemPermission> tempSystemPermissions = company.getSystemPermissions();
                 if (company.getSystemPermissions() == null || company.getSystemPermissions().isEmpty()) {
-                    List<Company> companyAll = companyMapper.selectList(null);
                     tempSystemPermissions = getPrevSystemPermissions(systemPermissionMapper, null,
                         Collections.singletonList(company.getId()), companyAll);
                 }
@@ -110,9 +110,14 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
         Authentication authenticate = authenticationManagerBuilder.getObject().authenticate(token);
         SystemUser systemUser = (SystemUser)authenticate.getPrincipal();
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime plusDays = now.plusDays(7);
         systemUser.setPassword(null).setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp);
+        if (systemAdministratorId.equals(systemUser.getId())) {
+            systemUser.setCompanies(companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0)));
+        }
         baseMapper.update(new SystemUser().setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp),
             new UpdateWrapper<SystemUser>().eq("id", systemUser.getId()));
         redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),

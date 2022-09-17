@@ -33,12 +33,14 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import cn.hutool.poi.excel.StyleSet;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 社区楼长业务实现
  *
  * @author 廿二月的天
  */
+@Slf4j
 @Service
 public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManagerMapper, DormitoryManager>
     implements DormitoryManagerService {
@@ -106,6 +108,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 throw new BusinessException("未找到对应的分包人信息，请重试！");
             }
             String idNumber = StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryBirthCellNumber)));
+            if (idNumber.length() != 18) {
+                throw new BusinessException("身份证号码不正确，请重试！");
+            }
             dormitoryManager.setId(IdWorker.getId()).setCompanyId(company.get().getId())
                 .setName(StrUtil.cleanBlank(String.valueOf(datum.get(excelDormitoryNameCellNumber))))
                 .setIdNumber(idNumber).setGender(GenderEnum.getEnum(IdcardUtil.getGenderByIdCard(idNumber)))

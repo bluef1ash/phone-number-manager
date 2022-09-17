@@ -2,11 +2,8 @@ import { index, system } from '@/services/api';
 import request from '@config/request';
 
 /** 获取菜单 */
-export async function queryMenuData(display: boolean, options?: Record<string, any>) {
+export async function queryMenuData(options?: Record<string, any>) {
   return request.get<API.ResponseMenu & API.ResponseException>(index.menu, {
-    params: {
-      display,
-    },
     ...(options || {}),
   });
 }

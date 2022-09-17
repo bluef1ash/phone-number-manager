@@ -27,15 +27,13 @@ public interface SystemPermissionMapper extends BaseMapper<SystemPermission> {
     List<SystemPermission> selectByCompanyId(Serializable companyId) throws DataAccessException;
 
     /**
-     * 通过单位查询
+     * 通过是否在导航栏中显示查询
      *
-     * @param companyIds
-     *            单位上级编号
      * @param isDisplay
      *            是否在导航栏中显示
      * @return 社区楼长集合
      * @throws DataAccessException
      *             数据库操作异常
      */
-    List<SystemPermission> selectListByCompanyIds(List<Long> companyIds, Boolean isDisplay) throws DataAccessException;
+    List<SystemPermission> selectListByIsDisplay(Boolean isDisplay) throws DataAccessException;
 }

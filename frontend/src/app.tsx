@@ -28,7 +28,7 @@ export async function getInitialState(): Promise<{
 }> {
   if (history.location.pathname !== loginPath) {
     const { data: currentUser } = await queryCurrentUser();
-    const { components, menuData } = await queryMenuData(true);
+    const { components, menuData } = await queryMenuData();
     return {
       currentUser,
       menuData,

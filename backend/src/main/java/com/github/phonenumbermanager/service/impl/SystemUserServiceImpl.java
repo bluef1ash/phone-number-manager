@@ -3,7 +3,10 @@ package com.github.phonenumbermanager.service.impl;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -28,7 +31,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.*;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
 import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
@@ -78,28 +84,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         }
         if (systemAdministratorId.equals(systemUser.getId())) {
             systemUser.setCompanies(null);
-        }
-        if (systemUser.getCompanies() != null) {
-            List<SystemPermission> systemPermissionAll = systemPermissionService.listAll();
-            List<Company> companyAll = companyMapper.selectList(null);
-            List<Long> companyParentIds = companyMapper.selectList(null).stream().map(Company::getParentId).distinct()
-                .collect(Collectors.toList());
-            for (Company company : systemUser.getCompanies()) {
-                List<SystemPermission> tempSystemPermissions = company.getSystemPermissions();
-                if (company.getSystemPermissions() == null || company.getSystemPermissions().isEmpty()) {
-                    tempSystemPermissions = getPrevSystemPermissions(systemPermissionMapper, null,
-                        Collections.singletonList(company.getId()), companyAll);
-                }
-                List<
-                    SystemPermission> systemPermissions =
-                        tempSystemPermissions.stream()
-                            .map(systemPermission -> CommonUtil.listRecursionSystemPermissions(systemPermissionAll,
-                                systemPermission.getId()))
-                            .flatMap(List::stream).distinct().collect(Collectors.toList());
-                systemPermissions.addAll(company.getSystemPermissions());
-                company.setSystemPermissions(systemPermissions);
-                company.setIsLeaf(!companyParentIds.contains(company.getId()));
-            }
         }
         systemUser.setCredentialExpireTime(LocalDateTime.now().plusDays(7));
         return systemUser;

@@ -38,7 +38,7 @@ const Login: React.FC = () => {
     if (code === 200) {
       msg.success('登录成功！');
       Cookies.set(COOKIE_TOKEN_KEY, token, { expires: 7 });
-      const { code: codeState, menuData, components } = await queryMenuData(true);
+      const { code: codeState, menuData, components } = await queryMenuData();
       if (codeState === 200 && history) {
         await setInitialState({
           ...initialState,

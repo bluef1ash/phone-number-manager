@@ -136,7 +136,7 @@ public class UserAndPermissionController extends BaseController {
      */
     @GetMapping("/system/user/current")
     @ApiOperation("获取当前登录用户信息")
-    public R currentSystemUser() {
+    public R getCurrentSystemUser() {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", getSystemUserVo(currentSystemUser));

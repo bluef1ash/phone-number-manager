@@ -25,7 +25,7 @@ public final class SystemConstant {
     /**
      * 权限通过白名单
      */
-    public static final String[] PERMISSION_WHITELIST = {"/account/logout", "/index/menu", "/account/current-user",
+    public static final String[] PERMISSION_WHITELIST = {"/account/logout", "/index/menu", "/system/user/current",
         "/company/select-list", "/system/permission/select-list", "/company/subcontractor/select-list",
         "/resident/computed/message", "/dormitory/computed/message", "/resident/computed/chart",
         "/dormitory/computed/chart", "/company/subcontractor/computed/chart"};

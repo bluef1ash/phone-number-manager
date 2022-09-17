@@ -1,6 +1,7 @@
 export const account = {
   login: REACT_APP_API_BASE_URL + '/account/login',
   logout: REACT_APP_API_BASE_URL + '/account/logout',
+  captcha: REACT_APP_API_BASE_URL + '/account/captcha',
 };
 export const index = {
   menu: REACT_APP_API_BASE_URL + '/index/menu',

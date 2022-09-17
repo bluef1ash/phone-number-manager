@@ -9,7 +9,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.mapper.ConfigurationMapper;
@@ -45,8 +45,9 @@ public class ConfigurationServiceImpl extends BaseServiceImpl<ConfigurationMappe
     @Cacheable(cacheNames = SystemConstant.CONFIGURATIONS_MAP_KEY + "${{ttl: -1}}")
     @Override
     public Map<String, Configuration> mapAll() {
-        QueryWrapper<Configuration> wrapper = new QueryWrapper<>();
-        wrapper.select("id", "title", "description", "name", "content", "field_type", "field_value");
+        LambdaQueryWrapper<Configuration> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(Configuration::getContent, Configuration::getDescription, Configuration::getFieldType,
+            Configuration::getFieldValue, Configuration::getId, Configuration::getName, Configuration::getTitle);
         return baseMapper.selectList(wrapper).stream()
             .collect(Collectors.toMap(Configuration::getName, Function.identity()));
     }

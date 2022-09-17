@@ -43,7 +43,10 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Cacheable(cacheNames = SystemConstant.SYSTEM_PERMISSIONS_KEY + "${{'ttl': -1}}")
     @Override
     public List<SystemPermission> listAll() {
-        return baseMapper.selectList(null);
+        return baseMapper.selectList(new LambdaQueryWrapper<SystemPermission>().select(SystemPermission::getId,
+            SystemPermission::getMenuType, SystemPermission::getFunctionName, SystemPermission::getHttpMethods,
+            SystemPermission::getIsDisplay, SystemPermission::getMenuType, SystemPermission::getName,
+            SystemPermission::getParentId, SystemPermission::getUri));
     }
 
     @Override

@@ -70,7 +70,13 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (systemUser == null) {
             throw new BadCredentialsException("找不到该系统用户！");
         }
-        if (systemUser.getCompanies().isEmpty()) {
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
+        boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").getContent());
+        if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
+            throw new BadCredentialsException("该系统已经禁止登录，请联系管理员！");
+        }
+        if (systemAdministratorId.equals(systemUser.getId())) {
             systemUser.setCompanies(null);
         }
         if (systemUser.getCompanies() != null) {
@@ -95,12 +101,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
                 company.setIsLeaf(!companyParentIds.contains(company.getId()));
             }
         }
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
-        boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").getContent());
-        if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
-            throw new BadCredentialsException("该系统已经禁止登录，请联系管理员！");
-        }
         systemUser.setCredentialExpireTime(LocalDateTime.now().plusDays(7));
         return systemUser;
     }
@@ -110,14 +110,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
         Authentication authenticate = authenticationManagerBuilder.getObject().authenticate(token);
         SystemUser systemUser = (SystemUser)authenticate.getPrincipal();
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime plusDays = now.plusDays(7);
         systemUser.setPassword(null).setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp);
-        if (systemAdministratorId.equals(systemUser.getId())) {
-            systemUser.setCompanies(companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0)));
-        }
         baseMapper.update(new SystemUser().setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp),
             new UpdateWrapper<SystemUser>().eq("id", systemUser.getId()));
         redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),

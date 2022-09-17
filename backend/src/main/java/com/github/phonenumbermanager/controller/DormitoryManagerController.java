@@ -232,7 +232,10 @@ public class DormitoryManagerController extends BaseController {
     public R dormitoryManagerChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return R.ok().put("data", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(),
-            getCompanyIds(computedVo), companyService.list(), "辖区居民楼片长数"));
+        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        return R.ok().put("data",
+            dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(), getCompanyIds(computedVo),
+                companyService.list(), "辖区居民楼片长数",
+                Convert.toLong(configurationMap.get("system_administrator_id").getContent())));
     }
 }

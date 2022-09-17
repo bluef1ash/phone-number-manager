@@ -28,6 +28,9 @@ public class SystemUserLoginVo implements Serializable {
     @ApiModelProperty("系统用户密码")
     @NotBlank(message = "系统用户密码不能为空！")
     private String password;
+    @ApiModelProperty("登录图形验证码")
+    @NotBlank(message = "登录图形验证码")
+    private String captcha;
     @ApiModelProperty("是否自动登录")
     private Boolean autoLogin;
 }

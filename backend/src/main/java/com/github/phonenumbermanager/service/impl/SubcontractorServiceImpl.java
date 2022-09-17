@@ -125,7 +125,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
 
     @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
-        String personCountAlias) {
+        String personCountAlias, Long systemAdministratorId) {
         List<Company> companyList = new ArrayList<>();
         List<Long> subordinateCompanyIds = new ArrayList<>();
         companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
@@ -155,7 +155,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
             barChartMap.put("data", data);
         } else {
             // 选择非最下层单位时，列出分包人数
-            barChartMap = barChartHandle(companyAll, "人数", companyList, subordinateCompanyIds);
+            barChartMap = barChartHandle(companyAll, "人数", companyList, subordinateCompanyIds, systemAdministratorId);
         }
         return barChartMap;
     }

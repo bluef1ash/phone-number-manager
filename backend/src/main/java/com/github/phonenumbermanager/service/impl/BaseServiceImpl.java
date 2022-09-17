@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
@@ -101,7 +102,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
 
     @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
-        String personCountAlias) {
+        String personCountAlias, Long systemAdministratorId) {
         List<Company> companyList = new ArrayList<>();
         List<Long> subordinateCompanyIds = new ArrayList<>();
         if (companies != null && !companies.isEmpty()) {
@@ -110,7 +111,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
                 subordinateCompanyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
             }
         }
-        return barChartHandle(companyAll, personCountAlias, companyList, subordinateCompanyIds);
+        return barChartHandle(companyAll, personCountAlias, companyList, subordinateCompanyIds, systemAdministratorId);
     }
 
     @Override
@@ -293,8 +294,13 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      * @return 柱状图对象
      */
     protected Map<String, Object> barChartHandle(List<Company> companyAll, String personCountAlias,
-        List<Company> companyList, List<Long> subordinateCompanyIds) {
+        List<Company> companyList, List<Long> subordinateCompanyIds, Long systemAdministratorId) {
         List<Map<String, Object>> data = new ArrayList<>();
+        SystemUser currentSystemUser =
+            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (systemAdministratorId.equals(currentSystemUser.getId())) {
+            subordinateCompanyIds = companyAll.stream().map(Company::getId).collect(Collectors.toList());
+        }
         if (!subordinateCompanyIds.isEmpty()) {
             Map<BigInteger, Map<String, Long>> dataMap = baseMapper.selectCountForGroupCompany(subordinateCompanyIds);
             if (!dataMap.isEmpty()) {

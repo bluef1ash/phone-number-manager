@@ -53,7 +53,7 @@
             </if>
             <choose>
                 <when test="companyIds == null">
-                    AND pm_system_permission.parent_id = 0
+                    AND pm_system_permission.parent_id = null
                 </when>
                 <otherwise>
                     <foreach collection="companyIds" item="companyId" open="AND pm_company_permission.company_id IN ("

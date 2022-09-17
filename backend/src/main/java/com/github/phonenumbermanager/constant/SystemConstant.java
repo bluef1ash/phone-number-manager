@@ -9,14 +9,6 @@ import java.time.LocalDateTime;
  */
 public final class SystemConstant {
     /**
-     * 极验编号
-     */
-    public static final String GEETEST_ID = "4d0b05d8e88645f0cf5a5271ff97db7a";
-    /**
-     * 极验密钥
-     */
-    public static final String GEETEST_KEY = "07ee3abbdc56141cdc63b6d4de712505";
-    /**
      * 社区级机构名称正则表达式
      */
     public static final String COMMUNITY_NAME_PATTERN = "(?iUs)[社区村居民委员会]";
@@ -29,7 +21,7 @@ public final class SystemConstant {
      */
     public static final String[] ANONYMOUS_WHITELIST =
         {"/favicon.ico", "/404", "/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**",
-            "/swagger-ui/**", "/druid/**", "/account/login", "/account/recaptcha"};
+            "/swagger-ui/**", "/druid/**", "/account/login", "/account/captcha"};
     /**
      * 权限通过白名单
      */

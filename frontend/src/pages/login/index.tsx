@@ -1,12 +1,15 @@
 import Footer from '@/components/Footer';
 import { login } from '@/services/account/api';
+import { account } from '@/services/api';
 import { queryMenuData } from '@/services/permission/api';
 import { useModel } from '@@/plugin-model/useModel';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { KeyOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-form';
+
 import { COOKIE_TOKEN_KEY } from '@config/constant';
-import { Alert, message as msg } from 'antd';
+import { Alert, Col, message as msg, Row } from 'antd';
 import Cookies from 'js-cookie';
+import { random } from 'lodash';
 import React, { useState } from 'react';
 import { history } from 'umi';
 import styles from './index.less';
@@ -28,6 +31,7 @@ const Login: React.FC = () => {
     code: 200,
     message: '',
   });
+  const [captchaUrlState, setCaptchaUrlState] = useState<string>(account.captcha);
   const { initialState, setInitialState } = useModel('@@initialState');
   const submit = async (values: API.LoginParams) => {
     const { code, token, currentUser, message } = await login({ ...values });
@@ -50,6 +54,7 @@ const Login: React.FC = () => {
       }
     } else {
       setUserLoginState({ code, message });
+      setCaptchaUrlState(`${account.captcha}?code=${random(10000, false)}`);
     }
   };
   const { code, message } = userLoginState;
@@ -69,7 +74,7 @@ const Login: React.FC = () => {
               size: 'large',
               prefix: <UserOutlined className={styles.prefixIcon} />,
             }}
-            placeholder={'用户名称'}
+            placeholder="请输入用户名称"
             rules={[
               {
                 required: true,
@@ -83,7 +88,7 @@ const Login: React.FC = () => {
               size: 'large',
               prefix: <LockOutlined className={styles.prefixIcon} />,
             }}
-            placeholder={'用户密码'}
+            placeholder="请输入用户密码"
             rules={[
               {
                 required: true,
@@ -91,6 +96,39 @@ const Login: React.FC = () => {
               },
             ]}
           />{' '}
+          <Row justify="space-around">
+            {' '}
+            <Col span={14}>
+              {' '}
+              <ProFormText
+                name="captcha"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <KeyOutlined className={styles.prefixIcon} />,
+                }}
+                placeholder="请输入图形验证码"
+                rules={[
+                  {
+                    required: true,
+                    message: '图形验证码是必填项！',
+                  },
+                ]}
+              />{' '}
+            </Col>{' '}
+            <Col span={2} />{' '}
+            <Col span={8}>
+              {' '}
+              <img
+                src={captchaUrlState}
+                className={styles.captcha}
+                alt="点击更改图形验证码"
+                title="点击更改图形验证码"
+                onClick={() => {
+                  setCaptchaUrlState(`${account.captcha}?code=${random(10000, false)}`);
+                }}
+              />{' '}
+            </Col>{' '}
+          </Row>{' '}
           <a className={styles['forgot-password']}> 忘记密码？ </a>{' '}
         </LoginForm>
       </div>

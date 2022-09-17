@@ -29,6 +29,7 @@
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <hutool.version>5.8.6</hutool.version>
+        <easy-captcha.version>1.6.2</easy-captcha.version>
     </properties>
     <repositories>
         <repository>
@@ -135,6 +136,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.whvcse</groupId>
+            <artifactId>easy-captcha</artifactId>
+            <version>${easy-captcha.version}</version>
         </dependency>
     </dependencies>
     <build>

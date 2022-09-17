@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.controller;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -29,7 +30,6 @@ import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
-import com.github.phonenumbermanager.util.GeetestLibUtil;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
@@ -38,6 +38,7 @@ import com.github.phonenumbermanager.vo.BatchRestfulVo;
 import com.github.phonenumbermanager.vo.CompanyVo;
 import com.github.phonenumbermanager.vo.SystemUserLoginVo;
 import com.github.phonenumbermanager.vo.SystemUserVo;
+import com.wf.captcha.utils.CaptchaUtil;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
@@ -79,6 +80,10 @@ public class UserAndPermissionController extends BaseController {
     public R login(HttpServletRequest request,
         @ApiParam(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVo systemUserLoginVo)
         throws LoginException {
+        if (!CaptchaUtil.ver(systemUserLoginVo.getCaptcha(), request)) {
+            CaptchaUtil.clear(request);
+            throw new LoginException("登录图形验证码输入错误！");
+        }
         Authentication authentication = systemUserService.authentication(systemUserLoginVo.getUsername(),
             systemUserLoginVo.getPassword(), ServletUtil.getClientIP(request));
         SystemUser principal = (SystemUser)authentication.getPrincipal();
@@ -97,20 +102,15 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param request
      *            HTTP请求对象
-     * @param browserType
-     *            浏览器类型
-     * @return 验证图案数据
+     * @param response
+     *            HTTP响应对象
+     * @throws IOException
+     *             IO异常
      */
-    @GetMapping("/account/recaptcha")
+    @GetMapping("/account/captcha")
     @ApiOperation("生成图案验证码数据")
-    public String captcha(HttpServletRequest request, @ApiParam(name = "浏览器类型") String browserType) {
-        GeetestLibUtil gtSdk = new GeetestLibUtil(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
-        Map<String, String> param = new HashMap<>(3);
-        param.put("client_type", browserType);
-        param.put("ip_address", ServletUtil.getClientIP(request));
-        int gtServerStatus = gtSdk.preProcess(param);
-        request.getSession().setAttribute(gtSdk.gtServerStatusSessionKey, gtServerStatus);
-        return gtSdk.getResponseStr();
+    public void captcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        CaptchaUtil.out(request, response);
     }
 
     /**

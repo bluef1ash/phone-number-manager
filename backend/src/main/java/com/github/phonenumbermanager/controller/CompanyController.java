@@ -1,7 +1,6 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,7 +12,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.Subcontractor;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -26,7 +24,6 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVo;
 import com.github.phonenumbermanager.vo.ComputedVo;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -314,10 +311,7 @@ public class CompanyController extends BaseController {
     public R subcontractorChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        return R.ok().put("data",
-            subcontractorService.getBarChart(currentSystemUser.getCompanies(), getCompanyIds(computedVo),
-                companyService.list(), null,
-                Convert.toLong(configurationMap.get("system_administrator_id").getContent())));
+        return R.ok().put("data", subcontractorService.getBarChart(currentSystemUser.getCompanies(),
+            getCompanyIds(computedVo), companyService.list(), null));
     }
 }

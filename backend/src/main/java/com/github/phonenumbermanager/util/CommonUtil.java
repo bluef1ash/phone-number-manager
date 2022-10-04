@@ -222,6 +222,27 @@ public class CommonUtil {
     }
 
     /**
+     * 树形递归
+     *
+     * @param company
+     *            根节点
+     * @param companyAll
+     *            所有单位集合
+     * @return 树形完成
+     */
+    public static Company treeRecursiveCompany(Company company, List<Company> companyAll) {
+        for (Company c : companyAll) {
+            if (company.getId().equals(c.getParentId())) {
+                if (company.getChildren() == null) {
+                    company.setChildren(new ArrayList<>());
+                }
+                company.getChildren().add(treeRecursiveCompany(c, companyAll));
+            }
+        }
+        return company;
+    }
+
+    /**
      * 递归获取系统权限链条集合
      *
      * @param systemPermissionAll

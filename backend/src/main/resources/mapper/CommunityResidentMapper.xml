@@ -48,16 +48,14 @@
         WHERE pm_community_resident.id = #{id}
     </select>
     <select id="selectCountForGroupCompany" resultType="map">
-        SELECT pm_company.id AS 'company_id', COUNT(pm_community_resident.id) AS 'person_count'
+        SELECT company_id, COUNT(id) AS 'person_count'
         FROM pm_community_resident
-        LEFT JOIN pm_company ON pm_community_resident.company_id = pm_company.id
         <where>
-            <foreach collection="companyIds" item="companyId" open="pm_community_resident.company_id IN (" separator=","
-                     close=")">
+            <foreach collection="companyIds" item="companyId" open="company_id IN (" separator="," close=")">
                 #{companyId}
             </foreach>
         </where>
-        GROUP BY pm_company.id
+        GROUP BY company_id
     </select>
     <select id="selectListByCompanyIds" resultMap="collectionResultMap">
         SELECT pm_community_resident.id AS 'community_resident_id',
@@ -146,6 +144,25 @@
             <if test="id != null">
                 AND pm_community_resident.id != #{id}
             </if>
+        </where>
+    </select>
+    <select id="selectCountForSubQueryCompany" resultType="map">
+        SELECT
+        id AS 'company_id',
+        (
+        SELECT COUNT(id)
+        FROM pm_community_resident
+        <where>
+            <foreach collection="companyIdMap" item="companyIds" open="company_id IN (" separator="," close=")">
+                ${@cn.hutool.core.util.ArrayUtil@join(companyIds, ",")}
+            </foreach>
+        </where>
+        ) AS 'person_count'
+        from pm_company
+        <where>
+            <foreach collection="companyIdMap" index="id" item="companyIds" open="id IN (" separator="," close=")">
+                #{id}
+            </foreach>
         </where>
     </select>
     <sql id="selectCorrelationSearch">

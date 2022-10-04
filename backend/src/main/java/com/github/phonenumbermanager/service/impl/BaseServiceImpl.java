@@ -3,9 +3,9 @@ package com.github.phonenumbermanager.service.impl;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
@@ -100,16 +100,20 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
 
     @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
-        String personCountAlias, Long systemAdministratorId) {
-        List<Company> companyList = new ArrayList<>();
-        List<Long> subordinateCompanyIds = new ArrayList<>();
-        if (companies != null && !companies.isEmpty()) {
-            companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
-            if (subordinateCompanyIds.isEmpty()) {
-                subordinateCompanyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
-            }
-        }
-        return barChartHandle(companyAll, personCountAlias, companyList, subordinateCompanyIds, systemAdministratorId);
+        String personCountAlias) {
+        Map<BigInteger, Map<String, Object>> groups = groupsCountData(companies, companyIds, companyAll);
+        List<Map<String, Object>> data = groups.values().stream().map(value -> {
+            String companyName =
+                companyAll.stream().filter(company -> Convert.toLong(value.get("company_id")).equals(company.getId()))
+                    .map(Company::getName).findFirst().orElse("");
+            Map<String, Object> counter = new HashMap<>(2);
+            counter.put("companyName", companyName);
+            counter.put("personCount", value.get("person_count"));
+            return counter;
+        }).collect(Collectors.toList());
+        Map<String, Object> barChart = getBarChartMap("companyName", "单位", "personCount", personCountAlias);
+        barChart.put("data", data);
+        return barChart;
     }
 
     @Override
@@ -279,68 +283,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     /**
-     * 柱状图图示处理
-     *
-     * @param companyAll
-     *            全部单位集合
-     * @param personCountAlias
-     *            员工数别名
-     * @param companyList
-     *            单位集合
-     * @param subordinateCompanyIds
-     *            下级单位编号集合
-     * @return 柱状图对象
-     */
-    protected Map<String, Object> barChartHandle(List<Company> companyAll, String personCountAlias,
-        List<Company> companyList, List<Long> subordinateCompanyIds, Long systemAdministratorId) {
-        List<Map<String, Object>> data = new ArrayList<>();
-        SystemUser currentSystemUser =
-            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (systemAdministratorId.equals(currentSystemUser.getId())) {
-            subordinateCompanyIds = companyAll.stream().map(Company::getId).collect(Collectors.toList());
-        }
-        if (!subordinateCompanyIds.isEmpty()) {
-            Map<BigInteger, Map<String, Long>> dataMap = baseMapper.selectCountForGroupCompany(subordinateCompanyIds);
-            if (!dataMap.isEmpty()) {
-                if (companyList.isEmpty()) {
-                    Map<String, Object> counter = new HashMap<>(2);
-                    Long id = subordinateCompanyIds.get(0);
-                    counter.put("companyName", companyAll.stream().filter(company -> company.getId().equals(id))
-                        .map(Company::getName).findFirst().orElse(""));
-                    counter.put("personCount", dataMap.get(Convert.toBigInteger(id)).get("person_count"));
-                    data.add(counter);
-                } else {
-                    for (Company company : companyList) {
-                        Map<String, Object> counter = new HashMap<>(2);
-                        long count = 0L;
-                        List<Long> subCompanyIds = CommonUtil.listRecursionCompanyIds(companyAll, company.getId());
-                        if (subCompanyIds.size() > 0) {
-                            for (Long subCompanyId : subCompanyIds) {
-                                BigInteger id = BigInteger.valueOf(subCompanyId);
-                                if (dataMap.get(id) != null) {
-                                    count += dataMap.get(id).get("person_count");
-                                }
-                            }
-                        } else {
-                            BigInteger id = BigInteger.valueOf(company.getId());
-                            if (dataMap.get(id) != null) {
-                                count = dataMap.get(id).get("person_count");
-                            }
-                        }
-                        counter.put("companyName", company.getName());
-                        counter.put("personCount", count);
-                        data.add(counter);
-                    }
-                }
-            }
-        }
-        Map<String, Object> barChart = getBarChartMap("companyName", "单位", "personCount", personCountAlias);
-        barChart.put("data", data);
-        return barChart;
-    }
-
-    /**
-     * 获取单位集合与下级单位编号集合
+     * 获取下级单位编号集合
      *
      * @param companies
      *            用户所属单位
@@ -348,19 +291,13 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      *            要查找的单位编号数组
      * @param companyAll
      *            所有单位集合
-     * @param companyList
-     *            需要返回的单位集合
-     * @param subordinateCompanyIds
-     *            需要返回的下级单位编号集合
+     * @return 需要返回的下级单位编号集合
      */
-    protected void companiesAndSubordinate(List<Company> companies, Long[] companyIds, List<Company> companyAll,
-        List<Company> companyList, List<Long> subordinateCompanyIds) {
-        for (Long companyId : frontendUserRequestCompanyHandle(companies, companyAll, companyIds)) {
-            subordinateCompanyIds.addAll(CommonUtil.listRecursionCompanies(companyAll, companyId).stream()
-                .map(Company::getId).collect(Collectors.toList()));
-            companyList.addAll(companyAll.stream().filter(company -> companyId.equals(company.getParentId()))
-                .collect(Collectors.toList()));
-        }
+    protected List<Long> getSubordinateCompanyIds(List<Company> companies, Long[] companyIds,
+        List<Company> companyAll) {
+        return Arrays.stream(frontendUserRequestCompanyHandle(companies, companyAll, companyIds))
+            .flatMap(companyId -> CommonUtil.listRecursionCompanies(companyAll, companyId).stream().map(Company::getId))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -381,5 +318,52 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
             companyList.addAll(companies);
         }
         return companyList;
+    }
+
+    /**
+     * 处理分组统计柱状图表数据
+     *
+     * @param companies
+     *            系统用户所属单位集合
+     * @param companyIds
+     *            前端传入单位编号数组
+     * @param companyAll
+     *            所有单位集合
+     * @return 处理分组统计柱状图表 Map 数据
+     */
+    protected Map<BigInteger, Map<String, Object>> groupsCountData(List<Company> companies, Long[] companyIds,
+        List<Company> companyAll) {
+        Stream<Company> companyStream;
+        if (companyIds == null) {
+            // 默认以用户单位统计
+            if (companies == null) {
+                // 管理员
+                companies =
+                    companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
+            }
+            // 构建树，计算树枝末端社区居民数量
+            companyStream = companies.stream();
+        } else {
+            companyStream = Arrays.stream(companyIds)
+                .flatMap(companyId -> companyAll.stream().filter(company -> companyId.equals(company.getParentId())));
+        }
+        List<Long> grassCompanyIds = new ArrayList<>();
+        Map<Long, List<Long>> notGrassCompanyIds = new LinkedHashMap<>();
+        companyStream.forEach(company -> {
+            List<Long> ids = CommonUtil.listRecursionCompanyIds(companyAll, company.getId());
+            if (ids.isEmpty()) {
+                grassCompanyIds.add(company.getId());
+            } else {
+                notGrassCompanyIds.put(company.getId(), ids);
+            }
+        });
+        Map<BigInteger, Map<String, Object>> groups = new LinkedHashMap<>();
+        if (!grassCompanyIds.isEmpty()) {
+            groups.putAll(baseMapper.selectCountForGroupCompany(grassCompanyIds));
+        }
+        if (!notGrassCompanyIds.isEmpty()) {
+            groups.putAll(baseMapper.selectCountForSubQueryCompany(notGrassCompanyIds));
+        }
+        return groups;
     }
 }

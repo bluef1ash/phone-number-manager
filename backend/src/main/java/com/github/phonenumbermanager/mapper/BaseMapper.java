@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -100,7 +101,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *             数据库操作异常
      */
     @MapKey("company_id")
-    Map<BigInteger, Map<String, Long>> selectCountForGroupCompany(List<Long> companyIds) throws DataAccessException;
+    Map<BigInteger, Map<String, Object>> selectCountForGroupCompany(List<Long> companyIds) throws DataAccessException;
 
     /**
      * 查询所有对象（分页）
@@ -135,4 +136,17 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      */
     long selectCorrelationCountByCompanies(List<Company> companies, JSONObject search, JSONObject sort)
         throws DataAccessException;
+
+    /**
+     * 单位统计子单位数量
+     *
+     * @param companyIdMap
+     *            单位编号集合 Map
+     * @return 社区数量对象
+     * @throws DataAccessException
+     *             数据库操作异常
+     */
+    @MapKey("company_id")
+    Map<BigInteger, Map<String, Object>> selectCountForSubQueryCompany(
+        @Param("companyIdMap") Map<Long, List<Long>> companyIdMap) throws DataAccessException;
 }

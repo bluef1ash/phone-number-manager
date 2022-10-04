@@ -250,11 +250,8 @@ public class CommunityResidentController extends BaseController {
     public R communityResidentChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        return R.ok().put("data",
-            communityResidentService.getBarChart(currentSystemUser.getCompanies(), getCompanyIds(computedVo),
-                companyService.list(), "辖区居民数",
-                Convert.toLong(configurationMap.get("system_administrator_id").getContent())));
+        return R.ok().put("data", communityResidentService.getBarChart(currentSystemUser.getCompanies(),
+            getCompanyIds(computedVo), companyService.list(), "辖区居民数"));
     }
 
     /**

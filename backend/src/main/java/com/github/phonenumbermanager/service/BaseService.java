@@ -101,12 +101,10 @@ public interface BaseService<T> extends IService<T> {
      *            所有单位集合
      * @param personCountAlias
      *            Y轴别名
-     * @param systemAdministratorId
-     *            系统管理员编号
      * @return 柱状图数据
      */
     Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
-        String personCountAlias, Long systemAdministratorId);
+        String personCountAlias);
 
     /**
      * 从Excel导入数据

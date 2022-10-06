@@ -191,12 +191,19 @@ public class ApplicationConfig {
      * 服务监控
      *
      * @param webEndpointsSupplier
+     *            网络端点服务提供者
      * @param servletEndpointsSupplier
+     *            服务器接口端点服务提供者
      * @param controllerEndpointsSupplier
+     *            控制器端点服务提供者
      * @param endpointMediaTypes
+     *            端点媒体类型
      * @param corsProperties
+     *            COR 配置
      * @param webEndpointProperties
+     *            网络端点配置
      * @param environment
+     *            环境变量
      * @return 服务监控
      */
     @Bean

@@ -19,6 +19,7 @@ import cn.hutool.json.JSONUtil;
  * @author 廿二月的天
  */
 public class RedisCacheManager extends org.springframework.data.redis.cache.RedisCacheManager {
+    public static final String TTL = "ttl";
     private final Pattern pattern = Pattern.compile("(?iUs)^(.*?)(?:\\$\\{(.*)})?$");
 
     public RedisCacheManager(RedisCacheWriter cacheWriter, RedisCacheConfiguration defaultCacheConfiguration) {
@@ -37,7 +38,7 @@ public class RedisCacheManager extends org.springframework.data.redis.cache.Redi
         if (jsonString != null) {
             JSONObject entries = JSONUtil.parseObj(jsonString);
             if (!entries.isEmpty()) {
-                if (!entries.isNull("ttl")) {
+                if (!entries.isNull(TTL)) {
                     long ttl = (long)Calculator.conversion(entries.get("ttl").toString());
                     cacheConfig = cacheConfig.entryTtl(Duration.ofSeconds(ttl));
                 }

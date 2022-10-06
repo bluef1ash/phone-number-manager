@@ -1,15 +1,9 @@
 package com.github.phonenumbermanager.config.sqlinjector;
 
-import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
-import org.apache.ibatis.executor.keygen.KeyGenerator;
-import org.apache.ibatis.executor.keygen.NoKeyGenerator;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlSource;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.sql.SqlScriptUtils;
 
@@ -26,25 +20,12 @@ public class InsertIgnore extends AbstractMethod {
 
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
-        KeyGenerator keyGenerator = NoKeyGenerator.INSTANCE;
         String columnScript = SqlScriptUtils.convertTrim(tableInfo.getAllInsertSqlColumnMaybeIf(null), LEFT_BRACKET,
             RIGHT_BRACKET, null, COMMA);
         String valuesScript = SqlScriptUtils.convertTrim(tableInfo.getAllInsertSqlPropertyMaybeIf(null), LEFT_BRACKET,
             RIGHT_BRACKET, null, COMMA);
-        String keyProperty = null;
-        String keyColumn = null;
         if (StringUtils.isNotBlank(tableInfo.getKeyProperty())) {
-            if (tableInfo.getIdType() == IdType.AUTO) {
-                keyGenerator = Jdbc3KeyGenerator.INSTANCE;
-                keyProperty = tableInfo.getKeyProperty();
-                keyColumn = tableInfo.getKeyColumn();
-            } else {
-                if (null != tableInfo.getKeySequence()) {
-                    keyGenerator = TableInfoHelper.genKeyGenerator(methodName, tableInfo, builderAssistant);
-                    keyProperty = tableInfo.getKeyProperty();
-                    keyColumn = tableInfo.getKeyColumn();
-                }
-            }
+            setKeysProperty(tableInfo);
         }
         String sql = String.format("<script>\nINSERT IGNORE INTO %s %s VALUES %s\n</script>", tableInfo.getTableName(),
             columnScript, valuesScript);

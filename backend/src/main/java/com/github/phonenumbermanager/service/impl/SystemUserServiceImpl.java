@@ -37,11 +37,9 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
-import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
 import com.github.phonenumbermanager.mapper.SystemUserCompanyMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.ConfigurationService;
-import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.util.RedisUtil;
@@ -66,9 +64,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     private final RedisUtil redisUtil;
     private final SystemUserCompanyMapper systemUserCompanyMapper;
     private final CompanyMapper companyMapper;
-    private final SystemPermissionMapper systemPermissionMapper;
     private final ConfigurationService configurationService;
-    private final SystemPermissionService systemPermissionService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {

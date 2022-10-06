@@ -6,8 +6,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.dao.DataAccessException;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.entity.Company;
 
 /**
@@ -47,15 +45,4 @@ public interface CompanyMapper extends BaseMapper<Company> {
      *             数据库操作异常
      */
     List<Company> selectCorrelation() throws DataAccessException;
-
-    /**
-     * 查询所有单位（分页）
-     *
-     * @param page
-     *            分页对象
-     * @return 全部查询单位信息的分页对象
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    IPage<Company> selectCorrelation(Page<Company> page) throws DataAccessException;
 }

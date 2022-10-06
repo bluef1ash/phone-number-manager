@@ -22,7 +22,7 @@ import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 
 /**
- * 此类中收集Java编程中WEB开发常用到的一些工具。 为避免生成此类的实例，构造方法被申明为private类型的。
+ * 公共工具类
  *
  * @author 廿二月的天
  */

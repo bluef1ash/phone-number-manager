@@ -80,4 +80,8 @@ public final class SystemConstant {
      * 系统权限缓存键值
      */
     public static final String SYSTEM_PERMISSIONS_KEY = "system_permission_all";
+    /**
+     * 验证码缓存键值
+     */
+    public static final String CAPTCHA_ID_KEY = "captcha_id";
 }

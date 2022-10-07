@@ -2,7 +2,6 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,7 +95,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         baseMapper.update(new SystemUser().setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp),
             new UpdateWrapper<SystemUser>().eq("id", systemUser.getId()));
         redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),
-            plusDays.toEpochSecond(ZoneOffset.of("+8")), TimeUnit.SECONDS);
+            7, TimeUnit.DAYS);
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         return authenticate;
     }

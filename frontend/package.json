@@ -75,7 +75,8 @@
     "react-dom": "^18.2.0",
     "react-helmet-async": "^1.3.0",
     "umi": "^3.5.32",
-    "umi-serve": "^1.9.11"
+    "umi-serve": "^1.9.11",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@ant-design/pro-cli": "^3.0.0",

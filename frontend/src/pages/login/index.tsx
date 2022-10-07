@@ -9,9 +9,10 @@ import { LoginForm, ProFormText } from '@ant-design/pro-form';
 import { COOKIE_TOKEN_KEY } from '@config/constant';
 import { Alert, Col, message as msg, Row } from 'antd';
 import Cookies from 'js-cookie';
-import { random } from 'lodash';
 import React, { useState } from 'react';
 import { history } from 'umi';
+//@ts-ignore
+import { v4 } from 'uuid';
 import styles from './index.less';
 
 const LoginMessage: React.FC<{
@@ -31,10 +32,13 @@ const Login: React.FC = () => {
     code: 200,
     message: '',
   });
-  const [captchaUrlState, setCaptchaUrlState] = useState<string>(account.captcha);
+  const [captchaUrlState, setCaptchaUrlState] = useState<string>(`${account.captcha}?code=${v4()}`);
   const { initialState, setInitialState } = useModel('@@initialState');
   const submit = async (values: API.LoginParams) => {
-    const { code, token, currentUser, message } = await login({ ...values });
+    const { code, token, currentUser, message } = await login({
+      ...values,
+      captchaId: captchaUrlState.substring(captchaUrlState.indexOf('?code=') + 6),
+    });
     if (code === 200) {
       msg.success('登录成功！');
       Cookies.set(COOKIE_TOKEN_KEY, token, { expires: 7 });
@@ -54,7 +58,7 @@ const Login: React.FC = () => {
       }
     } else {
       setUserLoginState({ code, message });
-      setCaptchaUrlState(`${account.captcha}?code=${random(10000, false)}`);
+      setCaptchaUrlState(`${account.captcha}?code=${v4()}`);
     }
   };
   const { code, message } = userLoginState;
@@ -124,7 +128,7 @@ const Login: React.FC = () => {
                 alt="点击更改图形验证码"
                 title="点击更改图形验证码"
                 onClick={() => {
-                  setCaptchaUrlState(`${account.captcha}?code=${random(10000, false)}`);
+                  setCaptchaUrlState(`${account.captcha}?code=${v4()}`);
                 }}
               />{' '}
             </Col>{' '}

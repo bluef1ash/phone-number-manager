@@ -11,5 +11,7 @@ declare namespace API {
     password: string;
     autoLogin?: boolean;
     type?: string;
+    captcha: string;
+    captchaId: string;
   };
 }

@@ -25,11 +25,10 @@
         <mybatis-plus-boot-starter.version>3.5.2</mybatis-plus-boot-starter.version>
         <swagger.version>3.0.0</swagger.version>
         <poi.version>5.2.2</poi.version>
-        <druid.version>1.2.12</druid.version>
+        <druid.version>1.2.13-SNSAPSHOT</druid.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <hutool.version>5.8.6</hutool.version>
-        <easy-captcha.version>1.6.2</easy-captcha.version>
+        <hutool.version>5.8.7</hutool.version>
     </properties>
     <repositories>
         <repository>
@@ -136,11 +135,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.whvcse</groupId>
-            <artifactId>easy-captcha</artifactId>
-            <version>${easy-captcha.version}</version>
         </dependency>
     </dependencies>
     <build>

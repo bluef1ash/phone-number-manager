@@ -23,7 +23,8 @@ import cn.hutool.json.JSONUtil;
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) {
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e)
+        throws IOException {
         R result =
             R.error(ExceptionCode.FORBIDDEN_EXCEPTION.getCode(), ExceptionCode.FORBIDDEN_EXCEPTION.getDescription())
                 .put("exception", e);
@@ -31,11 +32,8 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.setCharacterEncoding("utf-8");
         response.setContentType("application/json; charset=utf-8");
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        try (PrintWriter writer = response.getWriter()) {
-            writer.write(jsonStr);
-            writer.flush();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        PrintWriter writer = response.getWriter();
+        writer.write(jsonStr);
+        writer.flush();
     }
 }

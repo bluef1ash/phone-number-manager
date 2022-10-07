@@ -11,7 +11,6 @@ import com.github.phonenumbermanager.util.R;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 
 /**
@@ -29,16 +28,13 @@ public class IndexController extends BaseController {
     /**
      * 获取首页菜单栏内容
      *
-     * @param display
-     *            是否显示
      * @return 视图页面
      */
     @GetMapping("/menu")
     @ApiOperation("获取首页菜单栏内容")
-    public R getMenu(@ApiParam(name = "是否显示") Boolean display) {
+    public R getMenu() {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return R
-            .ok(systemPermissionService.listMenu(display, currentSystemUser.getCompanies(), currentSystemUser.getId()));
+        return R.ok(systemPermissionService.listMenu(currentSystemUser.getCompanies(), currentSystemUser.getId()));
     }
 }

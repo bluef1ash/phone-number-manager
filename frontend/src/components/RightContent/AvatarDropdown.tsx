@@ -48,7 +48,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
         const loginUri = account.login.substring(REACT_APP_API_BASE_URL.length);
         switch (key) {
           case 'logout':
-            await logout();
+            await logout(initialState.currentUser.id);
             Cookies.remove(COOKIE_TOKEN_KEY);
             const { query = {}, search, pathname } = history.location;
             const { redirect } = query;
@@ -120,9 +120,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
             UserFormSubmitPreHandler(formData),
           );
           if (code === 200) {
-            const {
-              data: currentUser,
-            } = await queryCurrentUser();
+            const { data: currentUser } = await queryCurrentUser();
             await setInitialState({ ...initialState, currentUser });
             msg.success(message === 'success' ? '修改成功！' : message);
             setModalVisibleState(false);

@@ -99,8 +99,6 @@
             pm_system_user.is_enabled,
             pm_system_user.account_expire_time,
             pm_system_user.credential_expire_time,
-            pm_system_user.create_time AS 'system_user_create_time',
-            pm_system_user.update_time AS 'system_user_update_time',
             pm_company.id AS 'company_id',
             pm_company.name AS 'company_name',
             pm_company.parent_id AS 'company_parent_id',
@@ -109,6 +107,7 @@
             pm_system_permission.function_name,
             pm_system_permission.http_methods,
             pm_system_permission.uri,
+            pm_system_permission.is_display,
             pm_system_permission.parent_id AS 'permission_parent_id'
         FROM pm_system_user
                  LEFT JOIN pm_system_user_company ON pm_system_user.id = pm_system_user_company.system_user_id

@@ -19,6 +19,8 @@ import type { ProFormInstance } from '@ant-design/pro-form';
 import { ProFormText } from '@ant-design/pro-form';
 import type { ActionType } from '@ant-design/pro-table';
 import { Alert, Spin } from 'antd';
+
+import BatchUpdateSubcontractorPopover from '@/components/BatchUpdateSubcontractorPopover';
 import React, { useEffect, useRef, useState } from 'react';
 
 const InputElement = (
@@ -105,6 +107,7 @@ const CommunityResident: React.FC = () => {
   );
   const [modifyCompanyIdState, setModifyCompanyIdState] = useState<string | null>(null);
   const [modifySubcontractorIdState, setModifySubcontractorIdState] = useState<string | null>(null);
+  const [batchSetSubcontractorIdState, setBatchSetSubcontractorIdState] = useState<number>(0);
 
   useEffect(() => {
     (async () => {
@@ -168,7 +171,7 @@ const CommunityResident: React.FC = () => {
               ellipsis: true,
             },
             {
-              title: (schema, type) => (type === 'table' ? '所属分包人' : '所属单位或分包人'),
+              title: (config, type) => (type === 'table' ? '所属分包人' : '所属单位或分包人'),
               dataIndex: ['subcontractor', 'name'],
               sorter: true,
               ellipsis: true,
@@ -213,11 +216,22 @@ const CommunityResident: React.FC = () => {
             },
           ]}
           batchRemoveEventHandler={async (data) =>
-            await batchCommunityResident({
+            await batchCommunityResident<number>({
               method: 'DELETE',
               data,
             })
           }
+          batchElement={(selectedRowKeys) => (
+            <BatchUpdateSubcontractorPopover
+              actionRef={actionRef}
+              batchSetSubcontractorIdState={batchSetSubcontractorIdState}
+              selectedRowKeys={selectedRowKeys}
+              setBatchSetSubcontractorIdState={setBatchSetSubcontractorIdState}
+              setSubcontractorSelectState={setSubcontractorSelectState}
+              subcontractorSelectState={subcontractorSelectState}
+              handler={async (data) => await batchCommunityResident<API.CommunityResident>(data)}
+            />
+          )}
           modalForm={{
             title: '社区居民',
             element: InputElement(

@@ -10,6 +10,8 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 /**
+ * JWT 验证实体端点
+ *
  * @author 廿二月的天
  */
 @Component

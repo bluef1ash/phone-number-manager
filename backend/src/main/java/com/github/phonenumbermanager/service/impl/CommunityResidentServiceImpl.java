@@ -25,6 +25,7 @@ import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.CommonUtil;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
@@ -227,18 +228,24 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      */
     private Map<String, Object> computedBaseMessage(Long[] companyIds, List<Company> companyAll) {
         Map<String, Object> baseMessage = new HashMap<>(2);
-        QueryWrapper<CommunityResident> wrapper = new QueryWrapper<>();
-        List<Long> companyIdList =
-            Arrays.stream(companyIds).map(companyId -> CommonUtil.listRecursionCompanies(companyAll, companyId))
-                .flatMap(List::stream).map(Company::getId).collect(Collectors.toList());
-        if (companyIdList.isEmpty()) {
-            companyIdList = Arrays.asList(companyIds);
+        long inputCount = 0;
+        long haveToCount = 0;
+        if (!ArrayUtil.isEmpty(companyIds)) {
+            QueryWrapper<CommunityResident> wrapper = new QueryWrapper<>();
+            List<Long> companyIdList =
+                Arrays.stream(companyIds).map(companyId -> CommonUtil.listRecursionCompanies(companyAll, companyId))
+                    .flatMap(List::stream).map(Company::getId).collect(Collectors.toList());
+            if (companyIdList.isEmpty()) {
+                companyIdList = Arrays.asList(companyIds);
+            }
+            wrapper.in("company_id", companyIdList);
+            wrapper.select("COUNT(id) AS 'inputCount'", "COUNT(DISTINCT subcontractor_id) AS 'haveToCount'");
+            List<Map<String, Object>> countMaps = baseMapper.selectMaps(wrapper);
+            inputCount = (long)countMaps.get(0).get("inputCount");
+            haveToCount = ((long)countMaps.get(0).get("haveToCount")) * 300;
         }
-        wrapper.in("company_id", companyIdList);
-        wrapper.select("COUNT(id) AS 'inputCount'", "COUNT(DISTINCT subcontractor_id) AS 'haveToCount'");
-        List<Map<String, Object>> countMaps = baseMapper.selectMaps(wrapper);
-        baseMessage.put("inputCount", countMaps.get(0).get("inputCount"));
-        baseMessage.put("haveToCount", ((long)countMaps.get(0).get("haveToCount")) * 300);
+        baseMessage.put("inputCount", inputCount);
+        baseMessage.put("haveToCount", haveToCount);
         baseMessage.put("loading", false);
         return baseMessage;
     }

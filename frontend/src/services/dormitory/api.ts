@@ -70,8 +70,8 @@ export async function removeDormitoryManager(id: number, options?: Record<string
 }
 
 /** 批量操作社区楼长 */
-export async function batchDormitoryManager(
-  data: API.BatchRUD<number[]>,
+export async function batchDormitoryManager<T>(
+  data: API.BatchRUD<T[]>,
   options?: Record<string, any>,
 ) {
   return request.post<API.ResponseSuccess & API.ResponseException>(dormitoryManagerBatch, {

@@ -1,13 +1,12 @@
 package com.github.phonenumbermanager.mapper;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.dao.DataAccessException;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -67,19 +66,6 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
     List<T> selectListByCompanyIds(List<Long> companyIds) throws DataAccessException;
 
     /**
-     * 通过单位查询 （包含分页）
-     *
-     * @param companyIds
-     *            单位上级编号
-     * @param page
-     *            分页对象
-     * @return 社区楼长集合
-     * @throws DataAccessException
-     *             数据库操作异常
-     */
-    IPage<T> selectListByCompanyIds(List<Long> companyIds, Page<T> page) throws DataAccessException;
-
-    /**
      * 通过编号查询对象与所属社区
      *
      * @param id
@@ -99,8 +85,8 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      * @throws DataAccessException
      *             数据库操作异常
      */
-    @MapKey("company_id")
-    Map<BigInteger, Map<String, Long>> selectCountForGroupCompany(List<Long> companyIds) throws DataAccessException;
+    @SuppressWarnings("MybatisXMapperMethodInspection")
+    List<Map<String, Object>> selectCountForGroupCompany(List<Long> companyIds) throws DataAccessException;
 
     /**
      * 查询所有对象（分页）
@@ -134,5 +120,18 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *             数据库操作异常
      */
     long selectCorrelationCountByCompanies(List<Company> companies, JSONObject search, JSONObject sort)
+        throws DataAccessException;
+
+    /**
+     * 单位统计子单位数量
+     *
+     * @param companyIdMap
+     *            单位编号集合 Map
+     * @return 社区数量对象
+     * @throws DataAccessException
+     *             数据库操作异常
+     */
+    @SuppressWarnings("MybatisXMapperMethodInspection")
+    List<Map<String, Object>> selectCountForSubQueryCompany(@Param("companyIdMap") Map<Long, List<Long>> companyIdMap)
         throws DataAccessException;
 }

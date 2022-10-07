@@ -1,5 +1,5 @@
-INSERT INTO `pm_configuration` (`id`, `title`, `description`, `name`, `content`, `field_type`, `create_time`,
-                                `update_time`)
+INSERT INTO pm_configuration (id, title, description, name, content, field_type, create_time,
+                              update_time)
 VALUES (1, '系统管理员用户编号', '', 'system_administrator_id', '1', 3, '1000-01-01 00:00:00',
         '1000-01-01 00:00:00'),
     (2, '电话库Excel表标题上文字', '', 'excel_resident_title_up', '附件2', 2, '1000-01-01 00:00:00',

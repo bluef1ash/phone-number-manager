@@ -43,7 +43,10 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Cacheable(cacheNames = SystemConstant.SYSTEM_PERMISSIONS_KEY + "${{'ttl': -1}}")
     @Override
     public List<SystemPermission> listAll() {
-        return baseMapper.selectList(null);
+        return baseMapper.selectList(new LambdaQueryWrapper<SystemPermission>().select(SystemPermission::getId,
+            SystemPermission::getMenuType, SystemPermission::getFunctionName, SystemPermission::getHttpMethods,
+            SystemPermission::getIsDisplay, SystemPermission::getMenuType, SystemPermission::getName,
+            SystemPermission::getParentId, SystemPermission::getUri));
     }
 
     @Override
@@ -54,30 +57,41 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Cacheable(cacheNames = SystemConstant.SYSTEM_MENU_KEY + "${{'ttl': 60 * 60 * 24 * 7}}",
         key = "#currentSystemUserId")
     @Override
-    public Map<String, Object> listMenu(Boolean display, List<Company> companies, Long currentSystemUserId) {
+    public Map<String, Object> listMenu(List<Company> companies, Long currentSystemUserId) {
         Map<String, Object> menuMap = new HashMap<>(2);
-        List<Long> companyIds = null;
-        if (companies != null) {
-            companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
-        }
+        List<MenuVo> menuVos = new ArrayList<>();
+        Set<String> components = new HashSet<>();
         List<SystemPermission> systemPermissionAll = listAll();
-        List<Company> companyAll = companyMapper.selectList(null);
-        List<SystemPermission> systemPermissions =
-            getPrevSystemPermissions(baseMapper, display, companyIds, companyAll);
-        Map<String, String> fieldMappings = new HashMap<>(4);
+        Map<String, String> fieldMappings = new HashMap<>(2);
         fieldMappings.put("uri", "path");
         fieldMappings.put("functionName", "component");
         CopyOptions copyOptions = CopyOptions.create();
         copyOptions.setFieldMapping(fieldMappings);
-        List<MenuVo> menuVos = new ArrayList<>();
-        Set<String> components = new HashSet<>();
-        for (SystemPermission systemPermission : systemPermissions) {
+        List<SystemPermission> baseSystemPermissions;
+        if (companies == null) {
+            // 超级管理员
+            baseSystemPermissions = systemPermissionAll.stream()
+                .filter(systemPermission -> systemPermission.getParentId() == 0L).collect(Collectors.toList());
+        } else if (companies.isEmpty()) {
+            menuMap.put("menuData", menuVos);
+            menuMap.put("components", components);
+            return menuMap;
+        } else {
+            // 需要权限验证的用户
+            baseSystemPermissions = companies.stream().map(Company::getSystemPermissions).flatMap(Collection::stream)
+                .distinct().collect(Collectors.toList());
+            if (baseSystemPermissions.isEmpty()) {
+                baseSystemPermissions =
+                    getPrevSystemPermissions(companies.stream().map(Company::getId).collect(Collectors.toList()));
+            }
+        }
+        menuVos = baseSystemPermissions.stream().map(systemPermission -> {
             MenuVo menuVo = new MenuVo();
             BeanUtil.copyProperties(systemPermission, menuVo, copyOptions);
             menuVo.setKey(systemPermission.getId().toString()).setHideInMenu(!systemPermission.getIsDisplay());
-            menuVos.add(menuVo);
             components.add(menuVo.getComponent());
-        }
+            return menuVo;
+        }).collect(Collectors.toList());
         treeMenus(menuVos, components, systemPermissionAll, copyOptions);
         menuMap.put("menuData", menuVos);
         menuMap.put("components", components);
@@ -204,5 +218,36 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
                 treeSystemPermissions(permission, selectList, systemPermissions, parentIds);
             }
         });
+    }
+
+    /**
+     * 获取上级单位存在权限
+     *
+     * @param companyIds
+     *            单位编号集合
+     * @return 系统权限集合
+     */
+    private List<SystemPermission> getPrevSystemPermissions(List<Long> companyIds) {
+        List<SystemPermission> systemPermissions = null;
+        List<SystemPermission> systemPermissionList = baseMapper.selectListByIsDisplay(true);
+        List<Company> companyAll = companyMapper.selectList(null);
+        do {
+            if (companyIds == null || companyIds.isEmpty()) {
+                break;
+            }
+            systemPermissions = companyIds.stream()
+                .map(id -> systemPermissionList.stream()
+                    .filter(systemPermission -> systemPermission.getCompanies().stream()
+                        .anyMatch(company -> id.equals(company.getId())))
+                    .collect(Collectors.toList()))
+                .flatMap(Collection::stream).collect(Collectors.toList());
+            companyIds = companyIds.stream()
+                .map(companyId -> companyAll.stream().filter(company -> companyId.equals(company.getId())).findFirst()
+                    .orElse(null))
+                .filter(Objects::nonNull).map(Company::getParentId)
+                .map(parentId -> companyAll.stream().filter(c -> parentId.equals(c.getId())).findFirst().orElse(null))
+                .filter(Objects::nonNull).map(Company::getId).collect(Collectors.toList());
+        } while (systemPermissions.isEmpty());
+        return systemPermissions;
     }
 }

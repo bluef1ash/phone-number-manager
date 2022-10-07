@@ -30,7 +30,7 @@
         <collection property="companies"
                     resultMap="com.github.phonenumbermanager.mapper.CompanyMapper.aliasResultMap"/>
     </resultMap>
-    <select id="selectListByCompanyIds" resultMap="correlationResultMap">
+    <select id="selectListByIsDisplay" resultMap="correlationResultMap">
         SELECT pm_system_permission.id AS 'permission_id',
         pm_system_permission.name AS 'permission_name',
         pm_system_permission.function_name,
@@ -41,27 +41,15 @@
         pm_system_permission.menu_type,
         pm_system_permission.is_display,
         pm_system_permission.create_time AS 'permission_create_time',
-        pm_system_permission.update_time AS 'permission_update_time'
+        pm_system_permission.update_time AS 'permission_update_time',
+        pm_company_permission.company_id
         FROM pm_system_permission
-        <if test="companyIds != null">
-            LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
-        </if>
+        LEFT JOIN pm_company_permission ON pm_system_permission.id = pm_company_permission.permission_id
         <where>
             pm_system_permission.menu_type IN (0, 1)
             <if test="isDisplay != null">
                 AND pm_system_permission.is_display = #{isDisplay}
             </if>
-            <choose>
-                <when test="companyIds == null">
-                    AND pm_system_permission.parent_id = 0
-                </when>
-                <otherwise>
-                    <foreach collection="companyIds" item="companyId" open="AND pm_company_permission.company_id IN ("
-                             separator="," close=")">
-                        #{companyId}
-                    </foreach>
-                </otherwise>
-            </choose>
         </where>
     </select>
     <select id="selectByCompanyId" resultMap="correlationResultMap">

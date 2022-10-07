@@ -2,6 +2,8 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +31,7 @@ import lombok.AllArgsConstructor;
 @Service
 public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMapper, Subcontractor>
     implements SubcontractorService {
+    public static final String SUBCONTRACTOR_NAME = "subcontractor_name";
     private final PhoneNumberMapper phoneNumberMapper;
     private final SubcontractorPhoneNumberMapper subcontractorPhoneNumberMapper;
     private final CommunityResidentMapper communityResidentMapper;
@@ -126,37 +129,41 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
         String personCountAlias) {
-        List<Company> companyList = new ArrayList<>();
-        List<Long> subordinateCompanyIds = new ArrayList<>();
-        companiesAndSubordinate(companies, companyIds, companyAll, companyList, subordinateCompanyIds);
-        Map<String, Object> barChartMap;
-        if (subordinateCompanyIds.isEmpty()) {
-            Long[] companyIdArray = companyIds;
-            if (companyIds == null) {
-                companyIdArray = companies.stream().map(Company::getId).toArray(Long[]::new);
-            }
-            List<Map<String, Object>> systemUserCounts = baseMapper.selectCorrelationCountByCompanyIds(companyIdArray);
-            List<Map<String, Object>> data = new ArrayList<>();
-            for (Map<String, Object> systemUserCount : systemUserCounts) {
+        List<Map<String, Object>> groups = groupsCountData(companies, companyIds, companyAll, true);
+        AtomicReference<String> xFieldString = new AtomicReference<>("subcontractorName");
+        AtomicReference<String> xFieldStringAlias = new AtomicReference<>("分包人");
+        AtomicBoolean isSeries = new AtomicBoolean(false);
+        List<Map<String, Object>> data = groups.stream().map(group -> {
+            List<Map<String, Object>> maps = new ArrayList<>();
+            if (group.containsKey(SUBCONTRACTOR_NAME)) {
+                xFieldString.set("subcontractorName");
+                xFieldStringAlias.set("分包人");
+                isSeries.set(true);
                 Map<String, Object> communityResidentMap = new HashMap<>(3);
                 communityResidentMap.put("countType", "分包社区居民数");
-                communityResidentMap.put("subcontractorName", systemUserCount.get("subcontractor_name"));
-                communityResidentMap.put("personCount", systemUserCount.get("community_resident_count"));
+                communityResidentMap.put("subcontractorName", group.get("subcontractor_name"));
+                communityResidentMap.put("personCount", group.get("community_resident_count"));
                 Map<String, Object> dormitoryManagerMap = new HashMap<>(3);
                 dormitoryManagerMap.put("countType", "分包社区居民楼片长数");
-                dormitoryManagerMap.put("subcontractorName", systemUserCount.get("subcontractor_name"));
-                dormitoryManagerMap.put("personCount", systemUserCount.get("dormitory_manager_count"));
-                data.add(communityResidentMap);
-                data.add(dormitoryManagerMap);
+                dormitoryManagerMap.put("subcontractorName", group.get("subcontractor_name"));
+                dormitoryManagerMap.put("personCount", group.get("dormitory_manager_count"));
+                maps.add(communityResidentMap);
+                maps.add(dormitoryManagerMap);
+            } else {
+                xFieldString.set("companyName");
+                xFieldStringAlias.set("单位");
+                isSeries.set(false);
+                maps.add(personCountDataHandler(companyAll, group));
             }
-            barChartMap = getBarChartMap("subcontractorName", "分包人", "personCount", "人数");
+            return maps;
+        }).flatMap(Collection::stream).collect(Collectors.toList());
+        Map<String, Object> barChartMap =
+            getBarChartMap(xFieldString.get(), xFieldStringAlias.get(), "personCount", "人数");
+        if (isSeries.get()) {
             barChartMap.put("seriesField", "countType");
             barChartMap.put("isGroup", true);
-            barChartMap.put("data", data);
-        } else {
-            // 选择非最下层单位时，列出分包人数
-            barChartMap = barChartHandle(companyAll, "人数", companyList, subordinateCompanyIds);
         }
+        barChartMap.put("data", data);
         return barChartMap;
     }
 

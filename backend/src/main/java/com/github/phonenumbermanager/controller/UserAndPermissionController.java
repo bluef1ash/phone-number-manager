@@ -1,10 +1,12 @@
 package com.github.phonenumbermanager.controller;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.security.auth.login.LoginException;
@@ -29,7 +31,6 @@ import com.github.phonenumbermanager.exception.JsonException;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
-import com.github.phonenumbermanager.util.GeetestLibUtil;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
@@ -39,8 +40,11 @@ import com.github.phonenumbermanager.vo.CompanyVo;
 import com.github.phonenumbermanager.vo.SystemUserLoginVo;
 import com.github.phonenumbermanager.vo.SystemUserVo;
 
+import cn.hutool.captcha.CaptchaUtil;
+import cn.hutool.captcha.LineCaptcha;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWTUtil;
@@ -79,12 +83,19 @@ public class UserAndPermissionController extends BaseController {
     public R login(HttpServletRequest request,
         @ApiParam(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVo systemUserLoginVo)
         throws LoginException {
+        String captchaCodeCacheKey = SystemConstant.CAPTCHA_ID_KEY + "::" + systemUserLoginVo.getCaptchaId();
+        String captchaCode = (String)redisUtil.get(captchaCodeCacheKey);
+        if (captchaCode == null || !captchaCode.equals(systemUserLoginVo.getCaptcha())) {
+            redisUtil.delete(captchaCodeCacheKey);
+            throw new LoginException("登录图形验证码输入错误！");
+        }
         Authentication authentication = systemUserService.authentication(systemUserLoginVo.getUsername(),
             systemUserLoginVo.getPassword(), ServletUtil.getClientIP(request));
         SystemUser principal = (SystemUser)authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>(2);
         claims.put(SystemConstant.SYSTEM_USER_ID_KEY, principal.getId());
         claims.put(SystemConstant.CLAIM_KEY_CREATED, LocalDateTime.now());
+        redisUtil.delete(captchaCodeCacheKey);
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
@@ -95,22 +106,20 @@ public class UserAndPermissionController extends BaseController {
     /**
      * 生成图案验证码数据
      *
-     * @param request
-     *            HTTP请求对象
-     * @param browserType
-     *            浏览器类型
-     * @return 验证图案数据
+     * @param response
+     *            HTTP响应对象
+     * @param code
+     *            随机 UUID
+     * @throws IOException
+     *             IO异常
      */
-    @GetMapping("/account/recaptcha")
+    @GetMapping("/account/captcha")
     @ApiOperation("生成图案验证码数据")
-    public String captcha(HttpServletRequest request, @ApiParam(name = "浏览器类型") String browserType) {
-        GeetestLibUtil gtSdk = new GeetestLibUtil(SystemConstant.GEETEST_ID, SystemConstant.GEETEST_KEY, false);
-        Map<String, String> param = new HashMap<>(3);
-        param.put("client_type", browserType);
-        param.put("ip_address", ServletUtil.getClientIP(request));
-        int gtServerStatus = gtSdk.preProcess(param);
-        request.getSession().setAttribute(gtSdk.gtServerStatusSessionKey, gtServerStatus);
-        return gtSdk.getResponseStr();
+    public void captcha(HttpServletResponse response, @ApiParam(name = "随机 UUID", required = true) String code)
+        throws IOException {
+        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(100, 40, 4, RandomUtil.randomInt(20, 30));
+        redisUtil.setEx(SystemConstant.CAPTCHA_ID_KEY + "::" + code, captcha.getCode(), 5, TimeUnit.MINUTES);
+        captcha.write(response.getOutputStream());
     }
 
     /**
@@ -119,13 +128,12 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功
      */
     @SuppressWarnings("all")
-    @CacheEvict(cacheNames = SystemConstant.SYSTEM_USER_ID_KEY, key = "#id")
+    @CacheEvict(cacheNames = {SystemConstant.SYSTEM_USER_ID_KEY, SystemConstant.SYSTEM_MENU_KEY}, key = "#id")
     @PostMapping("/account/logout")
     @ApiOperation("退出登录")
     public R logout(@ApiParam("系统用户编号") Long id) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        id = currentSystemUser.getId();
         SecurityContextHolder.clearContext();
         return R.ok();
     }
@@ -137,7 +145,7 @@ public class UserAndPermissionController extends BaseController {
      */
     @GetMapping("/system/user/current")
     @ApiOperation("获取当前登录用户信息")
-    public R currentSystemUser() {
+    public R getCurrentSystemUser() {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", getSystemUserVo(currentSystemUser));

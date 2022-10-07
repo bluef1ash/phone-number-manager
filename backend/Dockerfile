@@ -11,6 +11,7 @@ EXPOSE 80
 COPY --from=backend-builder /app/target/phone-number-manager-0.0.1.jar .
 ENV TZ=Asia/Shanghai
 ENV SERVER_PORT=80
+ENV CONTEXT_PATH=/
 RUN echo "http://mirrors.aliyun.com/alpine/edge/main/" > /etc/apk/repositories \
     && echo "http://mirrors.aliyun.com/alpine/edge/community/" >> /etc/apk/repositories \
     && apk update && apk add --update --no-cache openjdk11-jre && rm -f /var/cache/apk/* && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \

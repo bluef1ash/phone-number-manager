@@ -1,7 +1,6 @@
 package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -117,8 +116,8 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
                 companies =
                     companyAll.stream().filter(company -> company.getParentId() == 0L).collect(Collectors.toList());
             }
-            List<Company> companyList =
-                companies.stream().map(company -> treeRecursive(company, companyAll)).collect(Collectors.toList());
+            List<Company> companyList = companies.stream()
+                .map(company -> CommonUtil.treeRecursiveCompany(company, companyAll)).collect(Collectors.toList());
             companyPage.setRecords(companyList).setTotal(companyList.size());
         }
         return companyPage;
@@ -179,27 +178,6 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
                     .setLabel(company.getName()).setTitle(company.getName()).setIsSubordinate(isLeaf).setIsLeaf(isLeaf)
                     .setIsGrandsonLevel(isCompanyGrandsonLevel);
             }).collect(Collectors.toList());
-    }
-
-    /**
-     * 树形递归
-     *
-     * @param company
-     *            根节点
-     * @param companies
-     *            需要整理的单位集合
-     * @return 树形完成
-     */
-    private Company treeRecursive(Company company, List<Company> companies) {
-        for (Company c : companies) {
-            if (company.getId().equals(c.getParentId())) {
-                if (company.getChildren() == null) {
-                    company.setChildren(new ArrayList<>());
-                }
-                company.getChildren().add(treeRecursive(c, companies));
-            }
-        }
-        return company;
     }
 
     /**

@@ -209,6 +209,12 @@ public class CommunityResidentController extends BaseController {
             if (communityResidentService.removeByIds(ids)) {
                 return R.ok();
             }
+        } else if (batchRestfulVo.getMethod() == BatchRestfulMethod.MODIFY) {
+            List<CommunityResident> communityResidents =
+                JSONUtil.toList(batchRestfulVo.getData(), CommunityResident.class);
+            if (communityResidentService.updateBatchById(communityResidents)) {
+                return R.ok();
+            }
         }
         throw new JsonException("批量操作失败！");
     }

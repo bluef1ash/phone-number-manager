@@ -2,8 +2,10 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -28,14 +30,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.*;
+import com.github.phonenumbermanager.entity.Company;
+import com.github.phonenumbermanager.entity.Configuration;
+import com.github.phonenumbermanager.entity.SystemUser;
+import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
 import com.github.phonenumbermanager.mapper.CompanyMapper;
-import com.github.phonenumbermanager.mapper.SystemPermissionMapper;
 import com.github.phonenumbermanager.mapper.SystemUserCompanyMapper;
 import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.ConfigurationService;
-import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.CommonUtil;
 import com.github.phonenumbermanager.util.RedisUtil;
@@ -60,9 +63,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
     private final RedisUtil redisUtil;
     private final SystemUserCompanyMapper systemUserCompanyMapper;
     private final CompanyMapper companyMapper;
-    private final SystemPermissionMapper systemPermissionMapper;
     private final ConfigurationService configurationService;
-    private final SystemPermissionService systemPermissionService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, SystemClosedException {
@@ -70,36 +71,14 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (systemUser == null) {
             throw new BadCredentialsException("找不到该系统用户！");
         }
-        if (systemUser.getCompanies().isEmpty()) {
-            systemUser.setCompanies(null);
-        }
-        if (systemUser.getCompanies() != null) {
-            List<SystemPermission> systemPermissionAll = systemPermissionService.listAll();
-            List<Long> companyParentIds = companyMapper.selectList(null).stream().map(Company::getParentId).distinct()
-                .collect(Collectors.toList());
-            for (Company company : systemUser.getCompanies()) {
-                List<SystemPermission> tempSystemPermissions = company.getSystemPermissions();
-                if (company.getSystemPermissions() == null || company.getSystemPermissions().isEmpty()) {
-                    List<Company> companyAll = companyMapper.selectList(null);
-                    tempSystemPermissions = getPrevSystemPermissions(systemPermissionMapper, null,
-                        Collections.singletonList(company.getId()), companyAll);
-                }
-                List<
-                    SystemPermission> systemPermissions =
-                        tempSystemPermissions.stream()
-                            .map(systemPermission -> CommonUtil.listRecursionSystemPermissions(systemPermissionAll,
-                                systemPermission.getId()))
-                            .flatMap(List::stream).distinct().collect(Collectors.toList());
-                systemPermissions.addAll(company.getSystemPermissions());
-                company.setSystemPermissions(systemPermissions);
-                company.setIsLeaf(!companyParentIds.contains(company.getId()));
-            }
-        }
         Map<String, Configuration> configurationMap = configurationService.mapAll();
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
         boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").getContent());
         if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
             throw new BadCredentialsException("该系统已经禁止登录，请联系管理员！");
+        }
+        if (systemAdministratorId.equals(systemUser.getId())) {
+            systemUser.setCompanies(null);
         }
         systemUser.setCredentialExpireTime(LocalDateTime.now().plusDays(7));
         return systemUser;
@@ -116,7 +95,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         baseMapper.update(new SystemUser().setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp),
             new UpdateWrapper<SystemUser>().eq("id", systemUser.getId()));
         redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),
-            plusDays.toEpochSecond(ZoneOffset.of("+8")), TimeUnit.SECONDS);
+            7, TimeUnit.DAYS);
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         return authenticate;
     }

@@ -22,7 +22,7 @@ import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 
 /**
- * 此类中收集Java编程中WEB开发常用到的一些工具。 为避免生成此类的实例，构造方法被申明为private类型的。
+ * 公共工具类
  *
  * @author 廿二月的天
  */
@@ -219,6 +219,27 @@ public class CommonUtil {
             }
         }
         return companies;
+    }
+
+    /**
+     * 树形递归
+     *
+     * @param company
+     *            根节点
+     * @param companyAll
+     *            所有单位集合
+     * @return 树形完成
+     */
+    public static Company treeRecursiveCompany(Company company, List<Company> companyAll) {
+        for (Company c : companyAll) {
+            if (company.getId().equals(c.getParentId())) {
+                if (company.getChildren() == null) {
+                    company.setChildren(new ArrayList<>());
+                }
+                company.getChildren().add(treeRecursiveCompany(c, companyAll));
+            }
+        }
+        return company;
     }
 
     /**

@@ -86,17 +86,7 @@
                  LEFT JOIN pm_phone_number ON pm_subcontractor_phone_number.phone_number_id = pm_phone_number.id
         WHERE pm_subcontractor.id = #{id}
     </select>
-    <select id="selectCountForGroupCompany" resultType="java.util.Map">
-        SELECT company_id, COUNT(id) AS 'person_count'
-        FROM pm_subcontractor
-        <where>
-            <foreach collection="companyIds" item="companyId" open="company_id IN (" separator="," close=")">
-                #{companyId}
-            </foreach>
-        </where>
-        GROUP BY company_id
-    </select>
-    <select id="selectCorrelationCountByCompanyIds" resultType="java.util.Map">
+    <select id="selectCountForGroupCompany" resultType="map">
         SELECT
         pm_subcontractor.name AS 'subcontractor_name',
         COUNT(DISTINCT pm_community_resident.id) AS 'community_resident_count',
@@ -111,6 +101,25 @@
             </foreach>
         </where>
         GROUP BY pm_subcontractor.name
+    </select>
+    <select id="selectCountForSubQueryCompany" resultType="map">
+        SELECT
+        id AS 'company_id',
+        (
+        SELECT COUNT(id)
+        FROM pm_subcontractor
+        <where>
+            <foreach collection="companyIdMap" item="companyIds" open="company_id IN (" separator="," close=")">
+                ${@cn.hutool.core.util.ArrayUtil@join(companyIds, ",")}
+            </foreach>
+        </where>
+        ) AS 'person_count'
+        from pm_company
+        <where>
+            <foreach collection="companyIdMap" index="id" item="companyIds" open="id IN (" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
     </select>
     <select id="selectListByCompanyIds" resultMap="collectionResultMap">
         SELECT pm_subcontractor.id AS 'subcontractor_id',

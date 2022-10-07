@@ -25,10 +25,10 @@
         <mybatis-plus-boot-starter.version>3.5.2</mybatis-plus-boot-starter.version>
         <swagger.version>3.0.0</swagger.version>
         <poi.version>5.2.2</poi.version>
-        <druid.version>1.2.11</druid.version>
+        <druid.version>1.2.13-SNSAPSHOT</druid.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <hutool.version>5.8.5</hutool.version>
+        <hutool.version>5.8.7</hutool.version>
     </properties>
     <repositories>
         <repository>

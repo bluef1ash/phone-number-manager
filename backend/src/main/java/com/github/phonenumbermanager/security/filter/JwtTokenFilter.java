@@ -33,7 +33,7 @@ import cn.hutool.jwt.JWTUtil;
 import lombok.AllArgsConstructor;
 
 /**
- * JWTToken拦截器
+ * JWTToken 拦截器
  *
  * @author 廿二月的天
  */

@@ -140,14 +140,33 @@
         ORDER BY pm_dormitory_manager.company_id, CONVERT(pm_dormitory_manager.name USING GBK)
     </select>
     <select id="selectCountForGroupCompany" resultType="map">
-        SELECT pm_company.id AS 'company_id', COUNT(pm_dormitory_manager.id) AS 'person_count'
+        SELECT company_id, COUNT(id) AS 'person_count'
         FROM pm_dormitory_manager
-        LEFT JOIN pm_company ON pm_dormitory_manager.company_id = pm_company.id
         <where>
-            pm_dormitory_manager.company_id IN
-            <foreach collection="companyIds" item="companyId" open="(" separator="," close=")">#{companyId}</foreach>
+            <foreach collection="companyIds" item="companyId" open="company_id IN (" separator="," close=")">
+                #{companyId}
+            </foreach>
         </where>
-        GROUP BY pm_company.id
+        GROUP BY company_id
+    </select>
+    <select id="selectCountForSubQueryCompany" resultType="map">
+        SELECT
+        id AS 'company_id',
+        (
+        SELECT COUNT(id)
+        FROM pm_dormitory_manager
+        <where>
+            <foreach collection="companyIdMap" item="companyIds" open="company_id IN (" separator="," close=")">
+                ${@cn.hutool.core.util.ArrayUtil@join(companyIds, ",")}
+            </foreach>
+        </where>
+        ) AS 'person_count'
+        from pm_company
+        <where>
+            <foreach collection="companyIdMap" index="id" item="companyIds" open="id IN (" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
     </select>
     <sql id="selectCorrelationSearch">
         <where>

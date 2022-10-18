@@ -91,15 +91,17 @@ public class UserAndPermissionController extends BaseController {
         }
         Authentication authentication = systemUserService.authentication(systemUserLoginVo.getUsername(),
             systemUserLoginVo.getPassword(), ServletUtil.getClientIP(request));
-        SystemUser principal = (SystemUser)authentication.getPrincipal();
+        SystemUser systemUser = (SystemUser)authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>(2);
-        claims.put(SystemConstant.SYSTEM_USER_ID_KEY, principal.getId());
+        claims.put(SystemConstant.SYSTEM_USER_ID_KEY, systemUser.getId());
         claims.put(SystemConstant.CLAIM_KEY_CREATED, LocalDateTime.now());
-        redisUtil.delete(captchaCodeCacheKey);
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
-        jsonMap.put("currentUser", getSystemUserVo(principal));
+        jsonMap.put("currentUser", getSystemUserVo(systemUser));
+        redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),
+            7, TimeUnit.DAYS);
+        redisUtil.delete(captchaCodeCacheKey);
         return R.ok(jsonMap);
     }
 

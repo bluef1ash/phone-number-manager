@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,13 +39,11 @@ import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.RedisUtil;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 
 /**
@@ -59,7 +56,6 @@ import lombok.AllArgsConstructor;
 @Service
 public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, SystemUser> implements SystemUserService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final RedisUtil redisUtil;
     private final SystemUserCompanyMapper systemUserCompanyMapper;
     private final CompanyMapper companyMapper;
     private final ConfigurationService configurationService;
@@ -83,6 +79,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         return systemUser;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Authentication authentication(String username, String password, String clientIp) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
@@ -93,8 +90,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         systemUser.setPassword(null).setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp);
         baseMapper.update(new SystemUser().setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp),
             new UpdateWrapper<SystemUser>().eq("id", systemUser.getId()));
-        redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),
-            7, TimeUnit.DAYS);
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         return authenticate;
     }

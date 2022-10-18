@@ -4,6 +4,8 @@ import java.util.Map;
 
 import com.github.phonenumbermanager.entity.Configuration;
 
+import cn.hutool.json.JSONObject;
+
 /**
  * 系统配置Service层
  *
@@ -15,5 +17,5 @@ public interface ConfigurationService extends BaseService<Configuration> {
      *
      * @return 所有系统配置Map
      */
-    Map<String, Configuration> mapAll();
+    Map<String, JSONObject> mapAll();
 }

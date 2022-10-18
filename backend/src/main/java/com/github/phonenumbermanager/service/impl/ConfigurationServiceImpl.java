@@ -2,7 +2,6 @@ package com.github.phonenumbermanager.service.impl;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -14,6 +13,9 @@ import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.mapper.ConfigurationMapper;
 import com.github.phonenumbermanager.service.ConfigurationService;
+
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 
 /**
  * 系统配置业务实现
@@ -44,11 +46,11 @@ public class ConfigurationServiceImpl extends BaseServiceImpl<ConfigurationMappe
 
     @Cacheable(cacheNames = SystemConstant.CONFIGURATIONS_MAP_KEY + "${{ttl: -1}}")
     @Override
-    public Map<String, Configuration> mapAll() {
+    public Map<String, JSONObject> mapAll() {
         LambdaQueryWrapper<Configuration> wrapper = new LambdaQueryWrapper<>();
         wrapper.select(Configuration::getContent, Configuration::getDescription, Configuration::getFieldType,
             Configuration::getFieldValue, Configuration::getId, Configuration::getName, Configuration::getTitle);
         return baseMapper.selectList(wrapper).stream()
-            .collect(Collectors.toMap(Configuration::getName, Function.identity()));
+            .collect(Collectors.toMap(Configuration::getName, JSONUtil::parseObj));
     }
 }

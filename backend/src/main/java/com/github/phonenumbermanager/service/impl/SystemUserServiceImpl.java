@@ -31,7 +31,6 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
@@ -71,9 +70,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (systemUser == null) {
             throw new BadCredentialsException("找不到该系统用户！");
         }
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
-        boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").getContent());
+        Map<String, JSONObject> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
+        boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").get("content"));
         if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
             throw new BadCredentialsException("该系统已经禁止登录，请联系管理员！");
         }
@@ -126,9 +125,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (!SystemConstant.ANONYMOUS_USER.equals(authentication.getPrincipal())) {
             String uri = request.getRequestURI();
             SystemUser systemUser = (SystemUser)authentication.getPrincipal();
-            Map<String, Configuration> configurationMap = configurationService.mapAll();
+            Map<String, JSONObject> configurationMap = configurationService.mapAll();
             if (ArrayUtil.contains(SystemConstant.PERMISSION_WHITELIST, uri) || systemUser.getId()
-                .equals(Long.valueOf(configurationMap.get("system_administrator_id").getContent()))) {
+                .equals(Long.valueOf((String)configurationMap.get("system_administrator_id").get("content")))) {
                 return true;
             }
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());

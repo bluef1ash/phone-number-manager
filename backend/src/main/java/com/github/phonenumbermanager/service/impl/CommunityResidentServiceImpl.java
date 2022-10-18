@@ -114,7 +114,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Map<String, Configuration> configurationMap) {
+    public boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap) {
         getUploadExcelVariable(configurationMap);
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = new ArrayList<>();
@@ -134,9 +134,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
 
     @Override
     public ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser,
-        Map<String, Configuration> configurationMap) {
-        String excelResidentTitleUp = Convert.toStr(configurationMap.get("excel_resident_title_up").getContent());
-        String excelResidentTitle = Convert.toStr(configurationMap.get("excel_resident_title").getContent());
+        Map<String, JSONObject> configurationMap) {
+        String excelResidentTitleUp = Convert.toStr(configurationMap.get("excel_resident_title_up").get("content"));
+        String excelResidentTitle = Convert.toStr(configurationMap.get("excel_resident_title").get("content"));
         List<Company> companyAll = companyMapper.selectList(null);
         List<Long> subordinateCompanyIds =
             exportExcelGetSubordinateCompanyIds(currentSystemUser, configurationMap, companyAll);
@@ -256,18 +256,18 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      * @param configurationMap
      *            配置项
      */
-    private void getUploadExcelVariable(Map<String, Configuration> configurationMap) {
+    private void getUploadExcelVariable(Map<String, JSONObject> configurationMap) {
         excelCommunityCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_community_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_community_name_cell_number").get("content"));
         excelCommunityResidentNameCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_name_cell_number").get("content"));
         excelResidentAddressCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_address_cell_number").getContent());
-        excelPhone1CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone1_cell_number").getContent());
-        excelPhone2CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone2_cell_number").getContent());
-        excelPhone3CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone3_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_address_cell_number").get("content"));
+        excelPhone1CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone1_cell_number").get("content"));
+        excelPhone2CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone2_cell_number").get("content"));
+        excelPhone3CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone3_cell_number").get("content"));
         excelSubcontractorCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_subcontractor_name_cell_number").getContent());
+            Convert.toInt(configurationMap.get("excel_resident_subcontractor_name_cell_number").get("content"));
     }
 
     /**

@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.service.CompanyService;
@@ -154,11 +153,11 @@ abstract class BaseController {
      *            单位业务层模块
      * @return 系统用户所属单位
      */
-    protected List<Company> getUserCompanies(Map<String, Configuration> configurationMap, SystemUser systemUser,
+    protected List<Company> getUserCompanies(Map<String, JSONObject> configurationMap, SystemUser systemUser,
         CompanyService companyService) {
         List<Company> companies = systemUser.getCompanies();
         if (companies == null && systemUser.getId()
-            .equals(Convert.toLong(configurationMap.get("system_administrator_id").getContent()))) {
+            .equals(Convert.toLong(configurationMap.get("system_administrator_id").get("content")))) {
             companies = companyService.list(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0));
         }
         return companies;

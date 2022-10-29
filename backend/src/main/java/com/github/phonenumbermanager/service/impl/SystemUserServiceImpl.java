@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +30,6 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Company;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.entity.SystemUserCompany;
 import com.github.phonenumbermanager.exception.SystemClosedException;
@@ -41,13 +39,11 @@ import com.github.phonenumbermanager.mapper.SystemUserMapper;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.util.RedisUtil;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 
 /**
@@ -60,7 +56,6 @@ import lombok.AllArgsConstructor;
 @Service
 public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, SystemUser> implements SystemUserService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final RedisUtil redisUtil;
     private final SystemUserCompanyMapper systemUserCompanyMapper;
     private final CompanyMapper companyMapper;
     private final ConfigurationService configurationService;
@@ -71,9 +66,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (systemUser == null) {
             throw new BadCredentialsException("找不到该系统用户！");
         }
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
-        boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").getContent());
+        Map<String, JSONObject> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
+        boolean systemIsActive = Convert.toBool(configurationMap.get("system_is_active").get("content"));
         if (!systemIsActive && !systemAdministratorId.equals(systemUser.getId())) {
             throw new BadCredentialsException("该系统已经禁止登录，请联系管理员！");
         }
@@ -84,6 +79,7 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         return systemUser;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Authentication authentication(String username, String password, String clientIp) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
@@ -94,8 +90,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         systemUser.setPassword(null).setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp);
         baseMapper.update(new SystemUser().setLoginTime(now).setCredentialExpireTime(plusDays).setLoginIp(clientIp),
             new UpdateWrapper<SystemUser>().eq("id", systemUser.getId()));
-        redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),
-            7, TimeUnit.DAYS);
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         return authenticate;
     }
@@ -126,9 +120,9 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
         if (!SystemConstant.ANONYMOUS_USER.equals(authentication.getPrincipal())) {
             String uri = request.getRequestURI();
             SystemUser systemUser = (SystemUser)authentication.getPrincipal();
-            Map<String, Configuration> configurationMap = configurationService.mapAll();
+            Map<String, JSONObject> configurationMap = configurationService.mapAll();
             if (ArrayUtil.contains(SystemConstant.PERMISSION_WHITELIST, uri) || systemUser.getId()
-                .equals(Long.valueOf(configurationMap.get("system_administrator_id").getContent()))) {
+                .equals(Long.valueOf((String)configurationMap.get("system_administrator_id").get("content")))) {
                 return true;
             }
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.FilterChain;
@@ -75,8 +74,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
             Authentication authentication =
                 new UsernamePasswordAuthenticationToken(systemUser, jwtToken, systemUser.getAuthorities());
-            redisUtil.expire(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUserId,
-                LocalDateTime.now().plusDays(7).toEpochSecond(ZoneOffset.of("+8")), TimeUnit.SECONDS);
+            redisUtil.expire(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUserId, 7, TimeUnit.DAYS);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);

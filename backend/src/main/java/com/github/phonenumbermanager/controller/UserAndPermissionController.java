@@ -24,7 +24,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.constant.SystemConstant;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.SystemPermission;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -46,6 +45,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.servlet.ServletUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWTUtil;
 import io.swagger.annotations.Api;
@@ -91,15 +91,17 @@ public class UserAndPermissionController extends BaseController {
         }
         Authentication authentication = systemUserService.authentication(systemUserLoginVo.getUsername(),
             systemUserLoginVo.getPassword(), ServletUtil.getClientIP(request));
-        SystemUser principal = (SystemUser)authentication.getPrincipal();
+        SystemUser systemUser = (SystemUser)authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>(2);
-        claims.put(SystemConstant.SYSTEM_USER_ID_KEY, principal.getId());
+        claims.put(SystemConstant.SYSTEM_USER_ID_KEY, systemUser.getId());
         claims.put(SystemConstant.CLAIM_KEY_CREATED, LocalDateTime.now());
-        redisUtil.delete(captchaCodeCacheKey);
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
-        jsonMap.put("currentUser", getSystemUserVo(principal));
+        jsonMap.put("currentUser", getSystemUserVo(systemUser));
+        redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),
+            7, TimeUnit.DAYS);
+        redisUtil.delete(captchaCodeCacheKey);
         return R.ok(jsonMap);
     }
 
@@ -146,9 +148,12 @@ public class UserAndPermissionController extends BaseController {
     @GetMapping("/system/user/current")
     @ApiOperation("获取当前登录用户信息")
     public R getCurrentSystemUser() {
-        SystemUser currentSystemUser =
-            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return R.ok().put("data", getSystemUserVo(currentSystemUser));
+        SystemUserVo systemUserVo = new SystemUserVo();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            systemUserVo = getSystemUserVo((SystemUser)authentication.getPrincipal());
+        }
+        return R.ok().put("data", systemUserVo);
     }
 
     /**
@@ -198,8 +203,8 @@ public class UserAndPermissionController extends BaseController {
     public R systemUserModifyHandlePatch(HttpServletResponse response,
         @ApiParam(name = "系统用户编号", required = true) @PathVariable Long id,
         @ApiParam(name = "系统用户对象", required = true) @RequestBody SystemUser systemUser) {
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
+        Map<String, JSONObject> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (id.equals(systemAdministratorId)) {
             if (systemUser.getIsEnabled() != null && !systemUser.isEnabled()) {
                 return R.error(response, ExceptionCode.NOT_MODIFIED.getCode(), "不能禁用系统管理员！");
@@ -259,8 +264,8 @@ public class UserAndPermissionController extends BaseController {
     public R systemUserModifyHandle(@ApiParam(name = "要修改的用户名编号", required = true) @PathVariable Long id,
         @ApiParam(name = "系统用户对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemUser systemUser) {
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
+        Map<String, JSONObject> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (!id.equals(systemAdministratorId)) {
             systemUser.setIsLocked(false).setIsEnabled(true);
         }
@@ -283,8 +288,8 @@ public class UserAndPermissionController extends BaseController {
     @DeleteMapping("/system/user/{id}")
     @ApiOperation("通过系统用户编号删除系统用户")
     public R removeSystemUser(@ApiParam(name = "要删除的用户名编号", required = true) @PathVariable Long id) {
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
-        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").getContent());
+        Map<String, JSONObject> configurationMap = configurationService.mapAll();
+        Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (id.equals(systemAdministratorId)) {
             throw new JsonException("不允许删除超级管理员！");
         }

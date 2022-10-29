@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
-import com.github.phonenumbermanager.entity.Configuration;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -27,6 +26,7 @@ import com.github.phonenumbermanager.vo.BatchRestfulVo;
 import com.github.phonenumbermanager.vo.ComputedVo;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import io.swagger.annotations.Api;
@@ -154,9 +154,9 @@ public class DormitoryManagerController extends BaseController {
     @ResponseBody
     @ApiOperation("导入社区居民楼片长信息进系统")
     public R dormitoryManagerImportAsSystem(HttpServletRequest request) {
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        Map<String, JSONObject> configurationMap = configurationService.mapAll();
         List<List<Object>> data = uploadExcelFileToData(request,
-            Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").getContent()));
+            Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").get("content")));
         if (data != null && dormitoryManagerService.save(data, configurationMap)) {
             return R.ok("上传成功！");
         }
@@ -174,7 +174,7 @@ public class DormitoryManagerController extends BaseController {
     public void dormitoryManagerSaveAsExcel(HttpServletResponse response) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Map<String, Configuration> configurationMap = configurationService.mapAll();
+        Map<String, JSONObject> configurationMap = configurationService.mapAll();
         ExcelWriter excelWriter =
             dormitoryManagerService.listCorrelationExportExcel(currentSystemUser, configurationMap);
         downloadExcelFile(response, excelWriter, "社区楼片长花名册");

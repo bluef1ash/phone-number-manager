@@ -33,31 +33,31 @@
 
 ## 系统后台源码链接
 
-- [Github](https://github.com/bluef1ash/phone-number-manager/tree/master/backend)
-- [Gitee](https://gitee.com/bluef1ash/phone-number-manager/tree/master/backend)
+- [Github](https://github.com/bluef1ash/phone-number-manager/tree/main/backend)
+- [Gitee](https://gitee.com/bluef1ash/phone-number-manager/tree/main/backend)
 
 ## 系统前台源码链接
 
-- [Github](https://github.com/bluef1ash/phone-number-manager/tree/master/frontend)
-- [Gitee](https://gitee.com/bluef1ash/phone-number-manager/tree/master/frontend)
+- [Github](https://github.com/bluef1ash/phone-number-manager/tree/main/frontend)
+- [Gitee](https://gitee.com/bluef1ash/phone-number-manager/tree/main/frontend)
 
 ## 系统截图
 
 ### 登录页面
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/login.png)
+![image](https://github.com/bluef1ash/phone-number-manager/raw/main/design/screenshot/login.png)
 
 ### 系统首页
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/index.png)
+![image](https://github.com/bluef1ash/phone-number-manager/raw/main/design/screenshot/index.png)
 
 ### 列表页面
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/list.png)
+![image](https://github.com/bluef1ash/phone-number-manager/raw/main/design/screenshot/list.png)
 
 ### 添加、编辑数据页面
 
-![image](https://github.com/bluef1ash/phone-number-manager/raw/master/design/screenshot/create.png)
+![image](https://github.com/bluef1ash/phone-number-manager/raw/main/design/screenshot/create.png)
 
 ## Author: Bluef1ash （廿二月的天）
 
@@ -65,7 +65,7 @@ E-mail: liangtian_2005@163.com
 
 ## 增加Docker版本
 
-[系统前台镜像](https://hub.docker.com/repository/docker/bluef1ash/phone-number-manager-frontend)，[系统后台镜像](https://hub.docker.com/repository/docker/bluef1ash/phone-number-manager-backend)，，推荐使用 `docker-compose`，`docker-compose.yml` 配置文件如下
+[系统前台镜像](https://hub.docker.com/repository/docker/bluef1ash/phone-number-manager-frontend)，[系统后台镜像](https://hub.docker.com/repository/docker/bluef1ash/phone-number-manager-backend)，推荐使用 `docker-compose`，`docker-compose.yml` 配置文件如下
 
 ````yml
 version: '3.5'

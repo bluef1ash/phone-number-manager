@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.config;
+package com.github.phonenumbermanager.handler;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.github.phonenumbermanager.constant.SystemConstant;
 
 /**
- * 时间自动填充处理
+ * 时间自动填充处理器
  *
  * @author 廿二月的天
  */

@@ -84,4 +84,20 @@ public final class SystemConstant {
      * 验证码缓存键值
      */
     public static final String CAPTCHA_ID_KEY = "captcha_id";
+    /**
+     * 导出编号缓存键值
+     */
+    public static final String EXPORT_ID_KEY = "export_id";
+    /**
+     * Redis 分隔符
+     */
+    public static final String REDIS_EXPLODE = "::";
+    /**
+     * 单次读取数据库条数
+     */
+    public static final int READ_DATABASE_SIZE = 500000;
+    /**
+     * 单次写入文件的条数
+     */
+    public static final int WRITE_FILE_SIZE = 10000;
 }

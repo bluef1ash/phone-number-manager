@@ -17,7 +17,7 @@ import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.SubcontractorService;
-import com.github.phonenumbermanager.vo.SelectListVo;
+import com.github.phonenumbermanager.vo.SelectListVO;
 
 import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
@@ -104,26 +104,26 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
     }
 
     @Override
-    public List<SelectListVo> treeSelectList(Long[] parentIds) {
+    public List<SelectListVO> treeSelectList(Long[] parentIds) {
         SystemUser systemUser = (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<SelectListVo> selectListVos = new ArrayList<>();
+        List<SelectListVO> selectListVOs = new ArrayList<>();
         List<Long> parentIdList =
             companyMapper.selectList(new LambdaQueryWrapper<Company>().select(Company::getParentId)).stream()
                 .map(Company::getParentId).distinct().collect(Collectors.toList());
         if (parentIds == null) {
             if (systemUser.getCompanies() == null) {
-                selectListVos = companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0L))
-                    .stream().map(company -> new SelectListVo().setValue(company.getId()).setLabel(company.getName())
+                selectListVOs = companyMapper.selectList(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0L))
+                    .stream().map(company -> new SelectListVO().setValue(company.getId()).setLabel(company.getName())
                         .setIsLeaf(false))
                     .collect(Collectors.toList());
             } else {
                 Long[] ids = systemUser.getCompanies().stream().map(Company::getId).toArray(Long[]::new);
-                selectListVos.addAll(getSelectVos(ids, parentIdList));
+                selectListVOs.addAll(getSelectVos(ids, parentIdList));
             }
         } else {
-            selectListVos.addAll(getSelectVos(parentIds, parentIdList));
+            selectListVOs.addAll(getSelectVos(parentIds, parentIdList));
         }
-        return selectListVos;
+        return selectListVOs;
     }
 
     @Override
@@ -157,8 +157,7 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
             }
             return maps;
         }).flatMap(Collection::stream).collect(Collectors.toList());
-        Map<String, Object> barChartMap =
-            getBarChartMap(xFieldString.get(), xFieldStringAlias.get(), "personCount", "人数");
+        Map<String, Object> barChartMap = getBarChartMap(xFieldString.get(), xFieldStringAlias.get(), "人数");
         if (isSeries.get()) {
             barChartMap.put("seriesField", "countType");
             barChartMap.put("isGroup", true);
@@ -192,22 +191,24 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
      *            所有父级编号
      * @return 表单对象集合
      */
-    private List<SelectListVo> getSelectVos(Long[] ids, List<Long> parentIds) {
-        List<SelectListVo> selectListVos = new ArrayList<>();
+    private List<SelectListVO> getSelectVos(Long[] ids, List<Long> parentIds) {
+        List<SelectListVO> selectListVOs = new ArrayList<>();
         LambdaQueryWrapper<Company> companyWrapper = new LambdaQueryWrapper<>();
         Arrays.stream(ids).filter(parentIds::contains).forEach(id -> companyWrapper.eq(Company::getParentId, id));
         List<Long> subIds = Arrays.stream(ids).filter(id -> !parentIds.contains(id)).collect(Collectors.toList());
         if (companyWrapper.nonEmptyOfWhere()) {
-            selectListVos.addAll(companyMapper.selectList(companyWrapper).stream().map(
-                company -> new SelectListVo().setLabel(company.getName()).setValue(company.getId()).setIsLeaf(false))
-                .collect(Collectors.toList()));
+            selectListVOs.addAll(companyMapper.selectList(companyWrapper).stream().map(
+                company -> new SelectListVO().setLabel(company.getName()).setValue(company.getId()).setIsLeaf(false))
+                .toList());
         }
         if (!subIds.isEmpty()) {
-            selectListVos.addAll(baseMapper
-                .selectListByCompanyIds(subIds).stream().map(subcontractor -> new SelectListVo()
-                    .setLabel(subcontractor.getName()).setValue(subcontractor.getId()).setIsLeaf(true))
-                .collect(Collectors.toList()));
+            selectListVOs
+                .addAll(
+                    baseMapper
+                        .selectListByCompanyIds(subIds).stream().map(subcontractor -> new SelectListVO()
+                            .setLabel(subcontractor.getName()).setValue(subcontractor.getId()).setIsLeaf(true))
+                        .toList());
         }
-        return selectListVos;
+        return selectListVOs;
     }
 }

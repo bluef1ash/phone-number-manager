@@ -2,32 +2,44 @@ package com.github.phonenumbermanager.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.ImportOrExportStatusEnum;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.exception.JsonException;
+import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.service.CompanyService;
-import com.github.phonenumbermanager.vo.ComputedVo;
+import com.github.phonenumbermanager.service.ConfigurationService;
+import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.util.RedisUtil;
+import com.github.phonenumbermanager.vo.ComputedVO;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
 
 /**
  * 控制器父类
@@ -40,27 +52,26 @@ abstract class BaseController {
     protected JSONObject sort;
 
     /**
-     * 上传Excel
+     * 上传文件处理
      *
      * @param request
-     *            HTTP请求对象
-     * @param startRowNumber
-     *            开始读取的行数
-     * @return Excel工作簿对象
+     *            HTTP 请求对象
+     * @param redisUtil
+     *            Redis 工具类
+     * @param importId
+     *            导入编号
+     * @return 输入流
      */
-    protected List<List<Object>> uploadExcelFileToData(HttpServletRequest request, int startRowNumber) {
+    protected InputStream uploadToData(HttpServletRequest request, RedisUtil redisUtil, Long importId)
+        throws IOException {
+        redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + importId,
+            ImportOrExportStatusEnum.UPLOAD.getValue(), 20, TimeUnit.MINUTES);
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
         MultipartFile file = multipartRequest.getFile("file");
         if (file == null || file.isEmpty()) {
-            return null;
+            throw new BusinessException("上传文件失败！");
         }
-        try (InputStream inputStream = file.getInputStream()) {
-            ExcelReader excelReader = ExcelUtil.getReader(inputStream, 0);
-            excelReader.setIgnoreEmptyRow(true);
-            return excelReader.read(startRowNumber);
-        } catch (IOException e) {
-            return null;
-        }
+        return file.getInputStream();
     }
 
     /**
@@ -104,28 +115,36 @@ abstract class BaseController {
     }
 
     /**
-     * 下载Excel文件
+     * 下载 Excel 文件
      *
      * @param response
-     *            HTTP响应对象
-     * @param excelWriter
-     *            Excel写入对象
-     * @param filename
+     *            HTTP 响应对象
+     * @param redisUtil
+     *            Redis 工具类
+     * @param exportId
+     *            导出编号
+     * @param fileName
      *            文件名
      */
-    protected void downloadExcelFile(HttpServletResponse response, ExcelWriter excelWriter, String filename) {
-        if (excelWriter != null) {
-            response.setCharacterEncoding("utf-8");
-            response.setContentType(excelWriter.getContentType());
-            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-            response.setHeader("Content-Disposition",
-                excelWriter.getDisposition(filename + System.currentTimeMillis(), null));
-            try (excelWriter) {
-                ServletOutputStream outputStream = response.getOutputStream();
-                excelWriter.flush(outputStream, true);
-            } catch (IOException e) {
-                throw new BusinessException("导出Excel文件失败！", e);
-            }
+    protected void downloadExcelFile(HttpServletResponse response, RedisUtil redisUtil, Long exportId,
+        String fileName) {
+        fileName = StrUtil.format("attachment; filename=\"{}\"", StrUtil.addSuffixIfNot(
+            URLUtil.encodeAll(fileName + System.currentTimeMillis(), CharsetUtil.CHARSET_UTF_8), ".xlsx"));
+        response.setCharacterEncoding(CharsetUtil.UTF_8);
+        response.setContentType(ExcelUtil.XLSX_CONTENT_TYPE);
+        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+        response.setHeader("Content-Disposition", fileName);
+        String excelFilePath = FileUtil.getTmpDirPath() + SystemConstant.EXPORT_ID_KEY + exportId + ".xlsx";
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
+            byte[] bytes = FileUtil.readBytes(excelFilePath);
+            FileUtil.del(excelFilePath);
+            outputStream.write(bytes);
+            redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
+                ImportOrExportStatusEnum.DONE.getValue(), 20, TimeUnit.MINUTES);
+        } catch (IOException e) {
+            redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
+                ImportOrExportStatusEnum.FAILED.getValue(), 20, TimeUnit.MINUTES);
+            throw new BusinessException("下载 Excel 文件失败！", e);
         }
     }
 
@@ -136,7 +155,7 @@ abstract class BaseController {
      *            计算视图对象
      * @return 单位编号数组
      */
-    protected Long[] getCompanyIds(ComputedVo computedVo) {
+    protected Long[] getCompanyIds(ComputedVO computedVo) {
         Long[] companyIds = null;
         if (computedVo != null && computedVo.getCompanyIds() != null) {
             companyIds = computedVo.getCompanyIds();
@@ -161,5 +180,76 @@ abstract class BaseController {
             companies = companyService.list(new LambdaQueryWrapper<Company>().eq(Company::getParentId, 0));
         }
         return companies;
+    }
+
+    /**
+     * 导入数据进系统
+     *
+     * @param request
+     *            HTTP 请求对象
+     * @param importId
+     *            导入编号
+     * @param configurationService
+     *            配置业务
+     * @param service
+     *            社区居民或者楼片长业务类
+     * @param redisUtil
+     *            缓存工具类
+     * @param readExcelStartRowNumber
+     *            Excel 数据开始的行数
+     * @return 前台输出
+     */
+    protected R importForSystem(HttpServletRequest request, Long importId, ConfigurationService configurationService,
+        BaseService service, RedisUtil redisUtil, String readExcelStartRowNumber) {
+        Map<String, Object> jsonMap = new HashMap<>(2);
+        if (importId == null) {
+            Map<String, JSONObject> configurationMap = configurationService.mapAll();
+            int startRowNumber = Convert.toInt(configurationMap.get(readExcelStartRowNumber).get("content"));
+            importId = IdWorker.getId();
+            redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + importId,
+                ImportOrExportStatusEnum.START.getValue(), 20, TimeUnit.MINUTES);
+            try {
+                InputStream inputStream = uploadToData(request, redisUtil, importId);
+                service.asyncImport(inputStream, startRowNumber, importId);
+            } catch (IOException e) {
+                redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + importId,
+                    ImportOrExportStatusEnum.FAILED.getValue(), 20, TimeUnit.MINUTES);
+                throw new JsonException("上传文件失败！", e);
+            }
+        }
+        jsonMap.put("status", redisUtil.get(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + importId));
+        jsonMap.put("importId", importId.toString());
+        return R.ok(jsonMap);
+    }
+
+    /**
+     * 导出 Excel 文件
+     *
+     * @param exportId
+     *            导出编号
+     * @param configurationService
+     *            配置业务
+     * @param service
+     *            社区居民或者楼片长业务类
+     * @param redisUtil
+     *            缓存工具类
+     * @return 前台输出
+     */
+    protected R exportExcel(Long exportId, ConfigurationService configurationService, BaseService service,
+        RedisUtil redisUtil) {
+        Map<String, Object> jsonMap = new HashMap<>(2);
+        jsonMap.put("status", ImportOrExportStatusEnum.START.getValue());
+        if (exportId == null) {
+            Map<String, JSONObject> configurationMap = configurationService.mapAll();
+            SystemUser currentSystemUser =
+                (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            exportId = IdWorker.getId();
+            redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
+                ImportOrExportStatusEnum.START.getValue(), 20, TimeUnit.MINUTES);
+            service.listCorrelationExportExcel(currentSystemUser, configurationMap, exportId);
+        }
+        jsonMap.put("status", redisUtil.get(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId));
+        jsonMap.put("exportId", exportId.toString());
+        return R.ok(jsonMap);
     }
 }

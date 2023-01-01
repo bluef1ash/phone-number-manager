@@ -11,6 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.*;
+
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.github.phonenumbermanager.constant.enums.PhoneTypeEnum;
 import com.github.phonenumbermanager.entity.Company;
@@ -20,6 +22,9 @@ import com.github.phonenumbermanager.entity.SystemPermission;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.RowUtil;
+import cn.hutool.poi.excel.cell.CellUtil;
+import cn.hutool.poi.excel.style.StyleUtil;
 
 /**
  * 公共工具类
@@ -95,6 +100,34 @@ public class CommonUtil {
     }
 
     /**
+     * 联系方式包装为对象
+     *
+     * @param phoneNumberAll
+     *            所有联系方式集合
+     * @param number
+     *            联系方式字符串
+     * @return 联系方式对象
+     */
+    public static PhoneNumber phoneNumber2Object(List<PhoneNumber> phoneNumberAll, String number) {
+        PhoneNumber phoneNumber = new PhoneNumber();
+        PhoneNumber phone =
+            phoneNumberAll.stream().filter(p -> p.getPhoneNumber().equals(number)).findFirst().orElse(null);
+        if (phone == null) {
+            phoneNumber.setId(IdWorker.getId()).setPhoneNumber(number);
+            if (PhoneUtil.isMobile(number)) {
+                phoneNumber.setPhoneType(PhoneTypeEnum.MOBILE);
+            } else if (PhoneUtil.isTel(number)) {
+                phoneNumber.setPhoneType(PhoneTypeEnum.FIXED_LINE);
+            } else {
+                phoneNumber.setPhoneType(PhoneTypeEnum.UNKNOWN);
+            }
+        } else {
+            phoneNumber = phone;
+        }
+        return phoneNumber;
+    }
+
+    /**
      * 联系方式包装为对象集合
      *
      * @param numbers
@@ -106,6 +139,25 @@ public class CommonUtil {
         for (String number : numbers) {
             if (StrUtil.isNotEmpty(number)) {
                 phoneNumbers.add(phoneNumber2Object(number));
+            }
+        }
+        return phoneNumbers;
+    }
+
+    /**
+     * 联系方式包装为对象集合
+     *
+     * @param phoneNumberAll
+     *            所有联系方式集合
+     * @param numbers
+     *            联系方式字符串
+     * @return 联系方式对象
+     */
+    public static List<PhoneNumber> phoneNumber2List(List<PhoneNumber> phoneNumberAll, String... numbers) {
+        List<PhoneNumber> phoneNumbers = new ArrayList<>();
+        for (String number : numbers) {
+            if (StrUtil.isNotEmpty(number)) {
+                phoneNumbers.add(phoneNumber2Object(phoneNumberAll, number));
             }
         }
         return phoneNumbers;
@@ -285,5 +337,61 @@ public class CommonUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * 设置 Excel 单元格样式
+     *
+     * @param cell
+     *            单元格对象
+     * @param workbook
+     *            Excel 工作簿对象
+     * @param fontName
+     *            字体名称
+     * @param fontHeight
+     *            字体大小
+     * @param isBold
+     *            是否加粗
+     * @param isBorder
+     *            是否有边框
+     * @param isWrapText
+     *            是否自动换行
+     * @return 单元格样式
+     *
+     */
+    public static CellStyle cellStyleHandle(Cell cell, Workbook workbook, String fontName, short fontHeight,
+        boolean isBold, boolean isBorder, boolean isWrapText) {
+        CellStyle cellStyle = StyleUtil.createCellStyle(workbook);
+        StyleUtil.setColor(cellStyle, IndexedColors.AUTOMATIC, FillPatternType.NO_FILL);
+        if (isBorder) {
+            StyleUtil.setBorder(cellStyle, BorderStyle.THIN, IndexedColors.BLACK);
+        }
+        StyleUtil.setAlign(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+        Font font = StyleUtil.createFont(workbook, Font.COLOR_NORMAL, fontHeight, fontName);
+        font.setBold(isBold);
+        cellStyle.setFont(font);
+        cellStyle.setWrapText(isWrapText);
+        cell.setCellStyle(cellStyle);
+        return cellStyle;
+    }
+
+    /**
+     * 导出 Excel 文件标题处理
+     *
+     * @param workbook
+     *            Excel 工作簿对象
+     * @param sheet
+     *            Excel 工作表对象
+     * @param title
+     *            标题
+     * @param mergeSize
+     *            合并单元格大小
+     */
+    public static void exportExcelTitleHandle(Workbook workbook, Sheet sheet, String title, Integer mergeSize) {
+        Row row = RowUtil.getOrCreateRow(sheet, 1);
+        Cell cell = CellUtil.getOrCreateCell(row, 0);
+        cell.setCellValue(title);
+        CellStyle cellStyle = cellStyleHandle(cell, workbook, "方正小标宋简体", (short)16, false, false, false);
+        CellUtil.mergingCells(sheet, 1, 1, 0, mergeSize, cellStyle);
     }
 }

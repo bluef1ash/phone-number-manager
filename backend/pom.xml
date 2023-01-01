@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.4</version>
+        <version>2.7.6</version>
         <relativePath/>
     </parent>
     <groupId>com.github</groupId>
@@ -19,16 +19,16 @@
     </description>
     <properties>
         <skipTests>true</skipTests>
-        <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <mybatis-plus-boot-starter.version>3.5.2</mybatis-plus-boot-starter.version>
         <swagger.version>3.0.0</swagger.version>
-        <poi.version>5.2.2</poi.version>
-        <druid.version>1.2.14</druid.version>
+        <druid.version>1.2.15</druid.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <hutool.version>5.8.9</hutool.version>
+        <hutool.version>5.8.10</hutool.version>
+        <easyexcel.version>3.1.3</easyexcel.version>
     </properties>
     <repositories>
         <repository>
@@ -114,11 +114,6 @@
             <version>${swagger.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>${poi.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.github.biezhi</groupId>
             <artifactId>TinyPinyin</artifactId>
             <version>${tinypinyin.version}</version>
@@ -135,6 +130,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>${easyexcel.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -184,8 +184,8 @@
     </build>
     <pluginRepositories>
         <pluginRepository>
-            <id>alimaven</id>
-            <url>https://maven.aliyun.com/repository/central</url>
+            <id>aliyunmaven</id>
+            <url>https://maven.aliyun.com/repository/public</url>
         </pluginRepository>
     </pluginRepositories>
     <profiles>

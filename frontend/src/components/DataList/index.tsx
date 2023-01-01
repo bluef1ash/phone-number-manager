@@ -1,3 +1,4 @@
+import { ImportOrExportStatusEnum } from '@/services/enums';
 import {
   DownloadOutlined,
   FileExcelOutlined,
@@ -33,9 +34,10 @@ export type DataListProps<T extends API.BaseEntity, U extends ParamsType> = {
   ) => Promise<API.ResponseSuccess | API.ResponseException>;
   batchElement?: (selectedRowKeys: number[]) => JSX.Element;
   importDataUploadProps?: {
-    customAction?: (
-      params: string | RcFile | Blob,
-    ) => Promise<API.ResponseSuccess | API.ResponseException>;
+    customAction: (
+      file: string | RcFile | Blob,
+    ) => Promise<API.ImportFileProgress & API.ResponseException>;
+    asyncCallback: (importId: number) => Promise<API.ImportFileProgress & API.ResponseException>;
   } & UploadProps;
   exportDataEventHandler?: React.MouseEventHandler<HTMLElement>;
   removeData?: (id: number) => Promise<API.ResponseSuccess | API.ResponseException>;
@@ -66,18 +68,41 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
   modalForm,
   ...restProps
 }: DataListProps<T, U>) {
-  const [selectedRowKeysState, setSelectedRowKeys] = useState<Key[]>([]);
-  const [modalVisibleState, setModalVisibleState] = useState<boolean>(false);
-  const [modalLoadingState, setModalLoadingState] = useState<boolean>(false);
-  const [modalCreateState, setModalCreateState] = useState<boolean>(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [modalLoading, setModalLoading] = useState<boolean>(false);
+  const [modalCreate, setModalCreate] = useState<boolean>(false);
+  const [uploadFileName, setUploadFileName] = useState<string>('');
 
   const modalHandleCancel = () => {
     modalForm?.formRef?.current?.resetFields();
   };
 
   const modalHandleOk = () => {
-    setModalLoadingState(true);
+    setModalLoading(true);
     modalForm?.formRef?.current?.submit();
+  };
+
+  const uploadNotification = (
+    fileName: string | undefined,
+    notificationType: 'success' | 'error' | 'warning' | 'info' | 'open' | 'warn' | 'destroy',
+    message: string,
+    progress: JSX.Element,
+    duration: number = 0,
+  ) => {
+    notification[notificationType]({
+      key: 'import_data_notification',
+      message,
+      description: (
+        <div>
+          <h5>
+            <FileExcelOutlined /> {typeof fileName === 'undefined' ? '上传文件' : fileName}
+          </h5>
+          {progress}
+        </div>
+      ),
+      duration,
+    });
   };
 
   return (
@@ -107,8 +132,8 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
                   if (code === 200 && typeof data !== 'undefined') {
                     modalForm?.formRef?.current?.setFieldsValue(data);
                   }
-                  setModalCreateState(false);
-                  setModalVisibleState(true);
+                  setModalCreate(false);
+                  setModalVisible(true);
                   modalForm?.modifyButtonPreHandler?.(e);
                 }}
               >
@@ -204,26 +229,67 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
                   multiple={false}
                   maxCount={1}
                   customRequest={async ({ file, onSuccess, onError }) => {
-                    const result = await importDataUploadProps?.customAction?.(file);
-                    if (result?.code === 200) {
-                      onSuccess?.(result);
-                    } else {
-                      onError?.({
-                        status: result?.code || 400,
-                        method: 'post',
-                        message: result?.message || '上传失败！',
-                        name: '',
-                      });
+                    const { message, status, importId } = await importDataUploadProps?.customAction(
+                      file,
+                    );
+                    if (status !== ImportOrExportStatusEnum.DONE) {
+                      const timer = setInterval(async () => {
+                        const { code, status: s } = await importDataUploadProps?.asyncCallback(
+                          importId,
+                        );
+                        if (code !== 200) {
+                          clearInterval(timer);
+                          onError?.({
+                            status: code || 400,
+                            method: 'post',
+                            message: message || '上传失败！',
+                            name: '',
+                          });
+                        }
+                        switch (s) {
+                          case ImportOrExportStatusEnum.HANDLING:
+                            uploadNotification(
+                              uploadFileName,
+                              'info',
+                              '正在处理数据并导入数据库，请稍后...',
+                              <LinearProgress />,
+                            );
+                            break;
+                          case ImportOrExportStatusEnum.HANDLED:
+                            uploadNotification(
+                              uploadFileName,
+                              'info',
+                              '导入数据库完成，刷新页面，请稍后...',
+                              <LinearProgress />,
+                            );
+                            break;
+                          case ImportOrExportStatusEnum.DONE:
+                            clearInterval(timer);
+                            onSuccess?.({ code, message, importId, status: s });
+                            break;
+                          case ImportOrExportStatusEnum.FAILED:
+                            clearInterval(timer);
+                            onError?.({
+                              status: code || 400,
+                              method: 'post',
+                              message: message || '上传失败！',
+                              name: '',
+                            });
+                            break;
+                          default:
+                            break;
+                        }
+                      }, 2000);
                     }
                   }}
-                  beforeUpload={(file) => {
+                  beforeUpload={({ name, type }) => {
+                    setUploadFileName(name);
                     const isXlsx =
-                      file.type ===
-                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                      type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
                     if (!isXlsx) {
                       notification.error({
                         key: 'import_data_notification',
-                        message: '只能上传Excel文件！',
+                        message: '只能上传 Excel 文件！',
                         description: '',
                         duration: 4.5,
                       });
@@ -233,60 +299,40 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
                   onChange={async ({ file }) => {
                     switch (file.status) {
                       case 'uploading':
-                        notification.info({
-                          key: 'import_data_notification',
-                          message: '正在上传文件，请稍后...',
-                          description: (
-                            <div>
-                              <h5>
-                                <FileExcelOutlined /> {file.name}
-                              </h5>
-                              <LinearProgress />
-                            </div>
-                          ),
-                          duration: 0,
-                        });
+                        uploadNotification(
+                          file.name,
+                          'info',
+                          '正在上传文件，请稍后...',
+                          <LinearProgress />,
+                        );
                         break;
                       case 'error':
-                        notification.error({
-                          key: 'import_data_notification',
-                          message: '上传文件失败！',
-                          description: (
-                            <div>
-                              <h5>
-                                <FileExcelOutlined /> {file.name}
-                              </h5>
-                              <Progress percent={file.percent || 100} status="exception" />
-                            </div>
-                          ),
-                          duration: 4.5,
-                        });
+                        uploadNotification(
+                          file.name,
+                          'error',
+                          '上传文件失败！',
+                          <Progress percent={100} status="exception" />,
+                          4.5,
+                        );
                         break;
                       case 'done':
-                        notification.success({
-                          key: 'import_data_notification',
-                          message: '上传文件成功！',
-                          description: (
-                            <div>
-                              <h5>
-                                <FileExcelOutlined /> {file.name}
-                              </h5>
-                              <Progress percent={file.percent || 100} />
-                            </div>
-                          ),
-                          duration: 4.5,
-                        });
+                        uploadNotification(
+                          file.name,
+                          'error',
+                          '上传文件成功！',
+                          <Progress percent={100} />,
+                          4.5,
+                        );
                         customActionRef?.current?.reload();
                         break;
-                      case 'success':
+                      default:
                         break;
-                      case 'removed':
-                        break;
-                      case undefined:
-                        throw new Error('Not implemented yet: undefined case');
                     }
                   }}
                   showUploadList={false}
+                  progress={{
+                    strokeWidth: 0,
+                  }}
                   {...importDataUploadProps}
                 >
                   {' '}
@@ -320,8 +366,8 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
             type="primary"
             onClick={(e) => {
               modalForm?.formRef?.current?.resetFields();
-              setModalCreateState(true);
-              setModalVisibleState(true);
+              setModalCreate(true);
+              setModalVisible(true);
               modalForm?.createButtonPreHandler?.(e);
             }}
           >
@@ -330,19 +376,19 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
           </Button>,
         ]}
         rowSelection={{
-          selectedRowKeys: selectedRowKeysState,
-          onChange(selectedRowKeys) {
-            setSelectedRowKeys(selectedRowKeys);
+          selectedRowKeys,
+          onChange(keys) {
+            setSelectedRowKeys(keys);
           },
           checkStrictly: false,
         }}
-        tableAlertRender={({ selectedRowKeys }) => (
+        tableAlertRender={({ selectedRowKeys: keys }) => (
           <Space size={24}>
             {' '}
-            <span>已选 {selectedRowKeys.length} 项</span>{' '}
+            <span>已选 {keys.length} 项</span>{' '}
           </Space>
         )}
-        tableAlertOptionRender={({ selectedRowKeys }) => (
+        tableAlertOptionRender={({ selectedRowKeys: keys }) => (
           <Space size={16}>
             {((): JSX.Element => {
               if (typeof batchRemoveEventHandler !== 'undefined') {
@@ -350,9 +396,7 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
                   <Popconfirm
                     title="是否真的要批量删除条目？"
                     onConfirm={async () => {
-                      const { code, message } = await batchRemoveEventHandler(
-                        selectedRowKeys as number[],
-                      );
+                      const { code, message } = await batchRemoveEventHandler(keys as number[]);
                       if (code === 200) {
                         setSelectedRowKeys([]);
                         msg.success(message === 'success' ? '批量删除成功！' : message);
@@ -373,25 +417,25 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
                 return <></>;
               }
             })()}{' '}
-            {batchElement?.(selectedRowKeys as number[])}
+            {batchElement?.(keys as number[])}
           </Space>
         )}
         {...restProps}
       />{' '}
       <EditModalForm
         modalProps={{
-          title: (modalCreateState ? '添加' : '编辑') + modalForm?.title,
-          visible: modalVisibleState,
-          confirmLoading: modalLoadingState,
+          title: (modalCreate ? '添加' : '编辑') + modalForm?.title,
+          visible: modalVisible,
+          confirmLoading: modalLoading,
           onOk: modalHandleOk,
           onCancel: (e) => {
             modalForm?.onCancel?.(e);
             modalForm?.formRef?.current?.resetFields();
-            setModalVisibleState(false);
+            setModalVisible(false);
           },
           footer: (
             <>
-              {modalCreateState ? (
+              {modalCreate ? (
                 <></>
               ) : (
                 <span className={styles['modify-time']}>
@@ -402,7 +446,7 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
                 {' '}
                 重置{' '}
               </Button>{' '}
-              <Button key="ok" type="primary" onClick={modalHandleOk} loading={modalLoadingState}>
+              <Button key="ok" type="primary" onClick={modalHandleOk} loading={modalLoading}>
                 {' '}
                 保存{' '}
               </Button>
@@ -419,19 +463,17 @@ function DataList<T extends API.BaseEntity, U extends ParamsType>({
             return false;
           }
           formData.id = modalForm?.formRef?.current?.getFieldValue('id');
-          const { code, message } = modalCreateState
+          const { code, message } = modalCreate
             ? await modalForm.onCreateFinish(formData)
             : await modalForm.onModifyFinish(formData);
           if (code === 200) {
-            msg.success(
-              message === 'success' ? `${modalCreateState ? '添加' : '修改'}成功！` : message,
-            );
-            setModalLoadingState(false);
+            msg.success(message === 'success' ? `${modalCreate ? '添加' : '修改'}成功！` : message);
+            setModalLoading(false);
             customActionRef?.current?.reload();
-            setModalVisibleState(false);
+            setModalVisible(false);
             return true;
           }
-          setModalLoadingState(false);
+          setModalLoading(false);
           msg.error(message);
           return false;
         }}

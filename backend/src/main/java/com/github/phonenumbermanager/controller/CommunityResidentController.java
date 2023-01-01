@@ -1,7 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
 import com.github.phonenumbermanager.constant.ExceptionCode;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.ImportOrExportStatusEnum;
 import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.entity.SystemUser;
@@ -23,15 +25,13 @@ import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.BatchRestfulVo;
-import com.github.phonenumbermanager.vo.ComputedVo;
+import com.github.phonenumbermanager.vo.BatchRestfulVO;
+import com.github.phonenumbermanager.vo.ComputedVO;
 
-import cn.hutool.core.convert.Convert;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import cn.hutool.poi.excel.ExcelWriter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -50,6 +50,7 @@ public class CommunityResidentController extends BaseController {
     private final CommunityResidentService communityResidentService;
     private final CompanyService companyService;
     private final ConfigurationService configurationService;
+    private final RedisUtil redisUtil;
 
     /**
      * 社区居民信息列表
@@ -159,43 +160,55 @@ public class CommunityResidentController extends BaseController {
      * 导入社区居民信息进系统
      *
      * @param request
-     *            HTTP请求对象
+     *            HTTP 请求对象
+     * @param importId
+     *            导入编号
      * @return Ajax信息
      */
     @PostMapping("/import")
     @ResponseBody
     @ApiOperation("导入社区居民信息进系统")
-    public R communityResidentImportAsSystem(HttpServletRequest request) {
-        Map<String, JSONObject> configurationMap = configurationService.mapAll();
-        int startRowNumber = Convert.toInt(configurationMap.get("read_resident_excel_start_row_number").get("content"));
-        List<List<Object>> data = uploadExcelFileToData(request, startRowNumber);
-        if (communityResidentService.save(data, configurationMap)) {
-            return R.ok();
-        }
-        throw new JsonException("上传文件失败！");
+    public R communityResidentImportAsSystem(HttpServletRequest request,
+        @ApiParam(name = "导入编号") @RequestParam(required = false) Long importId) {
+        return importForSystem(request, importId, configurationService, communityResidentService, redisUtil,
+            "read_resident_excel_start_row_number");
     }
 
     /**
-     * 导出社区居民信息到Excel
+     * 导出社区居民信息到 Excel
+     *
+     * @param exportId
+     *            导出编号
+     * @return 导出成功或者失败
+     */
+    @GetMapping("/export")
+    @ResponseBody
+    @ApiOperation("导出社区居民信息到 Excel")
+    public R communityResidentSaveAsExcel(@ApiParam(name = "导出编号") Long exportId) {
+        return exportExcel(exportId, configurationService, communityResidentService, redisUtil);
+    }
+
+    /**
+     * 下载社区居民信息 Excel 文件
      *
      * @param response
-     *            前台响应对象
+     *            HTTP 响应对象
+     * @param exportId
+     *            导出编号
      */
     @GetMapping("/download")
-    @ApiOperation("导出社区居民信息到Excel")
-    public void communityResidentSaveAsExcel(HttpServletResponse response) {
-        Map<String, JSONObject> configurationMap = configurationService.mapAll();
-        SystemUser currentSystemUser =
-            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        ExcelWriter excelWriter =
-            communityResidentService.listCorrelationExportExcel(currentSystemUser, configurationMap);
-        downloadExcelFile(response, excelWriter, "“评社区”活动电话库登记表");
+    @ApiOperation("下载社区居民信息 Excel 文件")
+    public void communityResidentExcelDownload(HttpServletResponse response,
+        @ApiParam(name = "下载编号") @RequestParam Long exportId) {
+        redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
+            ImportOrExportStatusEnum.DOWNLOAD.getValue(), 20, TimeUnit.MINUTES);
+        downloadExcelFile(response, redisUtil, exportId, "“评社区”活动电话库登记表");
     }
 
     /**
      * 社区居民信息增删改批量操作
      *
-     * @param batchRestfulVo
+     * @param batchRestfulVO
      *            批量操作视图对象
      * @return 是否成功
      */
@@ -203,15 +216,15 @@ public class CommunityResidentController extends BaseController {
     @ResponseBody
     @ApiOperation("社区居民信息增删改批量操作")
     public R communityResidentBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
-            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (communityResidentService.removeByIds(ids)) {
                 return R.ok();
             }
-        } else if (batchRestfulVo.getMethod() == BatchRestfulMethod.MODIFY) {
+        } else if (batchRestfulVO.getMethod() == BatchRestfulMethod.MODIFY) {
             List<CommunityResident> communityResidents =
-                JSONUtil.toList(batchRestfulVo.getData(), CommunityResident.class);
+                JSONUtil.toList(batchRestfulVO.getData(), CommunityResident.class);
             if (communityResidentService.updateBatchById(communityResidents)) {
                 return R.ok();
             }
@@ -230,7 +243,7 @@ public class CommunityResidentController extends BaseController {
     @ResponseBody
     @ApiOperation("社区居民信息基础数据")
     public R
-        communityResidentBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+        communityResidentBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data",
@@ -247,7 +260,7 @@ public class CommunityResidentController extends BaseController {
     @PostMapping("/computed/chart")
     @ResponseBody
     @ApiOperation("社区居民信息图表")
-    public R communityResidentChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+    public R communityResidentChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", communityResidentService.getBarChart(currentSystemUser.getCompanies(),

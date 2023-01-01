@@ -1,5 +1,6 @@
 package com.github.phonenumbermanager.service;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -8,10 +9,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemUser;
-import com.github.phonenumbermanager.vo.SelectListVo;
+import com.github.phonenumbermanager.vo.SelectListVO;
 
 import cn.hutool.json.JSONObject;
-import cn.hutool.poi.excel.ExcelWriter;
 
 /**
  * Service层基本接口
@@ -20,7 +20,7 @@ import cn.hutool.poi.excel.ExcelWriter;
  *            SERVICE接口泛型
  * @author 廿二月的天
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface BaseService<T> extends IService<T> {
     /**
      * 保存忽略重复数据
@@ -58,7 +58,9 @@ public interface BaseService<T> extends IService<T> {
      *            需要保存的实体对象
      * @return 是否成功
      */
-    boolean saveCorrelation(SystemUser entity);
+    default boolean saveCorrelation(SystemUser entity) {
+        return false;
+    }
 
     /**
      * 获取录入统计信息
@@ -69,7 +71,9 @@ public interface BaseService<T> extends IService<T> {
      *            需要获取数据的单位编号集合
      * @return 统计信息对象
      */
-    Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds);
+    default Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds) {
+        return null;
+    }
 
     /**
      * 关联查找（包含分页）
@@ -86,8 +90,10 @@ public interface BaseService<T> extends IService<T> {
      *            排序条件
      * @return 查找到的所有对象与所属对象与分页对象
      */
-    IPage<T> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize, JSONObject search,
-        JSONObject sort);
+    default IPage<T> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
+        JSONObject search, JSONObject sort) {
+        return null;
+    }
 
     /**
      * 获取柱状图数据
@@ -106,24 +112,15 @@ public interface BaseService<T> extends IService<T> {
         String personCountAlias);
 
     /**
-     * 从Excel导入数据
-     *
-     * @param data
-     *            Excel数据
-     * @param configurationMap
-     *            系统配置
-     * @return 导入的行数
-     */
-    boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap);
-
-    /**
      * 通过编号关联查找
      *
      * @param id
      *            需要查找的对象编号
      * @return 对应的对象
      */
-    T getCorrelation(Long id);
+    default T getCorrelation(Long id) {
+        return null;
+    }
 
     /**
      * 通过单位编号导出Excel
@@ -132,9 +129,11 @@ public interface BaseService<T> extends IService<T> {
      *            当前已登录的系统用户
      * @param configurationMap
      *            系统配置项
-     * @return 社区居民与所属社区集合转换的JSON对象
+     * @param exportId
+     *            导出编号
      */
-    ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser, Map<String, JSONObject> configurationMap);
+    default void listCorrelationExportExcel(SystemUser currentSystemUser, Map<String, JSONObject> configurationMap,
+        Long exportId) {}
 
     /**
      * 获取树形表单列表
@@ -143,5 +142,19 @@ public interface BaseService<T> extends IService<T> {
      *            父级编号数组
      * @return 树形表单列表集合
      */
-    List<SelectListVo> treeSelectList(Long[] parentIds);
+    default List<SelectListVO> treeSelectList(Long[] parentIds) {
+        return null;
+    }
+
+    /**
+     * 异步上传数据
+     *
+     * @param inputStream
+     *            输入流对象
+     * @param startRowNumber
+     *            数据开始行数
+     * @param importId
+     *            导入编号
+     */
+    default void asyncImport(InputStream inputStream, int startRowNumber, Long importId) {}
 }

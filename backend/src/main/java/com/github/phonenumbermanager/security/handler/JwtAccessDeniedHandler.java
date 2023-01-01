@@ -16,7 +16,7 @@ import com.github.phonenumbermanager.util.R;
 import cn.hutool.json.JSONUtil;
 
 /**
- * 访问被拒绝处理
+ * 访问被拒绝处理器
  *
  * @author 廿二月的天
  */

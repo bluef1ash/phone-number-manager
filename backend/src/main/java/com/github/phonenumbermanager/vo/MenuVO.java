@@ -22,7 +22,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode
-public class MenuVo implements Serializable {
+public class MenuVO implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     private String name;
@@ -30,7 +30,7 @@ public class MenuVo implements Serializable {
     private String icon;
     private String component;
     private String access;
-    private List<MenuVo> routes;
+    private List<MenuVO> routes;
     private Boolean hideChildrenInMenu;
     private Boolean hideInMenu;
     private String locale;

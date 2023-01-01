@@ -1,4 +1,4 @@
-package com.github.phonenumbermanager.config;
+package com.github.phonenumbermanager.converter;
 
 import java.lang.reflect.Type;
 

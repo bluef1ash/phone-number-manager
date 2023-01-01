@@ -2,11 +2,16 @@ import {
   dormitoryManager,
   dormitoryManagerBatch,
   dormitoryManagerDownloadExcel,
+  dormitoryManagerExportExcel,
   dormitoryManagerImportExcel,
 } from '@/services/api';
 import request from '@config/request';
 
-/** 获取社区楼长列表 */
+/**
+ * 获取社区楼长列表
+ * @param params
+ * @param options
+ */
 export async function queryDormitoryManagerList(params?: any, options?: Record<string, any>) {
   return request.get<API.DataList<API.DormitoryManager> & API.ResponseException>(dormitoryManager, {
     params,
@@ -14,7 +19,11 @@ export async function queryDormitoryManagerList(params?: any, options?: Record<s
   });
 }
 
-/** 获取社区楼长列表 */
+/**
+ * 获取社区楼长列表
+ * @param id
+ * @param options
+ */
 export async function queryDormitoryManager(id: number, options?: Record<string, any>) {
   return request.get<API.Data<API.DormitoryManager> & API.ResponseException>(
     `${dormitoryManager}/${id}`,
@@ -24,7 +33,12 @@ export async function queryDormitoryManager(id: number, options?: Record<string,
   );
 }
 
-/** 单独字段修改社区楼长 */
+/**
+ * 单独字段修改社区楼长
+ * @param id
+ * @param data
+ * @param options
+ */
 export async function patchDormitoryManager(
   id: number,
   data: API.DormitoryManager,
@@ -39,7 +53,11 @@ export async function patchDormitoryManager(
   );
 }
 
-/** 添加社区楼长处理 */
+/**
+ * 添加社区楼长处理
+ * @param data
+ * @param options
+ */
 export async function createDormitoryManager(
   data: API.DormitoryManager,
   options?: Record<string, any>,
@@ -50,7 +68,12 @@ export async function createDormitoryManager(
   });
 }
 
-/** 修改社区楼长处理 */
+/**
+ * 修改社区楼长处理
+ * @param id
+ * @param data
+ * @param options
+ */
 export async function modifyDormitoryManager(
   id: number,
   data: API.DormitoryManager,
@@ -62,14 +85,22 @@ export async function modifyDormitoryManager(
   });
 }
 
-/** 删除社区楼长 */
+/**
+ * 删除社区楼长
+ * @param id
+ * @param options
+ */
 export async function removeDormitoryManager(id: number, options?: Record<string, any>) {
   return request.delete<API.ResponseSuccess & API.ResponseException>(`${dormitoryManager}/${id}`, {
     ...(options || {}),
   });
 }
 
-/** 批量操作社区楼长 */
+/**
+ * 批量操作社区楼长
+ * @param data
+ * @param options
+ */
 export async function batchDormitoryManager<T>(
   data: API.BatchRUD<T[]>,
   options?: Record<string, any>,
@@ -80,21 +111,60 @@ export async function batchDormitoryManager<T>(
   });
 }
 
-/** 上传表格 */
+/**
+ * 上传表格
+ * @param data
+ * @param importId
+ * @param optionsObject
+ */
 export async function uploadDormitoryManagerExcel(
-  formData: FormData,
+  data?: FormData,
+  importId?: number,
+  optionsObject?: Record<string, any>,
+) {
+  let options = optionsObject || {};
+  if (typeof data !== 'undefined') {
+    options = { ...optionsObject, requestType: 'form', data };
+  }
+  if (typeof importId !== 'undefined') {
+    options = { ...options, params: { importId } };
+  }
+  return request.post<API.ImportFileProgress & API.ResponseException>(
+    dormitoryManagerImportExcel,
+    options,
+  );
+}
+
+/**
+ * 生成 Excel 文件
+ * @param exportId
+ * @param options
+ */
+export async function exportDormitoryManagerExcel(
+  exportId?: number,
   options?: Record<string, any>,
 ) {
-  return request.post<API.ResponseSuccess & API.ResponseException>(dormitoryManagerImportExcel, {
-    requestType: 'form',
-    data: formData,
+  return request.get<API.ExportFileProgress & API.ResponseException>(dormitoryManagerExportExcel, {
+    params: {
+      exportId,
+    },
     ...(options || {}),
   });
 }
 
-/** 下载表格 */
-export async function downloadDormitoryManagerExcel(options?: Record<string, any>) {
+/**
+ * 下载表格
+ * @param exportId
+ * @param options
+ */
+export async function downloadDormitoryManagerExcel(
+  exportId: number,
+  options?: Record<string, any>,
+) {
   return request.get(dormitoryManagerDownloadExcel, {
+    params: {
+      exportId,
+    },
     getResponse: true,
     responseType: 'blob',
     ...(options || {}),

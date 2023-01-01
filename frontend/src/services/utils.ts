@@ -1,7 +1,8 @@
-import { PhoneNumberType } from '@/services/enums';
+import { ImportOrExportStatusEnum, PhoneNumberType } from '@/services/enums';
 import { message } from 'antd';
 import { parsePhoneNumber } from 'libphonenumber-js/max';
-import type { Dispatch, RefObject, SetStateAction } from 'react';
+import type React from 'react';
+import type { RefObject } from 'react';
 
 /**
  * 提交前联系方式处理
@@ -27,46 +28,83 @@ export function submitPrePhoneNumberHandle(number: string): API.PhoneNumber {
  * 下载Excel文件
  * @param setSpinState
  * @param setSpinTipState
+ * @param exportUrl
  * @param downloadUrl
  * @param spinTip
- * @param filename
+ * @param filename?
  */
 export async function downloadExcelFile(
-  setSpinState: Dispatch<SetStateAction<boolean>>,
-  setSpinTipState: Dispatch<SetStateAction<string>>,
-  downloadUrl: Promise<any>,
+  setSpinState: React.Dispatch<React.SetStateAction<boolean>>,
+  setSpinTipState: React.Dispatch<React.SetStateAction<string>>,
+  exportUrl: (
+    exportId?: number,
+    options?: Record<string, any>,
+  ) => Promise<API.ExportFileProgress & API.ResponseException>,
+  downloadUrl: (exportId: number, options?: Record<string, any>) => Promise<any>,
   spinTip: string[],
   filename?: string,
 ) {
   setSpinTipState(spinTip[0]);
   setSpinState(true);
-  const { data, response } = await downloadUrl;
-  if (typeof data.code === 'undefined' && data) {
-    let customFilename = response.headers.get('Content-Disposition');
-    if (customFilename !== null) {
-      customFilename = decodeURI(customFilename.split('=')[1]).replaceAll('"', '');
-    } else {
-      customFilename = filename;
-    }
-    const blob = await data;
-    setSpinTipState(spinTip[1]);
-    const link = document.createElement('a');
-    if ('download' in link) {
-      link.style.display = 'none';
-      link.href = URL.createObjectURL(blob);
-      link.download = customFilename;
-      document.body.appendChild(link);
-      link.click();
-      URL.revokeObjectURL(link.href);
-      document.body.removeChild(link);
-    } else {
-      //@ts-ignore
-      navigator.msSaveBlob(blob, customFilename);
-    }
-  } else {
-    message.error('导出失败，请稍后再试！');
+  const { status, exportId } = await exportUrl();
+  if (status !== ImportOrExportStatusEnum.DONE) {
+    const timer = setInterval(async () => {
+      const { code, status: s } = await exportUrl(exportId);
+      if (code !== 200) {
+        message.error('导出失败，请稍后再试！');
+        setSpinState(false);
+        clearInterval(timer);
+      }
+      switch (s) {
+        case ImportOrExportStatusEnum.HANDLED:
+          setSpinTipState(spinTip[1]);
+          const { data, response } = await downloadUrl(exportId);
+          if (typeof data.code === 'undefined' && data) {
+            let customFilename = response.headers.get('Content-Disposition');
+            if (customFilename !== null) {
+              customFilename = decodeURI(customFilename.split('=')[1]).replaceAll('"', '');
+            } else {
+              customFilename = filename;
+            }
+            const blob = await data;
+            setSpinTipState(spinTip[1]);
+            const link = document.createElement('a');
+            if ('download' in link) {
+              link.style.display = 'none';
+              link.href = URL.createObjectURL(blob);
+              link.download = customFilename;
+              document.body.appendChild(link);
+              link.click();
+              URL.revokeObjectURL(link.href);
+              document.body.removeChild(link);
+            } else {
+              //@ts-ignore
+              navigator.msSaveBlob(blob, customFilename);
+            }
+          } else {
+            message.error('导出失败，请稍后再试！');
+            setSpinState(false);
+            clearInterval(timer);
+          }
+          break;
+        case ImportOrExportStatusEnum.DOWNLOAD:
+          setSpinTipState(spinTip[2]);
+          break;
+        case ImportOrExportStatusEnum.DONE:
+          setSpinTipState(spinTip[3]);
+          setSpinState(false);
+          clearInterval(timer);
+          break;
+        case ImportOrExportStatusEnum.FAILED:
+          message.error('导出失败，请稍后再试！');
+          setSpinState(false);
+          clearInterval(timer);
+          break;
+        default:
+          break;
+      }
+    }, 2000);
   }
-  setSpinState(false);
 }
 
 /**

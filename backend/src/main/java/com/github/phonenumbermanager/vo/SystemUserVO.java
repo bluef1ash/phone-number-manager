@@ -25,7 +25,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode
 @Accessors(chain = true)
 @ApiModel("系统用户传给前台对象")
-public class SystemUserVo implements Serializable {
+public class SystemUserVO implements Serializable {
     @ApiModelProperty("系统用户编号")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
@@ -46,5 +46,5 @@ public class SystemUserVo implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime credentialExpireTime;
     @ApiModelProperty("系统用户所属单位")
-    private List<CompanyVo> companies;
+    private List<CompanyVO> companyVOs;
 }

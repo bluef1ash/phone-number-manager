@@ -7,6 +7,7 @@ import {
   batchDormitoryManager,
   createDormitoryManager,
   downloadDormitoryManagerExcel,
+  exportDormitoryManagerExcel,
   modifyDormitoryManager,
   queryDormitoryManager,
   queryDormitoryManagerList,
@@ -375,13 +376,22 @@ const DormitoryManager: React.FC = () => {
               formData.append('file', file);
               return await uploadDormitoryManagerExcel(formData);
             },
+            async asyncCallback(importId) {
+              return await uploadDormitoryManagerExcel(undefined, importId);
+            },
           }}
           exportDataEventHandler={async () =>
             downloadExcelFile(
               setSpinState,
               setSpinTipState,
-              downloadDormitoryManagerExcel(),
-              ['正在生成社区居民楼片长花名册中...', '正在下载社区居民楼片长花名册中...'],
+              exportDormitoryManagerExcel,
+              downloadDormitoryManagerExcel,
+              [
+                '正在生成社区居民楼片长花名册中...',
+                '生成成功，正在开启下载...',
+                '正在下载社区居民楼片长花名册中...',
+                '请等待下载完成，下载速度由网络速度决定',
+              ],
               '社区楼片长花名册.xlsx',
             )
           }

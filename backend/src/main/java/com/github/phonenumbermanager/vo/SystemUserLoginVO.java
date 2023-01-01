@@ -21,7 +21,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode
 @Accessors(chain = true)
 @ApiModel("系统用户登录对象")
-public class SystemUserLoginVo implements Serializable {
+public class SystemUserLoginVO implements Serializable {
     @ApiModelProperty("系统用户名称")
     @NotBlank(message = "系统用户名称不能为空！")
     private String username;

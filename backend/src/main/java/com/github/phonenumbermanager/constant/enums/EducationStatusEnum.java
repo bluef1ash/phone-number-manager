@@ -28,7 +28,11 @@ public enum EducationStatusEnum {
     private final int value;
     private final String description;
 
-    public static EducationStatusEnum getEnum(String description) {
+    public static EducationStatusEnum valueOf(int value) {
+        return Arrays.stream(values()).filter(e -> value == e.getValue()).findFirst().orElse(null);
+    }
+
+    public static EducationStatusEnum descriptionOf(String description) {
         return Arrays.stream(values()).filter(e -> e.getDescription().equals(description)).findFirst().orElse(null);
     }
 }

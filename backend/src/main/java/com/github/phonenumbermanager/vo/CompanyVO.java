@@ -24,7 +24,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Accessors(chain = true)
 @ApiModel("单位视图对象")
-public class CompanyVo implements GrantedAuthority {
+public class CompanyVO implements GrantedAuthority {
     @ApiModelProperty("单位编号")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
@@ -34,7 +34,7 @@ public class CompanyVo implements GrantedAuthority {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long parentId;
     @ApiModelProperty("下级单位")
-    private List<CompanyVo> children;
+    private List<CompanyVO> children;
     @ApiModelProperty("是否为叶子节点")
     private Boolean isLeaf;
 

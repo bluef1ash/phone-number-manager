@@ -1,37 +1,43 @@
 package com.github.phonenumbermanager.service.impl;
 
+import java.io.InputStream;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.ImportOrExportStatusEnum;
+import com.github.phonenumbermanager.dto.CommunityResidentExcelDTO;
 import com.github.phonenumbermanager.entity.*;
 import com.github.phonenumbermanager.exception.BusinessException;
+import com.github.phonenumbermanager.handler.CommunityResidentTitleSheetWriteHandler;
+import com.github.phonenumbermanager.listener.CommunityResidentImportReadListener;
 import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.CommunityResidentService;
 import com.github.phonenumbermanager.util.CommonUtil;
+import com.github.phonenumbermanager.util.RedisUtil;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
-import cn.hutool.poi.excel.StyleSet;
+import lombok.AllArgsConstructor;
 
 /**
  * 社区居民信息业务实现
@@ -39,28 +45,14 @@ import cn.hutool.poi.excel.StyleSet;
  * @author 廿二月的天
  */
 @Service
+@AllArgsConstructor
 public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResidentMapper, CommunityResident>
     implements CommunityResidentService {
     private final CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper;
     private final PhoneNumberMapper phoneNumberMapper;
     private final CompanyMapper companyMapper;
     private final SubcontractorMapper subcontractorMapper;
-    private int excelCommunityCellNumber;
-    private int excelCommunityResidentNameCellNumber;
-    private int excelResidentAddressCellNumber;
-    private int excelPhone1CellNumber;
-    private int excelPhone2CellNumber;
-    private int excelPhone3CellNumber;
-    private int excelSubcontractorCellNumber;
-
-    @Autowired
-    public CommunityResidentServiceImpl(CommunityResidentPhoneNumberMapper communityResidentPhoneNumberMapper,
-        PhoneNumberMapper phoneNumberMapper, CompanyMapper companyMapper, SubcontractorMapper subcontractorMapper) {
-        this.communityResidentPhoneNumberMapper = communityResidentPhoneNumberMapper;
-        this.phoneNumberMapper = phoneNumberMapper;
-        this.companyMapper = companyMapper;
-        this.subcontractorMapper = subcontractorMapper;
-    }
+    private final RedisUtil redisUtil;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -112,18 +104,32 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return baseMapper.selectCorrelationByCompanies(page, companyList, search, sort);
     }
 
+    @Async
+    @Override
+    public void asyncImport(InputStream inputStream, int startRowNumber, Long importId) {
+        CommunityResidentImportReadListener listener =
+            new CommunityResidentImportReadListener(redisUtil, importId, this, companyMapper.selectList(null),
+                subcontractorMapper.selectList(null), phoneNumberMapper.selectList(null));
+        EasyExcel.read(inputStream, CommunityResidentExcelDTO.class, listener).headRowNumber(startRowNumber).sheet(0)
+            .doRead();
+        redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + importId,
+            ImportOrExportStatusEnum.DONE.getValue(), 20, TimeUnit.MINUTES);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap) {
-        getUploadExcelVariable(configurationMap);
+    public boolean save(List<CommunityResidentExcelDTO> communityResidentExcelDTOs, List<Company> companyAll,
+        List<Subcontractor> subcontractorAll, List<PhoneNumber> phoneNumberAll) {
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers = new ArrayList<>();
-        List<CommunityResident> residents = importExcelDataHandle(data, phoneNumbers, communityResidentPhoneNumbers);
-        if (residents.size() > 0) {
-            QueryWrapper<CommunityResidentPhoneNumber> communityResidentPhoneNumberWrapper = new QueryWrapper<>();
+        List<CommunityResident> residents = importExcelDataHandle(communityResidentExcelDTOs, phoneNumbers,
+            communityResidentPhoneNumbers, subcontractorAll, companyAll, phoneNumberAll);
+        if (!residents.isEmpty()) {
+            LambdaQueryWrapper<CommunityResidentPhoneNumber> communityResidentPhoneNumberWrapper =
+                new LambdaQueryWrapper<>();
             boolean isSuccess = baseMapper.insertBatchSomeColumn(residents) > 0;
             residents.forEach(communityResident -> communityResidentPhoneNumberWrapper
-                .eq("community_resident_id", communityResident.getId()).or());
+                .eq(CommunityResidentPhoneNumber::getCommunityResidentId, communityResident.getId()).or());
             communityResidentPhoneNumberMapper.delete(communityResidentPhoneNumberWrapper);
             phoneNumberMapper.insertIgnoreBatchSomeColumn(phoneNumbers);
             communityResidentPhoneNumberMapper.insertBatchSomeColumn(communityResidentPhoneNumbers);
@@ -132,70 +138,67 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
         return false;
     }
 
+    @Async
     @Override
-    public ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser,
-        Map<String, JSONObject> configurationMap) {
+    public void listCorrelationExportExcel(SystemUser currentSystemUser, Map<String, JSONObject> configurationMap,
+        Long exportId) {
+        redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
+            ImportOrExportStatusEnum.HANDLING.getValue(), 20, TimeUnit.MINUTES);
         String excelResidentTitleUp = Convert.toStr(configurationMap.get("excel_resident_title_up").get("content"));
         String excelResidentTitle = Convert.toStr(configurationMap.get("excel_resident_title").get("content"));
         List<Company> companyAll = companyMapper.selectList(null);
         List<Long> subordinateCompanyIds =
             exportExcelGetSubordinateCompanyIds(currentSystemUser, configurationMap, companyAll);
-        List<CommunityResident> communityResidents = baseMapper.selectListByCompanyIds(subordinateCompanyIds);
-        if (communityResidents.isEmpty()) {
-            return null;
-        }
-        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-        int tableHeaderCount = 9;
-        for (CommunityResident communityResident : communityResidents) {
-            LinkedHashMap<String, Object> hashMap = new LinkedHashMap<>(tableHeaderCount);
-            Optional<Company> companyParentName = companyAll.stream()
-                .filter(company -> company.getId().equals(communityResident.getCompany().getParentId())).findFirst();
+        List<CommunityResident> communityResidents = getListByCompanyIds(subordinateCompanyIds);
+        List<CommunityResidentExcelDTO> exportDTOs = communityResidents.stream().map(communityResident -> {
+            CommunityResidentExcelDTO communityResidentExcelDto = new CommunityResidentExcelDTO();
+            Company companyParentName = companyAll.stream()
+                .filter(company -> company.getId().equals(communityResident.getCompany().getParentId())).findFirst()
+                .orElse(null);
             String streetName = "";
-            if (companyParentName.isPresent()) {
-                streetName = companyParentName.get().getName().replaceAll(SystemConstant.STREET_NAME_PATTERN, "");
+            if (companyParentName != null) {
+                streetName = companyParentName.getName().replaceAll(SystemConstant.STREET_NAME_PATTERN, "");
             }
-            hashMap.put("街道", streetName);
             String communityName =
                 communityResident.getCompany().getName().replaceAll(SystemConstant.COMMUNITY_NAME_PATTERN, "");
-            hashMap.put("社区", communityName);
-            hashMap.put("户主姓名", communityResident.getName());
-            hashMap.put("家庭地址", communityResident.getAddress());
             for (int i = 0; i < communityResident.getPhoneNumbers().size(); i++) {
-                hashMap.put("电话" + (i + 1), communityResident.getPhoneNumbers().get(i).getPhoneNumber());
+                if (i == 0) {
+                    communityResidentExcelDto.setPhone1(communityResident.getPhoneNumbers().get(i).getPhoneNumber());
+                } else if (i == 1) {
+                    communityResidentExcelDto.setPhone2(communityResident.getPhoneNumbers().get(i).getPhoneNumber());
+                } else if (i == 2) {
+                    communityResidentExcelDto.setPhone3(communityResident.getPhoneNumbers().get(i).getPhoneNumber());
+                } else {
+                    break;
+                }
             }
-            if (communityResident.getPhoneNumbers().size() == 1) {
-                hashMap.put("电话2", "");
-                hashMap.put("电话3", "");
+            communityResidentExcelDto.setStreetName(streetName);
+            communityResidentExcelDto.setCommunityName(communityName);
+            communityResidentExcelDto.setName(communityResident.getName());
+            communityResidentExcelDto.setAddress(communityResident.getAddress());
+            communityResidentExcelDto.setSubcontractor(communityResident.getSubcontractor().getName());
+            return communityResidentExcelDto;
+        }).toList();
+        String fileName = FileUtil.getTmpDirPath() + SystemConstant.EXPORT_ID_KEY + exportId + ".xlsx";
+        ExcelWriter excelWriter = EasyExcel.write(fileName, CommunityResidentExcelDTO.class)
+            .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
+            .registerWriteHandler(new CommunityResidentTitleSheetWriteHandler(excelResidentTitleUp, excelResidentTitle))
+            .registerWriteHandler(getHeadAndContentStyle()).useDefaultStyle(false).relativeHeadRowIndex(3).build();
+        try (excelWriter) {
+            if (exportDTOs.isEmpty()) {
+                excelWriter.write(exportDTOs, EasyExcel.writerSheet().build());
             } else {
-                hashMap.put("电话3", "");
+                for (int i = 0; i < Math.ceil((double)exportDTOs.size() / SystemConstant.WRITE_FILE_SIZE); i++) {
+                    List<CommunityResidentExcelDTO> data = ListUtil.sub(exportDTOs, i * SystemConstant.WRITE_FILE_SIZE,
+                        (SystemConstant.WRITE_FILE_SIZE - 1) * (i + 1) + i);
+                    excelWriter.write(data, EasyExcel.writerSheet().build());
+                }
             }
-            // 处理分包人
-            hashMap.put("分包人", communityName + communityResident.getSubcontractor().getName());
-            list.add(hashMap);
+        } finally {
+            excelWriter.finish();
         }
-        ExcelWriter excelWriter = ExcelUtil.getBigWriter();
-        SXSSFSheet sheet = (SXSSFSheet)excelWriter.getSheet();
-        CellStyle firstRowStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
-        setCellStyle(firstRowStyle, excelWriter, "宋体", (short)12, true, false, false);
-        excelWriter.writeCellValue(0, 0, excelResidentTitleUp);
-        excelWriter.setStyle(firstRowStyle, 0, 0);
-        exportExcelTitleHandle(excelWriter, excelResidentTitle, list.get(0).keySet().size());
-        CellStyle dateRowStyle = excelWriter.getOrCreateCellStyle(6, excelWriter.getCurrentRow());
-        setCellStyle(dateRowStyle, excelWriter, "宋体", (short)11, false, false, false);
-        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 6, 7,
-            "时间：" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")), dateRowStyle);
-        excelWriter.passCurrentRow();
-        StyleSet styleSet = excelWriter.getStyleSet();
-        CellStyle headCellStyle = styleSet.getHeadCellStyle();
-        setCellStyle(headCellStyle, excelWriter, "黑体", (short)12, false, true, false);
-        CellStyle cellStyle = styleSet.getCellStyle();
-        setCellStyle(cellStyle, excelWriter, "仿宋_GB2312", (short)9, false, true, false);
-        sheet.setRandomAccessWindowSize(-1);
-        excelWriter.write(list, true);
-        for (int i = 0; i < tableHeaderCount; ++i) {
-            excelWriter.autoSizeColumn(i);
-        }
-        return excelWriter;
+        redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
+            ImportOrExportStatusEnum.HANDLED.getValue(), 20, TimeUnit.MINUTES);
     }
 
     @Override
@@ -251,26 +254,6 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
     }
 
     /**
-     * 获取上传Excel的变量
-     *
-     * @param configurationMap
-     *            配置项
-     */
-    private void getUploadExcelVariable(Map<String, JSONObject> configurationMap) {
-        excelCommunityCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_community_name_cell_number").get("content"));
-        excelCommunityResidentNameCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_name_cell_number").get("content"));
-        excelResidentAddressCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_address_cell_number").get("content"));
-        excelPhone1CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone1_cell_number").get("content"));
-        excelPhone2CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone2_cell_number").get("content"));
-        excelPhone3CellNumber = Convert.toInt(configurationMap.get("excel_resident_phone3_cell_number").get("content"));
-        excelSubcontractorCellNumber =
-            Convert.toInt(configurationMap.get("excel_resident_subcontractor_name_cell_number").get("content"));
-    }
-
-    /**
      * 导入Excel文件数据处理
      *
      * @param data
@@ -279,84 +262,47 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
      *            需要加入的联系方式集合
      * @param communityResidentPhoneNumbers
      *            需要导入的关联集合
+     * @param subcontractorAll
+     *            所有社区分包人集合
+     * @param companyAll
+     *            所有单位集合
+     * @param phoneNumberAll
+     *            所有联系方式集合
      * @return 处理完成后社区居民信息集合
      */
-    private List<CommunityResident> importExcelDataHandle(List<List<Object>> data, List<PhoneNumber> phoneNumbers,
-        List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers) {
-        List<CommunityResident> residents = new ArrayList<>();
-        List<Subcontractor> subcontractors = subcontractorMapper.selectList(null);
-        List<PhoneNumber> phoneNumbersAll = phoneNumberMapper.selectList(null);
-        List<Long> phoneNumberIds = communityResidentPhoneNumberMapper.selectList(null).stream()
-            .map(CommunityResidentPhoneNumber::getPhoneNumberId).collect(Collectors.toList());
-        List<Company> companies = companyMapper.selectList(null);
-        for (List<Object> datum : data) {
+    private List<CommunityResident> importExcelDataHandle(List<CommunityResidentExcelDTO> data,
+        List<PhoneNumber> phoneNumbers, List<CommunityResidentPhoneNumber> communityResidentPhoneNumbers,
+        List<Subcontractor> subcontractorAll, List<Company> companyAll, List<PhoneNumber> phoneNumberAll) {
+        return data.stream().map(datum -> {
             CommunityResident communityResident = new CommunityResident();
-            String companyName = StrUtil.cleanBlank(String.valueOf(datum.get(excelCommunityCellNumber)));
-            Optional<Company> company = companies.stream().filter(c -> c.getName().contains(companyName)).findFirst();
-            if (company.isEmpty()) {
+            String companyName = StrUtil.cleanBlank(datum.getCommunityName());
+            Company company =
+                companyAll.stream().filter(c -> c.getName().contains(companyName)).findFirst().orElse(null);
+            if (company == null) {
                 throw new BusinessException("未找到对应的" + companyName + "单位读取失败！");
             }
-            String subcontractorName =
-                StrUtil.cleanBlank(String.valueOf(datum.get(excelSubcontractorCellNumber))).replace(companyName, "");
-            Optional<Subcontractor> subcontractor = subcontractors.stream()
-                .filter(s -> subcontractorName.equals(s.getName()) && s.getCompanyId().equals(company.get().getId()))
-                .findFirst();
-            if (subcontractor.isEmpty()) {
+            String subcontractorName = StrUtil.cleanBlank(datum.getSubcontractor()).replace(companyName, "");
+            Subcontractor subcontractor = subcontractorAll.stream()
+                .filter(s -> subcontractorName.equals(s.getName()) && s.getCompanyId().equals(company.getId()))
+                .findFirst().orElse(null);
+            if (subcontractor == null) {
                 throw new BusinessException("未找到对应的分包人" + subcontractorName + "的信息，请重试！");
             }
-            communityResident.setId(IdWorker.getId())
-                .setName(StrUtil.cleanBlank(String.valueOf(datum.get(excelCommunityResidentNameCellNumber))))
-                .setAddress(StrUtil.cleanBlank(String.valueOf(datum.get(excelResidentAddressCellNumber))))
-                .setCompanyId(company.get().getId()).setSubcontractorId(subcontractor.get().getId());
+            communityResident.setId(IdWorker.getId()).setName(StrUtil.cleanBlank(datum.getName()))
+                .setAddress(StrUtil.cleanBlank(datum.getAddress())).setCompanyId(company.getId())
+                .setSubcontractorId(subcontractor.getId());
             // 联系方式
-            String phoneNumber1 = StrUtil.cleanBlank(String.valueOf(datum.get(excelPhone1CellNumber)));
-            String phoneNumber2 = StrUtil.cleanBlank(String.valueOf(datum.get(excelPhone2CellNumber)));
-            String phoneNumber3 = StrUtil.cleanBlank(String.valueOf(datum.get(excelPhone3CellNumber)));
-            List<PhoneNumber> phoneNumbersSource =
-                CommonUtil.phoneNumber2List(phoneNumber1, phoneNumber2, phoneNumber3);
-            List<PhoneNumber> phoneNumberList = phoneNumbersAll.stream()
-                .filter(phoneNumber -> phoneNumber1.equals(phoneNumber.getPhoneNumber())
-                    || phoneNumber2.equals(phoneNumber.getPhoneNumber())
-                    || phoneNumber3.equals(phoneNumber.getPhoneNumber()))
-                .collect(Collectors.toList());
-            if (!phoneNumberList.isEmpty()) {
-                Optional<PhoneNumber> numberOptional = phoneNumberList.stream()
-                    .filter(phoneNumber -> phoneNumberIds.contains(phoneNumber.getId())).findFirst();
-                if (numberOptional.isPresent()) {
-                    throw new BusinessException("导入数据时有重复数据：" + numberOptional.get().getPhoneNumber() + "，请检查后再次导入！");
-                }
-                if (phoneNumberList.size() == phoneNumbersSource.size()) {
-                    phoneNumbers.addAll(phoneNumberList);
-                    List<CommunityResidentPhoneNumber> communityResidentPhoneNumberList = phoneNumberList.stream()
-                        .map(phoneNumber -> new CommunityResidentPhoneNumber()
-                            .setCommunityResidentId(communityResident.getId()).setPhoneNumberId(phoneNumber.getId()))
-                        .collect(Collectors.toList());
-                    communityResidentPhoneNumbers.addAll(communityResidentPhoneNumberList);
-                } else {
-                    for (PhoneNumber phoneNumber : phoneNumbersSource) {
-                        CommunityResidentPhoneNumber communityResidentPhoneNumber = new CommunityResidentPhoneNumber();
-                        communityResidentPhoneNumber.setCommunityResidentId(communityResident.getId())
-                            .setPhoneNumberId(phoneNumber.getId());
-                        phoneNumbers.add(phoneNumber);
-                        for (PhoneNumber number : phoneNumberList) {
-                            if (phoneNumber.getPhoneNumber().equals(number.getPhoneNumber())) {
-                                communityResidentPhoneNumber.setPhoneNumberId(number.getId());
-                                communityResidentPhoneNumbers.add(communityResidentPhoneNumber);
-                            }
-                        }
-                    }
-                }
-            } else {
-                phoneNumbers.addAll(phoneNumbersSource);
-                List<CommunityResidentPhoneNumber> communityResidentPhoneNumberList = phoneNumbersSource.stream()
-                    .map(phoneNumber -> new CommunityResidentPhoneNumber()
-                        .setCommunityResidentId(communityResident.getId()).setPhoneNumberId(phoneNumber.getId()))
-                    .collect(Collectors.toList());
-                communityResidentPhoneNumbers.addAll(communityResidentPhoneNumberList);
-            }
-            residents.add(communityResident);
-        }
-        return residents;
+            List<PhoneNumber> phones =
+                CommonUtil.phoneNumber2List(phoneNumberAll, datum.getPhone1(), datum.getPhone2(), datum.getPhone3());
+            communityResidentPhoneNumbers.addAll(phones.stream().map(phoneNumber -> {
+                CommunityResidentPhoneNumber communityResidentPhoneNumber = new CommunityResidentPhoneNumber();
+                phoneNumbers.add(phoneNumber);
+                communityResidentPhoneNumber.setCommunityResidentId(communityResident.getId())
+                    .setPhoneNumberId(phoneNumber.getId());
+                return communityResidentPhoneNumber;
+            }).toList());
+            return communityResident;
+        }).toList();
     }
 
     /**

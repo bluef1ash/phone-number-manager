@@ -25,7 +25,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode
 @Accessors(chain = true)
 @ApiModel("批量操作视图对象")
-public class BatchRestfulVo implements Serializable {
+public class BatchRestfulVO implements Serializable {
     @ApiModelProperty("批量操作方法类型")
     @NotNull(message = "批量操作方法类型不能为空！")
     private BatchRestfulMethod method;

@@ -2,6 +2,7 @@ package com.github.phonenumbermanager.constant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 批量操作方法枚举
@@ -10,6 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
+@ToString
 public enum BatchRestfulMethod {
     /**
      *

@@ -6,7 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
  *
  * @author 廿二月的天
  */
-@ApiModel("列表框视图对象")
+@Schema(title = "列表框视图对象")
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)

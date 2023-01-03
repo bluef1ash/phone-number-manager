@@ -1,15 +1,13 @@
 package com.github.phonenumbermanager.entity;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,14 +24,14 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-@ApiModel("系统用户与单位中间对象实体")
+@Schema(title = "系统用户与单位中间对象实体")
 public class SystemUserCompany extends BaseEntity<SystemUserCompany> {
-    @ApiModelProperty("所属系统用户编号")
+    @Schema(title = "所属系统用户编号")
     @NotNull(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "所属系统用户编号不能为空！")
     @Min(value = 0, message = "所属系统用户编号不正确！")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long systemUserId;
-    @ApiModelProperty("所属单位编号")
+    @Schema(title = "所属单位编号")
     @NotNull(groups = {CreateInputGroup.class, ModifyInputGroup.class}, message = "所属单位编号不能为空！")
     @Min(value = 0, message = "所属单位编号不正确！")
     @JsonSerialize(using = ToStringSerializer.class)

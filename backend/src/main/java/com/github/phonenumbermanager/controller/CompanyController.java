@@ -2,8 +2,6 @@ package com.github.phonenumbermanager.controller;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +23,10 @@ import com.github.phonenumbermanager.vo.BatchRestfulVO;
 import com.github.phonenumbermanager.vo.ComputedVO;
 
 import cn.hutool.json.JSONUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 
 /**
@@ -38,7 +37,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/company")
-@Api(tags = "单位控制器")
+@Tag(name = "单位控制器")
 public class CompanyController extends BaseController {
     private final CompanyService companyService;
     private final ConfigurationService configurationService;
@@ -56,9 +55,9 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @GetMapping
-    @ApiOperation("单位列表")
-    public R companyList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
-        @ApiParam(name = "每页数据条数") Integer pageSize) {
+    @Operation(summary = "单位列表")
+    public R companyList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
+        @Parameter(name = "每页数据条数") Integer pageSize) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Company> companies = getUserCompanies(configurationService.mapAll(), currentSystemUser, companyService);
@@ -75,8 +74,8 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @GetMapping("/{id}")
-    @ApiOperation("通过单位编号获取")
-    public R getCompanyById(@ApiParam(name = "需要编辑的单位编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过单位编号获取")
+    public R getCompanyById(@Parameter(name = "需要编辑的单位编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", companyService.getCorrelation(id));
     }
 
@@ -88,8 +87,8 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @PostMapping
-    @ApiOperation("单位添加处理")
-    public R companyCreateHandle(@ApiParam(name = "需要添加的单位对象",
+    @Operation(summary = "单位添加处理")
+    public R companyCreateHandle(@Parameter(name = "需要添加的单位对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) Company company) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -109,9 +108,9 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @PutMapping("/{id}")
-    @ApiOperation("单位修改处理")
-    public R companyModifyHandle(@ApiParam(name = "要修改的单位编号", required = true) @PathVariable Long id,
-        @ApiParam(name = "需要修改的单位对象",
+    @Operation(summary = "单位修改处理")
+    public R companyModifyHandle(@Parameter(name = "要修改的单位编号", required = true) @PathVariable Long id,
+        @Parameter(name = "需要修改的单位对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) Company company) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -131,8 +130,8 @@ public class CompanyController extends BaseController {
      * @return 是否删除成功
      */
     @DeleteMapping("/{id}")
-    @ApiOperation("通过单位编号删除")
-    public R removeCompany(@ApiParam(name = "需要删除的单位编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过单位编号删除")
+    public R removeCompany(@Parameter(name = "需要删除的单位编号", required = true) @PathVariable Long id) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (companyService.removeById(id, currentSystemUser.getId())) {
@@ -149,7 +148,7 @@ public class CompanyController extends BaseController {
      * @return 单位表单列表JSON
      */
     @GetMapping("/select-list")
-    @ApiOperation("单位表单列表")
+    @Operation(summary = "单位表单列表")
     public R companySelectList(Long[] parentIds) {
         return R.ok().put("data", companyService.treeSelectList(parentIds));
     }
@@ -162,9 +161,9 @@ public class CompanyController extends BaseController {
      * @return 是否成功
      */
     @PostMapping("/batch")
-    @ApiOperation("单位增删改批量操作")
+    @Operation(summary = "单位增删改批量操作")
     public R companyBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        @Parameter(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
         if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (companyService.removeByIds(ids)) {
@@ -186,9 +185,9 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @GetMapping("/subcontractor")
-    @ApiOperation("社区分包人员列表")
-    public R subcontractorList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
-        @ApiParam(name = "每页数据条数") Integer pageSize) {
+    @Operation(summary = "社区分包人员列表")
+    public R subcontractorList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
+        @Parameter(name = "每页数据条数") Integer pageSize) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Company> companies = getUserCompanies(configurationService.mapAll(), currentSystemUser, companyService);
@@ -205,8 +204,8 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @GetMapping("/subcontractor/{id}")
-    @ApiOperation("通过社区分包人员编号获取")
-    public R getSubcontractorById(@ApiParam(name = "需要编辑的社区分包人员编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过社区分包人员编号获取")
+    public R getSubcontractorById(@Parameter(name = "需要编辑的社区分包人员编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", subcontractorService.getCorrelation(id));
     }
 
@@ -218,8 +217,8 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @PostMapping("/subcontractor")
-    @ApiOperation("社区分包人员添加处理")
-    public R subcontractorCreateHandle(@ApiParam(name = "需要添加的社区分包人员对象",
+    @Operation(summary = "社区分包人员添加处理")
+    public R subcontractorCreateHandle(@Parameter(name = "需要添加的社区分包人员对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) Subcontractor subcontractor) {
         if (subcontractorService.save(subcontractor)) {
             return R.ok();
@@ -237,9 +236,9 @@ public class CompanyController extends BaseController {
      * @return 视图页面
      */
     @PutMapping("/subcontractor/{id}")
-    @ApiOperation("社区分包人员修改处理")
-    public R subcontractorModifyHandle(@ApiParam(name = "要修改的社区分包人员编号", required = true) @PathVariable Long id,
-        @ApiParam(name = "需要修改的社区分包人员对象",
+    @Operation(summary = "社区分包人员修改处理")
+    public R subcontractorModifyHandle(@Parameter(name = "要修改的社区分包人员编号", required = true) @PathVariable Long id,
+        @Parameter(name = "需要修改的社区分包人员对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) Subcontractor subcontractor) {
         Subcontractor one =
             subcontractorService.getOne(new LambdaQueryWrapper<Subcontractor>().eq(Subcontractor::getId, id));
@@ -258,8 +257,8 @@ public class CompanyController extends BaseController {
      * @return 是否删除成功
      */
     @DeleteMapping("/subcontractor/{id}")
-    @ApiOperation("通过社区分包人员编号删除")
-    public R removeSubcontractor(@ApiParam(name = "需要删除的社区分包人员编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过社区分包人员编号删除")
+    public R removeSubcontractor(@Parameter(name = "需要删除的社区分包人员编号", required = true) @PathVariable Long id) {
         if (subcontractorService.removeById(id)) {
             return R.ok("删除社区分包人员成功！");
         }
@@ -274,7 +273,7 @@ public class CompanyController extends BaseController {
      * @return 社区分包人员表单列表JSON
      */
     @GetMapping("/subcontractor/select-list")
-    @ApiOperation("社区分包人员表单列表")
+    @Operation(summary = "社区分包人员表单列表")
     public R subcontractorSelectList(Long[] parentIds) {
         return R.ok().put("data", subcontractorService.treeSelectList(parentIds));
     }
@@ -287,9 +286,9 @@ public class CompanyController extends BaseController {
      * @return 是否成功
      */
     @PostMapping("/subcontractor/batch")
-    @ApiOperation("社区分包人员增删改批量操作")
+    @Operation(summary = "社区分包人员增删改批量操作")
     public R subcontractorBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        @Parameter(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
         if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (subcontractorService.removeByIds(ids)) {
@@ -307,8 +306,8 @@ public class CompanyController extends BaseController {
      * @return Ajax返回JSON对象
      */
     @PostMapping("/subcontractor/computed/chart")
-    @ApiOperation("社区分包人员图表")
-    public R subcontractorChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
+    @Operation(summary = "社区分包人员图表")
+    public R subcontractorChart(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", subcontractorService.getBarChart(currentSystemUser.getCompanies(),

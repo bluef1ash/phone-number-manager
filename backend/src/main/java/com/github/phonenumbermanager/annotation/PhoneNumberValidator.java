@@ -2,10 +2,10 @@ package com.github.phonenumbermanager.annotation;
 
 import java.lang.annotation.*;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
-
 import com.github.phonenumbermanager.validator.PhoneNumberConstraintValidator;
+
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 
 /**
  * 验证联系方式注解

@@ -6,11 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,6 +24,10 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWTUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 
 /**
@@ -58,7 +57,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String systemUserId =
                 String.valueOf(JWTUtil.parseToken(jwtToken).getPayload(SystemConstant.SYSTEM_USER_ID_KEY));
             SystemUser systemUser = JSONUtil.toBean(
-                (String)redisUtil.get(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserId), SystemUser.class);
+                (String)redisUtil.get(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserId),
+                SystemUser.class);
             if (systemUser == null || systemUser.getId() == null
                 || LocalDateTime.now().isAfter(systemUser.getCredentialExpireTime())) {
                 response.setCharacterEncoding("UTF-8");
@@ -74,7 +74,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
             Authentication authentication =
                 new UsernamePasswordAuthenticationToken(systemUser, jwtToken, systemUser.getAuthorities());
-            redisUtil.expire(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserId, 7, TimeUnit.DAYS);
+            redisUtil.expire(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserId, 7,
+                TimeUnit.DAYS);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);

@@ -10,8 +10,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import springfox.documentation.oas.annotations.EnableOpenApi;
-
 /**
  * 应用主入口
  *
@@ -21,7 +19,6 @@ import springfox.documentation.oas.annotations.EnableOpenApi;
 @ConfigurationPropertiesScan
 @EnableScheduling
 @EnableTransactionManagement
-@EnableOpenApi
 @MapperScan("com.github.phonenumbermanager.mapper")
 @EnableCaching(order = Ordered.HIGHEST_PRECEDENCE)
 @EnableAsync

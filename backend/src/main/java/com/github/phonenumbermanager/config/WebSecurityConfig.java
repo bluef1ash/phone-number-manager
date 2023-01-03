@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -20,6 +21,7 @@ import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.security.JwtAuthenticationEntryPoint;
 import com.github.phonenumbermanager.security.filter.JwtTokenFilter;
 import com.github.phonenumbermanager.security.handler.JwtAccessDeniedHandler;
+import com.github.phonenumbermanager.security.manager.AuthorizationManager;
 
 import lombok.AllArgsConstructor;
 
@@ -29,8 +31,10 @@ import lombok.AllArgsConstructor;
  * @author 廿二月的天
  */
 @AllArgsConstructor
+@EnableMethodSecurity
 @EnableWebSecurity
 public class WebSecurityConfig {
+    private final AuthorizationManager authorizationManager;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtTokenFilter jwtTokenFilter;
@@ -43,9 +47,9 @@ public class WebSecurityConfig {
             .accessDeniedHandler(jwtAccessDeniedHandler).and().headers().frameOptions().sameOrigin().and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-            .authorizeRequests(authorizeRequest -> authorizeRequest.antMatchers(SystemConstant.PERMISSION_WHITELIST)
-                .permitAll().antMatchers(SystemConstant.ANONYMOUS_WHITELIST).anonymous().anyRequest()
-                .access("@systemUserService.hasPermission(request, authentication)"))
+            .authorizeHttpRequests(request -> request.requestMatchers(SystemConstant.PERMISSION_WHITELIST).permitAll()
+                .requestMatchers(SystemConstant.ANONYMOUS_WHITELIST).anonymous().anyRequest()
+                .access(authorizationManager))
             .build();
     }
 
@@ -57,8 +61,8 @@ public class WebSecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (webSecurity) -> webSecurity.ignoring().antMatchers(HttpMethod.OPTIONS, "/**")
-            .antMatchers(SystemConstant.PERMISSION_WHITELIST);
+        return (webSecurity) -> webSecurity.ignoring().requestMatchers(HttpMethod.OPTIONS, "/**")
+            .requestMatchers(SystemConstant.PERMISSION_WHITELIST);
     }
 
     @Bean

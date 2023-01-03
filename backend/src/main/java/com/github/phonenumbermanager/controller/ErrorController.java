@@ -2,9 +2,6 @@ package com.github.phonenumbermanager.controller;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
@@ -17,11 +14,16 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.github.phonenumbermanager.util.R;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 /**
  * 异常错误控制器
  *
  * @author 廿二月的天
  */
+@Tag(name = "异常错误控制器")
 @Controller
 @CrossOrigin
 public class ErrorController extends BasicErrorController {

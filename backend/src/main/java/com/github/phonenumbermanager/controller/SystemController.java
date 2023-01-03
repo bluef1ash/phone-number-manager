@@ -2,8 +2,6 @@ package com.github.phonenumbermanager.controller;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,9 +18,10 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import com.github.phonenumbermanager.vo.BatchRestfulVO;
 
 import cn.hutool.json.JSONUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 
 /**
@@ -33,7 +32,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/system")
-@Api(tags = "系统管理控制器")
+@Tag(name = "系统管理控制器")
 public class SystemController extends BaseController {
     private final ConfigurationService configurationService;
 
@@ -47,9 +46,9 @@ public class SystemController extends BaseController {
      * @return 系统配置列表JSON
      */
     @GetMapping("/configuration")
-    @ApiOperation("系统配置列表")
-    public R configurationList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
-        @ApiParam(name = "每页数据数量") Integer pageSize) {
+    @Operation(summary = "系统配置列表")
+    public R configurationList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
+        @Parameter(name = "每页数据数量") Integer pageSize) {
         QueryWrapper<Configuration> wrapper = new QueryWrapper<>();
         getSearchWrapper(request, wrapper);
         return R.ok().put("data", configurationService.page(new Page<>(current, pageSize), wrapper));
@@ -63,8 +62,8 @@ public class SystemController extends BaseController {
      * @return 系统配置项
      */
     @GetMapping("/configuration/{id}")
-    @ApiOperation("通过系统配置项编号查找")
-    public R getConfigurationById(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过系统配置项编号查找")
+    public R getConfigurationById(@Parameter(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
         return R.ok().put("data",
             configurationService.getOne(new LambdaQueryWrapper<Configuration>().eq(Configuration::getId, id)));
     }
@@ -77,8 +76,8 @@ public class SystemController extends BaseController {
      * @return 视图页面
      */
     @PostMapping("/configuration")
-    @ApiOperation("添加系统配置处理")
-    public R configurationCreateHandle(@ApiParam(name = "系统配置对象",
+    @Operation(summary = "添加系统配置处理")
+    public R configurationCreateHandle(@Parameter(name = "系统配置对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) Configuration configuration) {
         if (configurationService.save(configuration)) {
             return R.ok();
@@ -94,9 +93,9 @@ public class SystemController extends BaseController {
      * @return 视图页面
      */
     @PutMapping("/configuration/{id}")
-    @ApiOperation("修改系统配置处理")
-    public R configurationModifyHandle(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id,
-        @ApiParam(name = "系统配置对象",
+    @Operation(summary = "修改系统配置处理")
+    public R configurationModifyHandle(@Parameter(name = "对应系统配置项编号", required = true) @PathVariable Long id,
+        @Parameter(name = "系统配置对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) Configuration configuration) {
         configuration.setId(id).setVersion(configurationService
             .getOne(new LambdaQueryWrapper<Configuration>().eq(Configuration::getId, id)).getVersion());
@@ -114,8 +113,8 @@ public class SystemController extends BaseController {
      * @return 是否成功
      */
     @DeleteMapping("/configuration/{id}")
-    @ApiOperation("通过系统配置编号删除")
-    public R removeConfigurationById(@ApiParam(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过系统配置编号删除")
+    public R removeConfigurationById(@Parameter(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
         if (configurationService.removeById(id)) {
             return R.ok("删除系统配置成功！");
         }
@@ -130,9 +129,9 @@ public class SystemController extends BaseController {
      * @return 是否成功
      */
     @PostMapping("/configuration/batch")
-    @ApiOperation("系统配置增删改批量操作")
+    @Operation(summary = "系统配置增删改批量操作")
     public R configurationBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        @Parameter(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
         if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (configurationService.removeByIds(ids)) {

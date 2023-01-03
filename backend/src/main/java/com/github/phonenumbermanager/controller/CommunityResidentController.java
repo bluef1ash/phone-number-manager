@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -32,9 +29,11 @@ import com.github.phonenumbermanager.vo.BatchRestfulVO;
 import com.github.phonenumbermanager.vo.ComputedVO;
 
 import cn.hutool.json.JSONUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 
 /**
@@ -45,7 +44,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Controller
 @RequestMapping("/resident")
-@Api(tags = "社区居民信息控制器")
+@Tag(name = "社区居民信息控制器")
 public class CommunityResidentController extends BaseController {
     private final CommunityResidentService communityResidentService;
     private final CompanyService companyService;
@@ -65,9 +64,9 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping
     @ResponseBody
-    @ApiOperation("社区居民信息列表")
-    public R communityResidentList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
-        @ApiParam(name = "每页数据数量") Integer pageSize) {
+    @Operation(summary = "社区居民信息列表")
+    public R communityResidentList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
+        @Parameter(name = "每页数据数量") Integer pageSize) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         getSearchParameter(request);
@@ -84,8 +83,8 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping("/{id}")
     @ResponseBody
-    @ApiOperation("通过编号查找社区居民信息")
-    public R getCommunityResidentById(@ApiParam(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过编号查找社区居民信息")
+    public R getCommunityResidentById(@Parameter(name = "需要查找的社区居民的编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", communityResidentService.getCorrelation(id));
     }
 
@@ -98,8 +97,8 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping
     @ResponseBody
-    @ApiOperation("添加社区居民信息处理")
-    public R communityResidentCreateHandle(@ApiParam(name = "前台传递的社区居民对象",
+    @Operation(summary = "添加社区居民信息处理")
+    public R communityResidentCreateHandle(@Parameter(name = "前台传递的社区居民对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) CommunityResident communityResident) {
         String repeatMessage = validatePhoneNumber(null, communityResident.getPhoneNumbers());
         if (repeatMessage != null) {
@@ -122,9 +121,9 @@ public class CommunityResidentController extends BaseController {
      */
     @PutMapping("/{id}")
     @ResponseBody
-    @ApiOperation("修改社区居民信息处理")
-    public R communityResidentModifyHandle(@ApiParam(name = "要修改的社区居民编号", required = true) @PathVariable Long id,
-        @ApiParam(name = "前台传递的社区居民对象",
+    @Operation(summary = "修改社区居民信息处理")
+    public R communityResidentModifyHandle(@Parameter(name = "要修改的社区居民编号", required = true) @PathVariable Long id,
+        @Parameter(name = "前台传递的社区居民对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) CommunityResident communityResident) {
         String repeatMessage = validatePhoneNumber(id, communityResident.getPhoneNumbers());
         if (repeatMessage != null) {
@@ -148,8 +147,8 @@ public class CommunityResidentController extends BaseController {
      */
     @DeleteMapping("/{id}")
     @ResponseBody
-    @ApiOperation("通过社区居民编号删除社区居民信息")
-    public R removeCommunityResident(@ApiParam(name = "社区居民编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过社区居民编号删除社区居民信息")
+    public R removeCommunityResident(@Parameter(name = "社区居民编号", required = true) @PathVariable Long id) {
         if (communityResidentService.removeById(id)) {
             return R.ok();
         }
@@ -167,9 +166,9 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/import")
     @ResponseBody
-    @ApiOperation("导入社区居民信息进系统")
+    @Operation(summary = "导入社区居民信息进系统")
     public R communityResidentImportAsSystem(HttpServletRequest request,
-        @ApiParam(name = "导入编号") @RequestParam(required = false) Long importId) {
+        @Parameter(name = "导入编号") @RequestParam(required = false) Long importId) {
         return importForSystem(request, importId, configurationService, communityResidentService, redisUtil,
             "read_resident_excel_start_row_number");
     }
@@ -183,8 +182,8 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping("/export")
     @ResponseBody
-    @ApiOperation("导出社区居民信息到 Excel")
-    public R communityResidentSaveAsExcel(@ApiParam(name = "导出编号") Long exportId) {
+    @Operation(summary = "导出社区居民信息到 Excel")
+    public R communityResidentSaveAsExcel(@Parameter(name = "导出编号") Long exportId) {
         return exportExcel(exportId, configurationService, communityResidentService, redisUtil);
     }
 
@@ -197,9 +196,9 @@ public class CommunityResidentController extends BaseController {
      *            导出编号
      */
     @GetMapping("/download")
-    @ApiOperation("下载社区居民信息 Excel 文件")
+    @Operation(summary = "下载社区居民信息 Excel 文件")
     public void communityResidentExcelDownload(HttpServletResponse response,
-        @ApiParam(name = "下载编号") @RequestParam Long exportId) {
+        @Parameter(name = "下载编号") @RequestParam Long exportId) {
         redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
             ImportOrExportStatusEnum.DOWNLOAD.getValue(), 20, TimeUnit.MINUTES);
         downloadExcelFile(response, redisUtil, exportId, "“评社区”活动电话库登记表");
@@ -214,9 +213,9 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/batch")
     @ResponseBody
-    @ApiOperation("社区居民信息增删改批量操作")
+    @Operation(summary = "社区居民信息增删改批量操作")
     public R communityResidentBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        @Parameter(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
         if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (communityResidentService.removeByIds(ids)) {
@@ -241,9 +240,9 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/computed/message")
     @ResponseBody
-    @ApiOperation("社区居民信息基础数据")
+    @Operation(summary = "社区居民信息基础数据")
     public R
-        communityResidentBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
+        communityResidentBaseMessage(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data",
@@ -259,8 +258,8 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/computed/chart")
     @ResponseBody
-    @ApiOperation("社区居民信息图表")
-    public R communityResidentChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
+    @Operation(summary = "社区居民信息图表")
+    public R communityResidentChart(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", communityResidentService.getBarChart(currentSystemUser.getCompanies(),

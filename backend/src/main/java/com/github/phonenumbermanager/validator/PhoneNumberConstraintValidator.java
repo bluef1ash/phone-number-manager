@@ -1,11 +1,10 @@
 package com.github.phonenumbermanager.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import com.github.phonenumbermanager.annotation.PhoneNumberValidator;
 
 import cn.hutool.core.util.PhoneUtil;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * 验证联系方式注解实现

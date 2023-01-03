@@ -7,8 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -23,19 +22,19 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-@ApiModel("单位视图对象")
+@Schema(title = "单位视图对象")
 public class CompanyVO implements GrantedAuthority {
-    @ApiModelProperty("单位编号")
+    @Schema(title = "单位编号")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
-    @ApiModelProperty("单位名称")
+    @Schema(title = "单位名称")
     private String name;
-    @ApiModelProperty("上级单位编号")
+    @Schema(title = "上级单位编号")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long parentId;
-    @ApiModelProperty("下级单位")
+    @Schema(title = "下级单位")
     private List<CompanyVO> children;
-    @ApiModelProperty("是否为叶子节点")
+    @Schema(title = "是否为叶子节点")
     private Boolean isLeaf;
 
     @Override

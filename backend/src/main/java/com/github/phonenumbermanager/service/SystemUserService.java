@@ -3,7 +3,6 @@ package com.github.phonenumbermanager.service;
 import java.util.List;
 
 import javax.security.auth.login.LoginException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -37,17 +36,6 @@ public interface SystemUserService extends BaseService<SystemUser>, UserDetailsS
      */
     Authentication authentication(String phoneNumber, String password, String clientIp)
         throws LoginException, UsernameNotFoundException, SystemClosedException;
-
-    /**
-     * 判断权限
-     *
-     * @param request
-     *            HTTP请求
-     * @param authentication
-     *            认证对象
-     * @return 是否享受
-     */
-    boolean hasPermission(HttpServletRequest request, Authentication authentication);
 
     /**
      * 通过单位编号查找

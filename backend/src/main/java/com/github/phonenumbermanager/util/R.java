@@ -3,9 +3,9 @@ package com.github.phonenumbermanager.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.http.HttpStatus;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 返回结果对象

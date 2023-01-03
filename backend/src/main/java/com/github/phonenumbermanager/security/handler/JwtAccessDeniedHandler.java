@@ -3,9 +3,6 @@ package com.github.phonenumbermanager.security.handler;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -14,6 +11,8 @@ import com.github.phonenumbermanager.constant.ExceptionCode;
 import com.github.phonenumbermanager.util.R;
 
 import cn.hutool.json.JSONUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 访问被拒绝处理器

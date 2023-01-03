@@ -10,8 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.security.auth.login.LoginException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.Authentication;
@@ -44,13 +42,15 @@ import cn.hutool.captcha.LineCaptcha;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.extra.servlet.ServletUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWTUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 
 /**
@@ -60,7 +60,7 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor
 @RestController
-@Api(tags = "系统用户与系统权限控制器")
+@Tag(name = "系统用户与系统权限控制器")
 public class UserAndPermissionController extends BaseController {
     private final ConfigurationService configurationService;
     private final SystemUserService systemUserService;
@@ -79,9 +79,9 @@ public class UserAndPermissionController extends BaseController {
      *             登录异常
      */
     @PostMapping("/account/login")
-    @ApiOperation("用户登录")
+    @Operation(summary = "用户登录")
     public R login(HttpServletRequest request,
-        @ApiParam(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVO systemUserLoginVo)
+        @Parameter(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVO systemUserLoginVo)
         throws LoginException {
         String captchaCodeCacheKey =
             SystemConstant.CAPTCHA_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserLoginVo.getCaptchaId();
@@ -91,7 +91,7 @@ public class UserAndPermissionController extends BaseController {
             throw new LoginException("登录图形验证码输入错误！");
         }
         Authentication authentication = systemUserService.authentication(systemUserLoginVo.getUsername(),
-            systemUserLoginVo.getPassword(), ServletUtil.getClientIP(request));
+            systemUserLoginVo.getPassword(), JakartaServletUtil.getClientIP(request));
         SystemUser systemUser = (SystemUser)authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>(2);
         claims.put(SystemConstant.SYSTEM_USER_ID_KEY, systemUser.getId());
@@ -117,8 +117,8 @@ public class UserAndPermissionController extends BaseController {
      *             IO异常
      */
     @GetMapping("/account/captcha")
-    @ApiOperation("生成图案验证码数据")
-    public void captcha(HttpServletResponse response, @ApiParam(name = "随机 UUID", required = true) String code)
+    @Operation(summary = "生成图案验证码数据")
+    public void captcha(HttpServletResponse response, @Parameter(name = "随机 UUID", required = true) String code)
         throws IOException {
         LineCaptcha captcha = CaptchaUtil.createLineCaptcha(100, 40, 4, RandomUtil.randomInt(20, 30));
         redisUtil.setEx(SystemConstant.CAPTCHA_ID_KEY + SystemConstant.REDIS_EXPLODE + code, captcha.getCode(), 5,
@@ -134,8 +134,8 @@ public class UserAndPermissionController extends BaseController {
     @SuppressWarnings("all")
     @CacheEvict(cacheNames = {SystemConstant.SYSTEM_USER_ID_KEY, SystemConstant.SYSTEM_MENU_KEY}, key = "#id")
     @PostMapping("/account/logout")
-    @ApiOperation("退出登录")
-    public R logout(@ApiParam("系统用户编号") Long id) {
+    @Operation(summary = "退出登录")
+    public R logout(@Parameter(name = "系统用户编号") Long id) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SecurityContextHolder.clearContext();
@@ -148,7 +148,7 @@ public class UserAndPermissionController extends BaseController {
      * @return 当前登录用户信息
      */
     @GetMapping("/system/user/current")
-    @ApiOperation("获取当前登录用户信息")
+    @Operation(summary = "获取当前登录用户信息")
     public R getCurrentSystemUser() {
         SystemUserVO systemUserVO = new SystemUserVO();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -168,9 +168,9 @@ public class UserAndPermissionController extends BaseController {
      * @return 系统用户列表JSON
      */
     @GetMapping("/system/user")
-    @ApiOperation("系统用户列表")
-    public R systemUserList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
-        @ApiParam(name = "每页数据") Integer pageSize) {
+    @Operation(summary = "系统用户列表")
+    public R systemUserList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
+        @Parameter(name = "每页数据") Integer pageSize) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         getSearchParameter(request);
@@ -186,7 +186,7 @@ public class UserAndPermissionController extends BaseController {
      * @return 系统用户表单列表JSON
      */
     @GetMapping("/system/user/select-list")
-    @ApiOperation("系统用户表单列表")
+    @Operation(summary = "系统用户表单列表")
     public R systemUserSelectList(Long[] parentIds) {
         return R.ok().put("data", systemUserService.treeSelectList(parentIds));
     }
@@ -201,10 +201,10 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功
      */
     @PatchMapping("/system/user/{id}")
-    @ApiOperation("单独字段修改系统用户")
+    @Operation(summary = "单独字段修改系统用户")
     public R systemUserModifyHandlePatch(HttpServletResponse response,
-        @ApiParam(name = "系统用户编号", required = true) @PathVariable Long id,
-        @ApiParam(name = "系统用户对象", required = true) @RequestBody SystemUser systemUser) {
+        @Parameter(name = "系统用户编号", required = true) @PathVariable Long id,
+        @Parameter(name = "系统用户对象", required = true) @RequestBody SystemUser systemUser) {
         Map<String, JSONObject> configurationMap = configurationService.mapAll();
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (id.equals(systemAdministratorId)) {
@@ -232,8 +232,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 系统用户信息JSON
      */
     @GetMapping("/system/user/{id}")
-    @ApiOperation("通过系统用户编号查找")
-    public R getSystemUserById(@ApiParam(name = "要查找的对应编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过系统用户编号查找")
+    public R getSystemUserById(@Parameter(name = "要查找的对应编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", systemUserService.getCorrelation(id));
     }
 
@@ -245,8 +245,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功JSON
      */
     @PostMapping("/system/user")
-    @ApiOperation("添加处理系统用户")
-    public R systemUserCreateHandle(@ApiParam(name = "系统用户对象",
+    @Operation(summary = "添加处理系统用户")
+    public R systemUserCreateHandle(@Parameter(name = "系统用户对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) SystemUser systemUser) {
         if (systemUserService.save(systemUser)) {
             return R.ok();
@@ -262,9 +262,9 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功JSON
      */
     @PutMapping("/system/user/{id}")
-    @ApiOperation("修改处理系统用户")
-    public R systemUserModifyHandle(@ApiParam(name = "要修改的用户名编号", required = true) @PathVariable Long id,
-        @ApiParam(name = "系统用户对象",
+    @Operation(summary = "修改处理系统用户")
+    public R systemUserModifyHandle(@Parameter(name = "要修改的用户名编号", required = true) @PathVariable Long id,
+        @Parameter(name = "系统用户对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemUser systemUser) {
         Map<String, JSONObject> configurationMap = configurationService.mapAll();
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
@@ -288,8 +288,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功
      */
     @DeleteMapping("/system/user/{id}")
-    @ApiOperation("通过系统用户编号删除系统用户")
-    public R removeSystemUser(@ApiParam(name = "要删除的用户名编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过系统用户编号删除系统用户")
+    public R removeSystemUser(@Parameter(name = "要删除的用户名编号", required = true) @PathVariable Long id) {
         Map<String, JSONObject> configurationMap = configurationService.mapAll();
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (id.equals(systemAdministratorId)) {
@@ -309,8 +309,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 系统用户对象集合
      */
     @GetMapping("/system/user/company/{companyId}")
-    @ApiOperation("通过单位编号加载系统用户")
-    public R loadSystemUserByCompanyId(@ApiParam(name = "社区编号", required = true) @PathVariable Long companyId) {
+    @Operation(summary = "通过单位编号加载系统用户")
+    public R loadSystemUserByCompanyId(@Parameter(name = "社区编号", required = true) @PathVariable Long companyId) {
         return R.ok().put("data", systemUserService.listCorrelationByCompanyId(companyId));
     }
 
@@ -322,9 +322,9 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功
      */
     @PostMapping("/system/user/batch")
-    @ApiOperation("增删改批量操作系统用户")
+    @Operation(summary = "增删改批量操作系统用户")
     public R systemUserBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        @Parameter(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
         if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             SystemUser currentSystemUser =
@@ -349,9 +349,9 @@ public class UserAndPermissionController extends BaseController {
      * @return 系统权限列表JSON
      */
     @GetMapping("/system/permission")
-    @ApiOperation("系统权限列表")
-    public R systemPermissionList(HttpServletRequest request, @ApiParam(name = "分页页码") Integer current,
-        @ApiParam(name = "每页数据") Integer pageSize) {
+    @Operation(summary = "系统权限列表")
+    public R systemPermissionList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
+        @Parameter(name = "每页数据") Integer pageSize) {
         QueryWrapper<SystemPermission> wrapper = new QueryWrapper<>();
         getSearchWrapper(request, wrapper);
         return R.ok().put("data", systemPermissionService.treePage(current, pageSize, wrapper));
@@ -365,7 +365,7 @@ public class UserAndPermissionController extends BaseController {
      * @return 系统权限表单列表JSON
      */
     @GetMapping("/system/permission/select-list")
-    @ApiOperation("系统权限表单列表")
+    @Operation(summary = "系统权限表单列表")
     public R systemPermissionSelectList(Long[] parentIds) {
         return R.ok().put("data", systemPermissionService.treeSelectList(parentIds));
     }
@@ -378,8 +378,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 视图页面
      */
     @GetMapping("/system/permission/{id}")
-    @ApiOperation("通过编号获取系统权限")
-    public R getSystemUserPrivilegeById(@ApiParam(name = "权限编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过编号获取系统权限")
+    public R getSystemUserPrivilegeById(@Parameter(name = "权限编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", systemPermissionService.getById(id));
     }
 
@@ -391,8 +391,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 视图页面
      */
     @PostMapping("/system/permission")
-    @ApiOperation("添加处理系统权限")
-    public R systemPermissionCreateHandle(@ApiParam(name = "系统用户权限对象",
+    @Operation(summary = "添加处理系统权限")
+    public R systemPermissionCreateHandle(@Parameter(name = "系统用户权限对象",
         required = true) @RequestBody @Validated(CreateInputGroup.class) SystemPermission systemPermission) {
         if (systemPermissionService.save(systemPermission)) {
             return R.ok();
@@ -410,9 +410,9 @@ public class UserAndPermissionController extends BaseController {
      * @return 视图页面
      */
     @PutMapping("/system/permission/{id}")
-    @ApiOperation("修改处理系统权限")
-    public R systemPermissionModifyHandle(@ApiParam(name = "要修改的系统权限编号", required = true) @PathVariable Long id,
-        @ApiParam(name = "系统用户权限对象",
+    @Operation(summary = "修改处理系统权限")
+    public R systemPermissionModifyHandle(@Parameter(name = "要修改的系统权限编号", required = true) @PathVariable Long id,
+        @Parameter(name = "系统用户权限对象",
             required = true) @RequestBody @Validated(ModifyInputGroup.class) SystemPermission systemPermission) {
         systemPermission.setId(id).setVersion(systemPermissionService
             .getOne(new LambdaQueryWrapper<SystemPermission>().eq(SystemPermission::getId, id)).getVersion());
@@ -430,8 +430,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功
      */
     @DeleteMapping("/system/permission/{id}")
-    @ApiOperation("通过系统用户权限编号删除系统用户权限")
-    public R removeSystemPermission(@ApiParam(name = "系统用户权限编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过系统用户权限编号删除系统用户权限")
+    public R removeSystemPermission(@Parameter(name = "系统用户权限编号", required = true) @PathVariable Long id) {
         if (systemPermissionService
             .count(new LambdaQueryWrapper<SystemPermission>().eq(SystemPermission::getParentId, id)) > 0) {
             throw new JsonException("不允许删除有子权限的系统权限！");
@@ -450,9 +450,9 @@ public class UserAndPermissionController extends BaseController {
      * @return 是否成功
      */
     @PostMapping("/system/permission/batch")
-    @ApiOperation("增删改批量操作系统权限")
+    @Operation(summary = "增删改批量操作系统权限")
     public R systemPermissionBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        @Parameter(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
         if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
             List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (systemPermissionService.removeByIds(ids)) {
@@ -470,8 +470,8 @@ public class UserAndPermissionController extends BaseController {
      * @return 用户权限对象集合
      */
     @GetMapping("/system/permission/company/{companyId}")
-    @ApiOperation("获取系统用户单位拥有的权限")
-    public R getPermissionsByCompanyId(@ApiParam(name = "单位编号", required = true) @PathVariable Long companyId) {
+    @Operation(summary = "获取系统用户单位拥有的权限")
+    public R getPermissionsByCompanyId(@Parameter(name = "单位编号", required = true) @PathVariable Long companyId) {
         return R.ok().put("data", systemPermissionService.listByCompanyId(companyId));
     }
 

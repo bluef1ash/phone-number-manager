@@ -3,14 +3,10 @@ package com.github.phonenumbermanager.service.impl;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -41,7 +37,6 @@ import com.github.phonenumbermanager.service.SystemUserService;
 import com.github.phonenumbermanager.util.CommonUtil;
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
@@ -112,28 +107,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
             new LambdaQueryWrapper<SystemUserCompany>().eq(SystemUserCompany::getSystemUserId, systemUser.getId()));
         saveOrUpdateHandle(systemUser);
         return baseMapper.updateById(systemUser) > 0;
-    }
-
-    @SuppressWarnings("all")
-    @Override
-    public boolean hasPermission(HttpServletRequest request, Authentication authentication) {
-        if (!SystemConstant.ANONYMOUS_USER.equals(authentication.getPrincipal())) {
-            String uri = request.getRequestURI();
-            SystemUser systemUser = (SystemUser)authentication.getPrincipal();
-            Map<String, JSONObject> configurationMap = configurationService.mapAll();
-            if (ArrayUtil.contains(SystemConstant.PERMISSION_WHITELIST, uri) || systemUser.getId()
-                .equals(Long.valueOf((String)configurationMap.get("system_administrator_id").get("content")))) {
-                return true;
-            }
-            HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());
-            List<Company> companies = (List<Company>)authentication.getAuthorities();
-            if (companies != null && !companies.isEmpty()) {
-                return companies.stream().flatMap(company -> company.getSystemPermissions().stream())
-                    .anyMatch(systemPermission -> systemPermission.getUri().equals(uri)
-                        && Arrays.asList(systemPermission.getHttpMethods()).contains(method));
-            }
-        }
-        return false;
     }
 
     @Override

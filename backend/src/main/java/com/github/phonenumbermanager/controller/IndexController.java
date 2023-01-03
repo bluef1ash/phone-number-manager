@@ -15,8 +15,8 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.service.SystemPermissionService;
 import com.github.phonenumbermanager.util.R;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 
 /**
@@ -27,7 +27,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/index")
-@Api(tags = "首页控制器")
+@Tag(name = "首页控制器")
 public class IndexController extends BaseController {
     private final SystemPermissionService systemPermissionService;
 
@@ -37,7 +37,7 @@ public class IndexController extends BaseController {
      * @return 视图页面
      */
     @GetMapping("/menu")
-    @ApiOperation("获取首页菜单栏内容")
+    @Operation(summary = "获取首页菜单栏内容")
     public R getMenu() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {

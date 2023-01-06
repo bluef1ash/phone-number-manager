@@ -1,6 +1,7 @@
 package com.github.phonenumbermanager.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -30,6 +31,7 @@ import lombok.AllArgsConstructor;
  *
  * @author 廿二月的天
  */
+@Configuration
 @AllArgsConstructor
 @EnableMethodSecurity
 @EnableWebSecurity
@@ -39,7 +41,6 @@ public class WebSecurityConfig {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtTokenFilter jwtTokenFilter;
 
-    @SuppressWarnings("all")
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable().addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)

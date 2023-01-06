@@ -20,8 +20,8 @@ public final class SystemConstant {
      * 匿名用户白名单
      */
     public static final String[] ANONYMOUS_WHITELIST =
-        {"/favicon.ico", "/404", "/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**",
-            "/swagger-ui/**", "/druid/**", "/account/login", "/account/captcha"};
+        {"/404", "/swagger-ui.html", "/swagger-ui/", "/*.html", "/favicon.ico", "/**/*.html", "/**/*.css", "/**/*.js",
+            "/swagger-resources/**", "/v3/api-docs", "/druid/**", "/account/login", "/account/captcha"};
     /**
      * 权限通过白名单
      */

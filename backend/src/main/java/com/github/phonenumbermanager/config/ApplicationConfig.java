@@ -57,10 +57,13 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.converter.CustomMappingJackson2HttpMessageConverter;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.servlet.Filter;
 
 /**
@@ -70,6 +73,7 @@ import jakarta.servlet.Filter;
  */
 @Configuration
 public class ApplicationConfig {
+    private static final String SECURITY_SCHEME_NAME = "Bearer";
 
     /**
      * Mybatis 插件注册
@@ -101,7 +105,9 @@ public class ApplicationConfig {
         Info info = new Info().title("社区居民联系方式管理系统开发文档").description(
             "此系统使用 Spring Boot + Mybatis Plus + Spring Security + React + Ant Design Pro 架构编写。数据库采用 MySQL，提供强大的、安全的和完整的管理社区居民的信息的功能。")
             .version("1.0.0").license(license).contact(contact);
-        return new OpenAPI().info(info);
+        return new OpenAPI().info(info).addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
+            .components(new Components().addSecuritySchemes(SECURITY_SCHEME_NAME, new SecurityScheme()
+                .name(SECURITY_SCHEME_NAME).type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
 
     /**
@@ -226,11 +232,6 @@ public class ApplicationConfig {
         return new WebMvcEndpointHandlerMapping(endpointMapping, webEndpoints, endpointMediaTypes,
             corsProperties.toCorsConfiguration(), new EndpointLinksResolver(allEndpoints, basePath),
             shouldRegisterLinksMapping);
-    }
-
-    @Bean
-    public DruidStatProperties druidStatProperties() {
-        return new DruidStatProperties();
     }
 
     /**

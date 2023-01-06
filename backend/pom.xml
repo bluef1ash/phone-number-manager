@@ -22,8 +22,8 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <mybatis-plus-boot-starter.version>3.5.2</mybatis-plus-boot-starter.version>
-        <swagger.version>1.6.14</swagger.version>
+        <mybatis-plus-boot-starter.version>3.5.3.1</mybatis-plus-boot-starter.version>
+        <swagger.version>2.0.2</swagger.version>
         <druid.version>1.2.15</druid.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
@@ -110,7 +110,7 @@
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${swagger.version}</version>
         </dependency>
         <dependency>

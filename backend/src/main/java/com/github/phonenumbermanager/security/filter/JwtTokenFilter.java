@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,8 +40,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final RedisUtil redisUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response,
-        @NotNull FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+        throws ServletException, IOException {
         if (ArrayUtil.contains(SystemConstant.ANONYMOUS_WHITELIST, request.getRequestURI())) {
             chain.doFilter(request, response);
             return;

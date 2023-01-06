@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheWriter;
@@ -26,9 +25,8 @@ public class RedisCacheManager extends org.springframework.data.redis.cache.Redi
         super(cacheWriter, defaultCacheConfiguration);
     }
 
-    @NotNull
     @Override
-    protected RedisCache createRedisCache(@NotNull String name, RedisCacheConfiguration cacheConfig) {
+    protected RedisCache createRedisCache(String name, RedisCacheConfiguration cacheConfig) {
         String jsonString = null;
         Matcher matcher = pattern.matcher(name);
         while (matcher.find()) {

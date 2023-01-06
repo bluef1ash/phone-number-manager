@@ -84,3 +84,11 @@ mybatis-plus:
     db-config:
       table-prefix: pm_
       id-type: assign_id
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  packages-to-scan: com.github.phonenumbermanager.controller
+  paths-to-match: /**

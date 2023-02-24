@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 
 /**
- * Excel测试类
+ * Excel 测试类
+ *
+ * @author 廿二月的天
  */
-@SpringBootTest
 public class ExcelTest {
 
     private void test(Person person) {

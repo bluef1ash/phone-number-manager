@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.2</version>
         <relativePath/>
     </parent>
     <groupId>com.github</groupId>
@@ -27,8 +27,8 @@
         <druid.version>1.2.15</druid.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <hutool.version>5.8.10</hutool.version>
-        <easyexcel.version>3.1.3</easyexcel.version>
+        <hutool.version>5.8.12</hutool.version>
+        <easyexcel.version>3.2.0</easyexcel.version>
     </properties>
     <repositories>
         <repository>

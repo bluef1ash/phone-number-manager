@@ -1,12 +1,12 @@
 package com.github.phonenumbermanager;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * 回调测试类
+ *
+ * @author 廿二月的天
  */
-@SpringBootTest
 public class CallbackTest {
     private static TestInterface testInterface;
 

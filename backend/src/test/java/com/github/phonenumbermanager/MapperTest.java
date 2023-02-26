@@ -1,7 +1,6 @@
 package com.github.phonenumbermanager;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,18 +10,20 @@ import com.github.phonenumbermanager.entity.PhoneNumber;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.PhoneNumberService;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * DAO测试类
+ * Mapper 测试类
+ *
+ * @author 廿二月的天
  */
 @SpringBootTest
 @Slf4j
+@AllArgsConstructor
 public class MapperTest {
-    @Autowired
-    private ConfigurationService configurationService;
-    @Autowired
-    private PhoneNumberService phoneNumberService;
+    private final ConfigurationService configurationService;
+    private final PhoneNumberService phoneNumberService;
 
     @Test
     public void testVersion() {

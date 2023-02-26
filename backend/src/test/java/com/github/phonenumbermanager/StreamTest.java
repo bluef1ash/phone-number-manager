@@ -12,7 +12,9 @@ import cn.hutool.core.util.StrUtil;
 import lombok.AllArgsConstructor;
 
 /**
- * 流测试
+ * 流测试类
+ *
+ * @author 廿二月的天
  */
 @SpringBootTest
 @AllArgsConstructor

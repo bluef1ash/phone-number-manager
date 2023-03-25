@@ -50,3 +50,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+  devtools:
+    restart:
+      enabled: true

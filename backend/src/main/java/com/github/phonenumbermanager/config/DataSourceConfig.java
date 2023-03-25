@@ -5,15 +5,13 @@ import java.sql.*;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
-import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 
 /**
  * 数据源配置
@@ -22,7 +20,6 @@ import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
  */
 @Configuration
 @ConditionalOnClass({DruidDataSource.class})
-@AutoConfigureBefore({DruidDataSourceAutoConfigure.class})
 public class DataSourceConfig {
     @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;
@@ -37,6 +34,7 @@ public class DataSourceConfig {
     @Value("${DATABASE_NAME}")
     private String databaseName;
 
+    @ConfigurationProperties(prefix = "spring.datasource")
     @Bean
     @ConditionalOnMissingBean
     public DataSource dataSource() {
@@ -79,6 +77,6 @@ public class DataSourceConfig {
                 e.printStackTrace();
             }
         }
-        return DruidDataSourceBuilder.create().build();
+        return new DruidDataSource();
     }
 }

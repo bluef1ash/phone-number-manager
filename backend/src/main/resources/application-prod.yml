@@ -15,3 +15,7 @@ management:
   endpoint:
     health:
       enabled: true
+
+  devtools:
+    restart:
+      enabled: true

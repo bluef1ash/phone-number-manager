@@ -23,12 +23,12 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <mybatis-plus-boot-starter.version>3.5.3.1</mybatis-plus-boot-starter.version>
-        <swagger.version>2.0.2</swagger.version>
-        <druid.version>1.2.15</druid.version>
+        <swagger.version>2.0.4</swagger.version>
+        <druid.version>1.2.16</druid.version>
         <tinypinyin.version>2.0.3.RELEASE</tinypinyin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <hutool.version>5.8.12</hutool.version>
-        <easyexcel.version>3.2.0</easyexcel.version>
+        <hutool.version>5.8.15</hutool.version>
+        <easyexcel.version>3.2.1</easyexcel.version>
     </properties>
     <repositories>
         <repository>
@@ -75,12 +75,26 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>${druid.version}</version>
+        </dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-undertow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatis-plus-boot-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -97,16 +111,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
-            <version>${druid.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mybatis-plus-boot-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -135,6 +139,11 @@
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
             <version>${easyexcel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
     <build>

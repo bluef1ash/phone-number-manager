@@ -108,7 +108,7 @@ services:
     image: bluef1ash/phone-number-manager-frontend:latest
     container_name: "phone-number-manager-frontend"
     environment:
-      - BASE_URL=http://phone-number-manager-backend
+      - REACT_APP_API_BASE_URL=http://phone-number-manager-backend
     ports:
       - "80:80"
     volumes:

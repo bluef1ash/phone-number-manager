@@ -79,7 +79,7 @@ public class CommunityResidentController extends BaseController {
      *
      * @param id
      *            需要查找的社区居民的编号
-     * @return 视图页面
+     * @return 社区居民信息
      */
     @GetMapping("/{id}")
     @ResponseBody
@@ -93,7 +93,7 @@ public class CommunityResidentController extends BaseController {
      *
      * @param communityResident
      *            前台传递的社区居民对象
-     * @return 视图页面
+     * @return 添加成功或者失败
      */
     @PostMapping
     @ResponseBody
@@ -117,7 +117,7 @@ public class CommunityResidentController extends BaseController {
      *            要修改的社区居民编号
      * @param communityResident
      *            前台传递的社区居民对象
-     * @return 视图页面
+     * @return 修改成功或者失败
      */
     @PutMapping("/{id}")
     @ResponseBody
@@ -143,7 +143,7 @@ public class CommunityResidentController extends BaseController {
      *
      * @param id
      *            对应编号
-     * @return Ajax信息
+     * @return 删除成功或者失败
      */
     @DeleteMapping("/{id}")
     @ResponseBody
@@ -162,7 +162,7 @@ public class CommunityResidentController extends BaseController {
      *            HTTP 请求对象
      * @param importId
      *            导入编号
-     * @return Ajax信息
+     * @return 导入成功或者失败
      */
     @PostMapping("/import")
     @ResponseBody
@@ -209,7 +209,7 @@ public class CommunityResidentController extends BaseController {
      *
      * @param batchRestfulVO
      *            批量操作视图对象
-     * @return 是否成功
+     * @return 批量操作成功或者失败
      */
     @PostMapping("/batch")
     @ResponseBody
@@ -232,15 +232,15 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 社区居民信息基础数据
+     * 社区居民信息基础统计数据
      *
      * @param computedVo
      *            计算视图对象
-     * @return Ajax返回JSON对象
+     * @return 基础统计数据
      */
     @PostMapping("/computed/message")
     @ResponseBody
-    @Operation(summary = "社区居民信息基础数据")
+    @Operation(summary = "社区居民信息基础统计数据")
     public R
         communityResidentBaseMessage(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
@@ -250,15 +250,15 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 社区居民信息图表
+     * 社区居民信息统计图表数据
      *
      * @param computedVo
      *            计算视图对象
-     * @return Ajax返回JSON对象
+     * @return 图表统计数据
      */
     @PostMapping("/computed/chart")
     @ResponseBody
-    @Operation(summary = "社区居民信息图表")
+    @Operation(summary = "社区居民信息图表数据")
     public R communityResidentChart(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -267,12 +267,13 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 验证联系方式
+     * 验证社区居民联系方式
      *
      * @param id
      *            社区居民编号
      * @param phoneNumbers
      *            需要验证的数据集合
+     * @return 验证成功时返回 null，失败时返回所在社区的提示信息
      */
     private String validatePhoneNumber(Long id, List<PhoneNumber> phoneNumbers) {
         if (phoneNumbers != null && !phoneNumbers.isEmpty()) {

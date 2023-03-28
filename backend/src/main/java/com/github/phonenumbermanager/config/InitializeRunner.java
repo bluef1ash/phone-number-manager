@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import lombok.AllArgsConstructor;
 
 /**
- * 初始化
+ * 系统运行时初始化
  *
  * @author 廿二月的天
  */

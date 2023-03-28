@@ -27,7 +27,7 @@ import com.github.phonenumbermanager.security.manager.AuthorizationManager;
 import lombok.AllArgsConstructor;
 
 /**
- * Spring Security配置
+ * Spring Security 配置
  *
  * @author 廿二月的天
  */

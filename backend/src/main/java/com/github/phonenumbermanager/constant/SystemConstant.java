@@ -30,7 +30,7 @@ public final class SystemConstant {
         "/resident/computed/message", "/dormitory/computed/message", "/resident/computed/chart",
         "/dormitory/computed/chart", "/company/subcontractor/computed/chart"};
     /**
-     * Token前缀
+     * 登录令牌前缀
      */
     public static final String TOKEN_PREFIX = "Bearer_";
     /**
@@ -42,12 +42,12 @@ public final class SystemConstant {
      */
     public static final String CONFIGURATIONS_MAP_KEY = "configurations_map";
     /**
-     * Base64密钥
+     * Base64 密钥
      */
     public static final String BASE64_SECRET =
         "ZmQ0ZGI5NjQ0MDQwY2I4MjMxY2Y3ZmI3MjdhN2ZmMjNhODViOTg1ZGE0NTBjMGM4NDA5NzYxMjdjOWMwYWRmZTBlZjlhNGY3ZTg4Y2U3YTE1ODVkZDU5Y2Y3OGYwZWE1NzUzNWQ2YjFjZDc0NGMxZWU2MmQ3MjY1NzJmNTE0MzI=";
     /**
-     * JWT密钥创建标识
+     * JWT 密钥创建标识
      */
     public static final String CLAIM_KEY_CREATED = "created";
     /**

@@ -107,9 +107,9 @@ public class ApplicationConfig {
     }
 
     /**
-     * Redis序列化配置
+     * Redis 序列化配置
      *
-     * @return Json序列化对象
+     * @return Json 序列化对象
      */
     @Bean
     public GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer() {

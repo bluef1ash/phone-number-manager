@@ -74,6 +74,7 @@ abstract class BaseController {
     }
 
     /**
+     * 获取搜索参数
      *
      * @param request
      *            HTTP请求对象
@@ -91,7 +92,7 @@ abstract class BaseController {
     }
 
     /**
-     * 获取查找Wrapper
+     * 获取搜索 Wrapper
      *
      * @param request
      *            HTTP请求对象
@@ -199,7 +200,7 @@ abstract class BaseController {
      * @return 前台输出
      */
     protected R importForSystem(HttpServletRequest request, Long importId, ConfigurationService configurationService,
-        BaseService service, RedisUtil redisUtil, String readExcelStartRowNumber) {
+        BaseService<?> service, RedisUtil redisUtil, String readExcelStartRowNumber) {
         Map<String, Object> jsonMap = new HashMap<>(2);
         if (importId == null) {
             Map<String, JSONObject> configurationMap = configurationService.mapAll();
@@ -234,7 +235,7 @@ abstract class BaseController {
      *            缓存工具类
      * @return 前台输出
      */
-    protected R exportExcel(Long exportId, ConfigurationService configurationService, BaseService service,
+    protected R exportExcel(Long exportId, ConfigurationService configurationService, BaseService<?> service,
         RedisUtil redisUtil) {
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("status", ImportOrExportStatusEnum.START.getValue());

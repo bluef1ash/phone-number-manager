@@ -44,18 +44,18 @@ public class CompanyController extends BaseController {
     private final SubcontractorService subcontractorService;
 
     /**
-     * 单位列表
+     * 获取单位分页列表
      *
      * @param request
-     *            HTTP请求对象
+     *            HTTP 请求对象
      * @param current
      *            分页页码
      * @param pageSize
      *            每页数据条数
-     * @return 视图页面
+     * @return 单位分页对象集合
      */
     @GetMapping
-    @Operation(summary = "单位列表")
+    @Operation(summary = "获取单位分页列表")
     public R companyList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
         @Parameter(name = "每页数据条数") Integer pageSize) {
         SystemUser currentSystemUser =
@@ -67,14 +67,14 @@ public class CompanyController extends BaseController {
     }
 
     /**
-     * 通过单位编号获取
+     * 通过单位编号获取单位的详细信息
      *
      * @param id
-     *            编辑的对应编号
-     * @return 视图页面
+     *            查询的单位编号
+     * @return 对应编号的单位的详细信息
      */
     @GetMapping("/{id}")
-    @Operation(summary = "通过单位编号获取")
+    @Operation(summary = "通过单位编号获取单位的详细信息")
     public R getCompanyById(@Parameter(name = "需要编辑的单位编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", companyService.getCorrelation(id));
     }
@@ -84,7 +84,7 @@ public class CompanyController extends BaseController {
      *
      * @param company
      *            单位对象
-     * @return 视图页面
+     * @return 添加成功或者失败
      */
     @PostMapping
     @Operation(summary = "单位添加处理")
@@ -104,8 +104,8 @@ public class CompanyController extends BaseController {
      * @param id
      *            要修改的单位编号
      * @param company
-     *            单位对象
-     * @return 视图页面
+     *            要修改的单位对象
+     * @return 修改成功或者失败
      */
     @PutMapping("/{id}")
     @Operation(summary = "单位修改处理")
@@ -127,7 +127,7 @@ public class CompanyController extends BaseController {
      *
      * @param id
      *            需要删除的单位编号
-     * @return 是否删除成功
+     * @return 删除添加成功或者失败
      */
     @DeleteMapping("/{id}")
     @Operation(summary = "通过单位编号删除")
@@ -141,14 +141,14 @@ public class CompanyController extends BaseController {
     }
 
     /**
-     * 单位表单列表
+     * 获取单位表单列表
      *
      * @param parentIds
      *            父级编号数组
-     * @return 单位表单列表JSON
+     * @return 单位表单列表集合
      */
     @GetMapping("/select-list")
-    @Operation(summary = "单位表单列表")
+    @Operation(summary = "获取单位表单列表")
     public R companySelectList(Long[] parentIds) {
         return R.ok().put("data", companyService.treeSelectList(parentIds));
     }
@@ -158,7 +158,7 @@ public class CompanyController extends BaseController {
      *
      * @param batchRestfulVO
      *            批量操作视图对象
-     * @return 是否成功
+     * @return 批量操作成功或者失败
      */
     @PostMapping("/batch")
     @Operation(summary = "单位增删改批量操作")
@@ -174,18 +174,18 @@ public class CompanyController extends BaseController {
     }
 
     /**
-     * 社区分包人员列表
+     * 获取社区分包人员列表
      *
      * @param request
-     *            HTTP请求对象
+     *            HTTP 请求对象
      * @param current
      *            分页页码
      * @param pageSize
      *            每页数据条数
-     * @return 视图页面
+     * @return 社区分包人员分页对象集合
      */
     @GetMapping("/subcontractor")
-    @Operation(summary = "社区分包人员列表")
+    @Operation(summary = "获取社区分包人员列表")
     public R subcontractorList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
         @Parameter(name = "每页数据条数") Integer pageSize) {
         SystemUser currentSystemUser =
@@ -197,14 +197,14 @@ public class CompanyController extends BaseController {
     }
 
     /**
-     * 通过社区分包人员编号获取
+     * 通过社区分包人员编号获取社区分包人员的详细信息
      *
      * @param id
-     *            编辑的对应编号
-     * @return 视图页面
+     *            查询社区分包人的编号
+     * @return 对应编号社区分包人员的详细信息
      */
     @GetMapping("/subcontractor/{id}")
-    @Operation(summary = "通过社区分包人员编号获取")
+    @Operation(summary = "通过社区分包人员编号获取社区分包人员的详细信息")
     public R getSubcontractorById(@Parameter(name = "需要编辑的社区分包人员编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", subcontractorService.getCorrelation(id));
     }
@@ -214,7 +214,7 @@ public class CompanyController extends BaseController {
      *
      * @param subcontractor
      *            社区分包人员对象
-     * @return 视图页面
+     * @return 添加成功或者失败
      */
     @PostMapping("/subcontractor")
     @Operation(summary = "社区分包人员添加处理")
@@ -232,8 +232,8 @@ public class CompanyController extends BaseController {
      * @param id
      *            要修改的社区分包人员编号
      * @param subcontractor
-     *            社区分包人员对象
-     * @return 视图页面
+     *            需要修改的社区分包人员对象
+     * @return 修改成功或者失败
      */
     @PutMapping("/subcontractor/{id}")
     @Operation(summary = "社区分包人员修改处理")
@@ -254,7 +254,7 @@ public class CompanyController extends BaseController {
      *
      * @param id
      *            需要删除的社区分包人员编号
-     * @return 是否删除成功
+     * @return 删除成功或者失败
      */
     @DeleteMapping("/subcontractor/{id}")
     @Operation(summary = "通过社区分包人员编号删除")
@@ -266,14 +266,14 @@ public class CompanyController extends BaseController {
     }
 
     /**
-     * 社区分包人员表单列表
+     * 获取社区分包人员表单列表
      *
      * @param parentIds
      *            父级编号数组
-     * @return 社区分包人员表单列表JSON
+     * @return 社区分包人员表单列表集合
      */
     @GetMapping("/subcontractor/select-list")
-    @Operation(summary = "社区分包人员表单列表")
+    @Operation(summary = "获取社区分包人员表单列表")
     public R subcontractorSelectList(Long[] parentIds) {
         return R.ok().put("data", subcontractorService.treeSelectList(parentIds));
     }
@@ -283,7 +283,7 @@ public class CompanyController extends BaseController {
      *
      * @param batchRestfulVO
      *            批量操作视图对象
-     * @return 是否成功
+     * @return 批量操作成功或者失败
      */
     @PostMapping("/subcontractor/batch")
     @Operation(summary = "社区分包人员增删改批量操作")
@@ -299,14 +299,14 @@ public class CompanyController extends BaseController {
     }
 
     /**
-     * 社区分包人员图表
+     * 获取社区分包人员图表数据
      *
      * @param computedVo
      *            计算视图对象
-     * @return Ajax返回JSON对象
+     * @return 社区分包人员图表数据
      */
     @PostMapping("/subcontractor/computed/chart")
-    @Operation(summary = "社区分包人员图表")
+    @Operation(summary = "获取社区分包人员图表数据")
     public R subcontractorChart(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();

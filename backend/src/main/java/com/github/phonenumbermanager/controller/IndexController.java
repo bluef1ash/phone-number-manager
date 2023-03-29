@@ -34,7 +34,7 @@ public class IndexController extends BaseController {
     /**
      * 获取首页菜单栏内容
      *
-     * @return 视图页面
+     * @return 首页菜单栏集合和系统用户权限集合
      */
     @GetMapping("/menu")
     @Operation(summary = "获取首页菜单栏内容")

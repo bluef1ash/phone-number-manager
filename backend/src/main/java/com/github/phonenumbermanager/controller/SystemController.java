@@ -37,13 +37,13 @@ public class SystemController extends BaseController {
     private final ConfigurationService configurationService;
 
     /**
-     * 系统配置列表
+     * 获取系统配置分页列表
      *
      * @param current
      *            分页页码
      * @param pageSize
      *            每页数据
-     * @return 系统配置列表JSON
+     * @return 系统配置分页集合对象
      */
     @GetMapping("/configuration")
     @Operation(summary = "系统配置列表")
@@ -55,15 +55,15 @@ public class SystemController extends BaseController {
     }
 
     /**
-     * 通过系统配置项编号查找
+     * 通过系统配置项编号查找系统配置项详细信息
      *
      * @param id
      *            系统配置项编号
-     * @return 系统配置项
+     * @return 对应编号的系统配置项的详细信息
      */
     @GetMapping("/configuration/{id}")
-    @Operation(summary = "通过系统配置项编号查找")
-    public R getConfigurationById(@Parameter(name = "对应系统配置项编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过系统配置项编号查找系统配置项详细信息")
+    public R getConfigurationById(@Parameter(name = "系统配置项编号", required = true) @PathVariable Long id) {
         return R.ok().put("data",
             configurationService.getOne(new LambdaQueryWrapper<Configuration>().eq(Configuration::getId, id)));
     }
@@ -72,8 +72,8 @@ public class SystemController extends BaseController {
      * 添加系统配置处理
      *
      * @param configuration
-     *            系统配置对象
-     * @return 视图页面
+     *            添加的系统配置对象
+     * @return 添加成功或者失败
      */
     @PostMapping("/configuration")
     @Operation(summary = "添加系统配置处理")
@@ -90,7 +90,7 @@ public class SystemController extends BaseController {
      *
      * @param configuration
      *            系统配置对象
-     * @return 视图页面
+     * @return 修改成功或者失败
      */
     @PutMapping("/configuration/{id}")
     @Operation(summary = "修改系统配置处理")
@@ -110,7 +110,7 @@ public class SystemController extends BaseController {
      *
      * @param id
      *            对应系统配置项编号
-     * @return 是否成功
+     * @return 删除成功或者失败
      */
     @DeleteMapping("/configuration/{id}")
     @Operation(summary = "通过系统配置编号删除")
@@ -126,7 +126,7 @@ public class SystemController extends BaseController {
      *
      * @param batchRestfulVO
      *            批量操作视图对象
-     * @return 是否成功
+     * @return 批量操作成功或者失败
      */
     @PostMapping("/configuration/batch")
     @Operation(summary = "系统配置增删改批量操作")

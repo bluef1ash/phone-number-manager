@@ -9,7 +9,7 @@
         <relativePath/>
     </parent>
     <groupId>com.github</groupId>
-    <artifactId>phone-number-manager</artifactId>
+    <artifactId>phone-number-manager-backend</artifactId>
     <version>0.0.1</version>
     <name>phone-number-manager</name>
     <description>

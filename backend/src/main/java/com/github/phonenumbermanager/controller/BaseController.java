@@ -59,7 +59,7 @@ abstract class BaseController {
      *            Redis 工具类
      * @param importId
      *            导入编号
-     * @return 输入流
+     * @return 文件输入流
      */
     protected InputStream uploadToData(HttpServletRequest request, RedisUtil redisUtil, Long importId)
         throws IOException {
@@ -197,7 +197,7 @@ abstract class BaseController {
      *            缓存工具类
      * @param readExcelStartRowNumber
      *            Excel 数据开始的行数
-     * @return 前台输出
+     * @return 导入状态和导入单位编号
      */
     protected R importForSystem(HttpServletRequest request, Long importId, ConfigurationService configurationService,
         BaseService<?> service, RedisUtil redisUtil, String readExcelStartRowNumber) {
@@ -223,7 +223,7 @@ abstract class BaseController {
     }
 
     /**
-     * 导出 Excel 文件
+     * 导出数据
      *
      * @param exportId
      *            导出编号
@@ -233,9 +233,9 @@ abstract class BaseController {
      *            社区居民或者楼片长业务类
      * @param redisUtil
      *            缓存工具类
-     * @return 前台输出
+     * @return 导出状态和导出单位编号
      */
-    protected R exportExcel(Long exportId, ConfigurationService configurationService, BaseService<?> service,
+    protected R exportData(Long exportId, ConfigurationService configurationService, BaseService<?> service,
         RedisUtil redisUtil) {
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("status", ImportOrExportStatusEnum.START.getValue());

@@ -52,7 +52,7 @@ public class CommunityResidentController extends BaseController {
     private final RedisUtil redisUtil;
 
     /**
-     * 社区居民信息列表
+     * 获取社区居民信息分页列表
      *
      * @param request
      *            HTTP请求对象
@@ -60,11 +60,11 @@ public class CommunityResidentController extends BaseController {
      *            分页页码
      * @param pageSize
      *            每页数据数量
-     * @return 社区居民对象集合
+     * @return 社区居民分页对象集合
      */
     @GetMapping
     @ResponseBody
-    @Operation(summary = "社区居民信息列表")
+    @Operation(summary = "获取社区居民信息分页列表")
     public R communityResidentList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
         @Parameter(name = "每页数据数量") Integer pageSize) {
         SystemUser currentSystemUser =
@@ -79,7 +79,7 @@ public class CommunityResidentController extends BaseController {
      *
      * @param id
      *            需要查找的社区居民的编号
-     * @return 社区居民信息
+     * @return 单个社区居民的详细信息
      */
     @GetMapping("/{id}")
     @ResponseBody
@@ -174,7 +174,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 导出社区居民信息到 Excel
+     * 导出社区居民信息
      *
      * @param exportId
      *            导出编号
@@ -182,9 +182,9 @@ public class CommunityResidentController extends BaseController {
      */
     @GetMapping("/export")
     @ResponseBody
-    @Operation(summary = "导出社区居民信息到 Excel")
+    @Operation(summary = "导出社区居民信息")
     public R communityResidentSaveAsExcel(@Parameter(name = "导出编号") Long exportId) {
-        return exportExcel(exportId, configurationService, communityResidentService, redisUtil);
+        return exportData(exportId, configurationService, communityResidentService, redisUtil);
     }
 
     /**
@@ -232,7 +232,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 社区居民信息基础统计数据
+     * 获取社区居民信息基础统计数据
      *
      * @param computedVo
      *            计算视图对象
@@ -240,7 +240,7 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/computed/message")
     @ResponseBody
-    @Operation(summary = "社区居民信息基础统计数据")
+    @Operation(summary = "获取社区居民信息基础统计数据")
     public R
         communityResidentBaseMessage(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
@@ -250,7 +250,7 @@ public class CommunityResidentController extends BaseController {
     }
 
     /**
-     * 社区居民信息统计图表数据
+     * 获取社区居民信息统计图表数据
      *
      * @param computedVo
      *            计算视图对象
@@ -258,7 +258,7 @@ public class CommunityResidentController extends BaseController {
      */
     @PostMapping("/computed/chart")
     @ResponseBody
-    @Operation(summary = "社区居民信息图表数据")
+    @Operation(summary = "获取社区居民信息图表数据")
     public R communityResidentChart(@Parameter(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();

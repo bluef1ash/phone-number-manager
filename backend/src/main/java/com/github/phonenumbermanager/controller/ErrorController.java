@@ -32,9 +32,6 @@ public class ErrorController extends BasicErrorController {
         super(new DefaultErrorAttributes(), serverProperties.getError());
     }
 
-    /**
-     * 覆盖默认的Json响应
-     */
     @Override
     public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
         Map<String, Object> body = getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.ALL));
@@ -44,9 +41,6 @@ public class ErrorController extends BasicErrorController {
         return new ResponseEntity<>(result, status);
     }
 
-    /**
-     * 覆盖默认的HTML响应
-     */
     @Override
     public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response) {
         return super.errorHtml(request, response);

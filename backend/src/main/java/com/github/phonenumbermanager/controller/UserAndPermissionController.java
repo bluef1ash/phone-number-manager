@@ -71,10 +71,10 @@ public class UserAndPermissionController extends BaseController {
      * 用户登录
      *
      * @param request
-     *            HTTP请求对象
+     *            HTTP 请求对象
      * @param systemUserLoginVo
      *            系统用户登录对象
-     * @return JSON对象
+     * @return JWT 令牌和当前系统用户信息
      * @throws LoginException
      *             登录异常
      */
@@ -99,7 +99,7 @@ public class UserAndPermissionController extends BaseController {
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
-        jsonMap.put("currentUser", getSystemUserVO(systemUser));
+        jsonMap.put("currentUser", convertSystemUserVO(systemUser));
         redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUser.getId(),
             JSONUtil.toJsonStr(systemUser), 7, TimeUnit.DAYS);
         redisUtil.delete(captchaCodeCacheKey);
@@ -153,22 +153,24 @@ public class UserAndPermissionController extends BaseController {
         SystemUserVO systemUserVO = new SystemUserVO();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            systemUserVO = getSystemUserVO((SystemUser)authentication.getPrincipal());
+            systemUserVO = convertSystemUserVO((SystemUser)authentication.getPrincipal());
         }
         return R.ok().put("data", systemUserVO);
     }
 
     /**
-     * 系统用户列表
+     * 获取系统用户分页列表
      *
+     * @param request
+     *            HTTP 请求对象
      * @param current
      *            分页页码
      * @param pageSize
      *            每页数据
-     * @return 系统用户列表JSON
+     * @return 系统用户分页列表
      */
     @GetMapping("/system/user")
-    @Operation(summary = "系统用户列表")
+    @Operation(summary = "获取系统用户分页列表")
     public R systemUserList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
         @Parameter(name = "每页数据") Integer pageSize) {
         SystemUser currentSystemUser =
@@ -179,14 +181,14 @@ public class UserAndPermissionController extends BaseController {
     }
 
     /**
-     * 系统用户表单列表
+     * 获取系统用户表单列表
      *
      * @param parentIds
      *            父级编号数组
-     * @return 系统用户表单列表JSON
+     * @return 系统用户表单列表
      */
     @GetMapping("/system/user/select-list")
-    @Operation(summary = "系统用户表单列表")
+    @Operation(summary = "获取系统用户表单列表")
     public R systemUserSelectList(Long[] parentIds) {
         return R.ok().put("data", systemUserService.treeSelectList(parentIds));
     }
@@ -197,8 +199,8 @@ public class UserAndPermissionController extends BaseController {
      * @param id
      *            系统用户编号
      * @param systemUser
-     *            * 系统用户对象
-     * @return 是否成功
+     *            系统用户对象
+     * @return 修改成功或者失败
      */
     @PatchMapping("/system/user/{id}")
     @Operation(summary = "单独字段修改系统用户")
@@ -221,19 +223,19 @@ public class UserAndPermissionController extends BaseController {
             flushCurrentUser(id);
             return R.ok();
         }
-        throw new JsonException();
+        throw new JsonException("单独字段修改系统用户失败！");
     }
 
     /**
-     * 通过系统用户编号查找
+     * 通过系统用户编号查找系统用户详细信息
      *
      * @param id
-     *            要查找的对应编号
-     * @return 系统用户信息JSON
+     *            要查找的系统用户编号
+     * @return 系统用户详细信息
      */
     @GetMapping("/system/user/{id}")
-    @Operation(summary = "通过系统用户编号查找")
-    public R getSystemUserById(@Parameter(name = "要查找的对应编号", required = true) @PathVariable Long id) {
+    @Operation(summary = "通过系统用户编号查找系统用户详细信息")
+    public R getSystemUserById(@Parameter(name = "要查找的系统用户编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", systemUserService.getCorrelation(id));
     }
 
@@ -242,7 +244,7 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param systemUser
      *            系统用户对象
-     * @return 是否成功JSON
+     * @return 添加成功或者失败
      */
     @PostMapping("/system/user")
     @Operation(summary = "添加处理系统用户")
@@ -259,7 +261,7 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param systemUser
      *            系统用户对象
-     * @return 是否成功JSON
+     * @return 修改成功或者失败
      */
     @PutMapping("/system/user/{id}")
     @Operation(summary = "修改处理系统用户")
@@ -277,19 +279,19 @@ public class UserAndPermissionController extends BaseController {
             flushCurrentUser(id);
             return R.ok();
         }
-        throw new JsonException("修改用户失败！");
+        throw new JsonException("修改系统用户失败！");
     }
 
     /**
      * 通过系统用户编号删除系统用户
      *
      * @param id
-     *            对应编号
-     * @return 是否成功
+     *            要删除的系统用户编号
+     * @return 删除成功或者失败
      */
     @DeleteMapping("/system/user/{id}")
     @Operation(summary = "通过系统用户编号删除系统用户")
-    public R removeSystemUser(@Parameter(name = "要删除的用户名编号", required = true) @PathVariable Long id) {
+    public R removeSystemUser(@Parameter(name = "要删除的系统用户编号", required = true) @PathVariable Long id) {
         Map<String, JSONObject> configurationMap = configurationService.mapAll();
         Long systemAdministratorId = Convert.toLong(configurationMap.get("system_administrator_id").get("content"));
         if (id.equals(systemAdministratorId)) {
@@ -319,7 +321,7 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param batchRestfulVO
      *            批量操作视图对象
-     * @return 是否成功
+     * @return 批量操作成功或者失败
      */
     @PostMapping("/system/user/batch")
     @Operation(summary = "增删改批量操作系统用户")
@@ -338,7 +340,7 @@ public class UserAndPermissionController extends BaseController {
     }
 
     /**
-     * 系统权限列表
+     * 获取系统权限分页列表
      *
      * @param request
      *            HTTP响应对象
@@ -346,10 +348,10 @@ public class UserAndPermissionController extends BaseController {
      *            分页页码
      * @param pageSize
      *            每页数据
-     * @return 系统权限列表JSON
+     * @return 系统权限分页列表
      */
     @GetMapping("/system/permission")
-    @Operation(summary = "系统权限列表")
+    @Operation(summary = "获取系统权限分页列表")
     public R systemPermissionList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
         @Parameter(name = "每页数据") Integer pageSize) {
         QueryWrapper<SystemPermission> wrapper = new QueryWrapper<>();
@@ -358,27 +360,27 @@ public class UserAndPermissionController extends BaseController {
     }
 
     /**
-     * 系统权限表单列表
+     * 获取系统权限表单列表
      *
      * @param parentIds
      *            查找的父级编号数组
-     * @return 系统权限表单列表JSON
+     * @return 系统权限表单列表
      */
     @GetMapping("/system/permission/select-list")
-    @Operation(summary = "系统权限表单列表")
+    @Operation(summary = "获取系统权限表单列表")
     public R systemPermissionSelectList(Long[] parentIds) {
         return R.ok().put("data", systemPermissionService.treeSelectList(parentIds));
     }
 
     /**
-     * 通过编号获取系统权限
+     * 通过编号获取系统权限的详细信息
      *
      * @param id
      *            权限编号
-     * @return 视图页面
+     * @return 单个系统权限的详细信息
      */
     @GetMapping("/system/permission/{id}")
-    @Operation(summary = "通过编号获取系统权限")
+    @Operation(summary = "通过编号获取系统权限的详细信息")
     public R getSystemUserPrivilegeById(@Parameter(name = "权限编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", systemPermissionService.getById(id));
     }
@@ -388,7 +390,7 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param systemPermission
      *            系统权限对象
-     * @return 视图页面
+     * @return 添加成功或者失败
      */
     @PostMapping("/system/permission")
     @Operation(summary = "添加处理系统权限")
@@ -397,7 +399,7 @@ public class UserAndPermissionController extends BaseController {
         if (systemPermissionService.save(systemPermission)) {
             return R.ok();
         }
-        throw new JsonException("添加权限失败！");
+        throw new JsonException("添加系统权限失败！");
     }
 
     /**
@@ -407,7 +409,7 @@ public class UserAndPermissionController extends BaseController {
      *            要修改的系统权限编号
      * @param systemPermission
      *            系统权限对象
-     * @return 视图页面
+     * @return 修改成功或者失败
      */
     @PutMapping("/system/permission/{id}")
     @Operation(summary = "修改处理系统权限")
@@ -419,7 +421,7 @@ public class UserAndPermissionController extends BaseController {
         if (systemPermissionService.updateById(systemPermission)) {
             return R.ok();
         }
-        throw new JsonException("修改权限失败！");
+        throw new JsonException("修改修改权限失败！");
     }
 
     /**
@@ -437,7 +439,7 @@ public class UserAndPermissionController extends BaseController {
             throw new JsonException("不允许删除有子权限的系统权限！");
         }
         if (!systemPermissionService.removeById(id)) {
-            throw new JsonException("删除用户权限失败！");
+            throw new JsonException("删除系统用户权限失败！");
         }
         return R.ok();
     }
@@ -447,7 +449,7 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param batchRestfulVO
      *            批量操作视图对象
-     * @return 是否成功
+     * @return 批量操作成功或者失败
      */
     @PostMapping("/system/permission/batch")
     @Operation(summary = "增删改批量操作系统权限")
@@ -467,7 +469,7 @@ public class UserAndPermissionController extends BaseController {
      *
      * @param companyId
      *            单位编号
-     * @return 用户权限对象集合
+     * @return 系统用户权限对象集合
      */
     @GetMapping("/system/permission/company/{companyId}")
     @Operation(summary = "获取系统用户单位拥有的权限")
@@ -476,11 +478,13 @@ public class UserAndPermissionController extends BaseController {
     }
 
     /**
-     * 获取系统用户信息
+     * 转换系统用户信息对象
      *
+     * @param systemUser
+     *            当前系统用户对象
      * @return 系统用户信息视图对象
      */
-    private SystemUserVO getSystemUserVO(SystemUser systemUser) {
+    private SystemUserVO convertSystemUserVO(SystemUser systemUser) {
         SystemUserVO systemUserVO = new SystemUserVO();
         BeanUtil.copyProperties(systemUser, systemUserVO);
         if (systemUser.getCompanies() != null) {

@@ -49,19 +49,19 @@ public class DormitoryManagerController extends BaseController {
     private final RedisUtil redisUtil;
 
     /**
-     * 社区居民楼片长列表
+     * 获取社区居民楼片长信息分页列表
      *
      * @param request
-     *            HTTP请求对象
+     *            HTTP 请求对象
      * @param current
      *            分页页码
      * @param pageSize
      *            每页数据
-     * @return JSON对象
+     * @return 社区居民楼片长信息分页集合对象
      */
     @GetMapping
     @ResponseBody
-    @Operation(summary = "社区居民楼片长列表")
+    @Operation(summary = "获取社区居民楼片长信息分页列表")
     public R dormitoryManagerList(HttpServletRequest request, @Parameter(name = "分页页码") Integer current,
         @Parameter(name = "每页数据") Integer pageSize) {
         SystemUser currentSystemUser =
@@ -72,15 +72,15 @@ public class DormitoryManagerController extends BaseController {
     }
 
     /**
-     * 通过编号查找社区居民楼片长
+     * 通过编号查找社区居民楼片长详细信息
      *
      * @param id
      *            社区居民楼片长的编号
-     * @return 视图页面
+     * @return 对应编号的社区居民楼片长的详细信息
      */
     @GetMapping("/{id}")
     @ResponseBody
-    @Operation(summary = "通过编号查找社区居民楼片长")
+    @Operation(summary = "通过编号查找社区居民楼片长详细信息")
     public R getDormitoryManagerById(@Parameter(name = "社区居民楼片长的编号", required = true) @PathVariable Long id) {
         return R.ok().put("data", dormitoryManagerService.getCorrelation(id));
     }
@@ -90,7 +90,7 @@ public class DormitoryManagerController extends BaseController {
      *
      * @param dormitoryManager
      *            前台传递的社区居民楼片长对象
-     * @return 视图页面
+     * @return 添加成功或者失败
      */
     @PostMapping
     @ResponseBody
@@ -110,7 +110,7 @@ public class DormitoryManagerController extends BaseController {
      *            要修改的单位编号
      * @param dormitoryManager
      *            前台传递的社区居民楼片长对象
-     * @return 视图页面
+     * @return 修改成功或者失败
      */
     @PutMapping("/{id}")
     @ResponseBody
@@ -131,7 +131,7 @@ public class DormitoryManagerController extends BaseController {
      *
      * @param id
      *            对应编号
-     * @return Ajax信息
+     * @return 删除成功或者失败
      */
     @DeleteMapping("/{id}")
     @ResponseBody
@@ -147,10 +147,10 @@ public class DormitoryManagerController extends BaseController {
      * 导入社区居民楼片长信息进系统
      *
      * @param request
-     *            HTTP请求对象
+     *            HTTP 请求对象
      * @param importId
      *            导入编号
-     * @return Ajax信息
+     * @return 导入成功或者失败
      */
     @PostMapping("/import")
     @ResponseBody
@@ -161,7 +161,7 @@ public class DormitoryManagerController extends BaseController {
     }
 
     /**
-     * 导出社区居民楼片长信息到 Excel
+     * 导出社区居民楼片长信息
      *
      * @param exportId
      *            导出编号
@@ -169,9 +169,9 @@ public class DormitoryManagerController extends BaseController {
      */
     @GetMapping("/export")
     @ResponseBody
-    @Operation(summary = "导出社区居民楼片长信息到 Excel")
+    @Operation(summary = "导出社区居民楼片长信息")
     public R dormitoryManagerSaveAsExcel(@Parameter(name = "导出编号") Long exportId) {
-        return exportExcel(exportId, configurationService, dormitoryManagerService, redisUtil);
+        return exportData(exportId, configurationService, dormitoryManagerService, redisUtil);
     }
 
     /**
@@ -195,7 +195,7 @@ public class DormitoryManagerController extends BaseController {
      *
      * @param batchRestfulVO
      *            批量操作视图对象
-     * @return 是否成功
+     * @return 批量操作成功或者失败
      */
     @PostMapping("/batch")
     @ResponseBody
@@ -212,11 +212,11 @@ public class DormitoryManagerController extends BaseController {
     }
 
     /**
-     * 社区居民楼片长基础数据
+     * 获取社区居民楼片长基础数据
      *
      * @param computedVo
      *            计算视图对象
-     * @return Ajax返回JSON对象
+     * @return 社区居民楼片长基础数据
      */
     @PostMapping("/computed/message")
     @ResponseBody
@@ -230,11 +230,11 @@ public class DormitoryManagerController extends BaseController {
     }
 
     /**
-     * 社区居民楼片长图表
+     * 获取社区居民楼片长图表数据
      *
      * @param computedVo
      *            计算视图对象
-     * @return Ajax返回JSON对象
+     * @return 社区居民楼片长图表数据
      */
     @PostMapping("/computed/chart")
     @ResponseBody

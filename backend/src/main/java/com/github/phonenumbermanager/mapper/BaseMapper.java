@@ -16,7 +16,7 @@ import com.github.phonenumbermanager.entity.Company;
 import cn.hutool.json.JSONObject;
 
 /**
- * 基础Mapper接口
+ * 基础 Mapper 接口
  *
  * @param <T>
  *            实体对象类
@@ -31,7 +31,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
-    @SuppressWarnings("all")
+    @SuppressWarnings("MybatisXMapperMethodInspection")
     int insertBatchSomeColumn(Collection<T> list);
 
     /**
@@ -41,7 +41,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
-    @SuppressWarnings("all")
+    @SuppressWarnings("MybatisXMapperMethodInspection")
     int insertIgnore(T entity);
 
     /**
@@ -51,7 +51,7 @@ public interface BaseMapper<T> extends com.baomidou.mybatisplus.core.mapper.Base
      *            数据对象
      * @return 影响的行数
      */
-    @SuppressWarnings("all")
+    @SuppressWarnings("MybatisXMapperMethodInspection")
     int insertIgnoreBatchSomeColumn(Collection<T> list);
 
     /**

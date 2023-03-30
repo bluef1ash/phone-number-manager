@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 
 /**
- * 联系方式Mapper接口
+ * 联系方式 Mapper 接口
  *
  * @author 廿二月的天
  */

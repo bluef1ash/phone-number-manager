@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter;
 
 import org.apache.poi.ss.usermodel.*;
 
-import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.github.phonenumbermanager.dto.CommunityResidentExcelDTO;
@@ -19,9 +18,7 @@ import cn.hutool.poi.excel.cell.CellUtil;
  *
  * @author 廿二月的天
  */
-public class CommunityResidentTitleSheetWriteHandler implements SheetWriteHandler {
-    private final String excelTitleUp;
-    private final String excelTitle;
+public class CommunityResidentTitleSheetWriteHandler extends TitleSheetWriteHandler {
 
     public CommunityResidentTitleSheetWriteHandler(String excelTitleUp, String excelTitle) {
         this.excelTitleUp = excelTitleUp;
@@ -32,10 +29,7 @@ public class CommunityResidentTitleSheetWriteHandler implements SheetWriteHandle
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
         Workbook workbook = writeWorkbookHolder.getWorkbook();
         Sheet sheet = writeSheetHolder.getSheet();
-        Row firstRow = RowUtil.getOrCreateRow(sheet, 0);
-        Cell firstRowCell = CellUtil.getOrCreateCell(firstRow, 0);
-        firstRowCell.setCellValue(excelTitleUp);
-        CommonUtil.cellStyleHandle(firstRowCell, workbook, "宋体", (short)12, true, false, false);
+        titleUpHandler(workbook, sheet);
         CommonUtil.exportExcelTitleHandle(workbook, sheet, excelTitle,
             CommunityResidentExcelDTO.class.getDeclaredFields().length - 1);
         Row dateRow = RowUtil.getOrCreateRow(sheet, 2);

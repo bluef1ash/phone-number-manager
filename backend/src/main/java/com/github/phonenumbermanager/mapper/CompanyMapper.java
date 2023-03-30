@@ -9,7 +9,7 @@ import org.springframework.dao.DataAccessException;
 import com.github.phonenumbermanager.entity.Company;
 
 /**
- * 单位Mapper接口
+ * 单位 Mapper 接口
  *
  * @author 廿二月的天
  */

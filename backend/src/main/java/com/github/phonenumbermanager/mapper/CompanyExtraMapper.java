@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.github.phonenumbermanager.entity.CompanyExtra;
 
 /**
- * 单位额外属性Mapper接口
+ * 单位额外属性 Mapper 接口
  *
  * @author 廿二月的天
  */

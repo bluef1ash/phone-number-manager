@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 
 /**
- * 楼片长Mapper接口
+ * 社区居民楼片长 Mapper 接口
  *
  * @author 廿二月的天
  */

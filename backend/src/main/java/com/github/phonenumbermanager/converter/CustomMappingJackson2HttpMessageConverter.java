@@ -8,7 +8,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
- * 自定义的json转换器
+ * 自定义的 JSON 转换器
  *
  * @author 廿二月的天
  *

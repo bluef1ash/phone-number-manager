@@ -8,7 +8,7 @@ import org.springframework.dao.DataAccessException;
 import com.github.phonenumbermanager.entity.Subcontractor;
 
 /**
- * 社区分包人员Mapper接口
+ * 社区分包人员 Mapper 接口
  *
  * @author 廿二月的天
  */

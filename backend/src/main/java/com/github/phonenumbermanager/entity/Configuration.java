@@ -12,6 +12,7 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ import lombok.experimental.Accessors;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
 @Schema(title = "系统配置项对象实体")

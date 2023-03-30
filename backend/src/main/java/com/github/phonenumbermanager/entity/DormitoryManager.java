@@ -22,6 +22,7 @@ import com.github.phonenumbermanager.validator.ModifyInputGroup;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,7 @@ import lombok.experimental.Accessors;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
 @Schema(title = "社区居民楼片长对象实体")

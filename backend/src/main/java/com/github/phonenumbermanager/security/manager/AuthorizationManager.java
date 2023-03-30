@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
@@ -21,21 +20,18 @@ import com.github.phonenumbermanager.service.ConfigurationService;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.json.JSONObject;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 
 /**
  * 授权管理器
  *
  * @author 廿二月的天
  */
+@AllArgsConstructor
 @Component
 public class AuthorizationManager
     implements org.springframework.security.authorization.AuthorizationManager<RequestAuthorizationContext> {
     private final ConfigurationService configurationService;
-
-    @Autowired
-    public AuthorizationManager(ConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
 
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication,

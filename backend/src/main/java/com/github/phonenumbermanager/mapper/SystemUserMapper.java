@@ -13,7 +13,7 @@ import com.github.phonenumbermanager.entity.SystemUser;
 import cn.hutool.json.JSONObject;
 
 /**
- * 系统用户Mapper接口
+ * 系统用户 Mapper 接口
  *
  * @author 廿二月的天
  */

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.alibaba.excel.annotation.ExcelProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
  */
 @EqualsAndHashCode
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Schema(title = "社区居民楼片长导出 Excel 表格数据模型")
 public class DormitoryManagerExcelDTO implements Serializable {

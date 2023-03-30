@@ -9,7 +9,7 @@ import com.github.phonenumbermanager.entity.CommunityResident;
 import com.github.phonenumbermanager.entity.PhoneNumber;
 
 /**
- * 社区居民Mapper接口
+ * 社区居民 Mapper 接口
  *
  * @author 廿二月的天
  */

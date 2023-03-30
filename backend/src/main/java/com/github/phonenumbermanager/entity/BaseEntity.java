@@ -14,6 +14,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Past;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.experimental.Accessors;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
 public abstract class BaseEntity<T extends Model<?>> extends Model<T> {

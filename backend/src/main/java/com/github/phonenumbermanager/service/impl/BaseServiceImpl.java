@@ -32,7 +32,9 @@ import cn.hutool.json.JSONObject;
  * 基础业务实现
  *
  * @param <M>
- *            <T> SERVICE泛型
+ *            Mapper 对象
+ * @param <T>
+ *            实体对象
  * @author 廿二月的天
  */
 public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> implements BaseService<T> {
@@ -143,7 +145,7 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     /**
-     * 导出Excel文件获取下级单位编号
+     * 导出 Excel 文件获取下级单位编号
      *
      * @param currentSystemUser
      *            当前已登录的系统用户
@@ -194,11 +196,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      * 获取柱状图图示
      *
      * @param xFieldString
-     *            X轴字符串
+     *            X 轴字符串
      * @param xFieldStringAlias
-     *            X轴别名
+     *            X 轴别名
      * @param yFieldStringAlias
-     *            Y轴别名
+     *            Y 轴别名
      * @return 柱状图变量
      */
     protected Map<String, Object> getBarChartMap(String xFieldString, String xFieldStringAlias,

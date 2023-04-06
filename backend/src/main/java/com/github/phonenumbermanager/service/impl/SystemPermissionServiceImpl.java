@@ -135,8 +135,7 @@ public class SystemPermissionServiceImpl extends BaseServiceImpl<SystemPermissio
     @Override
     public List<SelectListVO> treeSelectList(Long[] parentIds) {
         List<SystemPermission> systemPermissions = baseMapper.selectList(null);
-        List<Long> parentIdAll =
-            systemPermissions.stream().map(SystemPermission::getParentId).collect(Collectors.toList());
+        List<Long> parentIdAll = systemPermissions.stream().map(SystemPermission::getParentId).toList();
         return systemPermissions.stream()
             .filter(systemPermission -> ArrayUtil.contains(parentIds, systemPermission.getParentId()))
             .map(systemPermission -> {

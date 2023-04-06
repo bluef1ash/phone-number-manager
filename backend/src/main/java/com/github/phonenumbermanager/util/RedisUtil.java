@@ -18,7 +18,6 @@ import lombok.AllArgsConstructor;
  *
  * @author 廿二月的天
  */
-@SuppressWarnings("all")
 @Component
 @AllArgsConstructor
 public class RedisUtil {

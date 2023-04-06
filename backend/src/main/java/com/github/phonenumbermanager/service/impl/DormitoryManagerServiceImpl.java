@@ -373,12 +373,12 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
     }
 
     /**
-     * 生成map统计
+     * 生成 Map 集合统计
      *
      * @param mapType
-     *            Map类型
+     *            Map 类型
      * @param map
-     *            定义Map
+     *            定义 Map
      * @return 统计对象
      */
     private Map<String, Object> mapCount(String mapType, Map<String, Integer> map) {

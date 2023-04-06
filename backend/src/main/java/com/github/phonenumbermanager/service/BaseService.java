@@ -14,10 +14,10 @@ import com.github.phonenumbermanager.vo.SelectListVO;
 import cn.hutool.json.JSONObject;
 
 /**
- * Service层基本接口
+ * 业务基本接口
  *
  * @param <T>
- *            SERVICE接口泛型
+ *            业务接口泛型
  * @author 廿二月的天
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -105,7 +105,7 @@ public interface BaseService<T> extends IService<T> {
      * @param companyAll
      *            所有单位集合
      * @param personCountAlias
-     *            Y轴别名
+     *            Y 轴别名
      * @return 柱状图数据
      */
     Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
@@ -123,7 +123,7 @@ public interface BaseService<T> extends IService<T> {
     }
 
     /**
-     * 通过单位编号导出Excel
+     * 通过单位编号导出 Excel
      *
      * @param currentSystemUser
      *            当前已登录的系统用户

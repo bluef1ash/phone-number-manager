@@ -152,7 +152,6 @@ public class SystemUserServiceImpl extends BaseServiceImpl<SystemUserMapper, Sys
      *            操作的对象
      * @return 成功行数
      */
-    @SuppressWarnings("all")
     private int saveOrUpdateHandle(SystemUser systemUser) {
         List<SystemUserCompany> systemUserCompanies = systemUser.getCompanies().stream()
             .map(company -> new SystemUserCompany().setCompanyId(company.getId()).setSystemUserId(systemUser.getId()))

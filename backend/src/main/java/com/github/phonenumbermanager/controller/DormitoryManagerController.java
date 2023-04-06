@@ -1,7 +1,7 @@
 package com.github.phonenumbermanager.controller;
 
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.phonenumbermanager.constant.BatchRestfulMethod;
+import com.github.phonenumbermanager.constant.SystemConstant;
+import com.github.phonenumbermanager.constant.enums.ImportOrExportStatusEnum;
 import com.github.phonenumbermanager.entity.DormitoryManager;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.exception.JsonException;
@@ -20,15 +22,13 @@ import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.service.DormitoryManagerService;
 import com.github.phonenumbermanager.util.R;
+import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.BatchRestfulVo;
-import com.github.phonenumbermanager.vo.ComputedVo;
+import com.github.phonenumbermanager.vo.BatchRestfulVO;
+import com.github.phonenumbermanager.vo.ComputedVO;
 
-import cn.hutool.core.convert.Convert;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import cn.hutool.poi.excel.ExcelWriter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -47,6 +47,7 @@ public class DormitoryManagerController extends BaseController {
     private final DormitoryManagerService dormitoryManagerService;
     private final CompanyService companyService;
     private final ConfigurationService configurationService;
+    private final RedisUtil redisUtil;
 
     /**
      * 社区居民楼片长列表
@@ -148,42 +149,52 @@ public class DormitoryManagerController extends BaseController {
      *
      * @param request
      *            HTTP请求对象
+     * @param importId
+     *            导入编号
      * @return Ajax信息
      */
     @PostMapping("/import")
     @ResponseBody
     @ApiOperation("导入社区居民楼片长信息进系统")
-    public R dormitoryManagerImportAsSystem(HttpServletRequest request) {
-        Map<String, JSONObject> configurationMap = configurationService.mapAll();
-        List<List<Object>> data = uploadExcelFileToData(request,
-            Convert.toInt(configurationMap.get("read_dormitory_excel_start_row_number").get("content")));
-        if (data != null && dormitoryManagerService.save(data, configurationMap)) {
-            return R.ok("上传成功！");
-        }
-        throw new JsonException("上传文件失败！");
+    public R dormitoryManagerImportAsSystem(HttpServletRequest request, @ApiParam(name = "导入编号") Long importId) {
+        return importForSystem(request, importId, configurationService, dormitoryManagerService, redisUtil,
+            "read_dormitory_excel_start_row_number");
     }
 
     /**
-     * 导出社区居民楼片长信息到Excel
+     * 导出社区居民楼片长信息到 Excel
+     *
+     * @param exportId
+     *            导出编号
+     * @return 导出成功或者失败
+     */
+    @GetMapping("/export")
+    @ResponseBody
+    @ApiOperation("导出社区居民楼片长信息到 Excel")
+    public R dormitoryManagerSaveAsExcel(@ApiParam(name = "导出编号") Long exportId) {
+        return exportExcel(exportId, configurationService, dormitoryManagerService, redisUtil);
+    }
+
+    /**
+     * 下载社区居民楼片长信息 Excel 文件
      *
      * @param response
-     *            前台响应对象
+     *            HTTP 响应对象
+     * @param exportId
+     *            导出编号
      */
     @GetMapping("/download")
-    @ApiOperation("导出社区居民楼片长信息到Excel")
-    public void dormitoryManagerSaveAsExcel(HttpServletResponse response) {
-        SystemUser currentSystemUser =
-            (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Map<String, JSONObject> configurationMap = configurationService.mapAll();
-        ExcelWriter excelWriter =
-            dormitoryManagerService.listCorrelationExportExcel(currentSystemUser, configurationMap);
-        downloadExcelFile(response, excelWriter, "社区楼片长花名册");
+    @ApiOperation("下载社区居民楼片长信息 Excel 文件")
+    public void dormitoryManagerExcelDownload(HttpServletResponse response, @ApiParam(name = "下载编号") Long exportId) {
+        redisUtil.setEx(SystemConstant.EXPORT_ID_KEY + SystemConstant.REDIS_EXPLODE + exportId,
+            ImportOrExportStatusEnum.DOWNLOAD.getValue(), 20, TimeUnit.MINUTES);
+        downloadExcelFile(response, redisUtil, exportId, "街道（园区）社区楼片长花名册");
     }
 
     /**
      * 社区居民楼片长增删改批量操作
      *
-     * @param batchRestfulVo
+     * @param batchRestfulVO
      *            批量操作视图对象
      * @return 是否成功
      */
@@ -191,9 +202,9 @@ public class DormitoryManagerController extends BaseController {
     @ResponseBody
     @ApiOperation("社区居民楼片长增删改批量操作")
     public R dormitoryManagerBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
-            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (dormitoryManagerService.removeByIds(ids)) {
                 return R.ok();
             }
@@ -212,7 +223,7 @@ public class DormitoryManagerController extends BaseController {
     @ResponseBody
     @ApiOperation("社区居民楼片长基础数据")
     public R
-        dormitoryManagerBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+        dormitoryManagerBaseMessage(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data",
@@ -229,7 +240,7 @@ public class DormitoryManagerController extends BaseController {
     @PostMapping("/computed/chart")
     @ResponseBody
     @ApiOperation("社区居民楼片长图表")
-    public R dormitoryManagerChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+    public R dormitoryManagerChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", dormitoryManagerService.getBarChart(currentSystemUser.getCompanies(),

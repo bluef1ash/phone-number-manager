@@ -17,7 +17,7 @@ import com.github.phonenumbermanager.service.ConfigurationService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.BatchRestfulVo;
+import com.github.phonenumbermanager.vo.BatchRestfulVO;
 
 import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
@@ -125,16 +125,16 @@ public class SystemController extends BaseController {
     /**
      * 系统配置增删改批量操作
      *
-     * @param batchRestfulVo
+     * @param batchRestfulVO
      *            批量操作视图对象
      * @return 是否成功
      */
     @PostMapping("/configuration/batch")
     @ApiOperation("系统配置增删改批量操作")
     public R configurationBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
-            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (configurationService.removeByIds(ids)) {
                 return R.ok();
             }

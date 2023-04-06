@@ -3,6 +3,8 @@ package com.github.phonenumbermanager.validator;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import com.github.phonenumbermanager.annotation.PhoneNumberValidator;
+
 import cn.hutool.core.util.PhoneUtil;
 
 /**

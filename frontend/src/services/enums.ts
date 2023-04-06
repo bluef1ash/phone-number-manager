@@ -73,3 +73,13 @@ export enum FieldTypeEnum {
   NUMBER,
   SYSTEM_USER,
 }
+
+export enum ImportOrExportStatusEnum {
+  START,
+  HANDLING,
+  HANDLED,
+  DOWNLOAD,
+  UPLOAD,
+  DONE,
+  FAILED,
+}

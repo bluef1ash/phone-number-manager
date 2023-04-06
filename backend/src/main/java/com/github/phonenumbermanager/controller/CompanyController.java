@@ -21,8 +21,8 @@ import com.github.phonenumbermanager.service.SubcontractorService;
 import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.BatchRestfulVo;
-import com.github.phonenumbermanager.vo.ComputedVo;
+import com.github.phonenumbermanager.vo.BatchRestfulVO;
+import com.github.phonenumbermanager.vo.ComputedVO;
 
 import cn.hutool.json.JSONUtil;
 import io.swagger.annotations.Api;
@@ -157,16 +157,16 @@ public class CompanyController extends BaseController {
     /**
      * 单位增删改批量操作
      *
-     * @param batchRestfulVo
+     * @param batchRestfulVO
      *            批量操作视图对象
      * @return 是否成功
      */
     @PostMapping("/batch")
     @ApiOperation("单位增删改批量操作")
     public R companyBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
-            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (companyService.removeByIds(ids)) {
                 return R.ok();
             }
@@ -282,16 +282,16 @@ public class CompanyController extends BaseController {
     /**
      * 社区分包人员增删改批量操作
      *
-     * @param batchRestfulVo
+     * @param batchRestfulVO
      *            批量操作视图对象
      * @return 是否成功
      */
     @PostMapping("/subcontractor/batch")
     @ApiOperation("社区分包人员增删改批量操作")
     public R subcontractorBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
-            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (subcontractorService.removeByIds(ids)) {
                 return R.ok();
             }
@@ -308,7 +308,7 @@ public class CompanyController extends BaseController {
      */
     @PostMapping("/subcontractor/computed/chart")
     @ApiOperation("社区分包人员图表")
-    public R subcontractorChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVo computedVo) {
+    public R subcontractorChart(@ApiParam(name = "计算视图对象") @RequestBody(required = false) ComputedVO computedVo) {
         SystemUser currentSystemUser =
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return R.ok().put("data", subcontractorService.getBarChart(currentSystemUser.getCompanies(),

@@ -1,5 +1,7 @@
 package com.github.phonenumbermanager.constant.enums;
 
+import java.util.Arrays;
+
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -23,4 +25,12 @@ public enum PhoneTypeEnum {
     @JsonValue
     private final int value;
     private final String description;
+
+    public static PhoneTypeEnum valueOf(int value) {
+        return Arrays.stream(values()).filter(e -> value == e.getValue()).findFirst().orElse(null);
+    }
+
+    public static PhoneTypeEnum descriptionOf(String description) {
+        return Arrays.stream(values()).filter(e -> e.getDescription().equals(description)).findFirst().orElse(null);
+    }
 }

@@ -34,10 +34,10 @@ import com.github.phonenumbermanager.util.R;
 import com.github.phonenumbermanager.util.RedisUtil;
 import com.github.phonenumbermanager.validator.CreateInputGroup;
 import com.github.phonenumbermanager.validator.ModifyInputGroup;
-import com.github.phonenumbermanager.vo.BatchRestfulVo;
-import com.github.phonenumbermanager.vo.CompanyVo;
-import com.github.phonenumbermanager.vo.SystemUserLoginVo;
-import com.github.phonenumbermanager.vo.SystemUserVo;
+import com.github.phonenumbermanager.vo.BatchRestfulVO;
+import com.github.phonenumbermanager.vo.CompanyVO;
+import com.github.phonenumbermanager.vo.SystemUserLoginVO;
+import com.github.phonenumbermanager.vo.SystemUserVO;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.LineCaptcha;
@@ -81,9 +81,10 @@ public class UserAndPermissionController extends BaseController {
     @PostMapping("/account/login")
     @ApiOperation("用户登录")
     public R login(HttpServletRequest request,
-        @ApiParam(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVo systemUserLoginVo)
+        @ApiParam(name = "系统用户登录对象", required = true) @RequestBody SystemUserLoginVO systemUserLoginVo)
         throws LoginException {
-        String captchaCodeCacheKey = SystemConstant.CAPTCHA_ID_KEY + "::" + systemUserLoginVo.getCaptchaId();
+        String captchaCodeCacheKey =
+            SystemConstant.CAPTCHA_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserLoginVo.getCaptchaId();
         String captchaCode = (String)redisUtil.get(captchaCodeCacheKey);
         if (captchaCode == null || !captchaCode.equals(systemUserLoginVo.getCaptcha())) {
             redisUtil.delete(captchaCodeCacheKey);
@@ -98,9 +99,9 @@ public class UserAndPermissionController extends BaseController {
         Map<String, Object> jsonMap = new HashMap<>(2);
         jsonMap.put("token",
             JWTUtil.createToken(claims, SystemConstant.BASE64_SECRET.getBytes(StandardCharsets.UTF_8)));
-        jsonMap.put("currentUser", getSystemUserVo(systemUser));
-        redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUser.getId(), JSONUtil.toJsonStr(systemUser),
-            7, TimeUnit.DAYS);
+        jsonMap.put("currentUser", getSystemUserVO(systemUser));
+        redisUtil.setEx(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUser.getId(),
+            JSONUtil.toJsonStr(systemUser), 7, TimeUnit.DAYS);
         redisUtil.delete(captchaCodeCacheKey);
         return R.ok(jsonMap);
     }
@@ -120,7 +121,8 @@ public class UserAndPermissionController extends BaseController {
     public void captcha(HttpServletResponse response, @ApiParam(name = "随机 UUID", required = true) String code)
         throws IOException {
         LineCaptcha captcha = CaptchaUtil.createLineCaptcha(100, 40, 4, RandomUtil.randomInt(20, 30));
-        redisUtil.setEx(SystemConstant.CAPTCHA_ID_KEY + "::" + code, captcha.getCode(), 5, TimeUnit.MINUTES);
+        redisUtil.setEx(SystemConstant.CAPTCHA_ID_KEY + SystemConstant.REDIS_EXPLODE + code, captcha.getCode(), 5,
+            TimeUnit.MINUTES);
         captcha.write(response.getOutputStream());
     }
 
@@ -148,12 +150,12 @@ public class UserAndPermissionController extends BaseController {
     @GetMapping("/system/user/current")
     @ApiOperation("获取当前登录用户信息")
     public R getCurrentSystemUser() {
-        SystemUserVo systemUserVo = new SystemUserVo();
+        SystemUserVO systemUserVO = new SystemUserVO();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            systemUserVo = getSystemUserVo((SystemUser)authentication.getPrincipal());
+            systemUserVO = getSystemUserVO((SystemUser)authentication.getPrincipal());
         }
-        return R.ok().put("data", systemUserVo);
+        return R.ok().put("data", systemUserVO);
     }
 
     /**
@@ -315,16 +317,16 @@ public class UserAndPermissionController extends BaseController {
     /**
      * 增删改批量操作系统用户
      *
-     * @param batchRestfulVo
+     * @param batchRestfulVO
      *            批量操作视图对象
      * @return 是否成功
      */
     @PostMapping("/system/user/batch")
     @ApiOperation("增删改批量操作系统用户")
     public R systemUserBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
-            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             SystemUser currentSystemUser =
                 (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             ids = ids.stream().filter(id -> !id.equals(currentSystemUser.getId())).collect(Collectors.toList());
@@ -443,16 +445,16 @@ public class UserAndPermissionController extends BaseController {
     /**
      * 增删改批量操作系统权限
      *
-     * @param batchRestfulVo
+     * @param batchRestfulVO
      *            批量操作视图对象
      * @return 是否成功
      */
     @PostMapping("/system/permission/batch")
     @ApiOperation("增删改批量操作系统权限")
     public R systemPermissionBatch(
-        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVo batchRestfulVo) {
-        if (batchRestfulVo.getMethod() == BatchRestfulMethod.DELETE) {
-            List<Long> ids = JSONUtil.toList(batchRestfulVo.getData(), Long.class);
+        @ApiParam(name = "批量操作视图对象", required = true) @RequestBody @Validated BatchRestfulVO batchRestfulVO) {
+        if (batchRestfulVO.getMethod() == BatchRestfulMethod.DELETE) {
+            List<Long> ids = JSONUtil.toList(batchRestfulVO.getData(), Long.class);
             if (systemPermissionService.removeByIds(ids)) {
                 return R.ok();
             }
@@ -478,18 +480,18 @@ public class UserAndPermissionController extends BaseController {
      *
      * @return 系统用户信息视图对象
      */
-    private SystemUserVo getSystemUserVo(SystemUser systemUser) {
-        SystemUserVo systemUserVo = new SystemUserVo();
-        BeanUtil.copyProperties(systemUser, systemUserVo);
+    private SystemUserVO getSystemUserVO(SystemUser systemUser) {
+        SystemUserVO systemUserVO = new SystemUserVO();
+        BeanUtil.copyProperties(systemUser, systemUserVO);
         if (systemUser.getCompanies() != null) {
-            List<CompanyVo> companyVos = systemUser.getCompanies().parallelStream().map(company -> {
-                CompanyVo companyVo = new CompanyVo();
-                BeanUtil.copyProperties(company, companyVo);
-                return companyVo;
-            }).collect(Collectors.toList());
-            systemUserVo.setCompanies(companyVos);
+            List<CompanyVO> companyVOs = systemUser.getCompanies().parallelStream().map(company -> {
+                CompanyVO companyVO = new CompanyVO();
+                BeanUtil.copyProperties(company, companyVO);
+                return companyVO;
+            }).toList();
+            systemUserVO.setCompanyVOs(companyVOs);
         }
-        return systemUserVo;
+        return systemUserVO;
     }
 
     /**
@@ -503,7 +505,8 @@ public class UserAndPermissionController extends BaseController {
             (SystemUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (id.equals(currentSystemUser.getId())) {
             SystemUser user = systemUserService.getCorrelation(id);
-            redisUtil.set(SystemConstant.SYSTEM_USER_ID_KEY + "::" + id, JSONUtil.toJsonStr(user));
+            redisUtil.set(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + id,
+                JSONUtil.toJsonStr(user));
         }
     }
 }

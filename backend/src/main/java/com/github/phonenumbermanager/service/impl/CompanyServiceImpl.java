@@ -19,7 +19,7 @@ import com.github.phonenumbermanager.mapper.*;
 import com.github.phonenumbermanager.service.CompanyExtraService;
 import com.github.phonenumbermanager.service.CompanyService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.vo.SelectListVo;
+import com.github.phonenumbermanager.vo.SelectListVO;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.json.JSONObject;
@@ -168,13 +168,13 @@ public class CompanyServiceImpl extends BaseServiceImpl<CompanyMapper, Company> 
     }
 
     @Override
-    public List<SelectListVo> treeSelectList(Long[] parentIds) {
+    public List<SelectListVO> treeSelectList(Long[] parentIds) {
         List<Company> companies = baseMapper.selectList(null);
         return companies.stream().filter(company -> ArrayUtil.contains(parentIds, company.getParentId()))
             .map(company -> {
                 boolean isLeaf = companies.stream().noneMatch(c -> c.getParentId().equals(company.getId()));
                 boolean isCompanyGrandsonLevel = CommonUtil.isGrandsonLevel(0, company, companies);
-                return new SelectListVo().setId(company.getId()).setValue(company.getId()).setName(company.getName())
+                return new SelectListVO().setId(company.getId()).setValue(company.getId()).setName(company.getName())
                     .setLabel(company.getName()).setTitle(company.getName()).setIsSubordinate(isLeaf).setIsLeaf(isLeaf)
                     .setIsGrandsonLevel(isCompanyGrandsonLevel);
             }).collect(Collectors.toList());

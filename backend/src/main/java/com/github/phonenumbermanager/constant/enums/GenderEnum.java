@@ -26,7 +26,11 @@ public enum GenderEnum {
     private final int value;
     private final String description;
 
-    public static GenderEnum getEnum(int value) {
-        return Arrays.stream(values()).filter(e -> e.getValue() == value).findFirst().orElse(null);
+    public static GenderEnum valueOf(int value) {
+        return Arrays.stream(values()).filter(e -> value == e.getValue()).findFirst().orElse(null);
+    }
+
+    public static GenderEnum descriptionOf(String description) {
+        return Arrays.stream(values()).filter(e -> e.getDescription().equals(description)).findFirst().orElse(null);
     }
 }

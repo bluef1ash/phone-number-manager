@@ -58,7 +58,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String systemUserId =
                 String.valueOf(JWTUtil.parseToken(jwtToken).getPayload(SystemConstant.SYSTEM_USER_ID_KEY));
             SystemUser systemUser = JSONUtil.toBean(
-                (String)redisUtil.get(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUserId), SystemUser.class);
+                (String)redisUtil.get(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserId), SystemUser.class);
             if (systemUser == null || systemUser.getId() == null
                 || LocalDateTime.now().isAfter(systemUser.getCredentialExpireTime())) {
                 response.setCharacterEncoding("UTF-8");
@@ -74,7 +74,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
             Authentication authentication =
                 new UsernamePasswordAuthenticationToken(systemUser, jwtToken, systemUser.getAuthorities());
-            redisUtil.expire(SystemConstant.SYSTEM_USER_ID_KEY + "::" + systemUserId, 7, TimeUnit.DAYS);
+            redisUtil.expire(SystemConstant.SYSTEM_USER_ID_KEY + SystemConstant.REDIS_EXPLODE + systemUserId, 7, TimeUnit.DAYS);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);

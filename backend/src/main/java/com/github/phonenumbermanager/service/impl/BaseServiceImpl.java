@@ -4,25 +4,29 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.excel.write.metadata.style.WriteCellStyle;
+import com.alibaba.excel.write.metadata.style.WriteFont;
+import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.phonenumbermanager.constant.SystemConstant;
 import com.github.phonenumbermanager.entity.Company;
 import com.github.phonenumbermanager.entity.SystemUser;
 import com.github.phonenumbermanager.mapper.BaseMapper;
 import com.github.phonenumbermanager.service.BaseService;
 import com.github.phonenumbermanager.util.CommonUtil;
-import com.github.phonenumbermanager.vo.SelectListVo;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONObject;
-import cn.hutool.poi.excel.ExcelWriter;
-import cn.hutool.poi.excel.style.StyleUtil;
 
 /**
  * 基础业务实现
@@ -71,84 +75,45 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     @Override
-    public boolean saveCorrelation(SystemUser entity) {
-        return false;
-    }
-
-    @Override
-    public Map<String, Object> getBaseMessage(List<Company> companies, Long[] companyIds) {
-        return null;
-    }
-
-    @Override
-    public boolean save(List<List<Object>> data, Map<String, JSONObject> configurationMap) {
-        return false;
-    }
-
-    @Override
-    public IPage<T> pageCorrelation(List<Company> companies, Integer pageNumber, Integer pageDataSize,
-        JSONObject search, JSONObject sort) {
-        return null;
-    }
-
-    @Override
-    public T getCorrelation(Long id) {
-        return null;
-    }
-
-    @Override
     public Map<String, Object> getBarChart(List<Company> companies, Long[] companyIds, List<Company> companyAll,
         String personCountAlias) {
         List<Map<String, Object>> groups = groupsCountData(companies, companyIds, companyAll, false);
         List<Map<String, Object>> data =
             groups.stream().map(group -> personCountDataHandler(companyAll, group)).collect(Collectors.toList());
-        Map<String, Object> barChart = getBarChartMap("companyName", "单位", "personCount", personCountAlias);
+        Map<String, Object> barChart = getBarChartMap("companyName", "单位", personCountAlias);
         barChart.put("data", data);
         return barChart;
     }
 
-    @Override
-    public ExcelWriter listCorrelationExportExcel(SystemUser currentSystemUser,
-        Map<String, JSONObject> configurationMap) {
-        return null;
-    }
-
-    @Override
-    public List<SelectListVo> treeSelectList(Long[] parentIds) {
-        return null;
-    }
-
     /**
-     * 设置单元格样式
+     * 设置 Excel 表头和内容样式
      *
-     * @param cellStyle
-     *            单元格对象
-     * @param excelWriter
-     *            Excel写入器
-     * @param fontName
-     *            字体名称
-     * @param fontHeight
-     *            字体大小
-     * @param isBold
-     *            是否加粗
-     * @param isBorder
-     *            是否有边框
-     * @param isWrapText
-     *            是否自动换行
+     * @return 水平单元格样式策略
      */
-    protected void setCellStyle(CellStyle cellStyle, ExcelWriter excelWriter, String fontName, short fontHeight,
-        boolean isBold, boolean isBorder, boolean isWrapText) {
-        StyleUtil.setColor(cellStyle, IndexedColors.AUTOMATIC, FillPatternType.NO_FILL);
-        if (isBorder) {
-            StyleUtil.setBorder(cellStyle, BorderStyle.THIN, IndexedColors.BLACK);
-        }
-        StyleUtil.setAlign(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-        Font font = excelWriter.createFont();
-        font.setFontName(fontName);
-        font.setFontHeightInPoints(fontHeight);
-        font.setBold(isBold);
-        cellStyle.setFont(font);
-        cellStyle.setWrapText(isWrapText);
+    protected HorizontalCellStyleStrategy getHeadAndContentStyle() {
+        WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+        contentWriteCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        contentWriteCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        contentWriteCellStyle.setBorderLeft(BorderStyle.THIN);
+        contentWriteCellStyle.setBorderTop(BorderStyle.THIN);
+        contentWriteCellStyle.setBorderRight(BorderStyle.THIN);
+        contentWriteCellStyle.setBorderBottom(BorderStyle.THIN);
+        WriteFont contentWriteFont = new WriteFont();
+        contentWriteFont.setFontName("仿宋_GB2312");
+        contentWriteFont.setFontHeightInPoints((short)9);
+        contentWriteCellStyle.setWriteFont(contentWriteFont);
+        WriteCellStyle headWriteCellStyle = new WriteCellStyle();
+        WriteFont headFont = new WriteFont();
+        headFont.setFontName("黑体");
+        headFont.setFontHeightInPoints((short)12);
+        headWriteCellStyle.setWriteFont(headFont);
+        headWriteCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        headWriteCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        headWriteCellStyle.setBorderLeft(BorderStyle.THIN);
+        headWriteCellStyle.setBorderTop(BorderStyle.THIN);
+        headWriteCellStyle.setBorderRight(BorderStyle.THIN);
+        headWriteCellStyle.setBorderBottom(BorderStyle.THIN);
+        return new HorizontalCellStyleStrategy(headWriteCellStyle, contentWriteCellStyle);
     }
 
     /**
@@ -201,24 +166,6 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
     }
 
     /**
-     * 导出Excel文件标题处理
-     *
-     * @param excelWriter
-     *            Excel写入对象
-     * @param title
-     *            标题
-     * @param mergeSize
-     *            合并单元格大小
-     */
-    protected void exportExcelTitleHandle(ExcelWriter excelWriter, String title, Integer mergeSize) {
-        excelWriter.passCurrentRow();
-        CellStyle titleStyle = excelWriter.getOrCreateCellStyle(0, excelWriter.getCurrentRow());
-        setCellStyle(titleStyle, excelWriter, "方正小标宋简体", (short)16, false, false, false);
-        excelWriter.merge(excelWriter.getCurrentRow(), excelWriter.getCurrentRow(), 0, mergeSize, title, titleStyle);
-        excelWriter.passCurrentRow();
-    }
-
-    /**
      * 前端传入数据处理
      *
      * @param companies
@@ -250,13 +197,11 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
      *            X轴字符串
      * @param xFieldStringAlias
      *            X轴别名
-     * @param yFieldString
-     *            Y轴字符串
      * @param yFieldStringAlias
      *            Y轴别名
      * @return 柱状图变量
      */
-    protected Map<String, Object> getBarChartMap(String xFieldString, String xFieldStringAlias, String yFieldString,
+    protected Map<String, Object> getBarChartMap(String xFieldString, String xFieldStringAlias,
         String yFieldStringAlias) {
         Map<String, Object> barChart = new HashMap<>(3);
         Map<String, Object> meta = new HashMap<>(2);
@@ -265,9 +210,9 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         xFieldStringAliasMap.put("alias", xFieldStringAlias);
         yFieldStringAliasMap.put("alias", yFieldStringAlias);
         meta.put(xFieldString, xFieldStringAliasMap);
-        meta.put(yFieldString, yFieldStringAliasMap);
+        meta.put("personCount", yFieldStringAliasMap);
         barChart.put("xField", xFieldString);
-        barChart.put("yField", yFieldString);
+        barChart.put("yField", "personCount");
         barChart.put("meta", meta);
         barChart.put("loading", false);
         return barChart;
@@ -364,5 +309,28 @@ public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends Servic
         counter.put("companyName", companyName);
         counter.put("personCount", value.get("person_count"));
         return counter;
+    }
+
+    /**
+     * 通过基层单位编号集合获取数据
+     *
+     * @param subordinateCompanyIds
+     *            基层单位编号集合
+     * @return 数据集合
+     */
+    protected List<T> getListByCompanyIds(List<Long> subordinateCompanyIds) {
+        int currentPage = 1;
+        Page<T> page = new Page<>(currentPage, SystemConstant.READ_DATABASE_SIZE);
+        IPage<T> iPage = baseMapper.selectListByCompanyIds(subordinateCompanyIds, page);
+        List<T> objects = iPage.getRecords();
+        if (iPage.getTotal() > SystemConstant.READ_DATABASE_SIZE) {
+            for (int i = currentPage + 1; i <= Math.ceil((double)iPage.getTotal() / SystemConstant.READ_DATABASE_SIZE);
+                i++) {
+                page.setCurrent(i);
+                iPage = baseMapper.selectListByCompanyIds(subordinateCompanyIds, page);
+                objects.addAll(iPage.getRecords());
+            }
+        }
+        return objects;
     }
 }

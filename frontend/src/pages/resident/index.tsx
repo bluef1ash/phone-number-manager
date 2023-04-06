@@ -7,6 +7,7 @@ import {
   batchCommunityResident,
   createCommunityResident,
   downloadCommunityResidentExcel,
+  exportCommunityResidentExcel,
   modifyCommunityResident,
   queryCommunityResident,
   queryCommunityResidentList,
@@ -273,13 +274,22 @@ const CommunityResident: React.FC = () => {
               formData.append('file', file);
               return await uploadCommunityResidentExcel(formData);
             },
+            async asyncCallback(importId) {
+              return await uploadCommunityResidentExcel(undefined, importId);
+            },
           }}
           exportDataEventHandler={async () =>
             downloadExcelFile(
               setSpinState,
               setSpinTipState,
-              downloadCommunityResidentExcel(),
-              ['正在生成社区居民花名册中...', '正在下载社区居民花名册中...'],
+              exportCommunityResidentExcel,
+              downloadCommunityResidentExcel,
+              [
+                '正在生成社区居民花名册中...',
+                '生成成功，正在开启下载...',
+                '正在下载社区居民花名册中...',
+                '请等待下载完成，下载速度由网络速度决定',
+              ],
               '“评社区”活动电话库登记表.xlsx',
             )
           }

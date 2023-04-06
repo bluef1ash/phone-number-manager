@@ -4,13 +4,14 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Component;
+
+import lombok.AllArgsConstructor;
 
 /**
  * Redis 工具类
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
  */
 @SuppressWarnings("all")
 @Component
+@AllArgsConstructor
 public class RedisUtil {
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -1319,10 +1321,5 @@ public class RedisUtil {
      */
     public Cursor<TypedTuple<Object>> zScan(String key, ScanOptions options) {
         return redisTemplate.opsForZSet().scan(key, options);
-    }
-
-    @Autowired
-    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
     }
 }

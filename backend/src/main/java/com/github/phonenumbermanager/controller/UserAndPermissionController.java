@@ -488,7 +488,7 @@ public class UserAndPermissionController extends BaseController {
                 CompanyVO companyVO = new CompanyVO();
                 BeanUtil.copyProperties(company, companyVO);
                 return companyVO;
-            }).toList();
+            }).collect(Collectors.toList());
             systemUserVO.setCompanyVOs(companyVOs);
         }
         return systemUserVO;

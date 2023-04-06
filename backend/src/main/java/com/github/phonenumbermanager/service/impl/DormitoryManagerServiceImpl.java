@@ -126,9 +126,9 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 dormitoryManagerPhoneNumber.setDormitoryManagerId(dormitoryManager.getId())
                     .setPhoneNumberId(phoneNumber.getId());
                 return dormitoryManagerPhoneNumber;
-            }).toList());
+            }).collect(Collectors.toList()));
             return dormitoryManager;
-        }).toList();
+        }).collect(Collectors.toList());
         if (!dormitoryManagers.isEmpty()) {
             LambdaQueryWrapper<DormitoryManagerPhoneNumber> wrapper = new LambdaQueryWrapper<>();
             boolean isSuccess = baseMapper.insertBatchSomeColumn(dormitoryManagers) > 0;
@@ -206,7 +206,7 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
                 dormitoryManagerExcelDTO.setSubcontractorMobile("");
             }
             return dormitoryManagerExcelDTO;
-        }).toList();
+        }).collect(Collectors.toList());
         String fileName = FileUtil.getTmpDirPath() + SystemConstant.EXPORT_ID_KEY + exportId + ".xlsx";
         ExcelWriter excelWriter = EasyExcel.write(fileName, DormitoryManagerExcelDTO.class)
             .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
@@ -333,9 +333,15 @@ public class DormitoryManagerServiceImpl extends BaseServiceImpl<DormitoryManage
         LocalDate now = LocalDate.now();
         for (DormitoryManager dormitoryManager : dormitoryManagers) {
             switch (dormitoryManager.getGender()) {
-                case MALE -> maleCount += 1;
-                case FEMALE -> femaleCount += 1;
-                default -> unknownCount += 1;
+                case MALE:
+                    maleCount += 1;
+                    break;
+                case FEMALE:
+                    femaleCount += 1;
+                    break;
+                default:
+                    unknownCount += 1;
+                    break;
             }
             long age = dormitoryManager.getBirth().until(now, ChronoUnit.YEARS);
             if (age < 20L) {

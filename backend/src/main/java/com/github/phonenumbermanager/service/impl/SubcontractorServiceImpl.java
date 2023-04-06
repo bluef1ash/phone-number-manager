@@ -199,15 +199,13 @@ public class SubcontractorServiceImpl extends BaseServiceImpl<SubcontractorMappe
         if (companyWrapper.nonEmptyOfWhere()) {
             selectListVOs.addAll(companyMapper.selectList(companyWrapper).stream().map(
                 company -> new SelectListVO().setLabel(company.getName()).setValue(company.getId()).setIsLeaf(false))
-                .toList());
+                .collect(Collectors.toList()));
         }
         if (!subIds.isEmpty()) {
-            selectListVOs
-                .addAll(
-                    baseMapper
-                        .selectListByCompanyIds(subIds).stream().map(subcontractor -> new SelectListVO()
-                            .setLabel(subcontractor.getName()).setValue(subcontractor.getId()).setIsLeaf(true))
-                        .toList());
+            selectListVOs.addAll(baseMapper
+                .selectListByCompanyIds(subIds).stream().map(subcontractor -> new SelectListVO()
+                    .setLabel(subcontractor.getName()).setValue(subcontractor.getId()).setIsLeaf(true))
+                .collect(Collectors.toList()));
         }
         return selectListVOs;
     }

@@ -178,7 +178,7 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
             communityResidentExcelDto.setAddress(communityResident.getAddress());
             communityResidentExcelDto.setSubcontractor(communityResident.getSubcontractor().getName());
             return communityResidentExcelDto;
-        }).toList();
+        }).collect(Collectors.toList());
         String fileName = FileUtil.getTmpDirPath() + SystemConstant.EXPORT_ID_KEY + exportId + ".xlsx";
         ExcelWriter excelWriter = EasyExcel.write(fileName, CommunityResidentExcelDTO.class)
             .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
@@ -300,9 +300,9 @@ public class CommunityResidentServiceImpl extends BaseServiceImpl<CommunityResid
                 communityResidentPhoneNumber.setCommunityResidentId(communityResident.getId())
                     .setPhoneNumberId(phoneNumber.getId());
                 return communityResidentPhoneNumber;
-            }).toList());
+            }).collect(Collectors.toList()));
             return communityResident;
-        }).toList();
+        }).collect(Collectors.toList());
     }
 
     /**

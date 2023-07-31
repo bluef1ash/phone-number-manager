@@ -2,8 +2,8 @@ FROM node:lts-alpine as frontend-builder
 USER root
 WORKDIR /usr/src/app
 COPY . /usr/src/app
-RUN echo "http://mirrors.aliyun.com/alpine/edge/main/" > /etc/apk/repositories \
-     && echo "http://mirrors.aliyun.com/alpine/edge/community/" >> /etc/apk/repositories \
+RUN echo "https://mirrors.aliyun.com/alpine/edge/main" > /etc/apk/repositories \
+     && echo "https://mirrors.aliyun.com/alpine/edge/community" >> /etc/apk/repositories \
      && apk update && npm config set registry https://registry.npmmirror.com && npm install && npm run build
 
 FROM nginx:stable-alpine

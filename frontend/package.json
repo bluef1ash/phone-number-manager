@@ -5,7 +5,7 @@
   "description": "An out-of-box UI solution for enterprise applications",
   "scripts": {
     "analyze": "cross-env ANALYZE=1 umi build",
-    "build": "umi build",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider umi build",
     "deploy": "npm run build && npm run gh-pages",
     "dev": "npm run start:dev",
     "gh-pages": "gh-pages -d dist",
@@ -33,7 +33,8 @@
     "test:all": "node ./tests/run-tests.js",
     "test:component": "umi test ./src/components",
     "tsc": "tsc --noEmit",
-    "update": "ncu -u && npm install"
+    "update": "ncu -u && npm install",
+    "preinstall": "npx only-allow npm"
   },
   "lint-staged": {
     "**/*.less": "stylelint --syntax less",
@@ -67,6 +68,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "omit.js": "^2.0.2",
+    "only-allow": "^1.1.1",
     "qs": "^6.11.0",
     "rc-menu": "^9.6.3",
     "rc-util": "^5.24.2",
